@@ -12,7 +12,7 @@ const LINKS = [
   { label: "Boka event", href: "/events", ext: false },
   { label: "Träna", href: "/trana", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },
-  { label: "Om oss", href: "https://thebeach.se/om-oss-2/", ext: true },
+  { label: "Om oss", href: "/om-oss", ext: false },
 ];
 
 export default function Navbar() {
