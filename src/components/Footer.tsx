@@ -22,7 +22,7 @@ export default function Footer() {
         <div className="col-span-2 lg:col-span-1">
           <Logo variant="green" className="h-7 w-auto" />
           <p className="mt-5 max-w-xs text-sm leading-[1.7] text-white/35">
-            Beachvolleybollets hem i Stockholm. Träningsbas för det svenska
+            Beachvolleybollens hem i Stockholm. Träningsbas för det svenska
             landslaget och ett community för alla som älskar sporten.
           </p>
           <p className="mt-4 text-[13px] leading-[1.65] text-white/25">

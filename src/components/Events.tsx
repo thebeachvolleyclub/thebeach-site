@@ -86,7 +86,8 @@ export default function Events() {
           href="/events"
           className="shrink-0 cursor-pointer bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright"
         >
-          Be om offert på skräddarsytt event →
+          <span className="sm:hidden">Be om offert →</span>
+          <span className="hidden sm:inline">Be om offert på skräddarsytt event →</span>
         </Link>
       </div>
     </section>

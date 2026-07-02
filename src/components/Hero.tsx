@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useIsDesktop } from "./useIsMobile";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
 /**
@@ -12,6 +13,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
  */
 export default function Hero() {
   const reduce = useReducedMotion();
+  const desktop = useIsDesktop();
   const ref = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -42,18 +44,29 @@ export default function Hero() {
     >
       {/* Background film with subtle parallax */}
       <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0 z-0">
-        <video
-          className="h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster="/media/hero-sunset.jpg"
-          aria-hidden="true"
-        >
-          <source src="/media/hero.mp4" type="video/mp4" />
-        </video>
+        {!desktop ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src="/media/hero-sunset.jpg"
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <video
+            className="h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/media/hero-sunset.jpg"
+            aria-hidden="true"
+          >
+            <source src="/media/hero.mp4" type="video/mp4" />
+          </video>
+        )}
       </motion.div>
       {/* legibility grades */}
       <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
