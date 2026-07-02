@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ============================================================
+   THE BEACH — official brand identity
+   Near-black + lime, cream lights, Acorn (display) + Titillium Web.
+   ============================================================ */
+
+@theme {
+  /* Brand palette (from brand identity) */
+  --color-black: #14160f;
+  --color-lime: #d8ff77;
+  --color-lime-bright: #e6ff9c;
+  --color-cream: #f8f7ec;
+  --color-mint: #d1fce1;
+  --color-pink: #fc7a9b;
+  --color-orange: #fd5600;
+  --color-teal: #2f4858;
+  --color-sage: #8db7ad;
+  --color-brown: #8d5b3f;
+  --color-warm-gray: #c0bfb4;
+  --color-white: #ffffff;
+
+  /* Semantic surfaces on the near-black base */
+  --color-base: #14160f; /* page background */
+  --color-panel: #1c1f15; /* sections / cards on black */
+  --color-panel-2: #24281b; /* raised cards */
+  --color-line: #33392a; /* hairline borders */
+
+  /* Legacy aliases kept so existing components recolour to brand
+     until each section is rebuilt to the sketch. brass → lime, bone → cream. */
+  --color-bone: #f8f7ec;
+  --color-brass: #d8ff77;
+  --color-brass-bright: #e6ff9c;
+  --color-seafoam: #8db7ad;
+
+  --color-background: var(--color-black);
+  --color-foreground: var(--color-cream);
+
+  /* Fonts (wired via next/font in layout.tsx) */
+  --font-display: var(--font-acorn), "Titillium Web", system-ui, sans-serif;
+  --font-sans: var(--font-titillium), system-ui, sans-serif;
+  --font-body: var(--font-titillium), system-ui, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+:root {
+  --background: var(--color-black);
+  --foreground: var(--color-cream);
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-black);
+}
+
+body {
+  background: var(--color-black);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display headlines: Acorn, bold, UPPERCASE, tight — the athletic brand voice */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+}
+
+/* Accent word inside a headline → lime (brand highlight, not italic) */
+.italic-accent {
+  font-style: normal;
+  color: var(--color-lime);
+}
+
+/* Small, tracked label used as eyebrows / section tags */
+.eyebrow {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-lime);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Designed keyboard focus — lime ring that follows border-radius */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 3px;
+}
+
+/* Hide scrollbar on horizontal carousels (keeps it scrollable) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Brand ticker marquee */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-ticker {
+  animation: ticker-scroll 40s linear infinite;
+}
+
+/* Lenis smooth scroll — when active it owns scrolling; CSS smooth-scroll above
+   stays as the reduced-motion fallback (Lenis disabled there). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

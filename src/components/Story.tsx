@@ -1,0 +1,103 @@
+import Reveal from "./Reveal";
+
+const STATS = [
+  { num: "OS ✦", lbl: "Guld Paris 2024" },
+  { num: "VM ✦", lbl: "Guld Adelaide 2025" },
+  { num: "800", lbl: "Spelare / vecka" },
+];
+
+/** Lime credibility section — "Basecamp för världens bästa". */
+export default function Story() {
+  return (
+    <section
+      id="om-oss"
+      className="grid grid-cols-1 gap-12 bg-lime px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-14 lg:py-28"
+    >
+      <Reveal>
+        <span className="mb-4 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">
+          Om The Beach
+        </span>
+        <h2 className="mb-6 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
+          Basecamp för
+          <br />
+          världens bästa
+        </h2>
+
+        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
+          The Beach är Stockholms beachvolleycenter — och nationell träningsbas
+          för det svenska landslaget, OS-guldmedaljörerna Åhman/Hellvig och
+          VM-finalisterna Hölting Nilsson/Andersson.
+        </p>
+        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
+          Sedan 2006 har vi byggt en anläggning och ett community som ingen
+          annan kan matcha. Med 10 inomhusbanor och 7 utomhusbanor är vi
+          Stockholms självklara beachhub.
+        </p>
+
+        <div className="my-8 flex flex-col border-t border-black/15 lg:my-12 lg:flex-row">
+          {STATS.map((s) => (
+            <div
+              key={s.lbl}
+              className="border-b border-black/15 py-[18px] last:border-b-0 lg:mr-8 lg:border-b-0 lg:border-r lg:border-black/15 lg:py-8 lg:pr-8 lg:last:mr-0 lg:last:border-r-0"
+            >
+              <div className="font-display text-[40px] uppercase leading-none text-black lg:text-[44px]">
+                {s.num}
+              </div>
+              <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">
+                {s.lbl}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-l-[2.5px] border-black pl-5">
+          <p className="mb-2 text-[17px] italic leading-snug text-black">
+            &ldquo;A miniature Copacabana in a warehouse south of Stockholm.&rdquo;
+          </p>
+          <cite className="text-[10px] font-bold uppercase not-italic tracking-[0.15em] text-black/45">
+            Al Jazeera
+          </cite>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <div className="relative">
+          <div className="relative aspect-[4/3] overflow-hidden bg-black lg:aspect-[3/4]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/media/basecamp.jpg"
+              alt="Åhman & Hellvig — OS-guld Paris 2024 — tränar på The Beach"
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            {/* brand line-pattern overlay — only at the bottom, fading up so the
+                top of the photo stays untouched */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/patterns/linePatternB-green.svg"
+              alt=""
+              aria-hidden="true"
+              style={{
+                WebkitMaskImage:
+                  "linear-gradient(to top, #000 0%, #000 22%, transparent 58%)",
+                maskImage:
+                  "linear-gradient(to top, #000 0%, #000 22%, transparent 58%)",
+              }}
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80 mix-blend-screen"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-5 pt-8 text-xs font-semibold text-white/90">
+              Åhman &amp; Hellvig · OS-guld Paris 2024 · Tränar på The Beach
+            </div>
+          </div>
+          <div className="absolute -right-3 -top-3 flex h-24 w-24 items-center justify-center bg-black text-center font-display text-[11px] uppercase leading-tight tracking-[0.08em] text-lime">
+            Nationell
+            <br />
+            Tränings-
+            <br />
+            bas
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
