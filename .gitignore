@@ -39,4 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-brand/
+
+# top-level brand sketch only — do NOT ignore public/brand/ (site assets live there)
+/brand/
