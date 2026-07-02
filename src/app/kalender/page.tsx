@@ -8,7 +8,6 @@ import EventTypes from "@/components/kalender/EventTypes";
 import SeasonRhythm from "@/components/kalender/SeasonRhythm";
 import Tournaments from "@/components/kalender/Tournaments";
 import CourtBooking from "@/components/kalender/CourtBooking";
-import SubscribeCalendar from "@/components/kalender/SubscribeCalendar";
 import KalenderCTA from "@/components/kalender/KalenderCTA";
 
 export const metadata: Metadata = {
@@ -48,7 +47,6 @@ export default function KalenderPage() {
         <SeasonRhythm />
         <Tournaments />
         <CourtBooking />
-        <SubscribeCalendar />
         <KalenderCTA />
       </main>
       <Footer />

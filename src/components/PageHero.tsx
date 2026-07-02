@@ -1,21 +1,32 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import type { ReactNode } from "react";
 
-export default function KalenderHero() {
+/**
+ * Gemensam hero för undersidor (skola, om oss, barnkalas, julbord m.fl.).
+ * Samma formspråk som TranaHero: mörk bas, topo-linjer, lime-blob,
+ * jätterubrik + intro + CTA-yta.
+ */
+export default function PageHero({
+  eyebrow,
+  title,
+  intro,
+  cta,
+  minH = "min-h-[62svh]",
+}: {
+  eyebrow: string;
+  title: ReactNode;
+  intro: string;
+  cta?: ReactNode;
+  minH?: string;
+}) {
   const reduce = useReducedMotion();
 
   const stagger = {
     hidden: {},
-    show: {
-      transition: {
-        staggerChildren: reduce ? 0 : 0.1,
-        delayChildren: 0.1,
-      },
-    },
+    show: { transition: { staggerChildren: reduce ? 0 : 0.1, delayChildren: 0.1 } },
   };
-
   const item = {
     hidden: reduce ? { opacity: 0 } : { opacity: 0, y: 24 },
     show: {
@@ -28,9 +39,8 @@ export default function KalenderHero() {
   return (
     <section
       id="top"
-      className="relative isolate flex min-h-[72svh] flex-col justify-end overflow-hidden bg-base px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14"
+      className={`relative isolate flex ${minH} flex-col justify-end overflow-hidden bg-base px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14`}
     >
-      {/* Topo-line SVG decoration — lime, brand-kit pattern */}
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.09]"
         viewBox="0 0 1200 520"
@@ -47,59 +57,35 @@ export default function KalenderHero() {
           <path d="M0 450 Q300 400 600 450 T1200 450" />
         </g>
       </svg>
-
-      {/* Lime glow blob */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[480px] w-[480px] rounded-full bg-lime/10 blur-[120px]" />
 
-      {/* Content */}
       <motion.div
         variants={stagger}
         initial="hidden"
         animate="show"
         className="relative z-10 mx-auto w-full max-w-[1500px]"
       >
-        {/* Eyebrow — override: .eyebrow hard-codes lime, readable on dark bg here */}
         <motion.p variants={item} className="eyebrow mb-5">
-          Kalender
+          {eyebrow}
         </motion.p>
-
-        {/* Giant headline */}
         <motion.h1
           variants={item}
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
-          Vad händer
-          <br />
-          på <span className="italic-accent">The Beach</span>
+          {title}
         </motion.h1>
-
-        {/* Sub-copy + CTA */}
         <motion.div
           variants={item}
           className="mt-8 flex flex-col gap-6 border-t border-white/10 pt-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10"
         >
-          <div>
-            <p className="max-w-md text-[0.95rem] leading-relaxed text-bone/55">
-              Allt som händer på The Beach — träningsgrupper, seriespel,
-              turneringar och event, året runt.
-            </p>
-          </div>
-
-          {/* CTAs */}
-          <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
-            <a
-              href="#kommande"
-              className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
-            >
-              Se hela kalendern <span aria-hidden="true">→</span>
-            </a>
-            <Link
-              href="/trana"
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
-            >
-              Träningsgrupper &amp; kurser
-            </Link>
-          </div>
+          <p className="max-w-md text-[0.95rem] leading-relaxed text-bone/55">
+            {intro}
+          </p>
+          {cta ? (
+            <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+              {cta}
+            </div>
+          ) : null}
         </motion.div>
       </motion.div>
     </section>

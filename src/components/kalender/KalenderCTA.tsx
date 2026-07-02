@@ -29,9 +29,7 @@ export default function KalenderCTA() {
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
             {/* Primary CTA */}
             <a
-              href="https://thebeach.se/kalender/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#kommande"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors duration-300 hover:bg-black/80"
             >
               Se hela kalendern <span aria-hidden="true">→</span>

@@ -88,9 +88,7 @@ export default function Tournaments() {
               vecka.
             </p>
             <a
-              href="https://thebeach.se/kalender/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#kommande"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
             >
               Se aktuella omgångar →

@@ -36,7 +36,7 @@ const TYPES: EventType[] = [
     body: "Återkommande torsdagskvällar med strukturerade matcher och garanterat spel varje kväll. Exempel: Seriespel Sommar körs under 6 omgångar med start i maj. Perfekt om du vill tävla regelbundet utan att boka bana på egen hand.",
     note: "\"Oavsett om det är din första turnering eller om du jagar rankingpoäng till de stora scenerna är vårt mål att du ska få en riktigt bra turneringsupplevelse hos oss.\"",
     linkLabel: "Se kalender →",
-    linkHref: "https://thebeach.se/kalender/",
+    linkHref: "https://kalendern på denna sida",
     external: true,
   },
   {

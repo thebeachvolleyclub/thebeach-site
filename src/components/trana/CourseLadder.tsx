@@ -31,7 +31,7 @@ const COURSES = [
     quote: null,
     cta: {
       label: "Läs mer & boka",
-      href: "https://thebeach.se/spela_beachvolley/fortsattningskurs/",
+      href: "/trana#kurser",
     },
   },
 ];

@@ -1,17 +1,38 @@
+import Link from "next/link";
 import Logo from "./Logo";
 
-const COLS = [
+type FLink = { label: string; href: string; ext?: boolean };
+
+const COLS: { title: string; links: FLink[] }[] = [
   {
     title: "Spela",
-    links: ["Boka bana", "Hitta partner", "After Beach", "Turneringar", "Kalender"],
+    links: [
+      { label: "Boka bana", href: "https://www.matchi.se/facilities/thebeach", ext: true },
+      { label: "Träna", href: "/trana" },
+      { label: "Kalender", href: "/kalender" },
+      { label: "Föreningen", href: "/foreningen" },
+      { label: "Skolor", href: "/skola" },
+    ],
   },
   {
     title: "Event",
-    links: ["Las Palmas", "Algarve", "Miami", "Konferens", "Skräddarsytt", "Julbord"],
+    links: [
+      { label: "Boka event", href: "/events" },
+      { label: "Konferens", href: "/events" },
+      { label: "Barnkalas", href: "/barnkalas" },
+      { label: "Julbord", href: "/julbord" },
+      { label: "Skräddarsytt", href: "/events#forfragan" },
+    ],
   },
   {
     title: "Mer",
-    links: ["Träning", "Vår historia", "Föreningen", "BeachTravels", "Kontakt"],
+    links: [
+      { label: "Om oss", href: "/om-oss" },
+      { label: "Kontakt", href: "/om-oss#kontakt" },
+      { label: "Presentkort", href: "/presentkort" },
+      { label: "FAQ", href: "/faq" },
+      { label: "BeachTravels", href: "/beachtravels" },
+    ],
   },
 ];
 
@@ -42,13 +63,24 @@ export default function Footer() {
             </h4>
             <ul>
               {col.links.map((l) => (
-                <li key={l} className="mb-2.5">
-                  <a
-                    href="#"
-                    className="cursor-pointer text-sm text-white/50 transition-colors hover:text-lime"
-                  >
-                    {l}
-                  </a>
+                <li key={l.label} className="mb-2.5">
+                  {l.ext ? (
+                    <a
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cursor-pointer text-sm text-white/50 transition-colors hover:text-lime"
+                    >
+                      {l.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={l.href}
+                      className="cursor-pointer text-sm text-white/50 transition-colors hover:text-lime"
+                    >
+                      {l.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -57,17 +89,22 @@ export default function Footer() {
       </div>
 
       <div className="flex flex-col items-start gap-4 text-xs text-white/20 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
-        <span>© {new Date().getFullYear()} The Beach · Beachhallen Tropical AB · 556699-2839</span>
+        <span>
+          © {new Date().getFullYear()} The Beach · Beachhallen Tropical AB ·
+          556699-2839 ·{" "}
+          <Link href="/integritetspolicy" className="transition-colors hover:text-lime">
+            Integritetspolicy
+          </Link>
+        </span>
         <div className="flex gap-5">
-          {["Instagram", "LinkedIn", "Facebook"].map((s) => (
-            <a
-              key={s}
-              href="#"
-              className="cursor-pointer text-xs font-semibold uppercase tracking-[0.08em] text-white/30 transition-colors hover:text-lime"
-            >
-              {s}
-            </a>
-          ))}
+          <a
+            href="https://www.instagram.com/thebeach_se/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cursor-pointer text-xs font-semibold uppercase tracking-[0.08em] text-white/30 transition-colors hover:text-lime"
+          >
+            Instagram
+          </a>
         </div>
       </div>
     </footer>
