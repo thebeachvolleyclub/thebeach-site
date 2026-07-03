@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import { MONTHS, type Ev } from "@/lib/kalender";
 
@@ -45,11 +46,10 @@ export default function UpcomingEvents() {
             <div className="mt-2 border-t border-black/10 pb-2.5 pt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-black/35 first:border-t-0 first:pt-0">
               {m.month}
             </div>
-            {m.events.map((e, i) => (
-              <div
-                key={`${m.month}-${i}`}
-                className="flex items-start gap-4 border-b border-black/[0.07] py-4"
-              >
+            {m.events.map((e, i) => {
+              const rowCls = `flex items-start gap-4 border-b border-black/[0.07] py-4 ${e.slug ? "cursor-pointer transition-colors hover:bg-black/[0.02]" : ""}`;
+              const inner = (
+                <>
                 <div className="w-12 shrink-0 text-center">
                   <div className="font-display text-[28px] uppercase leading-none text-black">
                     {e.day}
@@ -69,8 +69,19 @@ export default function UpcomingEvents() {
                 >
                   {e.badge}
                 </span>
-              </div>
-            ))}
+                {e.slug ? <span aria-hidden="true" className="mt-1.5 text-black/25">→</span> : null}
+                </>
+              );
+              return e.slug ? (
+                <Link key={`${m.month}-${i}`} href={`/kalender/${e.slug}`} className={rowCls}>
+                  {inner}
+                </Link>
+              ) : (
+                <div key={`${m.month}-${i}`} className={rowCls}>
+                  {inner}
+                </div>
+              );
+            })}
           </div>
         ))}
       </Reveal>

@@ -46,10 +46,10 @@ const TEAM = [
     roll: "Hallansvarig",
     desc: "Reception och daglig drift i anläggningen.",
     kontakt: "jb@thebeach.one",
-    tel: "073-710 78 81",
+    notis: "Pappaledig just nu.",
   },
   {
-    namn: "Måns",
+    namn: "Måns Björn",
     roll: "Barn- & ungdomsansvarig",
     desc: "Allt som rör barn- och ungdomsträningen — från första bollkontakt till U19.",
     kontakt: "mans@thebeach.one",

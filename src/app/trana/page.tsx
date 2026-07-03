@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Newsletter from "@/components/Newsletter";
 import Ticker from "@/components/Ticker";
 import TranaHero from "@/components/trana/TranaHero";
 import CourseLadder from "@/components/trana/CourseLadder";
@@ -48,6 +49,7 @@ export default function TranaPage() {
         <Membership />
         {/* 9. CTA — bg-lime (accent/light) */}
         <TranaCTA />
+        <Newsletter />
       </main>
       <Footer />
     </>

@@ -9,7 +9,7 @@ const BREVO_FORM =
  */
 export default function Newsletter() {
   return (
-    <section className="bg-lime px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+    <section id="nyhetsbrev" className="bg-lime px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
       <div className="mx-auto flex max-w-[1500px] flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
         <Reveal>
           <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/50">

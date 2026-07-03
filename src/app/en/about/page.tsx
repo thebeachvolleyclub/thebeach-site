@@ -23,8 +23,8 @@ const MILESTONES = [
 const TEAM = [
   { n: "David Cabrera", r: "CEO & co-founder", d: "Events, partnerships and most things behind the scenes.", e: "david@thebeach.one", tel: "+46 704 32 20 28", note: "Text first — David rarely answers unknown numbers." },
   { n: "Mattias Magnusson", r: "Sports director & co-founder", d: "Training groups, courses and the coaching staff. Three-time Swedish champion, Coach of the Year.", e: "mattias@thebeach.one", tel: "+46 733 66 54 33 (SMS preferred)" },
-  { n: "Jeybee Ahlkoury", r: "Facility manager", d: "Reception and day-to-day operations in the venue.", e: "jb@thebeach.one", tel: "+46 73 710 78 81" },
-  { n: "Måns", r: "Head of youth", d: "Everything kids & youth — from first touch to U19.", e: "mans@thebeach.one" },
+  { n: "Jeybee Ahlkoury", r: "Facility manager", d: "Reception and day-to-day operations in the venue.", e: "jb@thebeach.one", note: "Currently on parental leave." },
+  { n: "Måns Björn", r: "Head of youth", d: "Everything kids & youth — from first touch to U19.", e: "mans@thebeach.one" },
   { n: "Rasmus Boden", r: "Business developer & coach", d: "Develops the operation, coaches, and runs tournaments and league play.", e: "rasmus.boden@thebeach.one" },
   { n: "Rasmus Jonsson", r: "CEO, BeachTravels", d: "Leads our sister company for training camps abroad — and captains the Swedish men's national team.", e: "rasmus@beachtravels.se" },
 ];

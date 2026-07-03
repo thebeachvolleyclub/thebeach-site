@@ -33,7 +33,7 @@ const TYPES: EventType[] = [
     no: "02",
     icon: <Trophy className="h-5 w-5" />,
     title: "Seriespel",
-    body: "Återkommande torsdagskvällar med strukturerade matcher och garanterat spel varje kväll. Exempel: Seriespel Sommar körs under 6 omgångar med start i maj. Perfekt om du vill tävla regelbundet utan att boka bana på egen hand.",
+    body: "Sommarens tävlingsform: strukturerade matcher med garanterat spel varje omgång — Seriespel Sommar körs i 6 omgångar med start i maj. Under höst och vår går bantiden till kurser och träningsgrupper.",
     note: "\"Oavsett om det är din första turnering eller om du jagar rankingpoäng till de stora scenerna är vårt mål att du ska få en riktigt bra turneringsupplevelse hos oss.\"",
     linkLabel: "Se kalender →",
     linkHref: "https://kalendern på denna sida",
