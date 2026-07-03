@@ -1,8 +1,10 @@
 /**
- * Serverhjälpare för formulärinskick.
- * 1) Sparas ALLTID i databasen (dev_own_david.form_submissions) — "listan".
- * 2) Mejl-notis till boka@thebeach.one skickas via Brevo när BREVO_API_KEY
- *    finns i miljön (annars hoppas mejlsteget över, datat är ändå säkrat).
+ * Serverhjälpare för formulärinskick — miljöväxlingsbar enligt GO_LIVE.md.
+ *
+ * PROD:  sätt FORMS_ENDPOINT (+ ev. FORMS_ENDPOINT_KEY) → inskick POST:as dit.
+ * DEV:   utan FORMS_ENDPOINT sparas inskick via contract-sql till
+ *        dev_own_david.form_submissions (fungerar bara på dev-VM:en).
+ * Mejl:  BREVO_API_KEY sätter på notisen till boka@thebeach.one i båda miljöer.
  */
 import { execFile } from "node:child_process";
 
@@ -21,9 +23,11 @@ export type Submission = {
 const esc = (v: string | undefined) =>
   v == null ? "NULL" : `'${v.replace(/\\/g, "\\\\").replace(/'/g, "''").slice(0, 4000)}'`;
 
-export function saveToDb(s: Submission): Promise<void> {
+const DEV_TABLE = process.env.FORMS_DEV_TABLE ?? "dev_own_david.form_submissions";
+
+function saveViaContractSql(s: Submission): Promise<void> {
   const raw = JSON.stringify(s).replace(/\\/g, "\\\\").replace(/'/g, "''");
-  const sql = `INSERT INTO dev_own_david.form_submissions
+  const sql = `INSERT INTO ${DEV_TABLE}
     (form, namn, epost, telefon, datum, antal, intresse, meddelande, raw)
     VALUES (${esc(s.form)}, ${esc(s.namn)}, ${esc(s.epost)}, ${esc(s.telefon)},
             ${esc(s.datum)}, ${esc(s.antal)}, ${esc(s.intresse)}, ${esc(s.meddelande)}, '${raw}')`;
@@ -32,6 +36,25 @@ export function saveToDb(s: Submission): Promise<void> {
       err ? reject(err) : resolve()
     );
   });
+}
+
+async function saveViaEndpoint(s: Submission, endpoint: string): Promise<void> {
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(process.env.FORMS_ENDPOINT_KEY
+        ? { authorization: `Bearer ${process.env.FORMS_ENDPOINT_KEY}` }
+        : {}),
+    },
+    body: JSON.stringify(s),
+  });
+  if (!res.ok) throw new Error(`forms endpoint ${res.status}`);
+}
+
+export function saveToDb(s: Submission): Promise<void> {
+  const endpoint = process.env.FORMS_ENDPOINT;
+  return endpoint ? saveViaEndpoint(s, endpoint) : saveViaContractSql(s);
 }
 
 export async function notifyByEmail(s: Submission): Promise<void> {
