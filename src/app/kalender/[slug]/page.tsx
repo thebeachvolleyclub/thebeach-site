@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { allEvents, bySlug } from "@/lib/kalender";
+import RichText from "@/components/RichText";
 
 export function generateStaticParams() {
   return allEvents()
@@ -64,11 +65,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <div className="mx-auto max-w-3xl">
             <Reveal>
               <p className="text-[17px] leading-relaxed text-black/70">
-                {ev.beskrivning ?? ev.meta}
+                <RichText text={ev.beskrivning ?? ev.meta} />
               </p>
               {ev.stycken?.map((stycke, i) => (
                 <p key={i} className="mt-5 text-[17px] leading-relaxed text-black/70">
-                  {stycke}
+                  <RichText text={stycke} />
                 </p>
               ))}
               {ev.cta && (
