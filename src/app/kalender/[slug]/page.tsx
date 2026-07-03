@@ -66,6 +66,21 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               <p className="text-[17px] leading-relaxed text-black/70">
                 {ev.beskrivning ?? ev.meta}
               </p>
+              {ev.stycken?.map((stycke, i) => (
+                <p key={i} className="mt-5 text-[17px] leading-relaxed text-black/70">
+                  {stycke}
+                </p>
+              ))}
+              {ev.cta && (
+                <a
+                  href={ev.cta.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 inline-flex cursor-pointer items-center gap-2 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
+                >
+                  {ev.cta.label} <span aria-hidden="true">&rarr;</span>
+                </a>
+              )}
             </Reveal>
             <Reveal delay={0.06} className="mt-10 flex flex-col items-start gap-4 border-t border-black/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-black/40">
