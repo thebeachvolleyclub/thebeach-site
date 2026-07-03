@@ -37,15 +37,47 @@ const COLS: { title: string; links: FLink[] }[] = [
   },
 ];
 
-export default function Footer() {
+const COLS_EN: { title: string; links: FLink[] }[] = [
+  {
+    title: "Play",
+    links: [
+      { label: "Book a court", href: "/en/book" },
+      { label: "Calendar", href: "/kalender" },
+      { label: "Schools", href: "/en/school" },
+    ],
+  },
+  {
+    title: "Events",
+    links: [
+      { label: "Book an event", href: "/en/events" },
+      { label: "Conference", href: "/en/events" },
+      { label: "Custom & large groups", href: "/en/events#request" },
+    ],
+  },
+  {
+    title: "More",
+    links: [
+      { label: "About us", href: "/en/about" },
+      { label: "Contact", href: "/en/about#contact" },
+      { label: "BeachTravels", href: "/beachtravels" },
+      { label: "Newsletter", href: "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ", ext: true },
+    ],
+  },
+];
+
+export default function Footer({ locale = "sv" }: { locale?: "sv" | "en" }) {
+  const cols = locale === "en" ? COLS_EN : COLS;
+  const tagline =
+    locale === "en"
+      ? "The home of beach volleyball in Stockholm. Training base for the Swedish national team and a community for everyone who loves the sport."
+      : "Beachvolleybollens hem i Stockholm. Träningsbas för det svenska landslaget och ett community för alla som älskar sporten.";
   return (
     <footer className="bg-black px-5 pb-10 pt-14 text-white sm:px-8 lg:px-14 lg:pb-10 lg:pt-24">
       <div className="grid grid-cols-2 gap-10 border-b border-white/[0.06] pb-12 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-16 lg:pb-20">
         <div className="col-span-2 lg:col-span-1">
           <Logo variant="green" className="h-7 w-auto" />
           <p className="mt-5 max-w-xs text-sm leading-[1.7] text-white/35">
-            Beachvolleybollens hem i Stockholm. Träningsbas för det svenska
-            landslaget och ett community för alla som älskar sporten.
+            {tagline}
           </p>
           <p className="mt-4 text-[13px] leading-[1.65] text-white/25">
             Novavägen 35
@@ -57,7 +89,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {COLS.map((col) => (
+        {cols.map((col) => (
           <div key={col.title}>
             <h4 className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-white/25">
               {col.title}
@@ -94,7 +126,7 @@ export default function Footer() {
           © {new Date().getFullYear()} The Beach · Beachhallen Tropical AB ·
           556699-2839 ·{" "}
           <Link href="/integritetspolicy" className="transition-colors hover:text-lime">
-            Integritetspolicy
+            {locale === "en" ? "Privacy policy" : "Integritetspolicy"}
           </Link>
         </span>
         <div className="flex gap-5">
