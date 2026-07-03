@@ -32,7 +32,7 @@ const COLS: { title: string; links: FLink[] }[] = [
       { label: "Presentkort", href: "/presentkort" },
       { label: "FAQ", href: "/faq" },
       { label: "BeachTravels", href: "/beachtravels" },
-      { label: "Nyhetsbrev", href: "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ", ext: true },
+      { label: "Nyhetsbrev", href: "/#nyhetsbrev" },
     ],
   },
 ];
@@ -60,7 +60,7 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
       { label: "About us", href: "/en/about" },
       { label: "Contact", href: "/en/about#contact" },
       { label: "BeachTravels", href: "/beachtravels" },
-      { label: "Newsletter", href: "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ", ext: true },
+      { label: "Newsletter", href: "/#nyhetsbrev" },
     ],
   },
 ];
