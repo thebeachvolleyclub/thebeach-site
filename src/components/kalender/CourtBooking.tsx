@@ -139,10 +139,10 @@ export default function CourtBooking() {
             <p className="mb-3 text-[13px] leading-snug text-black/50">
               Behöver du boka bana längre fram än 7 dagar? Mejla{" "}
               <a
-                href="mailto:boka@thebeach.se"
+                href="mailto:boka@thebeach.one"
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
               >
-                boka@thebeach.se
+                boka@thebeach.one
               </a>
               . Förbokning kostar 2 000 kr/bana/pass och är ej återbetalningsbar.
             </p>

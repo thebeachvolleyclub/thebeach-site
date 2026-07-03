@@ -30,7 +30,7 @@ const TEAM = [
     namn: "David Cabrera",
     roll: "VD & medgrundare",
     desc: "Event, affärer och det mesta bakom kulisserna.",
-    kontakt: "david@thebeach.se",
+    kontakt: "david@thebeach.one",
     tel: "0704-32 20 28",
     notis: "Skicka gärna SMS först — David svarar sällan på okända nummer.",
   },
@@ -38,15 +38,27 @@ const TEAM = [
     namn: "Mattias Magnusson",
     roll: "Sportchef & medgrundare",
     desc: "Träningsgrupper, kurser och tränarstaben. Trefaldig svensk mästare och Coach of the Year.",
-    kontakt: "mattias@thebeach.se",
+    kontakt: "mattias@thebeach.one",
     tel: "0733-66 54 33 (helst SMS)",
   },
   {
     namn: "Jeybee Ahlkoury",
     roll: "Hallansvarig",
     desc: "Reception och daglig drift i anläggningen.",
-    kontakt: "jb@thebeach.se",
+    kontakt: "jb@thebeach.one",
     tel: "073-710 78 81",
+  },
+  {
+    namn: "Måns",
+    roll: "Barn- & ungdomsansvarig",
+    desc: "Allt som rör barn- och ungdomsträningen — från första bollkontakt till U19.",
+    kontakt: "mans@thebeach.one",
+  },
+  {
+    namn: "Rasmus Boden",
+    roll: "Verksamhetsutvecklare & tränare",
+    desc: "Utvecklar verksamheten, tränar och håller i turneringar och seriespel.",
+    kontakt: "rasmus.boden@thebeach.one",
   },
   {
     namn: "Rasmus Jonsson",
@@ -103,7 +115,7 @@ export default function OmOssPage() {
               Människorna bakom<br />sanden
             </h2>
           </Reveal>
-          <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-3">
             {TEAM.map((t, i) => (
               <Reveal key={t.namn} delay={i * 0.06} className="flex flex-col border border-white/10 bg-white/[0.03] p-7 lg:p-8">
                 <h3 className="font-display text-2xl uppercase leading-none text-bone">{t.namn}</h3>
@@ -148,15 +160,15 @@ export default function OmOssPage() {
                 Kontakt
               </p>
               <div className="flex flex-col divide-y divide-black/10 bg-white/40">
-                <a href="mailto:boka@thebeach.se" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
+                <a href="mailto:boka@thebeach.one" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
                   <span className="text-sm font-semibold text-black/70">Bokningar & event</span>
-                  <span className="font-display text-lg text-black">boka@thebeach.se</span>
+                  <span className="font-display text-lg text-black">boka@thebeach.one</span>
                 </a>
-                <a href="mailto:david@thebeach.se" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
+                <a href="mailto:david@thebeach.one" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
                   <span className="text-sm font-semibold text-black/70">Företag & partnerskap</span>
-                  <span className="font-display text-lg text-black">david@thebeach.se</span>
+                  <span className="font-display text-lg text-black">david@thebeach.one</span>
                 </a>
-                <a href="mailto:boka@thebeach.se?subject=Jobba%20hos%20oss" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
+                <a href="mailto:boka@thebeach.one?subject=Jobba%20hos%20oss" className="flex items-center justify-between p-5 transition-colors hover:bg-white/60">
                   <span className="text-sm font-semibold text-black/70">Jobba hos oss</span>
                   <span className="font-display text-lg text-black">Skicka din ansökan →</span>
                 </a>

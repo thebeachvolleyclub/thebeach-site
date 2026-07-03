@@ -36,7 +36,7 @@ export default function CTASection() {
                   </a>
                 </Magnetic>
                 <a
-                  href="mailto:boka@thebeach.se"
+                  href="mailto:boka@thebeach.one"
                   className="inline-flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full border border-bone/25 px-8 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-bone transition-colors duration-300 hover:border-bone/45 hover:bg-bone/5 sm:w-auto"
                 >
                   Skicka eventförfrågan

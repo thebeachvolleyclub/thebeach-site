@@ -25,7 +25,7 @@ const TYPES: EventType[] = [
     icon: <Users className="h-5 w-5" />,
     title: "Träningsgrupper",
     body: "Två säsonger per år: Sommarsäsong (måndagar & onsdagar, maj–början av juli, 7 pass) och Höstsäsong (söndagar, måndagar & onsdagar, sena augusti–december, 15 pass). Anmälan till höstens grupper öppnar 1 augusti kl 20:00 — efterfrågan är hög och platserna brukar fyllas snabbt.",
-    note: "Frågor om träning: traning@thebeach.se",
+    note: "Frågor om träning: traning@thebeach.one",
     linkLabel: "Läs mer om träning →",
     linkHref: "/trana",
   },

@@ -120,12 +120,10 @@ export default function Hero() {
               Boka ett event <span aria-hidden="true">→</span>
             </a>
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/boka"
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white/55 underline-offset-4 transition-colors hover:text-white hover:underline"
             >
-              Boka bana via MATCHi
+              Så bokar du bana
             </a>
           </div>
         </motion.div>

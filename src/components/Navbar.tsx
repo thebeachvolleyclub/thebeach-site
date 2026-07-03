@@ -8,7 +8,7 @@ import { Menu, Close } from "./icons";
 import Logo from "./Logo";
 
 const LINKS = [
-  { label: "Boka bana", href: "https://www.matchi.se/facilities/thebeach", ext: true },
+  { label: "Boka bana", href: "/boka", ext: false },
   { label: "Boka event", href: "/events", ext: false },
   { label: "Träna", href: "/trana", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },

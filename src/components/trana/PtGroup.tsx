@@ -100,7 +100,7 @@ export default function PtGroup() {
               </div>
             </div>
             <a
-              href="mailto:david@thebeach.se"
+              href="mailto:david@thebeach.one"
               className="mt-8 inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               Kontakta David <span aria-hidden="true">→</span>

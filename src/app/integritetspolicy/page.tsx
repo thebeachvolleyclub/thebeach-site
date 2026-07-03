@@ -39,7 +39,7 @@ export default function IntegritetsPage() {
             <p>
               Du har rätt att begära registerutdrag, rättelse eller radering av
               dina uppgifter. Kontakta oss på{" "}
-              <a href="mailto:boka@thebeach.se" className="underline underline-offset-4">boka@thebeach.se</a>{" "}
+              <a href="mailto:boka@thebeach.one" className="underline underline-offset-4">boka@thebeach.one</a>{" "}
               så hjälper vi dig. Klagomål på vår behandling kan lämnas till
               Integritetsskyddsmyndigheten (IMY).
             </p>

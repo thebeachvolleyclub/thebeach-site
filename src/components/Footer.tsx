@@ -7,7 +7,7 @@ const COLS: { title: string; links: FLink[] }[] = [
   {
     title: "Spela",
     links: [
-      { label: "Boka bana", href: "https://www.matchi.se/facilities/thebeach", ext: true },
+      { label: "Boka bana", href: "/boka" },
       { label: "Träna", href: "/trana" },
       { label: "Kalender", href: "/kalender" },
       { label: "Föreningen", href: "/foreningen" },
@@ -32,6 +32,7 @@ const COLS: { title: string; links: FLink[] }[] = [
       { label: "Presentkort", href: "/presentkort" },
       { label: "FAQ", href: "/faq" },
       { label: "BeachTravels", href: "/beachtravels" },
+      { label: "Nyhetsbrev", href: "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ", ext: true },
     ],
   },
 ];
@@ -52,7 +53,7 @@ export default function Footer() {
             141 44 Huddinge
             <br />
             <br />
-            boka@thebeach.se
+            boka@thebeach.one
           </p>
         </div>
 

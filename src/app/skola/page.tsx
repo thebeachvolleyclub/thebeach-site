@@ -116,7 +116,7 @@ export default function SkolaPage() {
               <p className="max-w-md text-[15px] leading-relaxed text-black/60">
                 Berätta när ni vill komma och hur många ni är, så återkommer vi
                 inom 24 timmar med förslag. Det går lika bra att mejla direkt
-                till boka@thebeach.se.
+                till boka@thebeach.one.
               </p>
             </Reveal>
             <Reveal delay={0.08}>

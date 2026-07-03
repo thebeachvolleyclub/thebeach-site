@@ -55,7 +55,7 @@ export default function ForeningenPage() {
           <Reveal delay={0.1} className="mt-10 flex flex-col items-start gap-4 border-t border-black/10 pt-8 lg:flex-row lg:items-center lg:justify-between">
             <p className="max-w-xl text-sm leading-relaxed text-black/40">
               Frågor om medlemskap, ungdomsträning eller tävling? Mejla{" "}
-              <a href="mailto:boka@thebeach.se" className="font-semibold text-black underline underline-offset-4">boka@thebeach.se</a>{" "}
+              <a href="mailto:boka@thebeach.one" className="font-semibold text-black underline underline-offset-4">boka@thebeach.one</a>{" "}
               — eller kika på träningsutbudet.
             </p>
             <Link

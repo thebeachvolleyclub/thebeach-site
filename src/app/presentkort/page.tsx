@@ -28,7 +28,7 @@ export default function PresentkortPage() {
           intro="Bästa presenten till någon som gillar beachvolley — eller borde börja. Grundkurs, träning, banhyra eller PT: mottagaren väljer själv. Valfritt belopp från 700 kr."
           cta={
             <a
-              href="mailto:boka@thebeach.se?subject=Presentkort"
+              href="mailto:boka@thebeach.one?subject=Presentkort"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               Beställ via mejl <span aria-hidden="true">→</span>
@@ -47,8 +47,8 @@ export default function PresentkortPage() {
           <Reveal delay={0.1} className="mx-auto mt-8 max-w-4xl text-center">
             <p className="text-sm text-black/40">
               Skriv belopp, leveransadress och eventuell hälsning till{" "}
-              <a href="mailto:boka@thebeach.se?subject=Presentkort" className="font-semibold text-black underline underline-offset-4">
-                boka@thebeach.se
+              <a href="mailto:boka@thebeach.one?subject=Presentkort" className="font-semibold text-black underline underline-offset-4">
+                boka@thebeach.one
               </a>{" "}
               så ordnar vi resten.
             </p>

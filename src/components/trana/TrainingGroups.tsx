@@ -127,10 +127,10 @@ export default function TrainingGroups() {
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
               <a
-                href="mailto:traning@thebeach.se"
+                href="mailto:traning@thebeach.one"
                 className="text-bone underline underline-offset-4 transition-colors hover:text-lime"
               >
-                traning@thebeach.se
+                traning@thebeach.one
               </a>
             </p>
           </div>

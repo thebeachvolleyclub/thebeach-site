@@ -114,10 +114,10 @@ export default function SeasonRhythm() {
             <p className="text-[13px] text-black/50">
               Frågor om träning?{" "}
               <a
-                href="mailto:traning@thebeach.se"
+                href="mailto:traning@thebeach.one"
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
               >
-                traning@thebeach.se
+                traning@thebeach.one
               </a>
             </p>
           </div>

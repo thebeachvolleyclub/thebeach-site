@@ -9,6 +9,7 @@ import EventForm from "@/components/EventForm";
 import Training from "@/components/Training";
 import AppSection from "@/components/AppSection";
 import Footer from "@/components/Footer";
+import Newsletter from "@/components/Newsletter";
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
         <EventForm />
         <Training />
         <AppSection />
+        <Newsletter />
       </main>
       <Footer />
     </>
