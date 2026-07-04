@@ -20,7 +20,8 @@ const FAQ: { q: string; a: string }[] = [
   { q: "Finns det mat och dryck?", a: "Ja, vi har servering i loungen. För event ingår mat i paketen (Las Palmas, Algarve, Miami) och vi skräddarsyr gärna menyer för större sällskap." },
   { q: "Vad kostar ett event?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokad är Algarve, 945 kr/person. Konferenstillägg +395 kr/person. Företagspriser anges exklusive moms." },
   { q: "Kan barn spela hos er?", a: "Ja — vi har barn- och ungdomsträning, barnkalas (6–11 år) och tar emot skolklasser på vardagar. Se sidorna [Barnkalas](/barnkalas) och [Skolor](/skola)." },
-  { q: "Hur avbokar jag träning eller kurs?", a: "Hör av dig till boka@thebeach.one så hjälper vi dig. Banbokningar hanteras direkt i MATCHi." },
+  { q: "Hur avbokar jag träning eller kurs?", a: "Det beror på vad du vill avboka. Kurs (grund- eller fortsättningskurs): mejla boka@thebeach.one så snart du kan — kan din plats fyllas av någon annan får du behålla värdet tillgodo till nästa kursstart, och avbokar du i god tid innan kursen börjar krediterar vi dig. Träningsgrupp: då gäller villkoren du godkände i anmälan — läs [avanmälan & villkor](/avanmalan) och gör din avanmälan via formuläret där. Banbokning: avbokas direkt i MATCHi." },
+  { q: "Jag är med i en träningsgrupp och är inte nöjd med gruppen. Hur går jag vidare?", a: "Fyll i en ändringsanmälan så jobbar vi på saken så snabbt vi kan. Känner du dig fel placerad nivåmässigt — prata först med din tränare efter passet och hör vad de tycker. Undvik att mejla bokningen eller hälsa via receptionen; det blir lätt missförstånd. Du behåller din plats tills något annat bestämts och meddelats skriftligt. Läs mer och gör din [ändringsanmälan](/andringsanmalan)." },
 ];
 
 export default function FaqPage() {

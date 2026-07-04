@@ -121,7 +121,7 @@ export default function TrainingGroups() {
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
               Öppnar <strong className="text-bone">1 augusti kl 20:00</strong>.
-              Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande. Frågor? traning@thebeach.one
+              Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande — läs <a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">villkor &amp; avanmälan</a>. Redan med i en grupp och vill byta? Gör en <a href="/andringsanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">ändringsanmälan</a>.
             </p>
           </div>
           <div className="flex-1">
