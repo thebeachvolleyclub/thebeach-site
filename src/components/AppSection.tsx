@@ -25,6 +25,7 @@ const COPY: Record<Locale, {
       "Träningskalender",
       "Träningsfilmer",
       "Vänner & chatt",
+      "Swish-betalning",
     ],
     soon: "Boka bana — kommer snart",
     rows: [
@@ -52,6 +53,7 @@ const COPY: Record<Locale, {
       "Training calendar",
       "Training clips",
       "Friends & chat",
+      "Swish payments",
     ],
     soon: "Court booking — coming soon",
     rows: [
