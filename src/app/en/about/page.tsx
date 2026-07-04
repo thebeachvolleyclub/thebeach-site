@@ -79,7 +79,9 @@ export default function EnAbout() {
                 <p className="mb-3 mt-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-lime">{t.r}</p>
                 <p className="mb-5 flex-1 text-sm leading-relaxed text-bone/55">{t.d}</p>
                 <a href={`mailto:${t.e}`} className="text-[13px] font-semibold text-bone/80 underline-offset-4 hover:underline">{t.e}</a>
-                {t.tel ? <p className="mt-1 text-[13px] text-bone/45">{t.tel}</p> : null}
+                {t.tel ? (
+                  <a href={`tel:${t.tel.replace(/\(.*/, "").replace(/[^\d+]/g, "")}`} className="mt-1 block text-[13px] text-bone/45 underline-offset-4 hover:underline">{t.tel}</a>
+                ) : null}
                 {t.note ? <p className="mt-2 text-[11px] leading-snug text-bone/30">{t.note}</p> : null}
               </Reveal>
             ))}

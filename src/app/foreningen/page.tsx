@@ -72,7 +72,8 @@ export default function ForeningenPage() {
               </div>
               <p className="mt-6 max-w-md text-[12px] leading-relaxed text-black/35">
                 Klubbens Swish (endast när det anges): 123 351 1474 ·
-                Bankgiro: 5124-1545. Turneringsavgifter betalas via Profixio.
+                Bankgiro: 5124-1545. Turneringsavgifter betalas via{" "}
+                <a href="https://www.profixio.com/fx/terminliste.php?org=SVBF.SE.SVB" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-black/60">Profixio</a>.
                 Klubben hette tidigare 08 Beachvolley Club — namnbytet till The
                 Beach Volley Club är registrerat hos Svenska
                 Volleybollförbundet och Riksidrottsförbundet.

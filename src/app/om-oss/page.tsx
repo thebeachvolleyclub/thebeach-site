@@ -124,7 +124,9 @@ export default function OmOssPage() {
                 <a href={`mailto:${t.kontakt}`} className="text-[13px] font-semibold text-bone/80 underline-offset-4 hover:underline">
                   {t.kontakt}
                 </a>
-                {t.tel ? <p className="mt-1 text-[13px] text-bone/45">{t.tel}</p> : null}
+                {t.tel ? (
+                  <a href={`tel:+46${t.tel.replace(/\(.*/, "").replace(/\D/g, "").replace(/^0/, "")}`} className="mt-1 block text-[13px] text-bone/45 underline-offset-4 hover:underline">{t.tel}</a>
+                ) : null}
                 {t.notis ? <p className="mt-2 text-[11px] leading-snug text-bone/30">{t.notis}</p> : null}
               </Reveal>
             ))}

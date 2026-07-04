@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import RichText from "@/components/RichText";
 
 export const metadata: Metadata = {
   title: "Vanliga frågor — The Beach",
@@ -11,14 +12,14 @@ export const metadata: Metadata = {
 };
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Hur bokar jag en bana?", a: "Banor bokas via MATCHi (matchi.se/facilities/thebeach). Ett vanligt pass är 1,5 timme. Event, skolbesök och grupper bokas via förfrågningsformuläret eller boka@thebeach.one." },
+  { q: "Hur bokar jag en bana?", a: "Banor bokas via [MATCHi](https://www.matchi.se/facilities/thebeach). Ett vanligt pass är 1,5 timme. Event, skolbesök och grupper bokas via förfrågningsformuläret eller boka@thebeach.one." },
   { q: "Jag har aldrig spelat — kan jag ändå komma?", a: "Absolut. Grundkursen är byggd för nybörjare, och på prova-på-tillfällen och event behövs inga förkunskaper alls. Ta bara med träningskläder." },
   { q: "Vad behöver jag ta med?", a: "Bara dig själv och träningskläder. Bollar, nät och allt material finns på plats. Man spelar barfota i sanden — året runt, det är alltid varmt inne." },
   { q: "Finns duschar och omklädningsrum?", a: "Ja — 14 duschar och omklädningsrum finns i anläggningen." },
   { q: "Hur tar jag mig hit?", a: "Novavägen 35, 141 44 Huddinge. Pendeltåg till Flemingsberg eller Stuvsta och kort promenad, eller bil — det finns gott om parkering direkt vid hallen." },
   { q: "Finns det mat och dryck?", a: "Ja, vi har servering i loungen. För event ingår mat i paketen (Las Palmas, Algarve, Miami) och vi skräddarsyr gärna menyer för större sällskap." },
   { q: "Vad kostar ett event?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokad är Algarve, 945 kr/person. Konferenstillägg +395 kr/person. Företagspriser anges exklusive moms." },
-  { q: "Kan barn spela hos er?", a: "Ja — vi har barn- och ungdomsträning, barnkalas (6–11 år) och tar emot skolklasser på vardagar. Se sidorna Barnkalas och Skolor." },
+  { q: "Kan barn spela hos er?", a: "Ja — vi har barn- och ungdomsträning, barnkalas (6–11 år) och tar emot skolklasser på vardagar. Se sidorna [Barnkalas](/barnkalas) och [Skolor](/skola)." },
   { q: "Hur avbokar jag träning eller kurs?", a: "Hör av dig till boka@thebeach.one så hjälper vi dig. Banbokningar hanteras direkt i MATCHi." },
 ];
 
@@ -42,7 +43,7 @@ export default function FaqPage() {
                     {f.q}
                     <span className="shrink-0 text-black/30 transition-transform duration-200 group-open:rotate-45">+</span>
                   </summary>
-                  <p className="pb-6 text-[15px] leading-relaxed text-black/60">{f.a}</p>
+                  <p className="pb-6 text-[15px] leading-relaxed text-black/60"><RichText text={f.a} /></p>
                 </details>
               </Reveal>
             ))}
