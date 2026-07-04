@@ -86,6 +86,26 @@ export default function EnHome() {
             </h2>
             <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.15em] text-black/40">— Al Jazeera</p>
           </Reveal>
+          <Reveal delay={0.05} className="mb-10 max-w-2xl">
+            <p className="mb-4 text-[15px] leading-[1.7] text-black/70 lg:text-[17px]">
+              The Beach is the home of Swedish beach volleyball when it matters
+              most. Åhman/Hellvig train here — Olympic gold and World Championship
+              gold. And the world title was settled in an all-Swedish final:
+              Åhman/Hellvig against Hölting Nilsson/Andersson — two Swedish pairs
+              from our sand playing for the title against each other. That&apos;s how
+              wild it is.
+            </p>
+            <p className="mb-4 text-[15px] leading-[1.7] text-black/70 lg:text-[17px]">
+              On top of that, the entire Swedish national team programme is based
+              here — every national head coach and squad, junior and senior.
+            </p>
+            <p className="text-[15px] leading-[1.7] text-black/70 lg:text-[17px]">
+              Since 2006 we&apos;ve built a facility and a community that&apos;s open to
+              everyone. Whether you&apos;re chasing the stars or just playing for the
+              fun of it, you&apos;re just as welcome in the sand. 10 indoor courts and
+              7 outdoor — room for the world elite and the first-timer alike.
+            </p>
+          </Reveal>
           <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-3">
             {STATS.map((s, i) => (
               <Reveal key={s.v} delay={i * 0.05} className="border-t-2 border-black/80 pt-4">
