@@ -6,6 +6,7 @@ import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
   title: "Presentkort — The Beach | Ge bort sommar",
+  robots: { index: false, follow: false },
   description:
     "Presentkort på The Beach — grundkurs, träning, banhyra eller PT. Mottagaren väljer själv. Valfritt belopp från 700 kr, giltigt i två år.",
 };

@@ -29,7 +29,6 @@ const COLS: { title: string; links: FLink[] }[] = [
     links: [
       { label: "Om oss", href: "/om-oss" },
       { label: "Kontakt", href: "/om-oss#kontakt" },
-      { label: "Presentkort", href: "/presentkort" },
       { label: "FAQ", href: "/faq" },
       { label: "BeachTravels", href: "/beachtravels" },
       { label: "Nyhetsbrev", href: "/#nyhetsbrev" },
@@ -69,8 +68,8 @@ export default function Footer({ locale = "sv" }: { locale?: "sv" | "en" }) {
   const cols = locale === "en" ? COLS_EN : COLS;
   const tagline =
     locale === "en"
-      ? "The home of beach volleyball in Stockholm. Training base for the Swedish national team and a community for everyone who loves the sport."
-      : "Beachvolleybollens hem i Stockholm. Träningsbas för det svenska landslaget och ett community för alla som älskar sporten.";
+      ? "The mecca of beach volleyball in Sweden. Training base for the Swedish national team and a community for everyone who loves the sport. Everyone is warmly welcome!"
+      : "Beachvolleybollens mecka i Sverige. Träningsbas för det svenska landslaget och ett community för alla som älskar sporten. Alla är varmt välkomna till oss!";
   return (
     <footer className="bg-black px-5 pb-10 pt-14 text-white sm:px-8 lg:px-14 lg:pb-10 lg:pt-24">
       <div className="grid grid-cols-2 gap-10 border-b border-white/[0.06] pb-12 lg:grid-cols-[2fr_1fr_1fr_1fr] lg:gap-16 lg:pb-20">
