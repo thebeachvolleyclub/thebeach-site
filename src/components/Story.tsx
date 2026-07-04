@@ -24,14 +24,21 @@ export default function Story() {
         </h2>
 
         <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          The Beach är Stockholms beachvolleycenter — och nationell träningsbas
-          för det svenska landslaget, OS-guldmedaljörerna Åhman/Hellvig och
-          VM-finalisterna Hölting Nilsson/Andersson.
+          The Beach är hemmaplan för svensk beachvolley när det gäller som mest.
+          Här tränar Åhman/Hellvig — OS-guld och VM-guld. Och VM-guldet avgjordes
+          i en helsvensk final: Åhman/Hellvig mot Hölting Nilsson/Andersson — två
+          svenska par från vår sand som spelade om titeln med varandra. Så galet
+          är det.
         </p>
         <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          Sedan 2006 har vi byggt en anläggning och ett community som ingen
-          annan kan matcha. Med 10 inomhusbanor och 7 utomhusbanor är vi
-          Stockholms självklara beachhub.
+          Hos oss har dessutom hela den svenska landslagsverksamheten sitt hem —
+          samtliga förbundskaptener och landslag, junior som senior.
+        </p>
+        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
+          Sedan 2006 har vi byggt en anläggning och ett community som är öppet
+          för alla. Oavsett om du satsar mot stjärnorna eller spelar för skojs
+          skull är du lika välkommen i sanden. 10 inomhusbanor och 7 utomhus —
+          plats för både världstoppen och nybörjaren.
         </p>
 
         <div className="my-8 flex flex-col border-t border-black/15 lg:my-12 lg:flex-row">
