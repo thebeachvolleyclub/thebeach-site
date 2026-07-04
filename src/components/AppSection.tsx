@@ -11,6 +11,7 @@ const COPY: Record<Locale, {
   rows: { label: string; hi?: boolean; dim?: boolean }[];
   appStore: string;
   googlePlay: string;
+  imgAlt: string;
 }> = {
   sv: {
     eyebrow: "The Beach-appen",
@@ -39,6 +40,7 @@ const COPY: Record<Locale, {
     ],
     appStore: "App Store",
     googlePlay: "Google Play",
+    imgAlt: "The Beach-appen — nyheter, resultat och evenemang",
   },
   en: {
     eyebrow: "The Beach app",
@@ -67,6 +69,7 @@ const COPY: Record<Locale, {
     ],
     appStore: "App Store",
     googlePlay: "Google Play",
+    imgAlt: "The Beach app — news, results and events",
   },
 };
 
@@ -120,27 +123,14 @@ export default function AppSection({ locale = "sv" }: { locale?: Locale }) {
       </Reveal>
 
       <Reveal delay={0.1} className="flex justify-center">
-        <div className="flex h-[440px] w-[220px] items-center justify-center rounded-[32px] bg-black shadow-2xl shadow-black/20 lg:h-[520px] lg:w-[260px]">
-          <div className="flex h-[412px] w-[194px] flex-col gap-2.5 overflow-hidden rounded-[24px] bg-[#1a1c11] px-4 pb-4 pt-8 lg:h-[490px] lg:w-[230px]">
-            <div className="mb-1.5 font-display text-sm uppercase tracking-wide text-white/15">
-              The Beach
-            </div>
-            {t.rows.map((r, i) => (
-              <div
-                key={i}
-                className={`rounded-md px-3.5 py-3 text-[11px] font-semibold ${
-                  r.hi
-                    ? "bg-lime text-black"
-                    : r.dim
-                    ? "border border-dashed border-white/15 bg-transparent text-white/30"
-                    : "bg-lime/[0.08] text-white/40"
-                }`}
-              >
-                {r.label}
-              </div>
-            ))}
-          </div>
-        </div>
+        <img
+          src="/media/app-trio.webp"
+          alt={t.imgAlt}
+          width={820}
+          height={660}
+          loading="lazy"
+          className="h-auto w-full max-w-[560px]"
+        />
       </Reveal>
     </section>
   );
