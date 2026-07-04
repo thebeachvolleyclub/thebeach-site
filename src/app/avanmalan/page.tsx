@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import TrainingFormClient from "@/components/trana/TrainingFormClient";
 
 export const metadata: Metadata = {
   title: "Avanmälan & villkor — träningsgrupper | The Beach",
@@ -92,15 +93,20 @@ export default function AvanmalanPage() {
               </p>
             </Reveal>
 
-            <Reveal className="border-t border-black/10 pt-8">
-              <a
-                href="https://thebeach.se/spela_beachvolley/avanmalan/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex cursor-pointer items-center gap-2 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
-              >
-                Till avanmälningsformuläret <span aria-hidden="true">→</span>
-              </a>
+            <Reveal className="border-t border-black/10 pt-10">
+              <h2 className="mb-2 font-display text-2xl uppercase text-black">Avanmälan</h2>
+              <p className="mb-6 text-[15px] leading-relaxed text-black/60">
+                Avanmälan görs här — inte via mejl eller telefon. Fyll i uppgifterna nedan så tar vi hand om det.
+              </p>
+              <TrainingFormClient
+                formName="avanmalan"
+                groupLabel="Vilken träningsgrupp gäller det?"
+                reasonLabel="Anledning (frivilligt)"
+                reasonPlaceholder="Kort om varför du avanmäler dig — hjälper oss hantera ärendet rätt."
+                consentLabel="Ja, jag har läst informationen ovan."
+                successText="Vi har tagit emot din avanmälan och återkommer om något behövs (t.ex. läkarintyg)."
+                note="Kräver ditt ärende läkarintyg enligt villkoren ovan? Vi återkommer med hur du skickar in det."
+              />
             </Reveal>
           </div>
         </section>
