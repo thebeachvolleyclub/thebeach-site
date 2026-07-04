@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import EventFormEn from "@/components/en/EventFormEn";
+import AppSection from "@/components/AppSection";
 
 export const metadata: Metadata = {
   title: "The Beach — Beach volleyball & beach events in Stockholm",
@@ -115,6 +116,8 @@ export default function EnHome() {
             ))}
           </div>
         </section>
+
+        <AppSection locale="en" />
 
         <EventFormEn />
       </main>
