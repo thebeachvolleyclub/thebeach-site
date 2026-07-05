@@ -18,10 +18,12 @@ const COLS: { title: string; links: FLink[] }[] = [
     title: "Event",
     links: [
       { label: "Boka event", href: "/events" },
-      { label: "Konferens", href: "/events" },
+      { label: "Företagsevent", href: "/foretagsevent" },
+      { label: "Konferens", href: "/konferens" },
+      { label: "Kickoff", href: "/kickoff" },
+      { label: "Teambuilding", href: "/teambuilding" },
       { label: "Barnkalas", href: "/barnkalas" },
       { label: "Julbord", href: "/julbord" },
-      { label: "Skräddarsytt", href: "/events#forfragan" },
     ],
   },
   {
