@@ -31,6 +31,7 @@ type Tier = {
   tag: string;
   name: string;
   img: string;
+  imgPos?: string;
   evePrice: string;
   dayPrice: string;
   desc: string;
@@ -47,6 +48,7 @@ const TIERS: Tier[] = [
     tag: "Enkelt & socialt",
     name: "Las Palmas",
     img: "/media/event-laspalmas.webp",
+    imgPos: "center 80%",
     evePrice: "745",
     dayPrice: "670",
     desc: "After work, kickoff eller social aktivitet. Det enkla valet som alltid funkar — oavsett om ni är 10 eller 50.",
@@ -209,6 +211,7 @@ export default function PricingTiers() {
                 src={tier.img}
                 alt={tier.name}
                 loading="lazy"
+                style={{ objectPosition: tier.imgPos ?? "center" }}
                 className="h-36 w-full object-cover lg:h-52"
               />
 

@@ -76,7 +76,7 @@ export default function Story() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/media/landslag-fotosession.webp"
-              alt="Åhman & Hellvig — OS-guld Paris 2024 — tränar på The Beach"
+              alt="Åhman/Hellvig och Andersson/Hölting Nilsson tränar på The Beach — helsvensk VM-final 2025"
               className="h-full w-full object-cover"
               loading="lazy"
             />
@@ -96,7 +96,7 @@ export default function Story() {
               className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80 mix-blend-screen"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-5 pt-8 text-xs font-semibold text-white/90">
-              Åhman &amp; Hellvig · OS-guld Paris 2024 · Tränar på The Beach
+              Åhman/Hellvig &amp; Andersson/Hölting Nilsson tränar på The Beach · helsvensk VM-final 2025
             </div>
           </div>
           <div className="absolute -right-3 -top-3 flex h-24 w-24 items-center justify-center bg-black text-center font-display text-[11px] uppercase leading-tight tracking-[0.08em] text-lime">

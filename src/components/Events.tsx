@@ -5,6 +5,7 @@ import EventCarousel, { type EventPkg } from "./EventCarousel";
 const PACKAGES: EventPkg[] = [
   {
     img: "/media/event-laspalmas.webp",
+    imgPos: "center 80%",
     tag: "Enkelt & socialt",
     name: "Las Palmas",
     price: "745 kr",

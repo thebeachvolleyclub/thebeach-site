@@ -10,6 +10,7 @@ export type EventPkg = {
   desc: string;
   features: string[];
   featured?: boolean;
+  imgPos?: string;
 };
 
 /* ---- shared card (identical style to the desktop grid) -------------- */
@@ -25,6 +26,7 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
         src={pkg.img}
         alt={pkg.name}
         loading="lazy"
+        style={{ objectPosition: pkg.imgPos ?? "center" }}
         className="h-28 w-full object-cover lg:h-44"
       />
       <div className="flex flex-1 flex-col p-5 lg:p-11">
