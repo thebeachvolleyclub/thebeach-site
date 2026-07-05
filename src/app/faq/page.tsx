@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Hur bokar jag en bana?", a: "Banor bokas via [MATCHi](https://www.matchi.se/facilities/thebeach). Ett vanligt pass är 1,5 timme. Event, skolbesök och grupper bokas via förfrågningsformuläret eller boka@thebeach.one." },
+  { q: "Hur bokar jag en bana?", a: "Banor bokas via vår [boka bana-sida](/boka). Ett vanligt pass är 1,5 timme. Event, skolbesök och grupper bokas via förfrågningsformuläret eller boka@thebeach.one." },
   { q: "Jag har aldrig spelat — kan jag ändå komma?", a: "Absolut. Grundkursen är byggd för nybörjare, och på prova-på-tillfällen och event behövs inga förkunskaper alls. Ta bara med träningskläder." },
   { q: "Vad behöver jag ta med?", a: "Bara dig själv och träningskläder. Bollar, nät och allt material finns på plats. Man spelar barfota i sanden — året runt, det är alltid varmt inne." },
   { q: "Finns duschar och omklädningsrum?", a: "Ja — 14 duschar och omklädningsrum finns i anläggningen." },

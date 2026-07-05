@@ -120,9 +120,7 @@ export default function Hero() {
               Boka ett event <span aria-hidden="true">→</span>
             </a>
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/boka"
               className="inline-flex cursor-pointer items-center gap-2 border border-white/40 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-white transition-colors duration-300 hover:bg-white hover:text-black"
             >
               Boka bana <span aria-hidden="true">→</span>

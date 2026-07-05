@@ -12,7 +12,14 @@ const PRICE_ROWS = [
   { time: "Kvällstopp",  member: "720 kr", nonMember: "840 kr" },
 ];
 
-export default function CourtBooking() {
+export default function CourtBooking({
+  bookHref = "/boka",
+  bookLabel = "Boka bana",
+}: {
+  bookHref?: string;
+  bookLabel?: string;
+} = {}) {
+  const bookExt = bookHref.startsWith("http");
   return (
     <section
       id="boka-bana"
@@ -37,12 +44,11 @@ export default function CourtBooking() {
             Inomhusbana, upp till 8 spelare, 1,5 h per pass.
           </p>
           <a
-            href="https://www.matchi.se/facilities/thebeach"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={bookHref}
+            {...(bookExt ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-bone transition-colors duration-200 hover:bg-black/80"
           >
-            Boka på MATCHi <span aria-hidden="true">→</span>
+            {bookLabel} <span aria-hidden="true">→</span>
           </a>
         </div>
       </Reveal>

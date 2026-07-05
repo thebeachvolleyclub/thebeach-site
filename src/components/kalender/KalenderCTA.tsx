@@ -37,9 +37,7 @@ export default function KalenderCTA() {
 
             {/* Secondary CTA */}
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/boka"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-black/10"
             >
               Boka bana <span aria-hidden="true">→</span>

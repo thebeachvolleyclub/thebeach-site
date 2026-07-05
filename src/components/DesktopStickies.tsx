@@ -76,9 +76,7 @@ export default function DesktopStickies() {
       <AnimatePresence>
         {showBook && (
           <motion.a
-            href="https://www.matchi.se/facilities/thebeach"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={en ? "/en/book" : "/boka"}
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 24, opacity: 0 }}

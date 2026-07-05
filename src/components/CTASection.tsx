@@ -26,9 +26,7 @@ export default function CTASection() {
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Magnetic className="w-full sm:w-auto">
                   <a
-                    href="https://www.matchi.se/facilities/thebeach"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/boka"
                     className="group inline-flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-brass px-8 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-base transition-colors duration-300 hover:bg-brass-bright sm:w-auto"
                   >
                     Boka bana

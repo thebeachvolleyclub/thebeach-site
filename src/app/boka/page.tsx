@@ -70,7 +70,7 @@ export default function BokaPage() {
         </section>
 
         {/* Priser + MATCHi-CTA (befintlig sektion) */}
-        <CourtBooking />
+        <CourtBooking bookHref="https://www.matchi.se/facilities/thebeach" bookLabel="Öppna MATCHi" />
 
         {/* Alternativ */}
         <section className="bg-mint px-5 py-14 sm:px-8 lg:px-14 lg:py-20">

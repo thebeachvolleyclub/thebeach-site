@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "How do I book a court?", a: "Courts are booked via [MATCHi](https://www.matchi.se/facilities/thebeach). A standard session is 1.5 hours. Events, school visits and groups are booked via the request form or boka@thebeach.one." },
+  { q: "How do I book a court?", a: "Courts are booked via our [book a court page](/en/book). A standard session is 1.5 hours. Events, school visits and groups are booked via the request form or boka@thebeach.one." },
   { q: "I've never played — can I still come?", a: "Absolutely. The beginner course is built for first-timers, and try-out sessions and events need no experience at all. Just bring workout clothes." },
   { q: "What do I need to bring?", a: "Just yourself and workout clothes. Balls, nets and all equipment are here. You play barefoot in the sand — all year round, it's always warm inside." },
   { q: "Are there showers and changing rooms?", a: "Yes — 14 showers and changing rooms on site." },

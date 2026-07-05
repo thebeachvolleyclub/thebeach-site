@@ -42,9 +42,7 @@ export default function MobileBookingBar() {
               {eventLabel}
             </a>
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href={en ? "/en/book" : "/boka"}
               className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-brass px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-base transition-colors hover:bg-brass-bright"
             >
               {bookLabel}
