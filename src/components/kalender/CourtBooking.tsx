@@ -7,9 +7,9 @@ import Reveal from "@/components/Reveal";
  */
 
 const PRICE_ROWS = [
-  { time: "Dagtid",      member: "540 kr", nonMember: "600 kr" },
-  { time: "Mellantid",   member: "660 kr", nonMember: "720 kr" },
-  { time: "Kvällstopp",  member: "720 kr", nonMember: "840 kr" },
+  { time: "Dagtid",     note: "Vardag, sluttid senast 16:00", member: "540 kr", nonMember: "600 kr" },
+  { time: "Mellantid",  note: "Vardag 16:00–17:30 & 20:30–22:00", member: "660 kr", nonMember: "720 kr" },
+  { time: "Kvällstopp", note: "Vardag 17:30 & 19:00 samt helger", member: "720 kr", nonMember: "840 kr" },
 ];
 
 export default function CourtBooking({
@@ -95,6 +95,9 @@ export default function CourtBooking({
                 >
                   <td className="py-4 pl-6 pr-4 text-sm font-semibold text-black lg:pl-8">
                     {row.time}
+                    <span className="mt-0.5 block text-[11px] font-normal leading-snug text-black/35">
+                      {row.note}
+                    </span>
                   </td>
                   <td className="px-4 py-4 text-sm text-black/50">
                     {row.nonMember}
@@ -149,8 +152,10 @@ export default function CourtBooking({
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
               >
                 boka@thebeach.one
-              </a>
-              . Förbokning kostar 2 000 kr/bana/pass och är ej återbetalningsbar.
+              </a>{" "}
+              med önskad tid. Förbokning kostar 2 000 kr/bana/pass, är ej av-
+              eller ombokningsbar, och kräver förskottsbetalning — du får en
+              betallänk via MATCHi för att bekräfta.
             </p>
           </div>
 
@@ -166,6 +171,24 @@ export default function CourtBooking({
           </div>
         </Reveal>
       </div>
+
+      <Reveal delay={0.1} className="mt-0.5 grid grid-cols-1 gap-0.5 sm:grid-cols-2">
+        <div className="border border-black/10 bg-white p-6 lg:p-8">
+          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">Medlemskap</h3>
+          <p className="text-[13px] leading-snug text-black/50">
+            Medlem betalar lägre banhyra. 350 kr/år (junior 190 kr) och
+            tävlingslicens ingår.{" "}
+            <a href="/foreningen" className="font-semibold text-black underline underline-offset-2 hover:text-black/60">Läs mer om medlemskap</a>.
+          </p>
+        </div>
+        <div className="border border-black/10 bg-white p-6 lg:p-8">
+          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">Skolklasser</h3>
+          <p className="text-[13px] leading-snug text-black/50">
+            Vi tar emot skolklasser på vardagar till specialpris.{" "}
+            <a href="/skola" className="font-semibold text-black underline underline-offset-2 hover:text-black/60">Se Skolor</a>.
+          </p>
+        </div>
+      </Reveal>
     </section>
   );
 }
