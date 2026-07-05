@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { allEvents, bySlug } from "@/lib/kalender";
 import RichText from "@/components/RichText";
+import JsonLd from "@/components/JsonLd";
 
 export function generateStaticParams() {
   return allEvents()
@@ -23,6 +24,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+const MONTHS_SV: Record<string, string> = {
+  januari: "01", februari: "02", mars: "03", april: "04", maj: "05", juni: "06",
+  juli: "07", augusti: "08", september: "09", oktober: "10", november: "11", december: "12",
+};
+function eventStartDate(month: string, day: string): string | undefined {
+  const [name, year] = month.split(" ");
+  const mm = MONTHS_SV[name?.toLowerCase()];
+  if (!mm || !year) return undefined;
+  return `${year}-${mm}-${day.padStart(2, "0")}`;
+}
+
 const BADGE: Record<string, string> = {
   tournament: "bg-orange text-white",
   training: "bg-lime text-black",
@@ -36,9 +48,27 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const hit = bySlug(slug);
   if (!hit) notFound();
   const { month, ev } = hit;
+  const startDate = eventStartDate(month, ev.day);
+  const eventLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: ev.title,
+    ...(startDate ? { startDate } : {}),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    description: ev.beskrivning ?? ev.meta,
+    image: "https://thebeach.one/opengraph-image.png",
+    location: {
+      "@type": "Place",
+      name: "The Beach",
+      address: { "@type": "PostalAddress", streetAddress: "Novavägen 35", postalCode: "141 44", addressLocality: "Huddinge", addressCountry: "SE" },
+    },
+    organizer: { "@type": "Organization", name: "The Beach", url: "https://thebeach.one" },
+  };
 
   return (
     <>
+      <JsonLd data={eventLd} />
       <Navbar />
       <main className="flex-1">
         <section className="relative isolate overflow-hidden bg-base px-5 pb-14 pt-36 sm:px-10 lg:px-14 lg:pb-20">

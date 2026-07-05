@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import RichText from "@/components/RichText";
+import JsonLd from "@/components/JsonLd";
 
 export const metadata: Metadata = {
   alternates: {
@@ -28,9 +29,23 @@ const FAQ: { q: string; a: string }[] = [
   { q: "Jag är med i en träningsgrupp och är inte nöjd med gruppen. Hur går jag vidare?", a: "Fyll i en ändringsanmälan så jobbar vi på saken så snabbt vi kan. Känner du dig fel placerad nivåmässigt — prata först med din tränare efter passet och hör vad de tycker. Undvik att mejla bokningen eller hälsa via receptionen; det blir lätt missförstånd. Du behåller din plats tills något annat bestämts och meddelats skriftligt. Läs mer och gör din [ändringsanmälan](/andringsanmalan)." },
 ];
 
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: f.a.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
+    },
+  })),
+};
+
 export default function FaqPage() {
   return (
     <>
+      <JsonLd data={faqLd} />
       <Navbar />
       <main className="flex-1">
         <PageHero

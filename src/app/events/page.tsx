@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Ticker from "@/components/Ticker";
+import JsonLd from "@/components/JsonLd";
 import EventHero from "@/components/events/EventHero";
 import EventPaths from "@/components/events/EventPaths";
 import PricingTiers from "@/components/events/PricingTiers";
@@ -27,9 +28,26 @@ export const metadata: Metadata = {
   },
 };
 
+const eventsLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Företagsevent & event på The Beach",
+  serviceType: "Event venue",
+  provider: { "@type": "SportsActivityLocation", "@id": "https://thebeach.one/#business", name: "The Beach" },
+  areaServed: "Stockholm",
+  description:
+    "Färdiga eventkoncept med beachvolley, mat och dryck — kickoff, konferens, teambuilding, AW och firmafest för 10–900 gäster.",
+  offers: [
+    { "@type": "Offer", name: "Las Palmas", price: "745", priceCurrency: "SEK", description: "Enkelt & socialt — 1,5 h beachvolley med instruktör, tapas och dryck." },
+    { "@type": "Offer", name: "Algarve", price: "945", priceCurrency: "SEK", description: "Mest bokad — aktivitet och middagsbuffé." },
+    { "@type": "Offer", name: "Miami", price: "1195", priceCurrency: "SEK", description: "Helkväll — BBQ-buffé och två dryckesenheter." },
+  ],
+};
+
 export default function EventsPage() {
   return (
     <>
+      <JsonLd data={eventsLd} />
       <Navbar />
       <main className="flex-1">
         <EventHero />
