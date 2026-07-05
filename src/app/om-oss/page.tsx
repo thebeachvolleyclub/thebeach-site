@@ -5,6 +5,10 @@ import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/om-oss",
+    languages: { sv: "/om-oss", en: "/en/about", "x-default": "/om-oss" },
+  },
   title: "Om oss — The Beach | Beachvolleybollens hem i Stockholm",
   description:
     "Startade 2006 för att kunna spela beachvolley året runt. Idag: 3 000 kvm arena i Huddinge, träningsbas för landslaget och hem för ett community på 800 spelare i veckan.",

@@ -22,6 +22,7 @@ const titillium = Titillium_Web({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://thebeach.se"),
   title: "The Beach — Beachvolley & strandevent året runt",
   description:
     "Stockholms hem för beachvolley. 17 banor inomhus & utomhus i Huddinge. Spela, träna och fira — sommar året runt. Alla är välkomna.",

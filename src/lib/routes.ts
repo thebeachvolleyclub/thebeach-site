@@ -8,6 +8,7 @@ export const SV_TO_EN: Record<string, string> = {
   "/boka": "/en/book",
   "/skola": "/en/school",
   "/om-oss": "/en/about",
+  "/faq": "/en/faq",
 };
 
 export const EN_TO_SV: Record<string, string> = Object.fromEntries(

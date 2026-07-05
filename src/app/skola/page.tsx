@@ -6,6 +6,10 @@ import Reveal from "@/components/Reveal";
 import SkolaFormClient from "@/components/skola/SkolaFormClient";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/skola",
+    languages: { sv: "/skola", en: "/en/school", "x-default": "/skola" },
+  },
   title: "Skolor — The Beach | En roligare idrottslektion i Huddinge",
   description:
     "Ta med klassen till Stockholms beachvolleyarena. 100 kr/elev för 1,5 timme — allt ingår. Instruktörsledd beachvolleyskola, turneringar och gratis fortbildning för idrottslärare.",

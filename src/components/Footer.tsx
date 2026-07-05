@@ -57,6 +57,7 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
     title: "More",
     links: [
       { label: "About us", href: "/en/about" },
+      { label: "FAQ", href: "/en/faq" },
       { label: "Contact", href: "/en/about#contact" },
       { label: "BeachTravels", href: "/beachtravels" },
       { label: "Newsletter", href: "/#nyhetsbrev" },

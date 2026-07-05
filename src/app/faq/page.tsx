@@ -6,6 +6,10 @@ import Reveal from "@/components/Reveal";
 import RichText from "@/components/RichText";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/faq",
+    languages: { sv: "/faq", en: "/en/faq", "x-default": "/faq" },
+  },
   title: "Vanliga frågor — The Beach",
   description:
     "Allt du undrar inför besöket: bokning, utrustning, duschar, parkering, mat och priser. Hittar du inte svaret? Mejla boka@thebeach.one.",

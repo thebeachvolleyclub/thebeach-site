@@ -7,6 +7,10 @@ import Reveal from "@/components/Reveal";
 import CourtBooking from "@/components/kalender/CourtBooking";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/boka",
+    languages: { sv: "/boka", en: "/en/book", "x-default": "/boka" },
+  },
   title: "Boka bana — The Beach | Så funkar det",
   description:
     "Boka beachvolleybana i Huddinge — 10 banor inomhus, 7 utomhus, 1,5 h per pass, upp till 8 spelare. Priser, tider och allt du behöver veta innan du bokar via MATCHi.",
