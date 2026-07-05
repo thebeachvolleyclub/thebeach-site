@@ -52,7 +52,7 @@ export default function OmBeachvolleyPage() {
           <div className="mx-auto grid max-w-[1500px] grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
             <Reveal>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/media/wilson-boll.jpg" alt="Beachvolleyboll och sand mot svart bakgrund" loading="lazy" className="w-full" />
+              <img src="/media/wilson-boll.webp" alt="Beachvolleyboll och sand mot svart bakgrund" loading="lazy" className="w-full" />
             </Reveal>
             <Reveal delay={0.08}>
               <p className="eyebrow mb-4">Sporten</p>

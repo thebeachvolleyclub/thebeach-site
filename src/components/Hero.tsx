@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
  * Sunset photo, giant Acorn headline "DÄR DET / ALLTID / ÄR SOMMAR",
  * eyebrow chips, and a bottom info bar with the lime CTA.
  *
- *  Background: public/media/hero-sunset.jpg  (swap to hero.mp4 if you want motion)
+ *  Background: public/media/hero-sunset.webp  (swap to hero.mp4 if you want motion)
  */
 export default function Hero() {
   const reduce = useReducedMotion();
@@ -47,7 +47,7 @@ export default function Hero() {
         {!desktop ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src="/media/hero-sunset.jpg"
+            src="/media/hero-sunset.webp"
             alt=""
             aria-hidden="true"
             fetchPriority="high"
@@ -60,8 +60,8 @@ export default function Hero() {
             muted
             loop
             playsInline
-            preload="auto"
-            poster="/media/hero-sunset.jpg"
+            preload="metadata"
+            poster="/media/hero-sunset.webp"
             aria-hidden="true"
           >
             <source src="/media/hero.mp4" type="video/mp4" />

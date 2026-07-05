@@ -43,6 +43,9 @@ export default function RootLayout({
       lang="sv"
       className={`${acorn.variable} ${titillium.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preload" as="image" href="/media/hero-sunset.webp" fetchPriority="high" />
+      </head>
       <body className="min-h-full flex flex-col bg-base text-bone">
         <SmoothScroll />
         <ScrollProgress />

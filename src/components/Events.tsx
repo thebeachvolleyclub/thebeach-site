@@ -4,7 +4,7 @@ import EventCarousel, { type EventPkg } from "./EventCarousel";
 
 const PACKAGES: EventPkg[] = [
   {
-    img: "/media/event-laspalmas.jpg",
+    img: "/media/event-laspalmas.webp",
     tag: "Enkelt & socialt",
     name: "Las Palmas",
     price: "745 kr",
@@ -12,7 +12,7 @@ const PACKAGES: EventPkg[] = [
     features: ["1,5 h beachvolleyturnering med instruktör", "Tapas — ost & chark", "1 dryckesenhet (öl, vin eller alkoholfritt)", "Pris till King & Queen of The Beach", "Rekommenderat: 10–50 pers"],
   },
   {
-    img: "/media/event-algarve.jpg",
+    img: "/media/event-algarve.webp",
     tag: "Mest bokad",
     name: "Algarve",
     price: "945 kr",
@@ -21,7 +21,7 @@ const PACKAGES: EventPkg[] = [
     featured: true,
   },
   {
-    img: "/media/event-miami.jpg",
+    img: "/media/event-miami.webp",
     tag: "Helkväll",
     name: "Miami",
     price: "1 195 kr",

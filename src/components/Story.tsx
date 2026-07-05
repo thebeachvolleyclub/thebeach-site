@@ -75,7 +75,7 @@ export default function Story() {
           <div className="relative aspect-[4/3] overflow-hidden bg-black lg:aspect-[3/4]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/media/landslag-fotosession.jpg"
+              src="/media/landslag-fotosession.webp"
               alt="Åhman & Hellvig — OS-guld Paris 2024 — tränar på The Beach"
               className="h-full w-full object-cover"
               loading="lazy"
