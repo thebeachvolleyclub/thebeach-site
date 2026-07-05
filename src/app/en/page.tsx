@@ -41,7 +41,7 @@ export default function EnHome() {
         <PageHero
           eyebrow="Beach volleyball & events · Huddinge, Stockholm"
           title={<>Where it&apos;s<br /><span className="italic-accent">always summer</span></>}
-          intro="A 3,000 m² indoor beach 15 minutes from Stockholm city centre. 10 indoor courts, 7 outdoor, a stage, full food & beverage — and 28°C in January."
+          intro="A 3,000 m² indoor beach 15 minutes from Stockholm city centre. 10 indoor courts, 7 outdoor, a stage, full food & beverage — and 25°C in January."
           cta={
             <>
               <a

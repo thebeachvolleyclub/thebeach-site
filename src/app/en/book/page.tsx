@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const STEPS = [
   { t: "Pick a time", d: "All available slots are on MATCHi. A session is 1.5 hours and a court takes up to 8 players — you pay per court, not per person." },
   { t: "Book & pay", d: "Create a free MATCHi account (Sweden's standard booking platform for racket sports) and pay directly in the app or on the web." },
-  { t: "Come play", d: "Balls are included and waiting in the hall. Changing rooms, 14 showers and a café on site. Barefoot in the sand — it's 28°C inside, all year." },
+  { t: "Come play", d: "Balls are included and waiting in the hall. Changing rooms, 14 showers and a café on site. Barefoot in the sand — it's 25°C inside, all year." },
 ];
 
 const PRICES = [

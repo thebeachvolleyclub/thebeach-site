@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Julbord på The Beach",
     description:
-      "Det alternativa julbordet: aktivitet på sanden + julmat och fest. 28 grader varmt i december.",
+      "Det alternativa julbordet: aktivitet på sanden + julmat och fest. 25 grader varmt i december.",
     type: "website",
   },
 };
@@ -30,7 +30,7 @@ export default function JulbordPage() {
       <main className="flex-1">
         <PageHero
           eyebrow="Julbord · november–december"
-          title={<>Julfest i<br /><span className="italic-accent">28 grader</span></>}
+          title={<>Julfest i<br /><span className="italic-accent">25 grader</span></>}
           intro="Trött på samma julbord varje år? Ta med teamet till stranden: turnering på sanden, julmat i loungen och sommarkänsla mitt i vintern. Boka tidigt — helgerna går först."
           cta={
             <Link

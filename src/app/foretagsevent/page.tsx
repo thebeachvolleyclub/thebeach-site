@@ -23,7 +23,7 @@ export default function ForetagseventPage() {
         "10–900 gäster, kväll eller dagtid",
         "Erfarenhet av komplexa och säkerhetsklassade event",
       ]}
-      why={[{ h: "Allt på ett ställe", p: "Aktivitet, mat, dryck och lounge under samma tak — ingen transport mellan moment, ingen logistik för er." }, { h: "Mitt i Stockholm", p: "Novavägen 35 i Huddinge, 15 min från Stockholm C. 3 000 m² sand och 28°C inne, året runt." }, { h: "Vi kan stora event", p: "10 till 900 gäster. Lång erfarenhet av komplexa produktioner — inklusive säkerhetsklassade evenemang — utan att tumma på känslan." }]}
+      why={[{ h: "Allt på ett ställe", p: "Aktivitet, mat, dryck och lounge under samma tak — ingen transport mellan moment, ingen logistik för er." }, { h: "Mitt i Stockholm", p: "Novavägen 35 i Huddinge, 15 min från Stockholm C. 3 000 m² sand och 25°C inne, året runt." }, { h: "Vi kan stora event", p: "10 till 900 gäster. Lång erfarenhet av komplexa produktioner — inklusive säkerhetsklassade evenemang — utan att tumma på känslan." }]}
       faqs={[
         { q: "Vad kostar ett företagsevent?", a: "Färdiga paket från 745 kr/person (Las Palmas), mest bokat är Algarve 945 kr, och Miami 1195 kr för helkväll. Konferenstillägg +395 kr/person. Större och skräddarsydda event offereras. Exklusive moms." },
         { q: "Hur stora event klarar ni?", a: "Från 10 upp till 900 gäster. Vi har lång erfarenhet av stora produktioner med komplex logistik — inklusive säkerhetsklassade evenemang." },

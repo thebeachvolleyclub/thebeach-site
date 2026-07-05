@@ -23,7 +23,7 @@ export default function KickoffPage() {
         "Plats för 10–900 gäster",
         "Färdiga paket: Las Palmas 745, Algarve 945, Miami 1195 kr/person",
       ]}
-      why={[{ h: "Allt på ett ställe", p: "Aktivitet, mat, dryck och lounge under samma tak — ingen transport mellan moment, ingen logistik för er." }, { h: "Mitt i Stockholm", p: "Novavägen 35 i Huddinge, 15 min från Stockholm C. 3 000 m² sand och 28°C inne, året runt." }, { h: "Vi kan stora event", p: "10 till 900 gäster. Lång erfarenhet av komplexa produktioner — inklusive säkerhetsklassade evenemang — utan att tumma på känslan." }]}
+      why={[{ h: "Allt på ett ställe", p: "Aktivitet, mat, dryck och lounge under samma tak — ingen transport mellan moment, ingen logistik för er." }, { h: "Mitt i Stockholm", p: "Novavägen 35 i Huddinge, 15 min från Stockholm C. 3 000 m² sand och 25°C inne, året runt." }, { h: "Vi kan stora event", p: "10 till 900 gäster. Lång erfarenhet av komplexa produktioner — inklusive säkerhetsklassade evenemang — utan att tumma på känslan." }]}
       faqs={[
         { q: "Vad kostar en kickoff?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokat är Algarve, 945 kr/person. Miami 1195 kr/person för helkväll. Exklusive moms för företag." },
         { q: "Behövs förkunskaper i beachvolley?", a: "Nej. En instruktör leder allt och det funkar för nybörjare — poängen är att alla ska med och ha kul." },
