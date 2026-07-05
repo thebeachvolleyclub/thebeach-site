@@ -1,9 +1,11 @@
 import Reveal from "./Reveal";
+import Counter from "./Counter";
 
-const STATS = [
-  { num: "OS ✦", lbl: "Guld Paris 2024" },
-  { num: "VM ✦", lbl: "Guld Adelaide 2025" },
-  { num: "800", lbl: "Spelare / vecka" },
+const STATS: { to: number; suffix?: string; lbl: string }[] = [
+  { to: 800, lbl: "Spelare / vecka" },
+  { to: 17, lbl: "Banor inne & ute" },
+  { to: 3000, suffix: " m²", lbl: "Sand" },
+  { to: 20, lbl: "År i sanden" },
 ];
 
 /** Lime credibility section — "Basecamp för världens bästa". */
@@ -41,14 +43,15 @@ export default function Story() {
           plats för både världstoppen och nybörjaren.
         </p>
 
-        <div className="my-8 flex flex-col border-t border-black/15 lg:my-12 lg:flex-row">
+        <div className="mt-8 flex flex-wrap gap-2">
+          <span className="bg-black px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-lime">🥇 OS-guld · Paris 2024</span>
+          <span className="bg-black px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-lime">🥇 VM-guld · Adelaide 2025</span>
+        </div>
+        <div className="my-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-black/15 pt-8 sm:grid-cols-4 lg:my-10">
           {STATS.map((s) => (
-            <div
-              key={s.lbl}
-              className="border-b border-black/15 py-[18px] last:border-b-0 lg:mr-8 lg:border-b-0 lg:border-r lg:border-black/15 lg:py-8 lg:pr-8 lg:last:mr-0 lg:last:border-r-0"
-            >
-              <div className="font-display text-[40px] uppercase leading-none text-black lg:text-[44px]">
-                {s.num}
+            <div key={s.lbl}>
+              <div className="font-display text-[40px] uppercase leading-none text-black lg:text-[48px]">
+                <Counter to={s.to} suffix={s.suffix} />
               </div>
               <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">
                 {s.lbl}
