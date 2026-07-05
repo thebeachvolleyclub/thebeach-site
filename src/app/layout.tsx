@@ -5,6 +5,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import ScrollProgress from "@/components/ScrollProgress";
 import MobileBookingBar from "@/components/MobileBookingBar";
+import DesktopStickies from "@/components/DesktopStickies";
 
 // Display: Acorn — the brand's bold athletic display face (self-hosted)
 const acorn = localFont({
@@ -52,6 +53,7 @@ export default function RootLayout({
         <ScrollProgress />
         {children}
         <MobileBookingBar />
+        <DesktopStickies />
       </body>
     </html>
   );
