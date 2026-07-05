@@ -29,10 +29,7 @@ const COURSES = [
       "Start: tisdagar 1 sep eller torsdagar 3 sep 2026",
     ],
     quote: null,
-    cta: {
-      label: "Läs mer & boka",
-      href: "/trana#kurser",
-    },
+    cta: { label: "Boka via MATCHi", href: "https://www.matchi.se/facilities/thebeach" },
   },
 ];
 
