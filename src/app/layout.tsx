@@ -25,6 +25,9 @@ const titillium = Titillium_Web({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thebeach.one"),
+  // Safari auto-links phone-like text (e.g. org.nr in the footer) before React
+  // hydrates, causing hydration mismatches on iOS. Explicit tel: links still work.
+  formatDetection: { telephone: false },
   title: "The Beach — Beachvolley & strandevent året runt",
   description:
     "Stockholms hem för beachvolley. 17 banor inomhus & utomhus i Huddinge. Spela, träna och fira — sommar året runt. Alla är välkomna.",
