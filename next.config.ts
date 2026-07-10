@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Standalone output for the Docker runtime image (see Dockerfile):
+  // `next build` emits .next/standalone/server.js with only the needed files.
+  output: "standalone",
 };
 
 export default nextConfig;
