@@ -73,8 +73,10 @@ export default function Newsletter() {
       // Brevo's serve endpoint doesn't send CORS headers, so the response is
       // opaque. Double opt-in means the confirmation mail is what actually
       // completes the signup, so an accepted POST is success enough.
-      await fetch(BREVO_ENDPOINT, { method: "POST", mode: "no-cors", body: fd });
-      setSent(true);
+      const res = await fetch(BREVO_ENDPOINT, { method: "POST", body: fd });
+      const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
+      if (data?.success) setSent(true);
+      else setErr(true);
     } catch {
       setErr(true);
     } finally {

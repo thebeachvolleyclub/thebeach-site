@@ -59,12 +59,14 @@ export default function DesktopStickies() {
       fd.append("OPT_IN", "1");
       fd.append("email_address_check", "");
       fd.append("locale", en ? "en" : "sv");
-      await fetch(BREVO_ENDPOINT, { method: "POST", mode: "no-cors", body: fd });
-      setSent(true);
-      setTimeout(dismiss, 3000);
+      const res = await fetch(BREVO_ENDPOINT, { method: "POST", body: fd });
+      const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
+      if (data?.success) {
+        setSent(true);
+        setTimeout(dismiss, 3000);
+      }
     } catch {
-      /* data sparas ändå i Brevo vid nätverksfel — visa tack */
-      setSent(true);
+      /* nätverksfel — låt användaren försöka igen */
     } finally {
       setBusy(false);
     }
