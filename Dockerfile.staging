@@ -1,0 +1,41 @@
+# thebeach-site STAGING WORKSHOP image (not the prod runtime — see Dockerfile).
+#
+# Staging is a live workshop: David & Simon run Claude Code inside this
+# container (via the shell MCP on staging.thebeach.one/mcp/<key>), editing the
+# repo checkout in the named volume `thebeach-site-staging_work`, served by
+# `next dev` (hot reload) on container :3000 -> host 127.0.0.1:3001.
+# Harmonizes with the devbox idiom on beachinfo-dev-ne (~/devstack/Dockerfile),
+# but WITHOUT sudo — this box is prod; the workshop user stays unprivileged.
+#
+# Build:  docker build -f Dockerfile.staging -t thebeach-site-workshop .
+# Run:    see run-workshop.sh (volumes, caps, deploy key, env).
+FROM ubuntu:22.04
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      curl wget git vim nano less ca-certificates gnupg \
+      python3 python3-venv build-essential \
+      iproute2 iputils-ping dnsutils jq unzip zip tmux htop ripgrep \
+      openssh-client locales procps \
+ && rm -rf /var/lib/apt/lists/* \
+ && locale-gen en_US.UTF-8
+
+# Node 20 (the site's runtime; also runs Claude Code).
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
+
+# Claude Code CLI, globally. Users authenticate it themselves on first run
+# (OAuth paste-back; credentials persist in the /home/dev volume).
+RUN npm install -g @anthropic-ai/claude-code --no-audit --no-fund
+
+# Unprivileged workshop user. NO sudo (prod box).
+RUN useradd -m -s /bin/bash dev \
+ && mkdir -p /work && chown dev:dev /work
+
+COPY workshop-entrypoint.sh /usr/local/bin/workshop-entrypoint.sh
+RUN chmod +x /usr/local/bin/workshop-entrypoint.sh
+
+ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+USER dev
+WORKDIR /work
+CMD ["/usr/local/bin/workshop-entrypoint.sh"]
