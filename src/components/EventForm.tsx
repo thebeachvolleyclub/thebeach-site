@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EVENT_PACKAGES } from "@/lib/packages";
+import { postForm } from "@/lib/postForm";
 
 const inputCls =
   "w-full border border-white/10 bg-white/[0.06] px-4 py-3.5 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-lime";
@@ -10,6 +11,8 @@ const labelCls =
 
 export default function EventForm() {
   const [sent, setSent] = useState(false);
+  const [err, setErr] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   return (
     <section id="event" className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
@@ -36,32 +39,35 @@ export default function EventForm() {
           </div>
         ) : (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              setSent(true);
+              setBusy(true); setErr(false);
+              const ok = await postForm(e.currentTarget, "event-startsida");
+              setBusy(false);
+              if (ok) setSent(true); else setErr(true);
             }}
             className="flex flex-col gap-3"
           >
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="lp-name" className={labelCls}>Namn</label>
-                <input id="lp-name" className={inputCls} type="text" placeholder="Ditt namn" required />
+                <input id="lp-name" name="namn" className={inputCls} type="text" placeholder="Ditt namn" required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="lp-email" className={labelCls}>E-post</label>
-                <input id="lp-email" className={inputCls} type="email" placeholder="din@epost.se" required />
+                <input id="lp-email" name="epost" className={inputCls} type="email" placeholder="din@epost.se" required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="lp-tel" className={labelCls}>Telefon</label>
-                <input id="lp-tel" className={inputCls} type="tel" placeholder="070-000 00 00" />
+                <input id="lp-tel" name="telefon" className={inputCls} type="tel" placeholder="070-000 00 00" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="lp-date" className={labelCls}>Önskat datum</label>
-                <input id="lp-date" className={`${inputCls} [color-scheme:dark]`} type="date" />
+                <input id="lp-date" name="datum" className={`${inputCls} [color-scheme:dark]`} type="date" />
               </div>
               <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <label htmlFor="lp-size" className={labelCls}>Antal personer (ungefär)</label>
-                <select id="lp-size" className={inputCls} defaultValue="">
+                <select id="lp-size" name="antal" className={inputCls} defaultValue="">
                   <option value="" disabled>
                     Välj storleksgrupp
                   </option>
@@ -84,6 +90,8 @@ export default function EventForm() {
                   >
                     <input
                       type="checkbox"
+                      name="intresse"
+                      value={p}
                       defaultChecked={i === 1}
                       className="h-[18px] w-[18px] shrink-0 accent-lime"
                     />
@@ -96,7 +104,7 @@ export default function EventForm() {
             <div className="flex flex-col gap-1.5">
               <label htmlFor="lp-msg" className={labelCls}>Övrig info (frivilligt)</label>
               <textarea
-                id="lp-msg"
+                id="lp-msg" name="meddelande"
                 className={`${inputCls} min-h-[100px] resize-y`}
                 placeholder="Berätta mer om eventet, eventuella önskemål, tidsbegränsningar etc."
               />
@@ -105,12 +113,18 @@ export default function EventForm() {
             <button
               type="submit"
               className="mt-2 w-full cursor-pointer bg-lime py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright"
+              disabled={busy}
             >
-              Skicka förfrågan →
+              {busy ? "Skickar…" : "Skicka förfrågan →"}
             </button>
+            {err ? (
+              <p className="text-center text-xs text-orange">
+                Något gick fel — försök igen eller mejla boka@thebeach.one
+              </p>
+            ) : null}
             <p className="mt-1 text-xs leading-relaxed text-white/25">
               Vi svarar inom 24 timmar. Skickar du hellre mail? Kontakta oss på
-              boka@thebeach.se
+              boka@thebeach.one
             </p>
           </form>
         )}

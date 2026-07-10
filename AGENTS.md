@@ -4,17 +4,17 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Deployment (redeploy ONLY when the user explicitly asks)
+# Deployment — self-hosted (NOT Vercel)
 
-⚠️ Auto-redeploy is PAUSED. Do **not** deploy or prompt for a token after making changes. Only redeploy when the user explicitly says to (e.g. "deploy now", "push it live").
+The site is hosted on The Beach's own infrastructure: a Node container
+(Node 20, `next start` on :3000) behind Apache. **Vercel is not used** — ignore
+any old Vercel / `klyv/the-beach` references.
 
-When the user does ask, redeploy to Vercel production:
+Flow (Henric owns the infra):
+- **dev** — `beach.dev.thebeach.one`, this container = the workbench.
+- Push to **`main`** → auto-deploys to **`staging.thebeach.one`** (prod-identical) for review.
+- Promote **staging → prod** via the control panel in The Beach Admin UI
+  (publish, restore staging, roll back, view diff/history).
+- **No agent pushes straight to prod.** Always `npm run build` before pushing.
 
-- Live URL: **https://the-beach-psi.vercel.app**
-- Vercel project: `klyv/the-beach` (already linked via `.vercel/project.json`).
-- Deploy command:
-  ```
-  npx vercel@latest deploy --prod --yes --scope klyv --token="<FRESH_TOKEN>"
-  ```
-- **Never store the token.** It is intentionally not saved anywhere. Ask the user for a fresh Vercel token at deploy time, run the deploy, then remind them they can revoke it at https://vercel.com/account/tokens.
-- Run `npm run build` first to confirm the change compiles before deploying.
+Repo: `Simonklyvare/thebeach-site` (moving into the GitHub org `thebeachvolleyclub`).

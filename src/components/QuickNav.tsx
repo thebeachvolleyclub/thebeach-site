@@ -1,5 +1,5 @@
 const ITEMS = [
-  { n: "01", title: "Spela", href: "https://www.matchi.se/facilities/thebeach", ext: true },
+  { n: "01", title: "Spela", href: "/boka", ext: false },
   { n: "02", title: "Träna", href: "#training", ext: false },
   { n: "03", title: "Boka Event", href: "#event", ext: false },
   { n: "04", title: "Tävla", href: "#calendar", ext: false },

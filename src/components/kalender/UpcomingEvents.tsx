@@ -1,35 +1,19 @@
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import { MONTHS, type Ev } from "@/lib/kalender";
 
 /**
- * Kommande händelser — link-first block.
- * Shows a few recurring event types as illustrative examples only;
- * explicitly tells visitors the live, always-updated schedule lives
- * on thebeach.se/kalender/. No hardcoded dated event list.
+ * Kommande händelser — sajtens egen, kompletta lista.
+ * Datakälla: src/lib/kalender.ts (uppdateras där, ingenting annat).
  */
 
-const EXAMPLES = [
-  {
-    type: "Träning",
-    label: "Träningsgrupper",
-    desc: "Återkommande pass — sommar (mån/ons) och höst (sön/mån/ons). Se aktuella tider på kalendern.",
-    badge: "Träning",
-    badgeCls: "bg-lime text-black",
-  },
-  {
-    type: "Tävling",
-    label: "Seriespel",
-    desc: "Torsdagskvällar, strukturerade matcher med garanterat spel varje omgång.",
-    badge: "Seriespel",
-    badgeCls: "bg-orange text-white",
-  },
-  {
-    type: "Turnering",
-    label: "Turneringar (SBT / Mixed / U19)",
-    desc: "The Beach arrangerar SBT 1-stjärniga turneringar, Mixed och juniorturneringar under säsong.",
-    badge: "Turnering",
-    badgeCls: "bg-mint text-black",
-  },
-];
+const BADGE: Record<Ev["type"], string> = {
+  tournament: "bg-orange text-white",
+  training: "bg-lime text-black",
+  event: "bg-mint text-black",
+  free: "bg-pink text-white",
+  closed: "bg-black/10 text-black/40",
+};
 
 export default function UpcomingEvents() {
   return (
@@ -37,10 +21,9 @@ export default function UpcomingEvents() {
       id="kommande"
       className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28"
     >
-      {/* Header + primary CTA */}
+      {/* Header */}
       <Reveal className="mb-10 flex flex-col gap-6 border-b border-black/10 pb-10 sm:flex-row sm:items-end sm:justify-between lg:mb-14 lg:pb-14">
         <div>
-          {/* eyebrow override: .eyebrow hard-codes lime — fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
             Kommande
           </p>
@@ -50,74 +33,57 @@ export default function UpcomingEvents() {
             på The Beach
           </h2>
         </div>
-        <div className="flex flex-col items-start gap-4 sm:items-end">
-          <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-            Den fullständiga och alltid uppdaterade kalendern finns på
-            thebeach.se — nedan ser du de återkommande aktivitetstyperna.
-          </p>
-          <a
-            href="https://thebeach.se/kalender/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black bg-black px-7 py-3 text-xs font-bold uppercase tracking-[0.08em] text-bone transition-colors duration-200 hover:bg-black/80"
-          >
-            Se hela kalendern <span aria-hidden="true">→</span>
-          </a>
-        </div>
+        <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
+          Turneringar, kurser, seriespel och event — hela schemat, alltid
+          uppdaterat. Bana bokar du via MATCHi.
+        </p>
       </Reveal>
 
-      {/* Illustrative event type rows */}
-      <div className="flex flex-col gap-0.5">
-        {EXAMPLES.map((ex, i) => (
-          <Reveal key={ex.type} delay={i * 0.07}>
-            <a
-              href="https://thebeach.se/kalender/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex cursor-pointer items-center gap-5 border border-black/10 bg-white p-5 transition-colors duration-200 hover:bg-lime/10 sm:gap-8 lg:px-7 lg:py-6"
-            >
-              {/* Badge */}
-              <span
-                className={`shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${ex.badgeCls}`}
-              >
-                {ex.badge}
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <div className="mb-0.5 font-display text-lg uppercase leading-tight tracking-[-0.01em] text-black">
-                  {ex.label}
+      {/* Full lista, månad för månad */}
+      <Reveal delay={0.05} className="mx-auto max-w-3xl">
+        {MONTHS.map((m) => (
+          <div key={m.month}>
+            <div className="mt-2 border-t border-black/10 pb-2.5 pt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-black/35 first:border-t-0 first:pt-0">
+              {m.month}
+            </div>
+            {m.events.map((e, i) => {
+              const rowCls = `flex items-start gap-4 border-b border-black/[0.07] py-4 ${e.slug ? "cursor-pointer transition-colors hover:bg-black/[0.02]" : ""}`;
+              const inner = (
+                <>
+                <div className="w-12 shrink-0 text-center">
+                  <div className="font-display text-[28px] uppercase leading-none text-black">
+                    {e.day}
+                  </div>
+                  <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-black/30">
+                    {e.wd}
+                  </div>
                 </div>
-                <div className="text-xs leading-relaxed text-black/45">
-                  {ex.desc}
+                <div className="flex-1">
+                  <div className="mb-1 font-display text-lg uppercase leading-tight tracking-[-0.01em] text-black">
+                    {e.title}
+                  </div>
+                  <div className="text-xs leading-relaxed text-black/45">{e.meta}</div>
                 </div>
-              </div>
-
-              <span
-                className="ml-auto shrink-0 text-lg text-black/30 transition-transform duration-200 group-hover:translate-x-1"
-                aria-hidden="true"
-              >
-                →
-              </span>
-            </a>
-          </Reveal>
+                <span
+                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${BADGE[e.type]}`}
+                >
+                  {e.badge}
+                </span>
+                {e.slug ? <span aria-hidden="true" className="mt-1.5 text-black/25">→</span> : null}
+                </>
+              );
+              return e.slug ? (
+                <Link key={`${m.month}-${i}`} href={`/kalender/${e.slug}`} className={rowCls}>
+                  {inner}
+                </Link>
+              ) : (
+                <div key={`${m.month}-${i}`} className={rowCls}>
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
         ))}
-      </div>
-
-      {/* Bottom CTA strip */}
-      <Reveal delay={0.25}>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border border-black/10 bg-white p-5 lg:px-7">
-          <p className="text-[13px] text-black/50">
-            Prenumerera på kalendern och missa aldrig ett event.
-          </p>
-          <a
-            href="https://thebeach.se/kalender/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cursor-pointer whitespace-nowrap border-b border-black pb-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black"
-          >
-            Se hela kalendern →
-          </a>
-        </div>
       </Reveal>
     </section>
   );

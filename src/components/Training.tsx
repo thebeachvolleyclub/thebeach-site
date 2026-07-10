@@ -60,9 +60,7 @@ export default function Training() {
         {/* CTA card */}
         <Reveal delay={0.3} className="h-full">
           <a
-            href="https://www.matchi.se/facilities/thebeach"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/trana"
             className="flex h-full cursor-pointer flex-col justify-between bg-orange p-7 lg:p-10"
           >
             <div>

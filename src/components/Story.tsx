@@ -1,9 +1,11 @@
 import Reveal from "./Reveal";
+import Counter from "./Counter";
 
-const STATS = [
-  { num: "OS ✦", lbl: "Guld Paris 2024" },
-  { num: "VM ✦", lbl: "Guld Adelaide 2025" },
-  { num: "800", lbl: "Spelare / vecka" },
+const STATS: { to: number; suffix?: string; lbl: string }[] = [
+  { to: 800, lbl: "Spelare / vecka" },
+  { to: 17, lbl: "Banor inne & ute" },
+  { to: 3000, suffix: " m²", lbl: "Sand" },
+  { to: 20, lbl: "År i sanden" },
 ];
 
 /** Lime credibility section — "Basecamp för världens bästa". */
@@ -24,24 +26,32 @@ export default function Story() {
         </h2>
 
         <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          The Beach är Stockholms beachvolleycenter — och nationell träningsbas
-          för det svenska landslaget, OS-guldmedaljörerna Åhman/Hellvig och
-          VM-finalisterna Hölting Nilsson/Andersson.
+          The Beach är hemmaplan för svensk beachvolley när det gäller som mest.
+          Här tränar Åhman/Hellvig — OS-guld och VM-guld. Och VM-guldet avgjordes
+          i en helsvensk final: Åhman/Hellvig mot Hölting Nilsson/Andersson — två
+          svenska par från vår sand som spelade om titeln med varandra. Så galet
+          är det.
         </p>
         <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          Sedan 2006 har vi byggt en anläggning och ett community som ingen
-          annan kan matcha. Med 10 inomhusbanor och 7 utomhusbanor är vi
-          Stockholms självklara beachhub.
+          Hos oss har dessutom hela den svenska landslagsverksamheten sitt hem —
+          samtliga förbundskaptener och landslag, junior som senior.
+        </p>
+        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
+          Sedan 2006 har vi byggt en anläggning och ett community som är öppet
+          för alla. Oavsett om du satsar mot stjärnorna eller spelar för skojs
+          skull är du lika välkommen i sanden. 10 inomhusbanor och 7 utomhus —
+          plats för både världstoppen och nybörjaren.
         </p>
 
-        <div className="my-8 flex flex-col border-t border-black/15 lg:my-12 lg:flex-row">
+        <div className="mt-8 flex flex-wrap gap-2">
+          <span className="bg-black px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-lime">🥇 OS-guld · Paris 2024</span>
+          <span className="bg-black px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-lime">🥇 VM-guld · Adelaide 2025</span>
+        </div>
+        <div className="my-8 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-black/15 pt-8 sm:grid-cols-4 lg:my-10">
           {STATS.map((s) => (
-            <div
-              key={s.lbl}
-              className="border-b border-black/15 py-[18px] last:border-b-0 lg:mr-8 lg:border-b-0 lg:border-r lg:border-black/15 lg:py-8 lg:pr-8 lg:last:mr-0 lg:last:border-r-0"
-            >
-              <div className="font-display text-[40px] uppercase leading-none text-black lg:text-[44px]">
-                {s.num}
+            <div key={s.lbl}>
+              <div className="font-display text-[40px] uppercase leading-none text-black lg:text-[48px]">
+                <Counter to={s.to} suffix={s.suffix} />
               </div>
               <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">
                 {s.lbl}
@@ -65,8 +75,8 @@ export default function Story() {
           <div className="relative aspect-[4/3] overflow-hidden bg-black lg:aspect-[3/4]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/media/basecamp.jpg"
-              alt="Åhman & Hellvig — OS-guld Paris 2024 — tränar på The Beach"
+              src="/media/landslag-fotosession.webp"
+              alt="Åhman/Hellvig och Andersson/Hölting Nilsson tränar på The Beach — helsvensk VM-final 2025"
               className="h-full w-full object-cover"
               loading="lazy"
             />
@@ -86,7 +96,7 @@ export default function Story() {
               className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80 mix-blend-screen"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-5 pt-8 text-xs font-semibold text-white/90">
-              Åhman &amp; Hellvig · OS-guld Paris 2024 · Tränar på The Beach
+              Åhman/Hellvig &amp; Andersson/Hölting Nilsson tränar på The Beach · helsvensk VM-final 2025
             </div>
           </div>
           <div className="absolute -right-3 -top-3 flex h-24 w-24 items-center justify-center bg-black text-center font-display text-[11px] uppercase leading-tight tracking-[0.08em] text-lime">

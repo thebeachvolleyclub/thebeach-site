@@ -16,10 +16,10 @@ const SCHEDULE: Row[] = [
   { day: "Söndag", time: "17:00–18:30 / 18:30–20:00", price: "4 295 kr" },
 ];
 
-const LEVELS = [
-  { range: "1–3", label: "Nybörjare" },
-  { range: "4–6", label: "Mellannivå" },
-  { range: "7–8", label: "Avancerad" },
+const FAKTA = [
+  { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
+  { v: "23 aug", d: "grupperna publiceras senast" },
+  { v: "−20 %", d: "för dig under 26 år" },
 ];
 
 export default function TrainingGroups() {
@@ -36,15 +36,18 @@ export default function TrainingGroups() {
             Träningsgrupper
           </h2>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-bone/45">
-            8 nivåer — din placering bestäms via bedömning, du väljer inte grupp
-            själv. Höstsäsongen 2026: 15 pass, start 30 aug–3 sep.
+            För dig som gått fortsättningskursen eller har motsvarande vana.
+            Huvudtränare Mattias Magnusson och tränarteamet sätter ihop jämna
+            grupper — placeringen utgår främst från din nivå, och dina
+            önskemål om dagar, tider och kompisar vägs in. Start: söndagar
+            30 aug, måndagar 31 aug och onsdagar vecka 36.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:items-end">
-          {LEVELS.map((l) => (
-            <div key={l.range} className="flex items-center gap-3">
-              <span className="font-display text-xl text-lime">{l.range}</span>
-              <span className="text-sm text-bone/50">{l.label}</span>
+          {FAKTA.map((f) => (
+            <div key={f.v} className="flex items-center gap-3">
+              <span className="font-display text-xl text-lime">{f.v}</span>
+              <span className="text-sm text-bone/50">{f.d}</span>
             </div>
           ))}
         </div>
@@ -118,7 +121,7 @@ export default function TrainingGroups() {
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
               Öppnar <strong className="text-bone">1 augusti kl 20:00</strong>.
-              Nivåplacering (via bedömning) meddelas senast 23 augusti.
+              Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande — läs <a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">villkor &amp; avanmälan</a>. Redan med i en grupp och vill byta? Gör en <a href="/andringsanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">ändringsanmälan</a>.
             </p>
           </div>
           <div className="flex-1">
@@ -127,10 +130,10 @@ export default function TrainingGroups() {
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
               <a
-                href="mailto:traning@thebeach.se"
+                href="mailto:traning@thebeach.one"
                 className="text-bone underline underline-offset-4 transition-colors hover:text-lime"
               >
-                traning@thebeach.se
+                traning@thebeach.one
               </a>
             </p>
           </div>
@@ -140,12 +143,10 @@ export default function TrainingGroups() {
       {/* CTA */}
       <Reveal delay={0.15} className="mt-10">
         <a
-          href="https://www.matchi.se/facilities/thebeach"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#nyhetsbrev"
           className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
         >
-          Anmäl dig via MATCHi <span aria-hidden="true">→</span>
+          Anmälan öppnar 1 aug 20:00 — här på hemsidan <span aria-hidden="true">→</span>
         </a>
       </Reveal>
     </section>

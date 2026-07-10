@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion, useReducedMotion, type PanInfo } from "motion/react";
+import { useRef, useState } from "react";
 
 export type EventPkg = {
   img: string;
@@ -11,6 +10,7 @@ export type EventPkg = {
   desc: string;
   features: string[];
   featured?: boolean;
+  imgPos?: string;
 };
 
 /* ---- shared card (identical style to the desktop grid) -------------- */
@@ -26,6 +26,7 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
         src={pkg.img}
         alt={pkg.name}
         loading="lazy"
+        style={{ objectPosition: pkg.imgPos ?? "center" }}
         className="h-28 w-full object-cover lg:h-44"
       />
       <div className="flex flex-1 flex-col p-5 lg:p-11">
@@ -71,81 +72,59 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
   );
 }
 
-/* ---- carousel ------------------------------------------------------- */
+/* ---- carousel --------------------------------------------------------
+ * MOBIL: native scroll-snap i stället för JS-rotor. Känns som appen,
+ * inga halvklippta grannkort, funkar utan JavaScript. Dots synkas via
+ * onScroll. DESKTOP: oförändrad statisk 3-up-grid.
+ * -------------------------------------------------------------------- */
 export default function EventCarousel({ packages }: { packages: EventPkg[] }) {
-  const n = packages.length;
+  const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const reduce = useReducedMotion();
 
-  const next = () => setActive((a) => (a + 1) % n);
-  const prev = () => setActive((a) => (a - 1 + n) % n);
-
-  // signed shortest distance from active → slot (-1 left, 0 centre, 1 right)
-  const slot = (i: number) => {
-    let d = (i - active) % n;
-    if (d < 0) d += n;
-    if (d > n / 2) d -= n;
-    return d;
+  const onScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const slide = el.firstElementChild as HTMLElement | null;
+    if (!slide) return;
+    setActive(Math.round(el.scrollLeft / slide.offsetWidth));
   };
 
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    const { offset, velocity } = info;
-    if (offset.x < -50 || velocity.x < -400) next();
-    else if (offset.x > 50 || velocity.x > 400) prev();
+  const goTo = (i: number) => {
+    const el = trackRef.current;
+    const slide = el?.children[i] as HTMLElement | undefined;
+    if (el && slide)
+      el.scrollTo({ left: slide.offsetLeft - el.offsetLeft, behavior: "smooth" });
   };
-
-  const spring = reduce
-    ? { duration: 0.2 }
-    : { type: "spring" as const, stiffness: 320, damping: 36 };
 
   return (
     <>
-      {/* MOBILE — centred infinite rotor */}
-      <div className="overflow-hidden lg:hidden">
-        <motion.div
-          className="relative grid select-none pt-3"
-          drag="x"
-          dragSnapToOrigin
-          dragElastic={0.16}
-          onDragEnd={onDragEnd}
-          style={{ touchAction: "pan-y" }}
+      {/* MOBILE — native scroll-snap with peek */}
+      <div className="lg:hidden">
+        <div
+          ref={trackRef}
+          onScroll={onScroll}
+          className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 pt-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollPaddingInline: "1.25rem" }}
         >
-          {packages.map((pkg, i) => {
-            const p = slot(i);
-            const isCenter = p === 0;
-            return (
-              <motion.div
-                key={pkg.name}
-                className={`col-start-1 row-start-1 w-[82%] justify-self-center ${
-                  isCenter ? "" : "cursor-pointer"
-                }`}
-                animate={{
-                  x: `${p * 88}%`,
-                  scale: isCenter ? 1 : 0.86,
-                  opacity: isCenter ? 1 : 0.45,
-                  zIndex: isCenter ? 30 : 10,
-                }}
-                transition={spring}
-                onClick={() => {
-                  if (p === 1) next();
-                  else if (p === -1) prev();
-                }}
-                aria-hidden={!isCenter}
-                inert={!isCenter || undefined}
-              >
-                <EventCard pkg={pkg} />
-              </motion.div>
-            );
-          })}
-        </motion.div>
+          {packages.map((pkg) => (
+            <div
+              key={pkg.name}
+              className="w-[85%] shrink-0 snap-start"
+            >
+              <EventCard pkg={pkg} />
+            </div>
+          ))}
+          {/* liten svans så sista kortet kan snappa klart */}
+          <div aria-hidden className="w-[10%] shrink-0" />
+        </div>
 
         {/* dots — 44px touch targets, dark on the white section */}
-        <div className="mt-6 flex items-center justify-center gap-1">
+        <div className="mt-4 flex items-center justify-center gap-1">
           {packages.map((pkg, i) => (
             <button
               key={pkg.name}
               type="button"
-              onClick={() => setActive(i)}
+              onClick={() => goTo(i)}
               aria-label={`Visa ${pkg.name}`}
               aria-current={active === i}
               className="flex h-11 w-11 cursor-pointer items-center justify-center"

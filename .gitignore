@@ -42,3 +42,7 @@ next-env.d.ts
 
 # top-level brand sketch only — do NOT ignore public/brand/ (site assets live there)
 /brand/
+
+# runtime logs
+dev.log
+prod.log

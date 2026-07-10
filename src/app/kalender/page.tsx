@@ -8,8 +8,8 @@ import EventTypes from "@/components/kalender/EventTypes";
 import SeasonRhythm from "@/components/kalender/SeasonRhythm";
 import Tournaments from "@/components/kalender/Tournaments";
 import CourtBooking from "@/components/kalender/CourtBooking";
-import SubscribeCalendar from "@/components/kalender/SubscribeCalendar";
 import KalenderCTA from "@/components/kalender/KalenderCTA";
+import Newsletter from "@/components/Newsletter";
 
 export const metadata: Metadata = {
   title: "Kalender — The Beach | Schema & händelser i Stockholm",
@@ -48,7 +48,7 @@ export default function KalenderPage() {
         <SeasonRhythm />
         <Tournaments />
         <CourtBooking />
-        <SubscribeCalendar />
+        <Newsletter />
         <KalenderCTA />
       </main>
       <Footer />

@@ -2,6 +2,7 @@
 
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef, type ReactNode } from "react";
+import useIsMobile from "./useIsMobile";
 
 /**
  * Headline mask reveal — text slides up from behind a clipped edge.
@@ -10,6 +11,8 @@ import { useRef, type ReactNode } from "react";
  * NOTE: the in-view observer is attached to the STABLE outer wrapper, not the
  * translated inner span — observing the transformed element makes the viewport
  * detector mis-read its position and the reveal can get stuck off-screen.
+ *
+ * MOBILE: tidigare trigger + snabbare glid, se kommentar i Reveal.tsx.
  */
 export default function MaskReveal({
   children,
@@ -21,8 +24,12 @@ export default function MaskReveal({
   delay?: number;
 }) {
   const reduce = useReducedMotion();
+  const mobile = useIsMobile();
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -12% 0px" });
+  const inView = useInView(ref, {
+    once: true,
+    margin: mobile ? "0px 0px 15% 0px" : "0px 0px -12% 0px",
+  });
 
   if (reduce) return <span className={className}>{children}</span>;
 
@@ -36,7 +43,11 @@ export default function MaskReveal({
         className="block"
         initial={{ y: "118%" }}
         animate={inView ? { y: "0%" } : { y: "118%" }}
-        transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1], delay }}
+        transition={{
+          duration: mobile ? 0.5 : 0.95,
+          ease: [0.22, 1, 0.36, 1],
+          delay: mobile ? Math.min(delay, 0.1) : delay,
+        }}
       >
         {children}
       </motion.span>

@@ -88,9 +88,7 @@ export default function KalenderHero() {
           {/* CTAs */}
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a
-              href="https://thebeach.se/kalender/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#kommande"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               Se hela kalendern <span aria-hidden="true">→</span>

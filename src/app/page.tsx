@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Ticker from "@/components/Ticker";
@@ -9,6 +10,14 @@ import EventForm from "@/components/EventForm";
 import Training from "@/components/Training";
 import AppSection from "@/components/AppSection";
 import Footer from "@/components/Footer";
+import Newsletter from "@/components/Newsletter";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+    languages: { sv: "/", en: "/en", "x-default": "/" },
+  },
+};
 
 export default function Home() {
   return (
@@ -24,6 +33,7 @@ export default function Home() {
         <EventForm />
         <Training />
         <AppSection />
+        <Newsletter />
       </main>
       <Footer />
     </>

@@ -4,7 +4,8 @@ import EventCarousel, { type EventPkg } from "./EventCarousel";
 
 const PACKAGES: EventPkg[] = [
   {
-    img: "/media/event-laspalmas.jpg",
+    img: "/media/event-laspalmas.webp",
+    imgPos: "center 80%",
     tag: "Enkelt & socialt",
     name: "Las Palmas",
     price: "745 kr",
@@ -12,7 +13,7 @@ const PACKAGES: EventPkg[] = [
     features: ["1,5 h beachvolleyturnering med instruktör", "Tapas — ost & chark", "1 dryckesenhet (öl, vin eller alkoholfritt)", "Pris till King & Queen of The Beach", "Rekommenderat: 10–50 pers"],
   },
   {
-    img: "/media/event-algarve.jpg",
+    img: "/media/event-algarve.webp",
     tag: "Mest bokad",
     name: "Algarve",
     price: "945 kr",
@@ -21,7 +22,7 @@ const PACKAGES: EventPkg[] = [
     featured: true,
   },
   {
-    img: "/media/event-miami.jpg",
+    img: "/media/event-miami.webp",
     tag: "Helkväll",
     name: "Miami",
     price: "1 195 kr",
@@ -86,7 +87,8 @@ export default function Events() {
           href="/events"
           className="shrink-0 cursor-pointer bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright"
         >
-          Be om offert på skräddarsytt event →
+          <span className="sm:hidden">Be om offert →</span>
+          <span className="hidden sm:inline">Be om offert på skräddarsytt event →</span>
         </Link>
       </div>
     </section>

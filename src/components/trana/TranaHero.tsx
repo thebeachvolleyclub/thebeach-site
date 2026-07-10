@@ -89,12 +89,10 @@ export default function TranaHero() {
           {/* CTAs */}
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#traningsgrupper"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Anmäl dig via MATCHi <span aria-hidden="true">→</span>
+              Se träningsgrupperna <span aria-hidden="true">→</span>
             </a>
             <Link
               href="/events"

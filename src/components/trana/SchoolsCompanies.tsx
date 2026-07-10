@@ -76,12 +76,12 @@ export default function SchoolsCompanies() {
             ))}
           </ul>
 
-          <a
-            href="mailto:boka@thebeach.se"
+          <Link
+            href="/skola"
             className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
           >
-            Boka skola: boka@thebeach.se <span aria-hidden="true">→</span>
-          </a>
+            Läs mer & boka skolbesök <span aria-hidden="true">→</span>
+          </Link>
         </Reveal>
 
         {/* Företag */}

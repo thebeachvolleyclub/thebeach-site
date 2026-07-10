@@ -1,40 +1,7 @@
+import Link from "next/link";
 import Reveal from "./Reveal";
+import { MONTHS, type Ev } from "@/lib/kalender";
 
-type Ev = {
-  day: string;
-  wd: string;
-  title: string;
-  meta: string;
-  badge: string;
-  type: "tournament" | "training" | "event" | "free" | "closed";
-};
-
-const MONTHS: { month: string; events: Ev[] }[] = [
-  {
-    month: "Juni 2026",
-    events: [
-      { day: "17", wd: "Ons", title: "Seriespel Sommar 2026", meta: "Pågår hela sommaren · Boka via MATCHi", badge: "Tävling", type: "tournament" },
-      { day: "19", wd: "Fre", title: "Stängt — Midsommar", meta: "Midsommarafton · Anläggningen håller stängt", badge: "Stängt", type: "closed" },
-      { day: "27", wd: "Lör", title: "SBT1 — Stockholm Beach Tour", meta: "Rankingtävling · Anmälan stängd", badge: "SBT", type: "tournament" },
-      { day: "28", wd: "Sön", title: "Prova på beachvolley — Gratis", meta: "15:00–16:30 · Öppet för alla nybörjare · Begränsat antal platser", badge: "Gratis", type: "free" },
-    ],
-  },
-  {
-    month: "Juli 2026",
-    events: [
-      { day: "4", wd: "Lör", title: "Mixed Tournament", meta: "Intern tävling för alla nivåer · Anmälan öppnar snart", badge: "Mixed", type: "event" },
-      { day: "11", wd: "Lör", title: "SBT1 — Stockholm Beach Tour", meta: "Rankingtävling · Anmälan öppnar 1 juli", badge: "SBT", type: "tournament" },
-      { day: "25", wd: "Lör", title: "Mixed Tournament", meta: "Intern tävling · Anmälan öppnar 11 juli", badge: "Mixed", type: "event" },
-    ],
-  },
-  {
-    month: "Augusti 2026",
-    events: [
-      { day: "1", wd: "Lör", title: "SBT1 + Träningsgrupper öppnar", meta: "Rankingtävling · Anmälan till träningsgrupper 20:00", badge: "SBT + Träning", type: "tournament" },
-      { day: "8", wd: "Lör", title: "SBT1 — Stockholm Beach Tour", meta: "Rankingtävling · Anmälan öppnar 25 juli", badge: "SBT", type: "tournament" },
-    ],
-  },
-];
 
 const BADGE: Record<Ev["type"], string> = {
   tournament: "bg-orange text-white",
@@ -65,11 +32,9 @@ export default function Calendar() {
               {m.month}
             </div>
             {m.events.map((e, i) => (
-              <a
+              <Link
                 key={`${m.month}-${i}`}
-                href="https://thebeach.se/kalender/"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/kalender#kommande"
                 className="flex cursor-pointer items-start gap-4 border-b border-black/[0.07] py-4 transition-colors hover:bg-black/[0.02]"
               >
                 <div className="w-12 shrink-0 text-center">
@@ -91,7 +56,7 @@ export default function Calendar() {
                 >
                   {e.badge}
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         ))}
@@ -100,14 +65,12 @@ export default function Calendar() {
           <p className="text-[13px] text-black/50">
             Missa aldrig ett event — prenumerera på kalendern
           </p>
-          <a
-            href="https://thebeach.se/kalender/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/kalender#kommande"
             className="cursor-pointer whitespace-nowrap border-b border-black pb-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black"
           >
             Se hela kalendern →
-          </a>
+          </Link>
         </div>
       </Reveal>
     </section>

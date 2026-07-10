@@ -6,16 +6,27 @@ import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { Menu, Close } from "./icons";
 import Logo from "./Logo";
+import LangSwitch from "./LangSwitch";
 
-const LINKS = [
-  { label: "Boka bana", href: "https://www.matchi.se/facilities/thebeach", ext: true },
+const LINKS_SV = [
+  { label: "Boka bana", href: "/boka", ext: false },
   { label: "Boka event", href: "/events", ext: false },
   { label: "Träna", href: "/trana", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },
   { label: "Om oss", href: "/om-oss", ext: false },
 ];
 
-export default function Navbar() {
+const LINKS_EN = [
+  { label: "Book a court", href: "/en/book", ext: false },
+  { label: "Book an event", href: "/en/events", ext: false },
+  { label: "Schools", href: "/en/school", ext: false },
+  { label: "About", href: "/en/about", ext: false },
+];
+
+export default function Navbar({ locale = "sv" }: { locale?: "sv" | "en" }) {
+  const LINKS = locale === "en" ? LINKS_EN : LINKS_SV;
+  const ctaHref = locale === "en" ? "/en/events#request" : "/events";
+  const ctaLabel = locale === "en" ? "Book event" : "Boka event";
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -43,7 +54,7 @@ export default function Navbar() {
       }`}
     >
       <div className="flex items-center justify-between px-5 sm:px-8 lg:px-14">
-        <Link href="/" aria-label="The Beach — startsidan" className="flex items-center">
+        <Link href={locale === "en" ? "/en" : "/"} aria-label="The Beach — startsidan" className="flex items-center">
           <Logo variant="green" className="h-[26px] w-auto lg:h-[30px]" />
         </Link>
 
@@ -81,11 +92,12 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-3">
+          <LangSwitch />
           <Link
-            href="/events"
+            href={ctaHref}
             className="hidden cursor-pointer bg-lime px-5 py-2.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright sm:block lg:px-[22px]"
           >
-            Boka event
+            {ctaLabel}
           </Link>
           <button
             type="button"
@@ -141,12 +153,13 @@ export default function Navbar() {
               })}
             </ul>
             <Link
-              href="/events"
+              href={ctaHref}
               onClick={() => setOpen(false)}
               className="mt-3 block cursor-pointer bg-lime py-4 text-center text-sm font-bold uppercase tracking-[0.08em] text-black"
             >
-              Boka event
+              {ctaLabel}
             </Link>
+            <LangSwitch variant="row" onNavigate={() => setOpen(false)} />
           </motion.div>
         )}
       </AnimatePresence>
