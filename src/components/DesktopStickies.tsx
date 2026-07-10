@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "./icons";
 
-const BREVO_ENDPOINT =
-  "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ";
 
 /**
  * Desktop-only stickies (mobil har MobileBookingBar):
@@ -59,9 +57,9 @@ export default function DesktopStickies() {
       fd.append("OPT_IN", "1");
       fd.append("email_address_check", "");
       fd.append("locale", en ? "en" : "sv");
-      const res = await fetch(BREVO_ENDPOINT, { method: "POST", body: fd });
-      const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
-      if (data?.success) {
+      const res = await fetch("/api/newsletter", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (data?.ok) {
         setSent(true);
         setTimeout(dismiss, 3000);
       }

@@ -6,8 +6,6 @@ import Reveal from "./Reveal";
 // Brevo double-opt-in list "Nyhetsbrev – webb & IG 2026". Posts straight to
 // Brevo (no backend), so the visitor never leaves the page. Confirmation mail
 // is sent by Brevo automatically.
-const BREVO_ENDPOINT =
-  "https://407ccf77.sibforms.com/serve/MUIFAFEOMibvaZ5ur4jcCa6kQeEtwIe3YnMA62Sgo4YlTJwJ28HlgGz4x16Tlb2YRcy1yEqhvpeM0zrIWRJ5HFOsJeiWoMOFK3oeQSbZl5cGH9xkcyKUq95BKScNgnPwAjLBw9uSiX71UOkhHF-1bQf34QMcicuB7yhbYg3GZ8D1-f35qwN8nDayK8Si5Tr2uFAy_d-w3hnLMqzJ";
 
 // Kort landskodslista — nordiskt först, sen några vanliga. Default +46.
 const COUNTRY_CODES = [
@@ -73,9 +71,9 @@ export default function Newsletter() {
       // Brevo's serve endpoint doesn't send CORS headers, so the response is
       // opaque. Double opt-in means the confirmation mail is what actually
       // completes the signup, so an accepted POST is success enough.
-      const res = await fetch(BREVO_ENDPOINT, { method: "POST", body: fd });
-      const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
-      if (data?.success) setSent(true);
+      const res = await fetch("/api/newsletter", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (data?.ok) setSent(true);
       else setErr(true);
     } catch {
       setErr(true);
