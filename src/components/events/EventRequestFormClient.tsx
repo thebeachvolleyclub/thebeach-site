@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { EVENT_PACKAGES } from "@/lib/packages";
+import { postForm } from "@/lib/postForm";
 
 // Inputs retreated for lime background: dark-on-light tokens
 const inputCls =
@@ -11,6 +12,8 @@ const labelCls =
 
 export default function EventRequestFormClient() {
   const [sent, setSent] = useState(false);
+  const [err, setErr] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   if (sent) {
     return (
@@ -25,9 +28,12 @@ export default function EventRequestFormClient() {
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        setSent(true);
+        setBusy(true); setErr(false);
+        const ok = await postForm(e.currentTarget, "event-sida");
+        setBusy(false);
+        if (ok) setSent(true); else setErr(true);
       }}
       className="flex flex-col gap-3"
     >
@@ -38,6 +44,7 @@ export default function EventRequestFormClient() {
           </label>
           <input
             id="ev-name"
+            name="namn"
             className={inputCls}
             type="text"
             placeholder="Ditt namn"
@@ -50,6 +57,7 @@ export default function EventRequestFormClient() {
           </label>
           <input
             id="ev-email"
+            name="epost"
             className={inputCls}
             type="email"
             placeholder="din@epost.se"
@@ -62,6 +70,7 @@ export default function EventRequestFormClient() {
           </label>
           <input
             id="ev-tel"
+            name="telefon"
             className={inputCls}
             type="tel"
             placeholder="070-000 00 00"
@@ -73,6 +82,7 @@ export default function EventRequestFormClient() {
           </label>
           <input
             id="ev-date"
+            name="datum"
             className={`${inputCls} [color-scheme:light]`}
             type="date"
           />
@@ -81,7 +91,7 @@ export default function EventRequestFormClient() {
           <label htmlFor="ev-size" className={labelCls}>
             Antal personer (ungefär)
           </label>
-          <select id="ev-size" className={inputCls} defaultValue="">
+          <select id="ev-size" name="antal" className={inputCls} defaultValue="">
             <option value="" disabled>
               Välj storleksgrupp
             </option>
@@ -104,6 +114,8 @@ export default function EventRequestFormClient() {
             >
               <input
                 type="checkbox"
+                name="intresse"
+                value={p}
                 defaultChecked={i === 1}
                 className="h-[18px] w-[18px] shrink-0 accent-black"
               />
@@ -118,7 +130,7 @@ export default function EventRequestFormClient() {
           Övrig info (frivilligt)
         </label>
         <textarea
-          id="ev-msg"
+          id="ev-msg" name="meddelande"
           className={`${inputCls} min-h-[100px] resize-y`}
           placeholder="Berätta mer om eventet, önskemål, tidsbegränsningar, om ni vill köra kväll eller dagtid etc."
         />
@@ -127,16 +139,22 @@ export default function EventRequestFormClient() {
       <button
         type="submit"
         className="mt-2 w-full cursor-pointer bg-black py-4 text-[13px] font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-panel"
+        disabled={busy}
       >
-        Skicka förfrågan →
+        {busy ? "Skickar…" : "Skicka förfrågan →"}
       </button>
+      {err ? (
+        <p className="text-center text-xs text-orange">
+          Något gick fel — försök igen eller mejla boka@thebeach.one
+        </p>
+      ) : null}
       <p className="mt-1 text-xs leading-relaxed text-black/40">
         Vi svarar inom 24 timmar. Skickar du hellre mail? Kontakta oss på{" "}
         <a
-          href="mailto:boka@thebeach.se"
+          href="mailto:boka@thebeach.one"
           className="underline hover:text-black/70"
         >
-          boka@thebeach.se
+          boka@thebeach.one
         </a>
       </p>
     </form>

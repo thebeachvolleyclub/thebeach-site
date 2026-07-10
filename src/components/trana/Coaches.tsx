@@ -1,18 +1,5 @@
 import Reveal from "@/components/Reveal";
 
-const COACHES = [
-  {
-    name: "Mattias Magnusson",
-    role: "Sportchef & medgrundare",
-    bio: "Förbundskapten för det svenska damlandslaget. Utsedd till \"Coach of the Year\" av Svenska Volleybollförbundet.",
-  },
-  {
-    name: "Rasmus Jonsson",
-    role: "Landslags­coach",
-    bio: "Coach för det svenska herrlandslaget. Utbildar även andra tränare internt på The Beach.",
-  },
-];
-
 export default function Coaches() {
   return (
     <section
@@ -51,63 +38,41 @@ export default function Coaches() {
           </p>
         </Reveal>
 
-        {/* Coach cards */}
-        <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
-          {COACHES.map((coach, i) => (
-            <Reveal
-              key={coach.name}
-              delay={i * 0.08}
-              className="flex flex-col border border-line p-7 lg:p-10"
-            >
-              {/* Image placeholder: coach.webp (only one image available) */}
-              {i === 0 && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/media/coach.webp"
-                  alt={`Porträtt av ${coach.name}`}
-                  loading="lazy"
-                  className="mb-6 h-48 w-full object-cover object-top lg:h-64"
-                />
-              )}
-              {i === 1 && (
-                /* FLAG: no second coach photo in /public/media — brand-color placeholder */
-                <div
-                  className="mb-6 flex h-48 w-full items-center justify-center bg-panel lg:h-64"
-                  aria-hidden="true"
-                >
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-line"
-                  >
-                    <circle cx="12" cy="8" r="4" />
-                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                  </svg>
-                </div>
-              )}
+        {/* Feature: Mattias Magnusson */}
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-14">
+          <Reveal>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/media/coach.webp"
+              alt="Mattias Magnusson med Tina och Sanna Thurin på The Beach"
+              loading="lazy"
+              className="aspect-[4/3] w-full object-cover object-top"
+            />
+            <p className="mt-3 text-[12px] leading-relaxed text-bone/40">
+              På bilden: Mattias med Tina &amp; Sanna Thurin — sexfaldiga
+              SM-vinnare och tränare hos oss.
+            </p>
+          </Reveal>
 
-              <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40">
-                {coach.role}
-              </span>
-              <h3 className="mb-3 font-display text-2xl uppercase leading-none text-bone lg:text-3xl">
-                {coach.name}
-              </h3>
-              <p className="flex-1 text-sm leading-relaxed text-bone/55">
-                {coach.bio}
-              </p>
-            </Reveal>
-          ))}
+          <Reveal delay={0.08} className="border border-line p-7 lg:p-10">
+            <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40">
+              Sportchef &amp; medgrundare
+            </span>
+            <h3 className="mb-4 font-display text-3xl uppercase leading-none text-bone lg:text-4xl">
+              Mattias Magnusson
+            </h3>
+            <p className="text-[15px] leading-relaxed text-bone/60">
+              Förbundskapten för det svenska damlandslaget och utsedd till
+              &ldquo;Coach of the Year&rdquo; av Svenska Volleybollförbundet.
+              Här leder han tränarstaben — spelare och coacher som lever och
+              andas beachvolley på elitnivå.
+            </p>
+          </Reveal>
         </div>
 
         {/* Coach culture note */}
         <Reveal delay={0.16}>
-          <div className="mt-0.5 flex items-center gap-4 border border-line bg-panel p-6 lg:p-8">
+          <div className="mt-10 flex items-center gap-4 border border-line bg-panel p-6 lg:mt-14 lg:p-8">
             <span className="shrink-0 text-2xl text-lime" aria-hidden="true">
               ↗
             </span>

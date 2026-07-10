@@ -79,18 +79,16 @@ export default function Tournaments() {
               </span>
             </div>
             <h3 className="mb-3 font-display text-2xl uppercase leading-[0.95] text-bone lg:text-3xl">
-              Torsdagskvällar
+              Sommarsäsong
             </h3>
             <p className="mb-5 max-w-lg text-[13px] leading-relaxed text-bone/50 lg:text-sm">
-              Seriespelet körs som återkommande torsdagskvällar under säsong —
+              Seriespelet körs under sommarsäsongen —
               strukturerade omgångar med garanterat spel varje kväll. Du spelar
               mot likvärdiga motståndare och följer tabellen från vecka till
               vecka.
             </p>
             <a
-              href="https://thebeach.se/kalender/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#kommande"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
             >
               Se aktuella omgångar →

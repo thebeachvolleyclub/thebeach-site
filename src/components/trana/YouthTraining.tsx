@@ -86,10 +86,10 @@ export default function YouthTraining() {
                 </span>
                 Kontakt: Måns Björn —{" "}
                 <a
-                  href="mailto:mans@08beach.com"
+                  href="mailto:mans@thebeach.one"
                   className="underline underline-offset-4 transition-colors hover:text-black/80"
                 >
-                  mans@08beach.com
+                  mans@thebeach.one
                 </a>
               </li>
             </ul>

@@ -10,8 +10,8 @@ const PILLARS = [
     title: "Spela",
     desc: "Boka en bana med vänner eller kollegor. Drop-in eller fast tid — 1,5 h på riktig strandsand, mitt i Stockholm.",
     cta: "Boka bana",
-    href: "https://www.matchi.se/facilities/thebeach",
-    external: true,
+    href: "/boka",
+    external: false,
   },
   {
     id: "trana",

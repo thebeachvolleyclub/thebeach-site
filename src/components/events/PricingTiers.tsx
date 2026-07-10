@@ -31,6 +31,7 @@ type Tier = {
   tag: string;
   name: string;
   img: string;
+  imgPos?: string;
   evePrice: string;
   dayPrice: string;
   desc: string;
@@ -46,7 +47,8 @@ const TIERS: Tier[] = [
   {
     tag: "Enkelt & socialt",
     name: "Las Palmas",
-    img: "/media/event-laspalmas.jpg",
+    img: "/media/event-laspalmas.webp",
+    imgPos: "center 80%",
     evePrice: "745",
     dayPrice: "670",
     desc: "After work, kickoff eller social aktivitet. Det enkla valet som alltid funkar — oavsett om ni är 10 eller 50.",
@@ -65,7 +67,7 @@ const TIERS: Tier[] = [
   {
     tag: "Mest bokad",
     name: "Algarve",
-    img: "/media/event-algarve.jpg",
+    img: "/media/event-algarve.webp",
     evePrice: "945",
     dayPrice: "850",
     desc: "Vårt mest bokade koncept. Aktivitet + middag — perfekt för företag som vill kombinera sport med ett riktigt socialt häng.",
@@ -89,7 +91,7 @@ const TIERS: Tier[] = [
   {
     tag: "Helkväll",
     name: "Miami",
-    img: "/media/event-miami.jpg",
+    img: "/media/event-miami.webp",
     evePrice: "1 195",
     dayPrice: "1 075",
     desc: "När ni vill maxa upplevelsen. Mat, dryck, tempo och stämning — för den grupp som inte nöjer sig med halvmesyrer.",
@@ -209,6 +211,7 @@ export default function PricingTiers() {
                 src={tier.img}
                 alt={tier.name}
                 loading="lazy"
+                style={{ objectPosition: tier.imgPos ?? "center" }}
                 className="h-36 w-full object-cover lg:h-52"
               />
 

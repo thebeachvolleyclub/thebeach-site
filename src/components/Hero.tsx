@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useIsDesktop } from "./useIsMobile";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
 /**
@@ -8,10 +9,11 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
  * Sunset photo, giant Acorn headline "DÄR DET / ALLTID / ÄR SOMMAR",
  * eyebrow chips, and a bottom info bar with the lime CTA.
  *
- *  Background: public/media/hero-sunset.jpg  (swap to hero.mp4 if you want motion)
+ *  Background: public/media/hero-sunset.webp  (swap to hero.mp4 if you want motion)
  */
 export default function Hero() {
   const reduce = useReducedMotion();
+  const desktop = useIsDesktop();
   const ref = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -42,18 +44,29 @@ export default function Hero() {
     >
       {/* Background film with subtle parallax */}
       <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0 z-0">
-        <video
-          className="h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster="/media/hero-sunset.jpg"
-          aria-hidden="true"
-        >
-          <source src="/media/hero.mp4" type="video/mp4" />
-        </video>
+        {!desktop ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src="/media/hero-sunset.webp"
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <video
+            className="h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/media/hero-sunset.webp"
+            aria-hidden="true"
+          >
+            <source src="/media/hero.mp4" type="video/mp4" />
+          </video>
+        )}
       </motion.div>
       {/* legibility grades */}
       <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
@@ -107,12 +120,10 @@ export default function Hero() {
               Boka ett event <span aria-hidden="true">→</span>
             </a>
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white/55 underline-offset-4 transition-colors hover:text-white hover:underline"
+              href="/boka"
+              className="inline-flex cursor-pointer items-center gap-2 border border-white/40 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-white transition-colors duration-300 hover:bg-white hover:text-black"
             >
-              Boka bana via MATCHi
+              Boka bana <span aria-hidden="true">→</span>
             </a>
           </div>
         </motion.div>

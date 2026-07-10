@@ -35,7 +35,7 @@ export default function TranaCTA() {
               Anmäl dig via MATCHi <span aria-hidden="true">→</span>
             </a>
             <a
-              href="mailto:boka@thebeach.se"
+              href="mailto:boka@thebeach.one"
               className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 border border-black/30 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:border-black hover:bg-black/5"
             >
               Kontakta oss
