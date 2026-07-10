@@ -103,11 +103,11 @@ export default function Newsletter() {
           {sent ? (
             <div className="border border-black/20 bg-white/70 p-8 text-center">
               <p className="font-display text-2xl uppercase text-black">
-                Nästan klar! ☀️
+                Tack — du är med! ☀️
               </p>
               <p className="mt-2 text-sm text-black/60">
-                Vi har skickat ett bekräftelsemejl till dig — klicka på länken i
-                det så är du med. Kolla skräpposten om det dröjer en minut.
+                Du är nu anmäld till nyhetsbrevet — släpp, event och
+                sista-minuten-tider direkt i inkorgen.
               </p>
             </div>
           ) : (

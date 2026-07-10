@@ -110,8 +110,8 @@ export default function DesktopStickies() {
             {sent ? (
               <p className="pr-4 text-sm leading-relaxed text-bone/80">
                 {en
-                  ? "Thanks! ☀️ Check your inbox to confirm."
-                  : "Tack! ☀️ Kolla inboxen för att bekräfta."}
+                  ? "Thanks — you're in! ☀️"
+                  : "Tack — du är med! ☀️"}
               </p>
             ) : (
               <>
