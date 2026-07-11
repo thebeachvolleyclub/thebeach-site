@@ -70,7 +70,7 @@ export default function TranaHero() {
         >
           Hitta din
           <br />
-          <span className="italic-accent">träningsgrupp</span>
+          <span className="italic-accent">beachvolleyträning</span>
         </motion.h1>
 
         {/* Sub-copy + CTA */}
