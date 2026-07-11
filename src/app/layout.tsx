@@ -7,6 +7,8 @@ import ScrollProgress from "@/components/ScrollProgress";
 import MobileBookingBar from "@/components/MobileBookingBar";
 import JsonLd from "@/components/JsonLd";
 import DesktopStickies from "@/components/DesktopStickies";
+import Script from "next/script";
+import CookieConsent from "@/components/CookieConsent";
 
 // Display: Acorn — the brand's bold athletic display face (self-hosted)
 const acorn = localFont({
@@ -79,14 +81,35 @@ export default function RootLayout({
     >
       <head>
         <link rel="preload" as="image" href="/media/hero-sunset.webp" fetchPriority="high" />
+        {/* Consent Mode v2 — default denied INNAN GTM laddar. CookieConsent-bannern uppdaterar. */}
+        <Script id="consent-default" strategy="beforeInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
+try{if(localStorage.getItem('cookie_consent')==='granted'){gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'});}}catch(e){}`}
+        </Script>
+        {/* Google Tag Manager */}
+        <Script id="gtm" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K3J7NWXJ');`}
+        </Script>
       </head>
       <body className="min-h-full flex flex-col bg-base text-bone">
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-K3J7NWXJ"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <JsonLd data={SITE_LD} />
         <SmoothScroll />
         <ScrollProgress />
         {children}
         <MobileBookingBar />
         <DesktopStickies />
+        <CookieConsent />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pushEvent } from "@/lib/gtm";
 import Reveal from "./Reveal";
 
 // Brevo double-opt-in list "Nyhetsbrev – webb & IG 2026". Posts straight to
@@ -73,7 +74,10 @@ export default function Newsletter() {
       // completes the signup, so an accepted POST is success enough.
       const res = await fetch("/api/newsletter", { method: "POST", body: fd });
       const data = (await res.json().catch(() => null)) as { ok?: boolean } | null;
-      if (data?.ok) setSent(true);
+      if (data?.ok) {
+        setSent(true);
+        pushEvent("newsletter_signup");
+      }
       else setErr(true);
     } catch {
       setErr(true);
