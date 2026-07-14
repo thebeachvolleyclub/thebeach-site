@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useIsDesktop } from "../useIsMobile";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
-/** MOCKUP V3 — Hero med tydligt claim: Sveriges största beachvolleyanläggning. */
+/** MOCKUP V3 — Hero med claim: en av världens främsta beachvolleyanläggningar. */
 export default function HeroClaim() {
   const reduce = useReducedMotion();
   const desktop = useIsDesktop();
@@ -75,7 +75,7 @@ export default function HeroClaim() {
           variants={item}
           className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-lime"
         >
-          <span>Sveriges största beachvolleyanläggning</span>
+          <span>Beachvolley &amp; Event</span>
           <span className="h-1 w-1 rounded-full bg-white/30" />
           <span>Novavägen 35 · Huddinge</span>
           <span className="h-1 w-1 rounded-full bg-white/30" />
@@ -99,10 +99,10 @@ export default function HeroClaim() {
         >
           <p className="max-w-md text-[0.95rem] leading-relaxed text-white/55">
             <strong className="font-bold text-white/85">
-              Sveriges största beachvolleyanläggning.
+              En av världens främsta beachvolleyanläggningar.
             </strong>{" "}
-            17 banor, event för upp till 250 gäster och ett community som ingen
-            annan kan matcha — 15 min från Stockholm City.
+            17 banor, event för upp till 900 gäster och ett community som ingen
+            annan kan matcha. Alla är välkomna — från nybörjare till världsmästare.
           </p>
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a
