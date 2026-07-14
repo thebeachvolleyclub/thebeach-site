@@ -34,6 +34,7 @@ export const metadata: Metadata = {
   description:
     "Stockholms hem för beachvolley. 17 banor inomhus & utomhus i Huddinge. Spela, träna och fira — sommar året runt. Alla är välkomna.",
   openGraph: {
+    siteName: "The Beach",
     title: "The Beach — Sommar året runt",
     description:
       "Beachvolley & strandevent året runt i Huddinge, Stockholm. Boka bana, träna eller fira ditt event på sanden.",
@@ -41,6 +42,19 @@ export const metadata: Metadata = {
   },
 };
 
+
+/** WebSite-schema — styr sajtnamnet i Googles sökresultat ("The Beach",
+ *  inte bolagsnamnet Beachhallen Tropical). */
+const WEBSITE_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://thebeach.one/#website",
+  name: "The Beach",
+  alternateName: ["The Beach Huddinge", "The Beach Stockholm"],
+  url: "https://thebeach.one",
+  publisher: { "@id": "https://thebeach.one/#business" },
+  inLanguage: "sv-SE",
+};
 
 const SITE_LD = {
   "@context": "https://schema.org",
@@ -103,6 +117,7 @@ try{if(localStorage.getItem('cookie_consent')==='granted'){gtag('consent','updat
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+        <JsonLd data={WEBSITE_LD} />
         <JsonLd data={SITE_LD} />
         <SmoothScroll />
         <ScrollProgress />
