@@ -112,10 +112,10 @@ function presentation(p: ProfixioEvent): Omit<Ev, "day" | "wd"> {
     const nivo = stars ? `SBT${stars}` : "SBT";
     const beskr =
       stars === "1"
-        ? "SBT 1-stjärnig rankingtävling — instegsnivån i Stockholm Beach Tour, med både nybörjare och mer erfarna spelare. Välkommen att tävla oavsett om det är din första turnering eller om du jagar rankingpoäng mot de stora scenerna. Publik är varmt välkommen och serveringen är öppen hela dagen."
-        : `SBT ${stars ?? ""}-stjärnig rankingtävling i Stockholm Beach Tour — här möts många av regionens bästa spelare. Publik är varmt välkommen och serveringen är öppen hela dagen.`;
+        ? "SBT 1-stjärnig rankingtävling — instegsnivån i Swedish Beach Tour, med både nybörjare och mer erfarna spelare. Välkommen att tävla oavsett om det är din första turnering eller om du jagar rankingpoäng mot de stora scenerna. Publik är varmt välkommen och serveringen är öppen hela dagen."
+        : `SBT ${stars ?? ""}-stjärnig rankingtävling i Swedish Beach Tour — här möts många av regionens bästa spelare. Publik är varmt välkommen och serveringen är öppen hela dagen.`;
     return {
-      title: `${nivo} — Stockholm Beach Tour`,
+      title: `${nivo} — Swedish Beach Tour`,
       meta: "Rankingtävling · Anmälan & betalning via Profixio",
       badge: "SBT",
       type: "tournament",

@@ -10,7 +10,7 @@ const TOURNAMENT_TYPES = [
   {
     tag: "SBT 1-stjärnig",
     stars: "1",
-    desc: "Nybörjarvänlig rankingklassad tävling i Stockholm Beach Tour-systemet. Bra startpunkt för dig som vill prova på tävlingsbeachvolley.",
+    desc: "Nybörjarvänlig rankingklassad tävling i Swedish Beach Tour-systemet. Bra startpunkt för dig som vill prova på tävlingsbeachvolley.",
   },
   {
     tag: "Mixed",

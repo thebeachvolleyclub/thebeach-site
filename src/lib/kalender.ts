@@ -35,9 +35,9 @@ export const MONTHS: Month[] = [
           "För att tävla krävs tävlingslicens via Svenska Volleybollförbundet. Du söker licens genom en förening — du är varmt välkommen att gå med i vår, [The Beach Volley Club Huddinge](/foreningen). Medlemskap + licens kostar 350 kr (190 kr för junior) och ger dessutom rabatt på bokningar. Licensen aktiveras inte automatiskt, så be om att få den aktiverad i god tid innan du anmäler dig.",
         ],
         cta: { label: "Anmäl via Profixio", href: "https://www.profixio.com/fx/terminliste.php?org=SVBF.SE.SVB" } },
-      { day: "11", wd: "Lör", title: "SBT1 — Stockholm Beach Tour", meta: "Rankingtävling · Anmälan & betalning via Profixio", badge: "SBT", type: "tournament",
+      { day: "11", wd: "Lör", title: "SBT1 — Swedish Beach Tour", meta: "Rankingtävling · Anmälan & betalning via Profixio", badge: "SBT", type: "tournament",
         slug: "sbt1-11-juli", skarm: true,
-        beskrivning: "SBT 1-stjärnig rankingtävling — instegsnivån i Stockholm Beach Tour, med både nybörjare och mer erfarna spelare. Välkommen att tävla oavsett om det är din första turnering eller om du jagar rankingpoäng mot de stora scenerna. Publik är varmt välkommen och serveringen är öppen hela dagen.",
+        beskrivning: "SBT 1-stjärnig rankingtävling — instegsnivån i Swedish Beach Tour, med både nybörjare och mer erfarna spelare. Välkommen att tävla oavsett om det är din första turnering eller om du jagar rankingpoäng mot de stora scenerna. Publik är varmt välkommen och serveringen är öppen hela dagen.",
         stycken: [
           "Anmälan och betalning sker via Svenska Volleybollförbundets tävlingsplattform [Profixio](https://www.profixio.com/fx/terminliste.php?org=SVBF.SE.SVB). Länken leder till säsongskalendern som uppdateras löpande — därifrån klickar du dig vidare till just den här turneringen. Din anmälan är giltig först när betalningen är genomförd i Profixio; ingen betalning före deadline = ingen anmälan.",
           "För att spela rankinggrundande turneringar krävs tävlingslicens via Svenska Volleybollförbundet. Du söker licens genom en förening — du är varmt välkommen att gå med i vår, [The Beach Volley Club Huddinge](/foreningen). Medlemskap + licens kostar 350 kr (190 kr för junior) och ger dessutom rabatt på bokningar. Licensen aktiveras inte automatiskt, så be om att få den aktiverad i god tid innan du anmäler dig.",
@@ -64,7 +64,7 @@ export const MONTHS: Month[] = [
           "För att spela rankinggrundande turneringar krävs tävlingslicens via Svenska Volleybollförbundet. Du söker licens genom en förening — du är varmt välkommen att gå med i vår, [The Beach Volley Club Huddinge](/foreningen). Medlemskap + licens kostar 350 kr (190 kr för junior) och ger dessutom rabatt på bokningar. Licensen aktiveras inte automatiskt, så be om att få den aktiverad i god tid innan du anmäler dig.",
         ],
         cta: { label: "Anmäl via Profixio", href: "https://www.profixio.com/fx/terminliste.php?org=SVBF.SE.SVB" } },
-      { day: "8", wd: "Lör", title: "SBT1 — Stockholm Beach Tour", meta: "Rankingtävling · Anmälan & betalning via Profixio", badge: "SBT", type: "tournament",
+      { day: "8", wd: "Lör", title: "SBT1 — Swedish Beach Tour", meta: "Rankingtävling · Anmälan & betalning via Profixio", badge: "SBT", type: "tournament",
         slug: "sbt1-8-augusti",
         beskrivning: "Säsongens sista hemma-SBT — 1-stjärnig rankingtävling på instegsnivå. Välkommen att tävla oavsett om det är din första turnering eller om du jagar rankingpoäng mot de stora scenerna. Publik är varmt välkommen och serveringen är öppen hela dagen.",
         stycken: [
