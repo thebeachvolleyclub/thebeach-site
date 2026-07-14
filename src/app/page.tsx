@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Ticker from "@/components/Ticker";
 import QuickNav from "@/components/QuickNav";
 import Story from "@/components/Story";
+import PhotoBreak from "@/components/PhotoBreak";
 import Calendar from "@/components/Calendar";
 import Events from "@/components/Events";
 import EventForm from "@/components/EventForm";
@@ -32,6 +33,12 @@ export default function Home() {
         <Ticker />
         <QuickNav />
         <Story />
+        <PhotoBreak
+          src="/media/basecamp.webp"
+          alt="Hallen på The Beach — 3 000 m² sand"
+          kicker="Anläggningen"
+          caption="3 000 m² sand. 15 min från Stockholm City."
+        />
         <Events />
         <Calendar />
         <EventForm />

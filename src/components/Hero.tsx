@@ -109,8 +109,11 @@ export default function Hero() {
           className="mt-9 flex flex-col gap-6 border-t border-white/15 pt-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10"
         >
           <p className="max-w-md text-[0.95rem] leading-relaxed text-white/55">
-            10 inomhusbanor, 7 utomhusbanor och ett community som ingen annan kan
-            matcha. 15 min från Stockholm.
+            <strong className="font-bold text-white/85">
+              En av världens främsta beachvolleyanläggningar.
+            </strong>{" "}
+            17 banor, event för upp till 900 gäster och ett community som ingen
+            annan kan matcha. Alla är välkomna — från nybörjare till världsmästare.
           </p>
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a

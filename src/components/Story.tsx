@@ -8,7 +8,7 @@ const STATS: { to: number; suffix?: string; lbl: string }[] = [
   { to: 20, lbl: "År i sanden" },
 ];
 
-/** Lime credibility section — "Basecamp för världens bästa". */
+/** Lime credibility section — kompakt: ett stycke, stats, quote, CTA. */
 export default function Story() {
   return (
     <section
@@ -26,21 +26,10 @@ export default function Story() {
         </h2>
 
         <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          The Beach är hemmaplan för svensk beachvolley när det gäller som mest.
-          Här tränar Åhman/Hellvig — OS-guld och VM-guld. Och VM-guldet avgjordes
-          i en helsvensk final: Åhman/Hellvig mot Hölting Nilsson/Andersson — två
-          svenska par från vår sand som spelade om titeln med varandra. Så galet
-          är det.
-        </p>
-        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          Hos oss har dessutom hela den svenska landslagsverksamheten sitt hem —
-          samtliga förbundskaptener och landslag, junior som senior.
-        </p>
-        <p className="mb-4 max-w-lg text-[15px] leading-[1.7] text-black/65 lg:text-[17px]">
-          Sedan 2006 har vi byggt en anläggning och ett community som är öppet
-          för alla. Oavsett om du satsar mot stjärnorna eller spelar för skojs
-          skull är du lika välkommen i sanden. 10 inomhusbanor och 7 utomhus —
-          plats för både världstoppen och nybörjaren.
+          Här tränar Åhman/Hellvig — OS-guld och VM-guld — och hela svenska
+          landslagsverksamheten har sitt hem hos oss. Sedan 2006 har vi byggt
+          ett community öppet för alla: samma sand för världstoppen och
+          nybörjaren.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-2">
@@ -60,13 +49,29 @@ export default function Story() {
           ))}
         </div>
 
-        <div className="border-l-[2.5px] border-black pl-5">
+        <div className="mb-8 border-l-[2.5px] border-black pl-5">
           <p className="mb-2 text-[17px] italic leading-snug text-black">
             &ldquo;A miniature Copacabana in a warehouse south of Stockholm.&rdquo;
           </p>
           <cite className="text-[10px] font-bold uppercase not-italic tracking-[0.15em] text-black/45">
             Al Jazeera
           </cite>
+        </div>
+
+        {/* CTA — nästa steg direkt i sektionen */}
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/boka"
+            className="inline-flex cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity duration-300 hover:opacity-80"
+          >
+            Boka bana <span aria-hidden="true">→</span>
+          </a>
+          <a
+            href="/om-oss"
+            className="inline-flex cursor-pointer items-center gap-2 border border-black/30 px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-black hover:text-lime"
+          >
+            Hela historien <span aria-hidden="true">→</span>
+          </a>
         </div>
       </Reveal>
 
@@ -77,11 +82,9 @@ export default function Story() {
             <img
               src="/media/landslag-fotosession.webp"
               alt="Åhman/Hellvig och Andersson/Hölting Nilsson tränar på The Beach — helsvensk VM-final 2025"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-[50%_18%]"
               loading="lazy"
             />
-            {/* brand line-pattern overlay — only at the bottom, fading up so the
-                top of the photo stays untouched */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/patterns/linePatternB-green.svg"

@@ -4,7 +4,7 @@ const ITEMS = [
   "VM-guld Adelaide 2025",
   "10 inomhusbanor · 7 utomhusbanor",
   "Nationell träningsbas",
-  "Event för 10–250 gäster",
+  "Event för upp till 900 gäster",
   "Sedan 2006",
   "15 min från Stockholms City",
 ];

@@ -1,30 +1,39 @@
+/** Photo quick-nav med Event & konferens som fjärde väg in.
+ *  pos = object-position så att ansikten/huvuden alltid är med. */
 const ITEMS = [
-  { n: "01", title: "Spela", href: "/boka", ext: false },
-  { n: "02", title: "Träna", href: "#training", ext: false },
-  { n: "03", title: "Boka Event", href: "#event", ext: false },
-  { n: "04", title: "Tävla", href: "#calendar", ext: false },
+  { n: "01", title: "Spela", href: "/boka", img: "/media/wilson-boll-sand.webp", alt: "Beachvolleyboll i sanden", pos: "object-[50%_65%]" },
+  { n: "02", title: "Träna", href: "#training", img: "/media/coach.webp", alt: "Coach på The Beach", pos: "object-[50%_12%]" },
+  { n: "03", title: "Tävla", href: "#calendar", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver", pos: "object-[50%_15%]" },
+  { n: "04", title: "Event & konferens", href: "#event", img: "/media/event.webp", alt: "Företagsevent på The Beach", pos: "object-center" },
 ];
 
-/** Cream four-up quick links, hover → lime. */
 export default function QuickNav() {
   return (
-    <div className="grid grid-cols-2 border-b border-black/10 bg-cream sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-0.5 bg-black sm:grid-cols-4">
       {ITEMS.map((it) => (
         <a
           key={it.n}
           href={it.href}
-          target={it.ext ? "_blank" : undefined}
-          rel={it.ext ? "noopener noreferrer" : undefined}
-          className="group flex cursor-pointer flex-col gap-1.5 border-b border-black/10 px-5 py-7 transition-colors duration-200 last:border-b-0 hover:bg-lime sm:border-b-0 sm:border-r sm:px-10 sm:py-11 sm:[&:nth-child(2n)]:border-r sm:last:border-r-0 [&:nth-last-child(-n+2)]:border-b-0"
+          className="group relative flex h-44 cursor-pointer flex-col justify-between overflow-hidden p-5 sm:h-56 lg:h-72 lg:p-8"
         >
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/30">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={it.img}
+            alt={it.alt}
+            loading="lazy"
+            className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${it.pos}`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/30 transition-colors duration-300 group-hover:from-black/70" />
+          <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
             {it.n}
           </span>
-          <span className="flex-1 font-display text-xl uppercase leading-none tracking-[-0.01em] text-black lg:text-2xl">
-            {it.title}
-          </span>
-          <span className="mt-2.5 text-lg text-black/25 transition-transform duration-200 group-hover:translate-x-1 lg:mt-4 lg:text-xl">
-            →
+          <span className="relative flex items-end justify-between gap-2">
+            <span className="font-display text-xl uppercase leading-none tracking-[-0.01em] text-white lg:text-3xl">
+              {it.title}
+            </span>
+            <span className="text-lg text-lime transition-transform duration-200 group-hover:translate-x-1 lg:text-xl">
+              →
+            </span>
           </span>
         </a>
       ))}

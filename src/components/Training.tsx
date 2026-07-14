@@ -1,5 +1,6 @@
 import Reveal from "./Reveal";
 
+/** Training section med foto-tile i griddet. */
 type Card = {
   level: string;
   title: string;
@@ -32,6 +33,22 @@ export default function Training() {
       </Reveal>
 
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Photo tile — coach in action */}
+        <Reveal className="h-full">
+          <figure className="relative h-full min-h-[240px] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/media/coach.webp"
+              alt="Coach instruerar på The Beach"
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover object-[50%_12%]"
+            />
+            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-4 pt-10 text-[11px] font-bold uppercase tracking-[0.1em] text-white/90">
+              Alla grupper leds av utbildade coacher
+            </figcaption>
+          </figure>
+        </Reveal>
+
         {CARDS.map((c, i) => (
           <Reveal key={c.title} delay={i * 0.06} className="h-full">
             <div className="flex h-full cursor-pointer flex-col bg-white p-7 transition-colors duration-300 hover:bg-lime/40 lg:p-10">

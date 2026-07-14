@@ -1,6 +1,6 @@
-import ParallaxImage from "../ParallaxImage";
+import ParallaxImage from "./ParallaxImage";
 
-/** MOCKUP — full-bleed parallax photo break between sections. */
+/** Full-bleed parallax photo break mellan sektioner. */
 export default function PhotoBreak({
   src,
   alt,
