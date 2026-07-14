@@ -13,8 +13,8 @@ export default function PhotoBreak({
   kicker?: string;
 }) {
   return (
-    <section className="relative flex h-[45vh] min-h-[320px] items-end overflow-hidden lg:h-[60vh]">
-      <ParallaxImage src={src} alt={alt} />
+    <section className="relative isolate flex h-[45vh] min-h-[320px] items-end overflow-hidden lg:h-[60vh]">
+      <ParallaxImage src={src} alt={alt} className="object-[50%_30%]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       {(caption || kicker) && (
         <div className="relative px-5 pb-8 sm:px-8 lg:px-14 lg:pb-12">

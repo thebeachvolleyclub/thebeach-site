@@ -82,7 +82,7 @@ export default function StoryCompact() {
             <img
               src="/media/landslag-fotosession.webp"
               alt="Åhman/Hellvig och Andersson/Hölting Nilsson tränar på The Beach — helsvensk VM-final 2025"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-[50%_18%]"
               loading="lazy"
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}

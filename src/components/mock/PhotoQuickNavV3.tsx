@@ -1,9 +1,10 @@
-/** MOCKUP V3 — photo quick-nav med Event & konferens som fjärde väg in. */
+/** MOCKUP V3 — photo quick-nav med Event & konferens som fjärde väg in.
+ *  pos = object-position så att ansikten/huvuden alltid är med. */
 const ITEMS = [
-  { n: "01", title: "Spela", href: "/boka", img: "/media/wilson-boll-sand.webp", alt: "Beachvolleyboll i sanden" },
-  { n: "02", title: "Träna", href: "#training", img: "/media/coach.webp", alt: "Coach på The Beach" },
-  { n: "03", title: "Tävla", href: "#calendar", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver" },
-  { n: "04", title: "Event & konferens", href: "#event", img: "/media/event.webp", alt: "Företagsevent på The Beach" },
+  { n: "01", title: "Spela", href: "/boka", img: "/media/wilson-boll-sand.webp", alt: "Beachvolleyboll i sanden", pos: "object-[50%_65%]" },
+  { n: "02", title: "Träna", href: "#training", img: "/media/coach.webp", alt: "Coach på The Beach", pos: "object-[50%_12%]" },
+  { n: "03", title: "Tävla", href: "#calendar", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver", pos: "object-[50%_15%]" },
+  { n: "04", title: "Event & konferens", href: "#event", img: "/media/event.webp", alt: "Företagsevent på The Beach", pos: "object-center" },
 ];
 
 export default function PhotoQuickNavV3() {
@@ -20,7 +21,7 @@ export default function PhotoQuickNavV3() {
             src={it.img}
             alt={it.alt}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${it.pos}`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/30 transition-colors duration-300 group-hover:from-black/70" />
           <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">

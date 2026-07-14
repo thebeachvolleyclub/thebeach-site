@@ -41,7 +41,7 @@ export default function TrainingPhoto() {
               src="/media/coach.webp"
               alt="Coach instruerar på The Beach"
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover object-[50%_12%]"
             />
             <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pb-4 pt-10 text-[11px] font-bold uppercase tracking-[0.1em] text-white/90">
               Alla grupper leds av utbildade coacher
