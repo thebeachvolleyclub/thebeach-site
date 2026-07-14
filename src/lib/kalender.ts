@@ -81,6 +81,14 @@ export const MONTHS: Month[] = [
   {
     month: "September 2026",
     events: [
+      { day: "5", wd: "Lör", title: "Klubblags-SM för ungdomar — U16 & U18", meta: "Tvådagars mästerskap 5–6 sep · Anmälan via Profixio", badge: "Tävling", type: "tournament",
+        slug: "klubblags-sm-ungdomar", skarm: true,
+        beskrivning: "Ungdomarnas Klubblagsmästerskap spelas på The Beach! U18-SM och U16-mästerskapet avgörs 5–6 september — 48 lag, två dagar av intensiv beachvolley där klubbkänsla och laganda står i centrum när utomhussäsongen avslutas hos oss.",
+        stycken: [
+          "Tävlingen växer: 48 lag i två klasser — U18-SM (spelare födda 2009 eller senare) och U16-mästerskapet (spelare födda 2011 eller senare), med 12 flicklag och 12 pojklag per klass. Flera lag per klubb kan anmälas, och matcher spelas både inne och ute beroende på väder.",
+          "Anmälan öppnade 3 juli och stänger 10 augusti kl 22:00 — anmälan och betalning sker via [Profixio](https://www.profixio.com/app/klubblagsmesterskap-for-ungdomar-2026). Sista dag att anmäla spelare är 31 augusti. Mer information finns hos [Svensk Volleyboll](https://volleyboll.se/beachvolley/klubblags-sm/ungdomstavlingen).",
+        ],
+        cta: { label: "Anmäl via Profixio", href: "https://www.profixio.com/app/klubblagsmesterskap-for-ungdomar-2026" } },
       { day: "1", wd: "Tis", title: "Kursstart — grund- & fortsättningskurs", meta: "Båda kurserna, tisdagar · Boka via MATCHi", badge: "Kurs", type: "training",
         slug: "kursstart-hosten",
         beskrivning: "Höstens kurser drar igång: grundkurs för dig som är ny och fortsättningskurs för dig som vill ta nästa steg. Båda kurserna går både tisdagar och torsdagar. Bokas via [MATCHi](https://www.matchi.se/facilities/thebeach)." },
