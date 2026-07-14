@@ -12,6 +12,10 @@ import AppSection from "@/components/AppSection";
 import Footer from "@/components/Footer";
 import Newsletter from "@/components/Newsletter";
 
+// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
+export const revalidate = 21600;
+
+
 export const metadata: Metadata = {
   alternates: {
     canonical: "/",

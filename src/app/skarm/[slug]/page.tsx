@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { screenEvents, bySlug } from "@/lib/kalender";
+import { screenEvents } from "@/lib/kalender";
+import { mergedBySlug } from "@/lib/profixio";
+
+// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
+export const revalidate = 21600;
+
 
 export const metadata: Metadata = { robots: { index: false } };
 
@@ -16,7 +21,7 @@ export function generateStaticParams() {
  */
 export default async function SkarmEventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const hit = bySlug(slug);
+  const hit = await mergedBySlug(slug);
   if (!hit || !hit.ev.skarm) notFound();
   const { month, ev } = hit;
 

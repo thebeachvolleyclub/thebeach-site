@@ -4,9 +4,14 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
-import { allEvents, bySlug } from "@/lib/kalender";
+import { allEvents } from "@/lib/kalender";
+import { mergedBySlug } from "@/lib/profixio";
 import RichText from "@/components/RichText";
 import JsonLd from "@/components/JsonLd";
+
+// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
+export const revalidate = 21600;
+
 
 export function generateStaticParams() {
   return allEvents()
@@ -16,7 +21,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const hit = bySlug(slug);
+  const hit = await mergedBySlug(slug);
   if (!hit) return {};
   return {
     title: `${hit.ev.title} — ${hit.month} | The Beach`,
@@ -45,7 +50,7 @@ const BADGE: Record<string, string> = {
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const hit = bySlug(slug);
+  const hit = await mergedBySlug(slug);
   if (!hit) notFound();
   const { month, ev } = hit;
   const startDate = eventStartDate(month, ev.day);

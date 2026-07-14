@@ -1,0 +1,38 @@
+[
+  {
+    "date": "2026-07-11",
+    "name": "The Beach SBT1* 11/7",
+    "klass": "SBT Open Grön 1*",
+    "ibId": "11003"
+  },
+  {
+    "date": "2026-07-18",
+    "name": "The Beach SBT1* 18 juli",
+    "klass": "SBT Open Grön 1*",
+    "ibId": "11038"
+  },
+  {
+    "date": "2026-07-25",
+    "name": "The Beach Mixed 25 juli",
+    "klass": "Mixed",
+    "ibId": "11039"
+  },
+  {
+    "date": "2026-08-01",
+    "name": "The Beach SBT1* 1/8",
+    "klass": "SBT Open Grön 1*",
+    "ibId": "11040"
+  },
+  {
+    "date": "2026-08-08",
+    "name": "The Beach SBT1* 8 aug",
+    "klass": "SBT Open Grön 1*",
+    "ibId": "11041"
+  },
+  {
+    "date": "2026-08-29",
+    "name": "The Beach SBT 3* 29/8",
+    "klass": "",
+    "ibId": ""
+  }
+]

@@ -11,6 +11,10 @@ import CourtBooking from "@/components/kalender/CourtBooking";
 import KalenderCTA from "@/components/kalender/KalenderCTA";
 import Newsletter from "@/components/Newsletter";
 
+// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
+export const revalidate = 21600;
+
+
 export const metadata: Metadata = {
   title: "Kalender — The Beach | Schema & händelser i Stockholm",
   description:

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
-import { MONTHS, type Ev } from "@/lib/kalender";
+import { type Ev } from "@/lib/kalender";
+import { getMergedMonths } from "@/lib/profixio";
 
 /**
  * Kommande händelser — sajtens egen, kompletta lista.
@@ -15,7 +16,8 @@ const BADGE: Record<Ev["type"], string> = {
   closed: "bg-black/10 text-black/40",
 };
 
-export default function UpcomingEvents() {
+export default async function UpcomingEvents() {
+  const MONTHS = await getMergedMonths();
   return (
     <section
       id="kommande"

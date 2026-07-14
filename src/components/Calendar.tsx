@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
-import { MONTHS, type Ev } from "@/lib/kalender";
+import { type Ev } from "@/lib/kalender";
+import { getMergedMonths } from "@/lib/profixio";
 
 
 const BADGE: Record<Ev["type"], string> = {
@@ -11,7 +12,8 @@ const BADGE: Record<Ev["type"], string> = {
   closed: "bg-black/10 text-black/40",
 };
 
-export default function Calendar() {
+export default async function Calendar() {
+  const MONTHS = await getMergedMonths();
   return (
     <section id="calendar" className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
       <Reveal>

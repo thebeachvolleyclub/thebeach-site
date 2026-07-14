@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
-import { allEvents } from "@/lib/kalender";
+import { mergedAllEvents } from "@/lib/profixio";
+
+// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
+export const revalidate = 21600;
+
 
 const base = "https://thebeach.one";
 const staticPaths = [
@@ -10,7 +14,7 @@ const staticPaths = [
   "/en", "/en/events", "/en/book", "/en/school", "/en/about", "/en/faq",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const pages = staticPaths.map((p) => ({
     url: `${base}${p}`,
@@ -18,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "weekly" as const,
     priority: p === "" ? 1 : 0.7,
   }));
-  const events = allEvents()
+  const events = (await mergedAllEvents())
     .filter((e) => e.ev.slug)
     .map((e) => ({
       url: `${base}/kalender/${e.ev.slug}`,
