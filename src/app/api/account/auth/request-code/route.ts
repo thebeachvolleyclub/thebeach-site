@@ -18,11 +18,16 @@ export async function POST(request: Request) {
     { method: "POST", body: JSON.stringify({ email }) },
     { deviceId },
   );
-  const text = await upstream.text();
-  const response = new NextResponse(text || "{}", {
-    status: upstream.status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-  });
+  const payload = await upstream.json().catch(() => ({})) as { detail?: string };
+  const response = upstream.ok
+    ? NextResponse.json(
+        { success: true, message: "Verifieringskod skickad till din e-post" },
+        { headers: { "Cache-Control": "no-store" } },
+      )
+    : NextResponse.json(payload, {
+        status: upstream.status,
+        headers: { "Cache-Control": "no-store" },
+      });
   setAccountDevice(response, deviceId);
   return response;
 }
