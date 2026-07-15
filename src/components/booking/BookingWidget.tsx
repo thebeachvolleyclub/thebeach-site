@@ -52,6 +52,13 @@ function shortCourt(name: string) {
   return number ? `Bana ${number}` : name;
 }
 
+function compareCourts(a: Slot, b: Slot) {
+  return a.courtName.localeCompare(b.courtName, "sv-SE", {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
 function CameraMark() {
   return <span className="ml-2 inline-flex items-center gap-1 border-l border-current/25 pl-2 text-[10px] font-bold uppercase tracking-wide" title="BeachTV-kamera finns på banan"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg>Kamera</span>;
 }
@@ -141,7 +148,9 @@ export default function BookingWidget() {
   const grouped = useMemo(() => slots.reduce<Record<string, Slot[]>>((result, slot) => {
     const key = `${slot.startTime}–${slot.endTime}`; (result[key] ||= []).push(slot); return result;
   }, {}), [slots]);
-  const selectedTimeSlots = selectedTime ? grouped[selectedTime] ?? [] : [];
+  const selectedTimeSlots = selectedTime
+    ? [...(grouped[selectedTime] ?? [])].sort(compareCourts)
+    : [];
 
   const checkout = async () => {
     if (!selected || !venueId || !profile) return;
