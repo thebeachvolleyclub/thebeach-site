@@ -14,6 +14,7 @@ const LINKS_SV = [
   { label: "Träna", href: "/trana", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },
   { label: "Om oss", href: "/om-oss", ext: false },
+  { label: "Konto", href: "/konto", ext: false },
 ];
 
 const LINKS_EN = [
@@ -21,6 +22,7 @@ const LINKS_EN = [
   { label: "Book an event", href: "/en/events", ext: false },
   { label: "Schools", href: "/en/school", ext: false },
   { label: "About", href: "/en/about", ext: false },
+  { label: "Account", href: "/konto", ext: false },
 ];
 
 export default function Navbar({ locale = "sv" }: { locale?: "sv" | "en" }) {
