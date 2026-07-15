@@ -13,6 +13,7 @@ export type Ev = {
   title: string;
   meta: string;
   badge: string;
+  badgeTone?: "orange";
   type: "tournament" | "event" | "free" | "closed" | "training";
   slug?: string;
   beskrivning?: string;
