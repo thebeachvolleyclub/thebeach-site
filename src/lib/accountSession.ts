@@ -56,7 +56,15 @@ export function clearFamilyChoice(response: NextResponse, userId: string) {
 
 export function sameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
-  return !origin || origin === new URL(request.url).origin;
+  if (!origin) return true;
+  const requestUrl = new URL(request.url);
+  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? requestUrl.host)
+    .split(",")[0]
+    .trim();
+  const protocol = (request.headers.get("x-forwarded-proto") ?? requestUrl.protocol.replace(":", ""))
+    .split(",")[0]
+    .trim();
+  return origin === `${protocol}://${host}`;
 }
 
 export function unauthorized(): Response {
