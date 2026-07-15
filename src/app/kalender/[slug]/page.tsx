@@ -48,6 +48,10 @@ const BADGE: Record<string, string> = {
   closed: "bg-black/10 text-black/40",
 };
 
+const TONE: Record<string, string> = {
+  teal: "bg-teal text-white",
+};
+
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const hit = await mergedBySlug(slug);
@@ -87,7 +91,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 {ev.title}
               </h1>
               <div className="mt-6 flex flex-wrap items-center gap-4">
-                <span className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${BADGE[ev.type]}`}>
+                <span className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${ev.badgeTone ? TONE[ev.badgeTone] : BADGE[ev.type]}`}>
                   {ev.badge}
                 </span>
                 <span className="text-sm text-bone/50">{ev.meta}</span>

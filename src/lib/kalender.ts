@@ -14,6 +14,7 @@ export type Ev = {
   meta: string;
   badge: string;
   type: "tournament" | "event" | "free" | "closed" | "training";
+  badgeTone?: "teal";
   slug?: string;
   beskrivning?: string;
   stycken?: string[];

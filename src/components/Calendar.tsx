@@ -12,6 +12,11 @@ const BADGE: Record<Ev["type"], string> = {
   closed: "bg-black/10 text-black/40",
 };
 
+const TONE: Record<NonNullable<Ev["badgeTone"]>, string> = {
+  teal: "bg-teal text-white",
+};
+
+
 export default async function Calendar() {
   const MONTHS = await getMergedMonths();
   return (
@@ -54,7 +59,7 @@ export default async function Calendar() {
                   <div className="text-xs leading-relaxed text-black/45">{e.meta}</div>
                 </div>
                 <span
-                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${BADGE[e.type]}`}
+                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${e.badgeTone ? TONE[e.badgeTone] : BADGE[e.type]}`}
                 >
                   {e.badge}
                 </span>
