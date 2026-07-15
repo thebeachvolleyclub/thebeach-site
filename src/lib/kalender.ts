@@ -94,6 +94,10 @@ export const MONTHS: Month[] = [
         beskrivning: "Höstens kurser drar igång: grundkurs för dig som är ny och fortsättningskurs för dig som vill ta nästa steg. Båda kurserna går både tisdagar och torsdagar. Bokas via [MATCHi](https://www.matchi.se/facilities/thebeach)." },
       { day: "3", wd: "Tor", title: "Kursstart — grund- & fortsättningskurs", meta: "Båda kurserna, torsdagar · Boka via MATCHi", badge: "Kurs", type: "training" },
       { day: "2", wd: "Ons", title: "Träningsgrupper startar — onsdagar", meta: "Höstsäsongen drar igång · 15 pass", badge: "Träning", type: "training" },
+      { day: "26", wd: "Lör", title: "BeachTravels — Träningsresa Sperlonga", meta: "26 sep–3 okt · Arrangeras av BeachTravels", badge: "BeachTravels", type: "event",
+        slug: "sperlonga-2026", skarm: true,
+        beskrivning: "BeachTravels träningsresa till Sperlonga, Italien — en vecka av sol, sand och beachvolley för spelare som vill ta med sig träningen på semestern.",
+        cta: { label: "Läs mer & boka", href: "https://beachtravels.se/sperlonga/" } },
     ],
   },
 ];
