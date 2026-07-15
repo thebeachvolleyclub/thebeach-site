@@ -1,7 +1,8 @@
 /**
  * PROFIXIO-SYNK — hämtar SVBF:s tävlingskalender (Profixio) server-side,
  * filtrerar fram tävlingar där The Beach är arrangör och mergar in dem i
- * sajtens kalender (src/lib/kalender.ts).
+ * sajtens kalender (src/lib/kalender.ts), tillsammans med publika aktiviteter
+ * från The Beach-appens API.
  *
  * Regler:
  * - Manuella poster i kalender.ts VINNER alltid (samma dag + typ tournament
@@ -14,6 +15,7 @@
  */
 
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
+import { getAppCalendarEvents } from "./app-events";
 import seed from "./profixio-seed.json";
 
 export type ProfixioEvent = {
@@ -174,7 +176,7 @@ function monthKey(label: string): number {
   return (parseInt(year ?? "0", 10) || 0) * 12 + (idx >= 0 ? idx : 0);
 }
 
-/** Sajtens kalender = manuella poster + framtida Profixio-tävlingar. */
+/** Sajtens kalender = manuella poster + Profixio-tävlingar + appaktiviteter. */
 export async function getMergedMonths(): Promise<Month[]> {
   const months: Month[] = JSON.parse(JSON.stringify(MANUAL_MONTHS));
   const today = todayStockholm();
@@ -212,6 +214,35 @@ export async function getMergedMonths(): Promise<Month[]> {
       wd: WEEKDAYS[d.getDay()],
       slug: slugFor(p, pres.title, taken),
     });
+  }
+
+  try {
+    const appEvents = await getAppCalendarEvents();
+    for (const { date, event } of appEvents) {
+      if (date < today) continue;
+
+      const [year, monthNumber, dayNumber] = date.split("-").map(Number);
+      const label = `${MONTH_NAMES[monthNumber - 1]} ${year}`;
+      let month = months.find((entry) => entry.month.toLowerCase() === label.toLowerCase());
+      if (!month) {
+        month = { month: label, events: [] };
+        months.push(month);
+      }
+
+      const day = String(dayNumber);
+      const normalizedTitle = event.title.trim().toLocaleLowerCase("sv-SE");
+      const duplicate = month.events.some(
+        (existing) =>
+          existing.day === day &&
+          existing.title.trim().toLocaleLowerCase("sv-SE") === normalizedTitle,
+      );
+      if (duplicate) continue;
+
+      const weekday = new Date(Date.UTC(year, monthNumber - 1, dayNumber)).getUTCDay();
+      month.events.push({ ...event, day, wd: WEEKDAYS[weekday] });
+    }
+  } catch (err) {
+    console.error("[app-events] oväntat fel, visar kalendern utan appaktiviteter:", err);
   }
 
   months.sort((a, b) => monthKey(a.month) - monthKey(b.month));
