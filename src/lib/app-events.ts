@@ -177,7 +177,6 @@ function presentation(source: AppFeedEvent): AppCalendarEvent {
       title: source.title,
       meta,
       badge: isSeriespel ? "Seriespel" : "Event",
-      badgeTone: "orange",
       type: "event",
       slug: slugFor(source.source_id),
       beskrivning:

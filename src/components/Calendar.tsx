@@ -54,7 +54,7 @@ export default async function Calendar() {
                   <div className="text-xs leading-relaxed text-black/45">{e.meta}</div>
                 </div>
                 <span
-                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${e.badgeTone === "orange" ? BADGE.tournament : BADGE[e.type]}`}
+                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${BADGE[e.type]}`}
                 >
                   {e.badge}
                 </span>
