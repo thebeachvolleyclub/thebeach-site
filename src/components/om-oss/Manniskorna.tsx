@@ -24,7 +24,7 @@ const TEAM = [
     initials: "RJ",
     name: "Rasmus Jonsson",
     role: "VD BeachTravels",
-    bio: "Leder systerbolaget BeachTravels — träningsresor för spelare som vill ta spelet till nästa nivå.",
+    bio: "Leder dotterbolaget BeachTravels — träningsresor för spelare som vill ta spelet till nästa nivå.",
   },
 ];
 

@@ -7,7 +7,7 @@ import Reveal from "@/components/Reveal";
 export const metadata: Metadata = {
   title: "BeachTravels — träningsresor till världens finaste stränder",
   description:
-    "Vårt systerbolag BeachTravels arrangerar träningsresor och läger: Sperlonga, Praia da Rocha, Teneriffa, Gran Canaria och Tylösand. Sedan 2011.",
+    "Vårt dotterbolag BeachTravels arrangerar träningsresor och läger: Sperlonga, Praia da Rocha, Teneriffa, Gran Canaria och Tylösand. Sedan 2011.",
 };
 
 const RESMAL = ["Sperlonga, Italien", "Praia da Rocha, Portugal", "Teneriffa", "Gran Canaria", "Tylösand, Sverige"];
@@ -19,7 +19,7 @@ export default function BeachTravelsPage() {
       <main className="flex-1">
         <PageHero
           minH="min-h-[52svh]"
-          eyebrow="BeachTravels · systerbolag"
+          eyebrow="BeachTravels · dotterbolag"
           title={<>Träna där andra<br /><span className="italic-accent">semestrar</span></>}
           intro="BeachTravels har arrangerat träningsresor sedan 2011 — läger på världens finaste stränder, ledda av coacher ur svenska landslagsmiljön. Samma filosofi som på The Beach, fast med havet bredvid."
           cta={

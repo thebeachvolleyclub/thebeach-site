@@ -67,7 +67,7 @@ const TEAM = [
   {
     namn: "Rasmus Jonsson",
     roll: "VD BeachTravels",
-    desc: "Leder vårt systerbolag som arrangerar träningsresor — och är förbundskapten för herrlandslaget.",
+    desc: "Leder vårt dotterbolag som arrangerar träningsresor — och är förbundskapten för herrlandslaget.",
     kontakt: "rasmus@beachtravels.se",
   },
 ];
