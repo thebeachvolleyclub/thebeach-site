@@ -228,13 +228,15 @@ export default function AccountPortal() {
   };
 
   const now = new Date().toISOString().slice(0, 10);
-  const currentBookings = useMemo(() => bookings
-    .filter((item) => item.date >= now && !["CANCELLED", "EXPIRED"].includes(item.status))
-    .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`)), [bookings, now]);
-  const previousBookings = useMemo(() => bookings
+  const visibleBookings = useMemo(() => bookings.filter((item) =>
+    ["CONFIRMED", "PENDING_PAYMENT", "REFUND_PENDING"].includes(item.status)), [bookings]);
+  const currentBookings = useMemo(() => visibleBookings
+    .filter((item) => item.date >= now)
+    .sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`)), [visibleBookings, now]);
+  const previousBookings = useMemo(() => visibleBookings
     .filter((item) => !currentBookings.includes(item))
-    .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`)), [bookings, currentBookings]);
-  const confirmedBookingCount = useMemo(() => bookings.filter((item) => item.status === "CONFIRMED").length, [bookings]);
+    .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`)), [visibleBookings, currentBookings]);
+  const confirmedBookingCount = useMemo(() => visibleBookings.filter((item) => item.status === "CONFIRMED").length, [visibleBookings]);
 
   if (loading) return <div className="min-h-80 border border-white/10 bg-white/[0.03] p-8 text-bone/55">Hämtar ditt konto…</div>;
 
@@ -372,14 +374,14 @@ function AccountOverview({
         </div>}
       </article>
 
-      <article className="bg-mint p-6 sm:p-8">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Aktuellt</p>
+      <article className="bg-black p-6 text-white sm:p-8">
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Aktuellt</p>
         <h4 className="mt-2 font-display text-3xl">Mina träningsgrupper</h4>
-        {loading ? <OverviewLoading /> : !availability.training ? <OverviewUnavailable label="träningsgrupper" /> : trainingGroups.length ? <div className="mt-7 space-y-2">{trainingGroups.map((group) => <div key={`${group.group_name}-${group.day_time}`} className="border border-teal/15 bg-white/70 p-4">
+        {loading ? <OverviewLoading /> : !availability.training ? <p className="mt-7 border border-white/15 bg-white/5 p-5 text-sm text-white/60">Kunde inte hämta dina träningsgrupper just nu.</p> : trainingGroups.length ? <div className="mt-7 space-y-2">{trainingGroups.map((group) => <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
           <strong className="block text-base">{group.group_name}</strong>
-          <span className="mt-1 block text-sm text-black/55">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
-        </div>)}</div> : <div className="mt-7 border border-teal/15 bg-white/60 p-5 text-sm leading-relaxed text-black/55">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
-        <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-teal underline underline-offset-4">Läs om träning →</Link>
+          <span className="mt-1 block text-sm text-white/60">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
+        </div>)}</div> : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
+        <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
     </div>
 
