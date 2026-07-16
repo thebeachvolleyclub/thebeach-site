@@ -35,6 +35,12 @@ type TrainingGroup = { group_name: string; day_time: string; court: number | nul
 type TrainingLookup = { found: boolean; groups: TrainingGroup[]; message?: string | null };
 type AccountTab = "overview" | "bookings" | "invoices" | "profile";
 type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean };
+type CancellationResult = {
+  booking: Booking;
+  refundAmountSek?: number | null;
+  bookingFeeSek?: number | null;
+  refundPolicy?: string | null;
+};
 
 const EMOJIS = ["🏐", "🌴", "☀️", "🌊", "🦩", "🦀", "🐚", "🥥", "😎", "🔥", "⚡", "💪"];
 
@@ -50,6 +56,19 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 function statusText(status: string) {
   return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på Swish", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
+}
+
+function cancellationMessage(result: CancellationResult) {
+  if (result.refundPolicy === "LATE_NO_REFUND") {
+    return "Bokningen är avbokad. Eftersom det är mindre än 24 timmar kvar görs ingen återbetalning.";
+  }
+  if ((result.refundAmountSek ?? 0) > 0) {
+    const fee = result.bookingFeeSek ?? 0;
+    return fee > 0
+      ? `Bokningen är avbokad. En återbetalning på ${result.refundAmountSek} kr har startats efter bokningsavgiften på ${fee} kr.`
+      : `Bokningen är avbokad. En full återbetalning på ${result.refundAmountSek} kr har startats.`;
+  }
+  return "Bokningen är avbokad.";
 }
 
 export default function AccountPortal() {
@@ -77,6 +96,7 @@ export default function AccountPortal() {
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false });
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
 
   const applyProfile = useCallback((next: Profile) => {
     setProfile(next);
@@ -219,6 +239,23 @@ export default function AccountPortal() {
     finally { setBusy(false); }
   };
 
+  const cancelBooking = async (booking: Booking) => {
+    if (!window.confirm("Avboka banan? Inom en timme efter bokning återbetalas hela beloppet. Minst 24 timmar före start återbetalas beloppet minus 20 kr. Senare sker ingen återbetalning.")) return;
+    setCancellingBookingId(booking.id); setError(""); setMessage("");
+    try {
+      const result = await api<CancellationResult>(`/api/booking/${booking.id}/cancel`, { method: "POST" });
+      setBookings((current) => current.map((item) => item.id === booking.id ? result.booking : item));
+      setMessage(cancellationMessage(result));
+      api<Booking[]>("/api/booking/mine")
+        .then((next) => setBookings(next))
+        .catch(() => null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte avboka bokningen");
+    } finally {
+      setCancellingBookingId(null);
+    }
+  };
+
   const logout = async () => {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
@@ -282,6 +319,8 @@ export default function AccountPortal() {
       availability={overviewAvailability}
       onOpenProfile={() => setTab("profile")}
       onOpenInvoices={() => setTab("invoices")}
+      onCancelBooking={cancelBooking}
+      cancellingBookingId={cancellingBookingId}
     /> : null}
 
     {tab === "profile" ? <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
@@ -298,7 +337,7 @@ export default function AccountPortal() {
       </section>
     </div> : null}
 
-    {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
+    {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
     {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}</article>)}</div>}</section> : null}
   </div>;
 }
@@ -314,6 +353,8 @@ function AccountOverview({
   availability,
   onOpenProfile,
   onOpenInvoices,
+  onCancelBooking,
+  cancellingBookingId,
 }: {
   profile: Profile;
   loading: boolean;
@@ -325,6 +366,8 @@ function AccountOverview({
   availability: OverviewAvailability;
   onOpenProfile: () => void;
   onOpenInvoices: () => void;
+  onCancelBooking: (booking: Booking) => void;
+  cancellingBookingId: string | null;
 }) {
   const firstName = profile.name?.trim().split(/\s+/)[0] || "spelare";
   const featuredBooking = currentBookings[0] ?? previousBookings[0] ?? null;
@@ -367,6 +410,7 @@ function AccountOverview({
             <span className="text-black/45">{featuredBooking.priceSek} kr</span>
             {featuredBooking.streamRequested ? <span className="text-black/45">BeachTV-stream beställd</span> : null}
           </div>
+          {featuredIsUpcoming && featuredBooking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancelBooking(featuredBooking)} disabled={cancellingBookingId === featuredBooking.id} className="mt-4 min-h-10 cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50">{cancellingBookingId === featuredBooking.id ? "Avbokar…" : "Avboka bokning"}</button> : null}
         </div> : <div className="mt-8 border border-dashed border-black/20 bg-cream p-6">
           <strong className="block">Ingen bana bokad ännu</strong>
           <p className="mt-2 text-sm leading-relaxed text-black/50">Hitta en ledig 90-minuterstid och boka direkt med Swish.</p>
@@ -374,12 +418,12 @@ function AccountOverview({
         </div>}
       </article>
 
-      <article className="bg-black p-6 text-white sm:p-8">
+      <article className="bg-black p-6 text-cream sm:p-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Aktuellt</p>
-        <h4 className="mt-2 font-display text-3xl">Mina träningsgrupper</h4>
+        <h4 className="mt-2 font-display text-3xl text-cream">Mina träningsgrupper</h4>
         {loading ? <OverviewLoading /> : !availability.training ? <p className="mt-7 border border-white/15 bg-white/5 p-5 text-sm text-white/60">Kunde inte hämta dina träningsgrupper just nu.</p> : trainingGroups.length ? <div className="mt-7 space-y-2">{trainingGroups.map((group) => <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
-          <strong className="block text-base">{group.group_name}</strong>
-          <span className="mt-1 block text-sm text-white/60">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
+          <strong className="block text-base text-cream">{group.group_name}</strong>
+          <span className="mt-1 block text-sm text-cream/65">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
         </div>)}</div> : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
         <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
@@ -419,6 +463,6 @@ function formatBookingDate(date: string) {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
-function BookingList({ title, items, empty }: { title: string; items: Booking[]; empty: string }) {
-  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="text-right"><strong>{booking.priceSek} kr</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div></article>)}</div>}</div>;
+function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
+  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{booking.priceSek} kr</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel && booking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancel(booking)} disabled={cancellingBookingId === booking.id} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{cancellingBookingId === booking.id ? "Avbokar…" : "Avboka"}</button> : null}</article>)}</div>}</div>;
 }
