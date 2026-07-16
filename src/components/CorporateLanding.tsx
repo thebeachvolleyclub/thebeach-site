@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
+import SolarStats from "@/components/SolarStats";
 
 export type Faq = { q: string; a: string };
 
@@ -84,6 +85,8 @@ export default function CorporateLanding({
             </div>
           </div>
         </section>
+
+        <SolarStats />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl">
