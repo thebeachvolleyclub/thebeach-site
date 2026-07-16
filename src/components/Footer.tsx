@@ -30,6 +30,7 @@ const COLS: { title: string; links: FLink[] }[] = [
     title: "Mer",
     links: [
       { label: "Om oss", href: "/om-oss" },
+      { label: "Hållbarhet", href: "/hallbarhet" },
       { label: "Kontakt", href: "/om-oss#kontakt" },
       { label: "FAQ", href: "/faq" },
       { label: "BeachTravels", href: "/beachtravels" },
@@ -59,6 +60,7 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
     title: "More",
     links: [
       { label: "About us", href: "/en/about" },
+      { label: "Sustainability", href: "/hallbarhet" },
       { label: "FAQ", href: "/en/faq" },
       { label: "Contact", href: "/en/about#contact" },
       { label: "BeachTravels", href: "/beachtravels" },

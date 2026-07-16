@@ -99,6 +99,10 @@ export default function HallbarhetPage() {
               <p className="inline-flex items-center gap-3 border border-lime/40 bg-lime/10 px-5 py-3 text-sm font-semibold text-lime">
                 Årets Företagare i Huddinge 2026
               </p>
+              <div className="mt-8 flex items-center gap-4">
+                <img src="/media/svenska-volleyboll.svg" alt="Svenska Volleybollförbundet" className="h-9 w-auto" />
+                <span className="text-sm text-bone/50">Stolt medlem i Svenska Volleybollförbundet</span>
+              </div>
             </Reveal>
             {FOUNDER_PHOTO ? (
               <Reveal delay={0.08}>
