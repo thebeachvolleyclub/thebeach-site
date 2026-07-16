@@ -41,7 +41,7 @@ function Contribution({ title, body }: { title: string; body: string }) {
 }
 
 /** Grön arena-sektion. Säsongsanpassad: sommar leder med produktion, vinter med batteri/nät. */
-export default async function SolarStats() {
+export default async function SolarStats({ compact = false }: { compact?: boolean } = {}) {
   const data = await getSolarData();
 
   // Sommar = april–september. Annars vinterläge.
@@ -93,14 +93,18 @@ export default async function SolarStats() {
           </span>
         </div>
 
-        <Reveal>
-          <h2 className="font-display text-[clamp(1.75rem,6vw,3rem)] leading-[0.95] text-cream">
-            Vi ger <span className="italic-accent">energi</span> — på riktigt
-          </h2>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <p className="mb-10 mt-4 max-w-2xl text-[15px] leading-relaxed text-cream/60">{lead}</p>
-        </Reveal>
+        {!compact && (
+          <>
+            <Reveal>
+              <h2 className="font-display text-[clamp(1.75rem,6vw,3rem)] leading-[0.95] text-cream">
+                Vi ger <span className="italic-accent">energi</span> — på riktigt
+              </h2>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <p className="mb-10 mt-4 max-w-2xl text-[15px] leading-relaxed text-cream/60">{lead}</p>
+            </Reveal>
+          </>
+        )}
 
         <StatGrid stats={stats} />
 
