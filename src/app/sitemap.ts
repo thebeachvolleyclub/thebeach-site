@@ -11,6 +11,7 @@ const staticPaths = [
   "/skola", "/barnkalas", "/julbord", "/om-oss", "/om-beachvolley",
   "/avanmalan", "/andringsanmalan",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
+  "/firmafest", "/svensexa", "/mohippa",
   "/en", "/en/events", "/en/book", "/en/school", "/en/about", "/en/faq",
 ];
 
