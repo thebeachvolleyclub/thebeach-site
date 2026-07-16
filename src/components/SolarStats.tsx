@@ -4,6 +4,8 @@ import { getSolarData } from "@/lib/solar";
 // Fasta hårdvarufakta — fysiska, ändras aldrig.
 const SOLAR_KW = "72 kW";
 const BATTERY = "~290 kWh";
+const PEOPLE =
+  "En av Sveriges största beachvolleyklubbar — ~800 spelare i veckan, alla åldrar. Grundarägd sedan 2006 och landslagshem för både dam och herr.";
 
 const fmtInt = (n: number) => n.toLocaleString("sv-SE");
 const fmt1 = (n: number) =>
@@ -54,7 +56,7 @@ export default async function SolarStats() {
 
   if (data && isSummer) {
     lead =
-      "Dagtid driver vi The Beach i princip helt på solen från vårt eget tak. Överskottet går ut på nätet till grannarna, och våra batterier hjälper till att hålla elnätet i balans.";
+      "Solen driver arenan. Rörelsen driver människorna. Dagtid går The Beach i princip helt på egen sol — överskottet går ut till grannarna och batteriet stabiliserar elnätet. Hållbarhet hos oss är inget vi säger, det är något vi mäter och visar.";
     stats = [
       { value: `${fmtInt(data.realTimePowerKw)} kW`, label: "Effekt just nu" },
       { value: `${fmtInt(data.dailyEnergyKwh)} kWh`, label: "Sol idag" },
@@ -93,7 +95,7 @@ export default async function SolarStats() {
 
         <Reveal>
           <h2 className="font-display text-[clamp(1.75rem,6vw,3rem)] leading-[0.95] text-cream">
-            Arenan drivs på <span className="italic-accent">egen sol</span>
+            Vi ger <span className="italic-accent">energi</span> — på riktigt
           </h2>
         </Reveal>
         <Reveal delay={0.05}>
@@ -107,7 +109,8 @@ export default async function SolarStats() {
           <Contribution title="Stabiliserar elnätet" body="Batterierna hjälper till att hålla elnätet i balans." />
         </div>
 
-        <p className="mt-7 text-[0.7rem] uppercase tracking-[0.18em] text-cream/45">{facts}</p>
+        <p className="mt-8 max-w-3xl text-[15px] leading-relaxed text-cream/70">{PEOPLE}</p>
+        <p className="mt-4 text-[0.7rem] uppercase tracking-[0.18em] text-cream/45">{facts}</p>
       </div>
     </section>
   );
