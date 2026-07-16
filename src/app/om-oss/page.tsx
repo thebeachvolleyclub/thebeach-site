@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import SolarStats from "@/components/SolarStats";
 
 export const metadata: Metadata = {
   alternates: {
@@ -136,6 +137,8 @@ export default function OmOssPage() {
             ))}
           </div>
         </section>
+
+        <SolarStats />
 
         {/* Hitta hit + kontakt */}
         <section id="kontakt" className="bg-lime px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
