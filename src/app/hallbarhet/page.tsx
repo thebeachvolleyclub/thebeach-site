@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 // Sätts när grundarfotot (Årets Företagare) finns i public/media.
-const FOUNDER_PHOTO: string | null = null;
+const FOUNDER_PHOTO: string | null = "/media/uploads/2026/07/mattiasochdavid-7a71da4582.jpg";
 
 export default function HallbarhetPage() {
   const cta = (
