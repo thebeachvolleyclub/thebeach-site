@@ -74,9 +74,9 @@ export default function HallbarhetPage() {
             <Reveal delay={0.05}>
               <p className="text-[17px] leading-relaxed text-black/70">
                 Här rör sig runt 800 människor i veckan, året runt, i alla åldrar från 3 till 99. Vår förening
-                är en av Sveriges största — 443 medlemmar, nästan hälften kvinnor, och 250 barn och ungdomar.
-                Vi är träningsbas för landslaget som tog OS-guld. Det är folkhälsa, gemenskap och jämställdhet
-                på riktigt — motgift mot stillasittande och ensamhet.
+                är en av Sveriges största — 443 tävlingslicensierade medlemmar (2025), nästan hälften kvinnor,
+                och 250 barn och ungdomar. Vi är träningsbas för landslaget som tog OS-guld. Det är folkhälsa,
+                gemenskap och jämställdhet på riktigt — motgift mot stillasittande och ensamhet.
               </p>
             </Reveal>
           </div>
@@ -91,17 +91,17 @@ export default function HallbarhetPage() {
                 Byggt och ägt av grundarna
               </h2>
               <p className="mb-6 text-[17px] leading-relaxed text-bone/60">
-                Bakom The Beach står samma två personer sedan 2006. David och Mattias äger både anläggningen
-                och bolaget som driver den, och har i 20 år återinvesterat allt i verksamheten. Mattias är
-                förbundskapten för damlandslaget, och Rasmus Jonsson leder tillsammans med Anders herrlandslaget.
-                Vi är en stolt medlem i Svenska Volleybollförbundet med ett djupt, väletablerat samarbete.
+                Bakom The Beach står samma två personer sedan 2006. David Cabrera och Mattias Magnusson äger
+                både anläggningen och bolaget som driver den, och har i 20 år återinvesterat allt i verksamheten.
+                Mattias är förbundskapten för damlandslaget, och Rasmus Jonsson leder tillsammans med Anders
+                Kristiansson herrlandslaget. Tillsammans med vår personal, våra tränare och ledare i föreningen
+                är vi en stolt medlem i Svenska Volleybollförbundet med ett djupt, väletablerat samarbete.
               </p>
               <p className="inline-flex items-center gap-3 border border-lime/40 bg-lime/10 px-5 py-3 text-sm font-semibold text-lime">
                 Årets Företagare i Huddinge 2026
               </p>
-              <div className="mt-8 flex items-center gap-4">
-                <img src="/media/svenska-volleyboll.svg" alt="Svenska Volleybollförbundet" className="h-9 w-auto" />
-                <span className="text-sm text-bone/50">Stolt medlem i Svenska Volleybollförbundet</span>
+              <div className="mt-8">
+                <img src="/media/svenska-volleyboll.svg" alt="Svenska Volleybollförbundet" className="h-10 w-auto" />
               </div>
             </Reveal>
             {FOUNDER_PHOTO ? (
