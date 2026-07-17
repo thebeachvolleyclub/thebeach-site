@@ -78,9 +78,16 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
 
 ## Notes
 
-- The site is fully static-friendly (no DB, no API routes, no `.env` needed).
-  If a `.env` ever becomes necessary, put it in the env's clone dir (mode 600,
-  gitignored) — deploy.sh picks it up automatically via `--env-file`.
+- The site has server-side API routes under `src/app/api/*` (account/session,
+  booking, newsletter, and the season-signup proxy `src/app/api/signup/*`).
+  These call the app backend server-side via `src/lib/appApi.ts`, keeping the
+  API key and the account bearer token off the browser. They need env config
+  (`APP_API_URL`, `APP_API_KEY`) — put it in the env's clone dir as `.env`
+  (mode 600, gitignored) so deploy.sh picks it up via `--env-file`. Defaults
+  target `https://api.beachtv.se`, so an empty `.env` still works in prod.
+  Season-signup identity is the HttpOnly `tb_account_session` cookie (a
+  verified bearer token); the routes forward that token and never trust a
+  browser-supplied user id.
 - The pre-container placeholder site is archived at
   `/home/beachinfo/site-backups/thebeach.one-placeholder-20260710.tar.gz`
   (offbox copy on beachapps-dev: `~/site-promote/offbox-backups/`).
