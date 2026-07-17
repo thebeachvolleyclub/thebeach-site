@@ -35,6 +35,7 @@ type Slot = {
 };
 
 type Config = {
+  config_version?: number;
   season_id: number;
   title: string;
   intro_md: string | null;
@@ -398,9 +399,13 @@ export default function SignupFormClient() {
 
   const existing = mine?.submission ?? null;
   const readOnly = !!existing && mine?.can_edit === false;
+  // Fail CLOSED against a legacy/partial API: only trust the open/preview
+  // flags when the server advertises the testers-gate contract (v2+).
+  const SIGNUP_CONFIG_VERSION = 2;
+  const gateAware = (config?.config_version ?? 0) >= SIGNUP_CONFIG_VERSION;
   // Who may sign up: publicly open (everyone), or an app-tester during the
   // pre-launch preview. The API enforces this too — this only governs the UI.
-  const canSignup = !!config && (config.is_open || (config.preview_open && viewerIsTester));
+  const canSignup = !!config && gateAware && (config.is_open || (config.preview_open && viewerIsTester));
 
   const title = (lang === "en" && config?.config?.title_en) || config?.title || "";
   const intro = (lang === "en" && config?.config?.intro_en) || config?.intro_md || "";
@@ -608,7 +613,8 @@ export default function SignupFormClient() {
   }
 
   // Pre-launch preview and this viewer isn't a tester → "opens 1 Aug".
-  if (!canSignup && !existing && config.preview_open) {
+  // Only when the server speaks the gate contract (fail closed otherwise).
+  if (!canSignup && !existing && gateAware && config.preview_open) {
     return (
       <div>
         {langRow}
