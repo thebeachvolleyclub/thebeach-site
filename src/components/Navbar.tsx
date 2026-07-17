@@ -23,6 +23,7 @@ const LINKS_EN = [
   { label: "Book an event", href: "/en/events", ext: false },
   { label: "Schools", href: "/en/school", ext: false },
   { label: "About", href: "/en/about", ext: false },
+  { label: "Become a member", href: "/foreningen", ext: false },
   { label: "Account", href: "/konto", ext: false },
 ];
 
