@@ -35,7 +35,7 @@ export default function BarnkalasPage() {
           intro="Sand mellan tårna, rörelse och glädje. Barnen leker och spelar på riktig strandsand — och avslutar med pizza och firande i vår lounge. Tryggt för föräldrar, oförglömligt för barnen."
           cta={
             <Link
-              href="/events#forfragan"
+              href="/events?paket=barnkalas#forfragan"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               Boka kalas <span aria-hidden="true">→</span>
@@ -91,7 +91,7 @@ export default function BarnkalasPage() {
               timmar och skräddarsyr kalaset.
             </p>
             <Link
-              href="/events#forfragan"
+              href="/events?paket=barnkalas#forfragan"
               className="shrink-0 cursor-pointer bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
             >
               Skicka förfrågan →

@@ -17,6 +17,7 @@ export default function CorporateLanding({
   included,
   why,
   faqs,
+  paket,
 }: {
   eyebrow: string;
   title: React.ReactNode;
@@ -25,6 +26,7 @@ export default function CorporateLanding({
   included: string[];
   why: { h: string; p: string }[];
   faqs: Faq[];
+  paket?: string;
 }) {
   const faqLd = {
     "@context": "https://schema.org",
@@ -36,9 +38,13 @@ export default function CorporateLanding({
     })),
   };
 
+  const forfraganHref = paket
+    ? `/events?paket=${paket}#forfragan`
+    : "/events#forfragan";
+
   const cta = (
     <Link
-      href="/events#forfragan"
+      href={forfraganHref}
       className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
     >
       Skicka förfrågan <span aria-hidden="true">→</span>
@@ -116,7 +122,7 @@ export default function CorporateLanding({
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-black/60">Skicka en förfrågan så återkommer vi inom 24 timmar med ett upplägg.</p>
             </Reveal>
             <Reveal delay={0.06} className="shrink-0">
-              <Link href="/events#forfragan" className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
+              <Link href={forfraganHref} className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
                 Skicka förfrågan <span aria-hidden="true">→</span>
               </Link>
             </Reveal>

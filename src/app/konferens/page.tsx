@@ -12,6 +12,7 @@ export default function KonferensPage() {
   return (
     <CorporateLanding
       eyebrow="Konferens"
+      paket="konferens"
       title={<>Konferens med<br /><span className="italic-accent">sand mellan besluten</span></>}
       intro="Möte och aktivitet på samma ställe — konferens med sand mellan tårna, 15 min från Stockholm C."
       lead="Kör konferensen där energin håller hela dagen. Upp till tre timmars konferens i loungen med projektor och duk, kombinerat med beachvolley, mat och dryck — allt under samma tak i vår inomhusarena. Perfekt för planeringsdagar, kickoffer och ledningskonferenser som ska ge något mer än ett mötesrum."

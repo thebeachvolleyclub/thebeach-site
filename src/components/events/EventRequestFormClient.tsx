@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EVENT_PACKAGES } from "@/lib/packages";
 import { postForm } from "@/lib/postForm";
 
@@ -10,10 +10,40 @@ const inputCls =
 const labelCls =
   "text-[10px] font-bold uppercase tracking-[0.15em] text-black/70";
 
+// Slug (?paket=) → exakt paketsträng i EVENT_PACKAGES.
+// Landningssidorna skickar sin slug så rätt ruta bockas i här.
+const PAKET_MAP: Record<string, string> = {
+  laspalmas: "Las Palmas — 745 kr/person",
+  algarve: "Algarve — 945 kr/person",
+  miami: "Miami — 1 195 kr/person",
+  konferens: "+ Konferens i sanden (+395 kr/person)",
+  barnkalas: "Barnkalas",
+  teneriffa: "Teneriffa (ungdomslag)",
+  privat: "Privat fest (bröllop / födelsedag)",
+  skraddarsytt: "Skräddarsytt & större event",
+  julbord: "Julbord (säsong)",
+};
+
+// Default = Algarve (mest bokad) om ingen giltig slug finns.
+const DEFAULT_PAKET = EVENT_PACKAGES[1];
+
 export default function EventRequestFormClient() {
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checked, setChecked] = useState<string[]>([DEFAULT_PAKET]);
+
+  // Läs ?paket= efter mount (undviker dynamisk rendering av /events).
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("paket");
+    const paket = slug ? PAKET_MAP[slug.toLowerCase()] : undefined;
+    if (paket) setChecked([paket]);
+  }, []);
+
+  const toggle = (p: string) =>
+    setChecked((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+    );
 
   if (sent) {
     return (
@@ -107,7 +137,7 @@ export default function EventRequestFormClient() {
       <fieldset className="flex flex-col gap-2.5">
         <legend className={labelCls}>Jag är intresserad av</legend>
         <div className="mt-1 flex flex-col gap-2.5">
-          {EVENT_PACKAGES.map((p, i) => (
+          {EVENT_PACKAGES.map((p) => (
             <label
               key={p}
               className="flex cursor-pointer items-center gap-3 text-sm text-black/70"
@@ -116,7 +146,8 @@ export default function EventRequestFormClient() {
                 type="checkbox"
                 name="intresse"
                 value={p}
-                defaultChecked={i === 1}
+                checked={checked.includes(p)}
+                onChange={() => toggle(p)}
                 className="h-[18px] w-[18px] shrink-0 accent-black"
               />
               {p}

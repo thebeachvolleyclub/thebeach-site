@@ -35,7 +35,7 @@ export default function JulbordPage() {
           intro="Trött på samma julbord varje år? Ta med teamet till stranden: turnering på sanden, julmat i loungen och sommarkänsla mitt i vintern. Boka tidigt — helgerna går först."
           cta={
             <Link
-              href="/events#forfragan"
+              href="/events?paket=julbord#forfragan"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               Be om förslag <span aria-hidden="true">→</span>
@@ -61,7 +61,7 @@ export default function JulbordPage() {
               24 timmar.
             </p>
             <Link
-              href="/events#forfragan"
+              href="/events?paket=julbord#forfragan"
               className="shrink-0 cursor-pointer bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
             >
               Skicka förfrågan →

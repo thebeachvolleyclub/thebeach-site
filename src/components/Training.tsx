@@ -8,13 +8,14 @@ type Card = {
   desc: string;
   badge: string;
   spots: "open" | "few";
+  href: string;
 };
 
 const CARDS: Card[] = [
-  { level: "Nybörjare", title: "Grundkurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Spela, träna och lär känna sporten från grunden.", badge: "Anmälan öppen", spots: "open" },
-  { level: "Mellannivå", title: "Fortsättningskurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Du kan grunderna — nu tar vi ditt spel till nästa nivå.", badge: "Anmälan öppen", spots: "open" },
-  { level: "Avancerat", title: "Träningsgrupper", when: "Höstsäsong · Start 30 aug", desc: "Jämna grupper på din nivå — träning med coacher på nationell nivå.", badge: "Anmälan öppnar 1 aug 20:00", spots: "few" },
-  { level: "Barn & Ungdom", title: "Juniorträning", when: "Hela terminen · Weekends", desc: "För barn och unga som vill lära sig beachvolley på riktigt.", badge: "Anmälan öppen", spots: "open" },
+  { level: "Nybörjare", title: "Grundkurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Spela, träna och lär känna sporten från grunden.", badge: "Anmälan öppen", spots: "open", href: "/trana#kurser" },
+  { level: "Mellannivå", title: "Fortsättningskurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Du kan grunderna — nu tar vi ditt spel till nästa nivå.", badge: "Anmälan öppen", spots: "open", href: "/trana#kurser" },
+  { level: "Avancerat", title: "Träningsgrupper", when: "Höstsäsong · Start 30 aug", desc: "Jämna grupper på din nivå — träning med coacher på nationell nivå.", badge: "Anmälan öppnar 1 aug 20:00", spots: "few", href: "/trana#traningsgrupper" },
+  { level: "Barn & Ungdom", title: "Juniorträning", when: "Hela terminen · Weekends", desc: "För barn och unga som vill lära sig beachvolley på riktigt.", badge: "Anmälan öppen", spots: "open", href: "/trana#ungdom" },
 ];
 
 export default function Training() {
@@ -50,7 +51,10 @@ export default function Training() {
 
         {CARDS.map((c, i) => (
           <Reveal key={c.title} delay={i * 0.06} className="h-full">
-            <div className="flex h-full cursor-pointer flex-col bg-white p-7 transition-colors duration-300 hover:bg-lime/40 lg:p-10">
+            <a
+              href={c.href}
+              className="flex h-full cursor-pointer flex-col bg-white p-7 transition-colors duration-300 hover:bg-lime/40 lg:p-10"
+            >
               <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
                 {c.level}
               </div>
@@ -69,7 +73,7 @@ export default function Training() {
               >
                 {c.badge}
               </span>
-            </div>
+            </a>
           </Reveal>
         ))}
 
