@@ -3,8 +3,8 @@
 const ITEMS = [
   { n: "01", title: "Spela", href: "/boka", img: "/media/wilson-boll-sand.webp", alt: "Beachvolleyboll i sanden", pos: "object-[50%_65%]" },
   { n: "02", title: "Träna", href: "/trana", img: "/media/coach.webp", alt: "Coach på The Beach", pos: "object-[50%_12%]" },
-  { n: "03", title: "Tävla", href: "#calendar", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver", pos: "object-[50%_15%]" },
-  { n: "04", title: "Event & konferens", href: "#event", img: "/media/event.webp", alt: "Företagsevent på The Beach", pos: "object-center" },
+  { n: "03", title: "Tävla", href: "/kalender", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver", pos: "object-[50%_15%]" },
+  { n: "04", title: "Event & konferens", href: "/events", img: "/media/event.webp", alt: "Företagsevent på The Beach", pos: "object-center" },
 ];
 
 export default function QuickNav() {
