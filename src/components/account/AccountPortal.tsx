@@ -498,6 +498,8 @@ function AccountOverview({
       <ActivityHistoryCard title="Tidigare träningsgrupper" eyebrow="Träningshistorik" items={activity.training_groups} loading={loading} available={availability.activity} kind="training" />
     </div>
 
+    <SignupStatusCard />
+
     <div className="mt-px grid gap-px bg-black/10 sm:grid-cols-3">
       <DashboardAction eyebrow="Spela" title="Boka en bana" href="/boka" />
       <DashboardAction eyebrow="Håll koll" title="Se kalendern" href="/kalender" />
@@ -507,6 +509,49 @@ function AccountOverview({
       </button>
     </div>
   </section>;
+}
+
+type SignupMine = {
+  submission: { id: number; created_at: string | null; changed_at: string | null; is_changed: boolean } | null;
+  can_edit: boolean;
+  is_open: boolean;
+  last_cancelled: { cancelled_at: string | null } | null;
+};
+
+function SignupStatusCard() {
+  const [mine, setMine] = useState<SignupMine | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api<SignupMine>("/api/signup/mine")
+      .then((result) => { if (active) setMine(result); })
+      .catch(() => null)
+      .finally(() => { if (active) setLoaded(true); });
+    return () => { active = false; };
+  }, []);
+
+  // Show nothing until we know — and nothing at all when there's neither a
+  // registration nor an open signup window.
+  if (!loaded || (!mine?.submission && !mine?.is_open && !mine?.last_cancelled)) return null;
+
+  const sub = mine?.submission ?? null;
+  const status = sub
+    ? `Anmäld${sub.created_at ? ` ${sub.created_at.slice(0, 10)}` : ""}${sub.is_changed && sub.changed_at ? ` · ändrad ${sub.changed_at.slice(0, 10)}` : ""}${mine?.can_edit === false ? " · låst för ändringar" : ""}`
+    : mine?.last_cancelled
+      ? `Avbruten${mine.last_cancelled.cancelled_at ? ` ${mine.last_cancelled.cancelled_at.slice(0, 10)}` : ""}${mine?.is_open ? " · anmälan är öppen igen" : ""}`
+      : "Anmälan är öppen — säkra din plats";
+
+  return <div className="mt-px">
+    <Link href="/anmalan" className="group flex flex-wrap items-center justify-between gap-3 bg-black p-5 text-cream transition-colors hover:bg-teal sm:p-6">
+      <span className="min-w-0">
+        <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Träningsgrupper</span>
+        <strong className="mt-1 block text-base">Min anmälan — {status}</strong>
+        <span className="mt-1 block text-xs text-cream/60">{sub ? (mine?.can_edit === false ? "Öppna och se din anmälan" : "Öppna, ändra eller avbryt din anmälan") : "Öppna anmälningsformuläret"}</span>
+      </span>
+      <span className="text-lime" aria-hidden="true">→</span>
+    </Link>
+  </div>;
 }
 
 function ActivityHistoryCard({ title, eyebrow, items, loading, available, kind }: { title: string; eyebrow: string; items: ActivityEntry[]; loading: boolean; available: boolean; kind: "event" | "training" }) {

@@ -143,10 +143,10 @@ export default function TrainingGroups() {
       {/* CTA */}
       <Reveal delay={0.15} className="mt-10">
         <a
-          href="#nyhetsbrev"
+          href="/anmalan"
           className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
         >
-          Anmälan öppnar 1 aug 20:00 — här på hemsidan <span aria-hidden="true">→</span>
+          Till anmälan — öppnar 1 aug 20:00 <span aria-hidden="true">→</span>
         </a>
       </Reveal>
     </section>
