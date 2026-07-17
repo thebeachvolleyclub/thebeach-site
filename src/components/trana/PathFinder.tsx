@@ -20,22 +20,33 @@ type Path = {
 
 function getPath(age: Age, exp: Exp): Path {
   if (age === "under21") {
+    if (exp === "regular") {
+      return {
+        title: "Du kan välja båda spåren",
+        body: "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna (anmälan öppnar 1 aug 20:00).",
+        ctas: [
+          { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
+          { label: "Se träningsgrupperna", href: "#traningsgrupper" },
+        ],
+      };
+    }
+    if (exp === "comeback") {
+      return {
+        title: "Du kan välja båda spåren",
+        body: "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Även fortsättningskursen kan vara ett alternativ. Välj det som passar dig bäst.",
+        ctas: [
+          { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
+          { label: "Se kurserna", href: "#kurser" },
+        ],
+      };
+    }
     return {
       title: "Du kan välja båda spåren",
-      body:
-        exp === "regular"
-          ? "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna (anmälan öppnar 1 aug 20:00)."
-          : "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Välj det som passar dig bäst.",
-      ctas:
-        exp === "regular"
-          ? [
-              { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
-              { label: "Se träningsgrupperna", href: "#traningsgrupper" },
-            ]
-          : [
-              { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
-              { label: "Grundkursen", href: "#kurser" },
-            ],
+      body: "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Välj det som passar dig bäst.",
+      ctas: [
+        { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
+        { label: "Grundkursen", href: "#kurser" },
+      ],
     };
   }
   if (exp === "never") {
