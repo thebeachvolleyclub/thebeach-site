@@ -1,14 +1,15 @@
 import { accountToken, sameOrigin } from "@/lib/accountSession";
-import { appApi, proxyAppJson, resolveAccountUserId } from "@/lib/appApi";
+import { appApi, proxyAppJson } from "@/lib/appApi";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Create or update a season signup. Works signed-out (anonymous web
- * signup) and signed-in — when a valid account session exists the app
- * user id is attached server-side so the API can upsert the account's
- * single active submission and write profile corrections back to the
- * master registry (same behaviour as the app).
+ * signup) and signed-in. When an account session exists, the verified
+ * bearer token is forwarded so the API can upsert the account's single
+ * active submission and write profile corrections back to the master
+ * registry — the API binds identity to the token, never to a
+ * caller-supplied user id.
  */
 export async function POST(request: Request) {
   if (!sameOrigin(request)) {
@@ -16,8 +17,7 @@ export async function POST(request: Request) {
   }
   const body = await request.text();
   const token = await accountToken();
-  const userId = token ? await resolveAccountUserId(token) : null;
   return proxyAppJson(
-    await appApi("/season-signup/submit", { method: "POST", body }, userId ? { userId } : undefined),
+    await appApi("/season-signup/submit", { method: "POST", body }, token ? { token } : undefined),
   );
 }

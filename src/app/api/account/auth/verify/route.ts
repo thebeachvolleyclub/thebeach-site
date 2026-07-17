@@ -5,23 +5,12 @@ import {
   setAccountSession,
   setFamilyChoice,
 } from "@/lib/accountSession";
-import { appApi, appJson } from "@/lib/appApi";
+import { appApi } from "@/lib/appApi";
 
 export const dynamic = "force-dynamic";
 
-type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null };
-type VerifyPayload = { user?: { id?: string }; family_users?: FamilyUser[] };
-
-async function issueToken(userId: string): Promise<string> {
-  const response = await appApi(
-    "/matchmaking/auth/issue-token",
-    { method: "POST", body: JSON.stringify({ device_label: "thebeach.one" }) },
-    { userId },
-  );
-  const payload = await appJson<{ token: string }>(response);
-  if (!payload.token) throw new Error("Kunde inte skapa webbessionen");
-  return payload.token;
-}
+type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null; auth_token?: string | null };
+type VerifyPayload = { user?: { id?: string }; family_users?: FamilyUser[]; auth_token?: string | null };
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
@@ -44,16 +33,25 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Tokens are minted by the verified login itself (verify-code) — the
+    // old flow minted them afterwards via the spoofable legacy header,
+    // which let any API-key holder become any user (audit 2026-07-17).
     const family = Array.isArray(payload.family_users) ? payload.family_users.filter((item) => item?.id) : [];
     if (family.length > 1) {
-      const response = NextResponse.json({ requiresSelection: true, familyUsers: family });
-      for (const member of family) setFamilyChoice(response, member.id, await issueToken(member.id));
+      const missing = family.filter((member) => !member.auth_token);
+      if (missing.length) return NextResponse.json({ detail: "Inloggningssvaret saknade session" }, { status: 502 });
+      const response = NextResponse.json({
+        requiresSelection: true,
+        familyUsers: family.map(({ auth_token: _token, ...member }) => member),
+      });
+      for (const member of family) setFamilyChoice(response, member.id, member.auth_token as string);
       return response;
     }
     const userId = payload.user?.id;
     if (!userId) return NextResponse.json({ detail: "Inloggningssvaret saknade användare" }, { status: 502 });
+    if (!payload.auth_token) return NextResponse.json({ detail: "Inloggningssvaret saknade session" }, { status: 502 });
     const response = NextResponse.json({ authenticated: true });
-    setAccountSession(response, await issueToken(userId));
+    setAccountSession(response, payload.auth_token);
     return response;
   } catch (error) {
     return NextResponse.json(

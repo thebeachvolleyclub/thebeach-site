@@ -50,15 +50,3 @@ export async function appJson<T>(response: Response): Promise<T> {
   }
   return payload as T;
 }
-
-/**
- * Resolve the app user id behind an opaque account token, server-side, so
- * X-User-Id can never be supplied or forged by the browser. Returns null
- * when the token is invalid/expired.
- */
-export async function resolveAccountUserId(token: string): Promise<string | null> {
-  const response = await appApi("/matchmaking/auth/me", undefined, { token });
-  if (!response.ok) return null;
-  const profile = await response.json().catch(() => ({})) as { id?: string };
-  return profile.id ?? null;
-}
