@@ -5,6 +5,7 @@ import Ticker from "@/components/Ticker";
 import JsonLd from "@/components/JsonLd";
 import EventHero from "@/components/events/EventHero";
 import EventPaths from "@/components/events/EventPaths";
+import EventPhotoMarquee from "@/components/events/EventPhotoMarquee";
 import PricingTiers from "@/components/events/PricingTiers";
 import DayBand from "@/components/events/DayBand";
 import ConferenceBand from "@/components/events/ConferenceBand";
@@ -52,6 +53,8 @@ export default function EventsPage() {
       <main className="flex-1">
         <EventHero />
         <Ticker />
+        {/* Fotoremsa — roteras per sidladdning, caia3_bianca alltid #2 */}
+        <EventPhotoMarquee />
         <EventPaths />
         <PricingTiers />
         <DayBand />
