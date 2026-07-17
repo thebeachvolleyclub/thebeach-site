@@ -19,6 +19,8 @@ export type Ev = {
   beskrivning?: string;
   stycken?: string[];
   cta?: { label: string; href: string };
+  schema?: { tid: string; vad: string }[];
+  appCta?: boolean;
   skarm?: boolean;
 };
 
@@ -73,6 +75,25 @@ export const MONTHS: Month[] = [
           "För att spela rankinggrundande turneringar krävs tävlingslicens via Svenska Volleybollförbundet. Du söker licens genom en förening — du är varmt välkommen att gå med i vår, [The Beach Volley Club Huddinge](/foreningen). Medlemskap + licens kostar 350 kr (190 kr för junior) och ger dessutom rabatt på bokningar. Licensen aktiveras inte automatiskt, så be om att få den aktiverad i god tid innan du anmäler dig.",
         ],
         cta: { label: "Anmäl via Profixio", href: "https://www.profixio.com/fx/terminliste.php?org=SVBF.SE.SVB" } },
+      { day: "23", wd: "Sön", title: "Klubbmästerskapet 2026", meta: "Klubbmästerskap · Anmälan individuellt via appen — ingen partner behövs", badge: "KM", type: "tournament",
+        slug: "klubbmasterskapet-2026", skarm: true,
+        beskrivning: "Efter en härlig sommarsäsong med klubbens framgångar är det dags att kora klubbens egna mästare och hylla säsongens spelarprestationer. Anmälan görs individuellt — du behöver ingen partner. Närmare information om spelsystemet kommer.",
+        schema: [
+          { tid: "12:00", vad: "Uppvärmning" },
+          { tid: "12:10", vad: "Turneringsstart — 3 omgångar" },
+          { tid: "12:45", vad: "Paus" },
+          { tid: "12:55", vad: "3 omgångar" },
+          { tid: "13:30", vad: "Paus" },
+          { tid: "13:40", vad: "3 omgångar" },
+          { tid: "14:15", vad: "Paus" },
+          { tid: "14:25", vad: "3 omgångar" },
+          { tid: "15:00", vad: "KotC slut — mat och säsongens framgångar" },
+          { tid: "15:30–16:50", vad: "Finaler" },
+        ],
+        stycken: [
+          "Anmälan görs via The Beach-appen — individuellt, så du behöver ingen partner. Ladda ner appen och anmäl dig direkt i den.",
+        ],
+        appCta: true },
       { day: "23", wd: "Sön", title: "Träningsgrupper publiceras", meta: "Gruppindelningen mejlas ut och publiceras", badge: "Träning", type: "training",
         beskrivning: "Senast idag publiceras höstens gruppindelning. Håll koll på mejlen." },
       { day: "30", wd: "Sön", title: "Träningsgrupper startar — söndagar", meta: "Höstsäsongen drar igång · 15 pass", badge: "Träning", type: "training", skarm: true },
