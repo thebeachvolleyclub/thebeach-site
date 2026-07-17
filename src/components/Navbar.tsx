@@ -14,6 +14,7 @@ const LINKS_SV = [
   { label: "Träna", href: "/trana", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },
   { label: "Om oss", href: "/om-oss", ext: false },
+  { label: "Bli medlem", href: "/foreningen", ext: false },
   { label: "Konto", href: "/konto", ext: false },
 ];
 
