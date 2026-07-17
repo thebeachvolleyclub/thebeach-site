@@ -39,6 +39,8 @@ type Config = {
   title: string;
   intro_md: string | null;
   is_open: boolean;
+  preview_open: boolean;
+  testers_only: boolean;
   edits_locked: boolean;
   contact_email: string;
   opens_at: string | null;
@@ -103,6 +105,9 @@ const STR = {
     noOpen: "Det finns ingen öppen anmälan just nu.",
     opensLater: (d: string) => `Anmälan öppnar ${d} — här på hemsidan.`,
     closed: "Anmälan är stängd.",
+    previewTitle: "Anmälan öppnar snart",
+    previewBody: "Anmälan till träningsgrupperna öppnar för alla den 1 augusti. Just nu är den öppen endast för testare/admins.",
+    previewLoginHint: "Är du testare? Logga in med samma e-post som i appen så kan du anmäla dig nu.",
     loginNudgeTitle: "Har du ett Beach-konto?",
     loginNudge: "Logga in så fyller vi i dina uppgifter — och du kan öppna och ändra din anmälan senare.",
     loginCta: "Logga in på Mitt konto",
@@ -182,6 +187,9 @@ const STR = {
     noOpen: "There is no open registration right now.",
     opensLater: (d: string) => `Registration opens ${d} — right here on the website.`,
     closed: "Registration is closed.",
+    previewTitle: "Registration opens soon",
+    previewBody: "Registration for the training groups opens for everyone on 1 August. Right now it's open only to testers/admins.",
+    previewLoginHint: "Are you a tester? Sign in with the same email as in the app to register now.",
     loginNudgeTitle: "Have a Beach account?",
     loginNudge: "Sign in and we prefill your details — and you can open and change your registration later.",
     loginCta: "Sign in to My account",
@@ -299,6 +307,7 @@ export default function SignupFormClient() {
   const [mine, setMine] = useState<MineState | null>(null);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
+  const [viewerIsTester, setViewerIsTester] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
@@ -356,12 +365,13 @@ export default function SignupFormClient() {
     try {
       const cfg = await api<Config>("/api/signup/config").catch(() => null);
       setConfig(cfg);
-      const session = await api<{ authenticated: boolean; profile?: { name?: string | null } }>(
+      const session = await api<{ authenticated: boolean; profile?: { name?: string | null; is_app_tester?: boolean } }>(
         "/api/account/session",
       ).catch(() => null);
       if (session?.authenticated) {
         setAuthed(true);
         setAccountName(session.profile?.name ?? null);
+        setViewerIsTester(!!session.profile?.is_app_tester);
         const [pf, mineState] = await Promise.all([
           api<Prefill>("/api/signup/prefill").catch(() => null),
           api<MineState>("/api/signup/mine").catch(() => null),
@@ -388,6 +398,9 @@ export default function SignupFormClient() {
 
   const existing = mine?.submission ?? null;
   const readOnly = !!existing && mine?.can_edit === false;
+  // Who may sign up: publicly open (everyone), or an app-tester during the
+  // pre-launch preview. The API enforces this too — this only governs the UI.
+  const canSignup = !!config && (config.is_open || (config.preview_open && viewerIsTester));
 
   const title = (lang === "en" && config?.config?.title_en) || config?.title || "";
   const intro = (lang === "en" && config?.config?.intro_en) || config?.intro_md || "";
@@ -594,8 +607,30 @@ export default function SignupFormClient() {
     );
   }
 
+  // Pre-launch preview and this viewer isn't a tester → "opens 1 Aug".
+  if (!canSignup && !existing && config.preview_open) {
+    return (
+      <div>
+        {langRow}
+        <div className={cardCls}>
+          <p className="font-display text-2xl uppercase text-black">{t.previewTitle}</p>
+          <p className={hintCls}>{t.previewBody}</p>
+          {mine?.last_cancelled ? (
+            <p className={hintCls}>{t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)}</p>
+          ) : null}
+          {!authed ? (
+            <p className="mt-4 border-t border-black/10 pt-4 text-sm text-black/55">
+              {t.previewLoginHint}{" "}
+              <Link href="/konto" className="font-semibold text-teal underline underline-offset-4">{t.loginCta} →</Link>
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   // Signup closed and nothing to edit.
-  if (!config.is_open && !existing) {
+  if (!canSignup && !existing) {
     const opensInFuture = config.opens_at && new Date(config.opens_at).getTime() > Date.now();
     return (
       <div>

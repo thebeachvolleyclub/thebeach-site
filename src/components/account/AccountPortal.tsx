@@ -515,6 +515,7 @@ type SignupMine = {
   submission: { id: number; created_at: string | null; changed_at: string | null; is_changed: boolean } | null;
   can_edit: boolean;
   is_open: boolean;
+  can_signup: boolean;
   last_cancelled: { cancelled_at: string | null } | null;
 };
 
@@ -531,15 +532,16 @@ function SignupStatusCard() {
     return () => { active = false; };
   }, []);
 
-  // Show nothing until we know — and nothing at all when there's neither a
-  // registration nor an open signup window.
-  if (!loaded || (!mine?.submission && !mine?.is_open && !mine?.last_cancelled)) return null;
+  // Show nothing until we know — and nothing at all unless there's a
+  // registration, a recent cancellation, or this viewer may sign up now
+  // (public open, or preview open and they're a tester → can_signup).
+  if (!loaded || (!mine?.submission && !mine?.can_signup && !mine?.last_cancelled)) return null;
 
   const sub = mine?.submission ?? null;
   const status = sub
     ? `Anmäld${sub.created_at ? ` ${sub.created_at.slice(0, 10)}` : ""}${sub.is_changed && sub.changed_at ? ` · ändrad ${sub.changed_at.slice(0, 10)}` : ""}${mine?.can_edit === false ? " · låst för ändringar" : ""}`
     : mine?.last_cancelled
-      ? `Avbruten${mine.last_cancelled.cancelled_at ? ` ${mine.last_cancelled.cancelled_at.slice(0, 10)}` : ""}${mine?.is_open ? " · anmälan är öppen igen" : ""}`
+      ? `Avbruten${mine.last_cancelled.cancelled_at ? ` ${mine.last_cancelled.cancelled_at.slice(0, 10)}` : ""}${mine?.can_signup ? " · du kan anmäla dig igen" : ""}`
       : "Anmälan är öppen — säkra din plats";
 
   return <div className="mt-px">
