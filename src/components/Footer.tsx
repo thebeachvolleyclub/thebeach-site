@@ -130,8 +130,8 @@ export default function Footer({ locale = "sv" }: { locale?: "sv" | "en" }) {
 
       <div className="flex flex-col items-start gap-4 text-xs text-white/20 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
         <span>
-          © {new Date().getFullYear()} The Beach · Beachhallen Tropical AB ·
-          556699-2839 ·{" "}
+          © {new Date().getFullYear()} The Beach Volley Club Huddinge ·
+          802503-0928 ·{" "}
           <Link href="/integritetspolicy" className="transition-colors hover:text-lime">
             {locale === "en" ? "Privacy policy" : "Integritetspolicy"}
           </Link>

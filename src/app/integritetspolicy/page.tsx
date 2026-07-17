@@ -5,7 +5,7 @@ import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
   title: "Integritetspolicy — The Beach",
-  description: "Hur Beachhallen Tropical AB behandlar personuppgifter.",
+  description: "Hur The Beach Volley Club Huddinge behandlar personuppgifter.",
   robots: { index: false },
 };
 
@@ -20,8 +20,8 @@ export default function IntegritetsPage() {
           </h1>
           <div className="space-y-6 text-[15px] leading-relaxed text-black/65">
             <p>
-              Personuppgiftsansvarig: Beachhallen Tropical AB (org.nr
-              556699-2839), Novavägen 35, 141 44 Huddinge.
+              Personuppgiftsansvarig: The Beach Volley Club Huddinge (org.nr
+              802503-0928), Novavägen 35, 141 44 Huddinge.
             </p>
             <p>
               Vi behandlar personuppgifter du lämnar när du skickar en
