@@ -41,7 +41,7 @@ export default async function Calendar() {
             {m.events.map((e, i) => (
               <Link
                 key={`${m.month}-${i}`}
-                href="/kalender#kommande"
+                href={e.slug ? `/kalender/${e.slug}` : "/kalender#kommande"}
                 className="flex cursor-pointer items-start gap-4 border-b border-black/[0.07] py-4 transition-colors hover:bg-black/[0.02]"
               >
                 <div className="w-12 shrink-0 text-center">
