@@ -25,7 +25,7 @@ function getPath(age: Age, exp: Exp): Path {
       body:
         exp === "regular"
           ? "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna (anmälan öppnar 1 aug 20:00)."
-          : "Under 21? Du har två vägar in — juniorträning via klubben (hela terminen, lägre pris, helger) eller grundkursen (5 kvällspass, effektivt 395 kr under 26 år). Välj det som passar dig bäst.",
+          : "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Välj det som passar dig bäst.",
       ctas:
         exp === "regular"
           ? [
