@@ -15,6 +15,7 @@ type Profile = {
   avatar_thumb_url: string | null;
   banner_url: string | null;
   profile_complete: boolean;
+  canonical_player_id: number | null;
 };
 
 type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null };
@@ -33,8 +34,12 @@ type Invoice = { id: string; amount_sek: number; status: string; paid_at?: strin
 type InvoiceFeed = { invoices: Invoice[]; active_count?: number };
 type TrainingGroup = { group_name: string; day_time: string; court: number | null };
 type TrainingLookup = { found: boolean; groups: TrainingGroup[]; message?: string | null };
+type EmailAddress = { email: string; is_primary: boolean };
+type EmailFeed = { addresses: EmailAddress[] };
+type ActivityEntry = { name: string; date: string | null; groups?: string[] };
+type ActivityFeed = { events: ActivityEntry[]; training_groups: ActivityEntry[] };
 type AccountTab = "overview" | "bookings" | "invoices" | "profile";
-type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean };
+type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean };
 type CancellationResult = {
   booking: Booking;
   refundAmountSek?: number | null;
@@ -88,14 +93,19 @@ export default function AccountPortal() {
   const [emoji, setEmoji] = useState("🏐");
   const [isPublic, setIsPublic] = useState(true);
   const [newEmail, setNewEmail] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
   const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailAddresses, setEmailAddresses] = useState<EmailAddress[]>([]);
+  const [emailsAvailable, setEmailsAvailable] = useState(true);
+  const [emailsLoading, setEmailsLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeInvoiceCount, setActiveInvoiceCount] = useState(0);
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
+  const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false });
+  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
 
   const applyProfile = useCallback((next: Profile) => {
@@ -105,7 +115,6 @@ export default function AccountPortal() {
     setDescription(next.description ?? "");
     setEmoji(next.emoji_icon || "🏐");
     setIsPublic(next.is_public);
-    setNewEmail(next.email);
   }, []);
 
   const loadSession = useCallback(async () => {
@@ -142,12 +151,16 @@ export default function AccountPortal() {
   useEffect(() => {
     if (!profileId) return;
     let active = true;
+    setOverviewLoading(true);
+    setEmailsLoading(true);
 
     Promise.allSettled([
       api<Booking[]>("/api/booking/mine"),
       api<InvoiceFeed>("/api/account/invoices"),
       api<TrainingLookup>("/api/account/training"),
-    ]).then(([bookingResult, invoiceResult, trainingResult]) => {
+      api<EmailFeed>("/api/account/profile/emails"),
+      api<ActivityFeed>("/api/account/activity"),
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -155,10 +168,20 @@ export default function AccountPortal() {
         setActiveInvoiceCount(invoiceResult.value.active_count ?? 0);
       }
       if (trainingResult.status === "fulfilled") setTrainingGroups(trainingResult.value.groups ?? []);
+      if (emailResult.status === "fulfilled") setEmailAddresses(emailResult.value.addresses ?? []);
+      setEmailsAvailable(emailResult.status === "fulfilled");
+      setEmailsLoading(false);
+      if (activityResult.status === "fulfilled") {
+        setActivity({
+          events: activityResult.value.events ?? [],
+          training_groups: activityResult.value.training_groups ?? [],
+        });
+      }
       setOverviewAvailability({
         bookings: bookingResult.status === "fulfilled",
         invoices: invoiceResult.status === "fulfilled",
         training: trainingResult.status === "fulfilled",
+        activity: activityResult.status === "fulfilled",
       });
       setOverviewLoading(false);
     });
@@ -221,10 +244,13 @@ export default function AccountPortal() {
     finally { setBusy(false); }
   };
 
-  const requestEmailCode = async () => {
+  const requestEmailCode = async (address?: string) => {
     setBusy(true); setError(""); setMessage("");
+    setEmailCodeSent(false); setEmailCode(""); setPendingEmail("");
     try {
-      const result = await api<{ message: string }>("/api/account/profile/email/request-code", { method: "POST", body: JSON.stringify({ new_email: newEmail }) });
+      const target = (address ?? newEmail).trim().toLowerCase();
+      const result = await api<{ message: string }>("/api/account/profile/email/request-code", { method: "POST", body: JSON.stringify({ new_email: target }) });
+      setPendingEmail(target);
       setEmailCodeSent(true); setMessage(result.message);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte skicka kod"); }
     finally { setBusy(false); }
@@ -233,9 +259,32 @@ export default function AccountPortal() {
   const confirmEmail = async () => {
     setBusy(true); setError("");
     try {
-      await api("/api/account/profile/email/confirm", { method: "POST", body: JSON.stringify({ new_email: newEmail, code: emailCode }) });
-      setEmailCodeSent(false); setEmailCode(""); await loadSession(); setMessage("E-postadressen är uppdaterad.");
+      await api("/api/account/profile/email/confirm", { method: "POST", body: JSON.stringify({ new_email: pendingEmail, code: emailCode }) });
+      const [session, emailFeed] = await Promise.all([
+        api<{ authenticated: boolean; profile?: Profile }>("/api/account/session"),
+        api<EmailFeed>("/api/account/profile/emails"),
+      ]);
+      if (session.authenticated && session.profile) applyProfile(session.profile);
+      setEmailAddresses(emailFeed.addresses ?? []);
+      setEmailsAvailable(true);
+      setEmailsLoading(false);
+      setEmailCodeSent(false); setEmailCode(""); setPendingEmail(""); setNewEmail("");
+      setMessage("Primär e-post är uppdaterad. Din tidigare adress finns kvar som sekundär.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte byta e-post"); }
+    finally { setBusy(false); }
+  };
+
+  const removeSecondaryEmail = async (address: string) => {
+    if (!window.confirm(`Ta bort ${address} som inloggningsadress?`)) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const result = await api<EmailFeed>("/api/account/profile/emails", {
+        method: "DELETE",
+        body: JSON.stringify({ email: address }),
+      });
+      setEmailAddresses(result.addresses ?? []);
+      setMessage("Den sekundära e-postadressen är borttagen.");
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte ta bort e-postadressen"); }
     finally { setBusy(false); }
   };
 
@@ -260,8 +309,11 @@ export default function AccountPortal() {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
+    setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
+    setEmailsLoading(true);
+    setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
-    setOverviewAvailability({ bookings: false, invoices: false, training: false });
+    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false });
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -299,7 +351,7 @@ export default function AccountPortal() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
       <div className="relative flex min-h-52 items-end gap-5 p-6 sm:p-8">
         <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-lime bg-mint text-4xl">{profile.avatar_thumb_url || profile.avatar_url ? <img src={profile.avatar_thumb_url || profile.avatar_url || ""} alt="" className="h-full w-full object-cover" /> : profile.emoji_icon || "🏐"}</span>
-        <div className="text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><p className="mt-1 text-sm text-white/65">{profile.email}</p></div>
+        <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span></div></div>
       </div>
     </div>
     <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>{label}</button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
@@ -315,6 +367,7 @@ export default function AccountPortal() {
       currentBookings={currentBookings}
       previousBookings={previousBookings}
       trainingGroups={trainingGroups}
+      activity={activity}
       activeInvoiceCount={activeInvoiceCount}
       availability={overviewAvailability}
       onOpenProfile={() => setTab("profile")}
@@ -333,7 +386,16 @@ export default function AccountPortal() {
       </div></section>
       <section className="bg-cream p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Avatar och bilder</p><strong className="mb-2 block text-sm">Emoji-avatar</strong><div className="mb-6 flex flex-wrap gap-2">{EMOJIS.map((item) => <button key={item} type="button" onClick={() => setEmoji(item)} className={`grid h-11 w-11 cursor-pointer place-items-center border text-xl ${emoji === item ? "border-black bg-black" : "border-black/15 bg-white"}`}>{item}</button>)}</div>
         <div className="space-y-3"><label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj profilfoto</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("avatar", e.target.files?.[0])} /><span>Välj →</span></label>{profile.avatar_url ? <button type="button" onClick={() => removeImage("avatar")} className="text-xs font-bold uppercase text-orange">Ta bort profilfoto</button> : null}<label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj omslagsbild</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("banner", e.target.files?.[0])} /><span>Välj →</span></label><button type="button" onClick={() => removeImage("banner")} className="text-xs font-bold uppercase text-orange">Återställ omslagsbild</button></div>
-        <div className="mt-8 border-t border-black/10 pt-6"><strong className="block text-sm">Byt e-post</strong><div className="mt-3 flex gap-2"><input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} type="email" className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 outline-none" /><button type="button" onClick={requestEmailCode} disabled={busy || newEmail === profile.email} className="bg-black px-4 text-xs font-bold uppercase text-lime disabled:opacity-35">Skicka kod</button></div>{emailCodeSent ? <div className="mt-2 flex gap-2"><input value={emailCode} onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder="Sexsiffrig kod" className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 outline-none" /><button type="button" onClick={confirmEmail} disabled={emailCode.length !== 6 || busy} className="bg-teal px-4 text-xs font-bold uppercase text-white disabled:opacity-35">Bekräfta</button></div> : null}</div>
+      </section>
+      <section className="bg-white p-6 sm:p-8 lg:col-span-2">
+        <div className="flex flex-col gap-3 border-b border-black/10 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-black/45">Identitet och inloggning</p><h3 className="mt-2 font-display text-3xl">Mina e-postadresser</h3></div><div className="shrink-0 border border-black/10 bg-cream px-4 py-3"><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-black/40">BeachID</span><strong className="font-display text-2xl">{profile.canonical_player_id ?? "Ej tilldelat"}</strong></div></div>
+        <p className="mt-5 max-w-2xl text-sm leading-relaxed text-black/55">Alla adresser kan användas för inloggning. När du väljer en ny primär adress verifierar vi den med en kod och behåller den gamla som sekundär.</p>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>{emailsLoading ? <OverviewLoading /> : emailsAvailable ? <div className="space-y-2">{emailAddresses.map((address) => <div key={address.email} className="flex flex-col gap-3 border border-black/10 bg-cream p-4 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><span className="break-all text-sm font-semibold">{address.email}</span>{address.is_primary ? <span className="ml-2 inline-flex rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-lime">Primär</span> : <span className="ml-2 inline-flex rounded-full border border-black/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-black/45">Sekundär</span>}</div>{!address.is_primary ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => requestEmailCode(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-black px-3 text-[10px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-black hover:text-lime disabled:opacity-35">Gör primär</button><button type="button" onClick={() => removeSecondaryEmail(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-orange px-3 text-[10px] font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:opacity-35">Ta bort</button></div> : null}</div>)}</div> : <p className="border border-orange/20 bg-orange/5 p-4 text-sm text-black/55">Kunde inte hämta e-postadresserna just nu.</p>}</div>
+          <div className="border border-black/10 p-5"><strong className="block text-sm">Lägg till ny primär adress</strong><p className="mt-1 text-xs leading-relaxed text-black/45">{profile.canonical_player_id ? "En verifieringskod skickas till den nya adressen." : "Spara ditt namn först så att kontot får ett BeachID."}</p><div className="mt-4 flex flex-col gap-2 sm:flex-row"><input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} type="email" autoComplete="email" placeholder="namn@exempel.se" disabled={!profile.canonical_player_id} className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 outline-none focus:border-black disabled:bg-black/5" /><button type="button" onClick={() => requestEmailCode()} disabled={busy || !profile.canonical_player_id || !newEmail.trim() || newEmail.trim().toLowerCase() === profile.email.toLowerCase()} className="min-h-11 cursor-pointer bg-black px-4 text-xs font-bold uppercase text-lime disabled:opacity-35">Verifiera</button></div>
+            {emailCodeSent ? <div className="mt-4 border-t border-black/10 pt-4"><p className="mb-2 text-xs text-black/55">Kod skickad till <strong className="break-all text-black">{pendingEmail}</strong></p><div className="flex flex-col gap-2 sm:flex-row"><input value={emailCode} onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="Sexsiffrig kod" className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 text-center tracking-[0.2em] outline-none" /><button type="button" onClick={confirmEmail} disabled={emailCode.length !== 6 || busy} className="min-h-11 bg-teal px-4 text-xs font-bold uppercase text-white disabled:opacity-35">Bekräfta</button><button type="button" onClick={() => { setEmailCodeSent(false); setEmailCode(""); setPendingEmail(""); }} className="min-h-11 px-3 text-xs font-bold uppercase text-black/45">Avbryt</button></div></div> : null}
+          </div>
+        </div>
       </section>
     </div> : null}
 
@@ -349,6 +411,7 @@ function AccountOverview({
   currentBookings,
   previousBookings,
   trainingGroups,
+  activity,
   activeInvoiceCount,
   availability,
   onOpenProfile,
@@ -362,6 +425,7 @@ function AccountOverview({
   currentBookings: Booking[];
   previousBookings: Booking[];
   trainingGroups: TrainingGroup[];
+  activity: ActivityFeed;
   activeInvoiceCount: number;
   availability: OverviewAvailability;
   onOpenProfile: () => void;
@@ -429,6 +493,11 @@ function AccountOverview({
       </article>
     </div>
 
+    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-2">
+      <ActivityHistoryCard title="Event jag deltagit i" eyebrow="Min Beach-historik" items={activity.events} loading={loading} available={availability.activity} kind="event" />
+      <ActivityHistoryCard title="Tidigare träningsgrupper" eyebrow="Träningshistorik" items={activity.training_groups} loading={loading} available={availability.activity} kind="training" />
+    </div>
+
     <div className="mt-px grid gap-px bg-black/10 sm:grid-cols-3">
       <DashboardAction eyebrow="Spela" title="Boka en bana" href="/boka" />
       <DashboardAction eyebrow="Håll koll" title="Se kalendern" href="/kalender" />
@@ -438,6 +507,15 @@ function AccountOverview({
       </button>
     </div>
   </section>;
+}
+
+function ActivityHistoryCard({ title, eyebrow, items, loading, available, kind }: { title: string; eyebrow: string; items: ActivityEntry[]; loading: boolean; available: boolean; kind: "event" | "training" }) {
+  return <article className="bg-white p-6 sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">{eyebrow}</p><h4 className="mt-2 font-display text-3xl">{title}</h4></div><span className={`grid h-11 min-w-11 place-items-center rounded-full text-lg ${kind === "event" ? "bg-pink" : "bg-mint"}`} aria-hidden="true">{kind === "event" ? "☀️" : "🏐"}</span></div>{loading ? <OverviewLoading /> : !available ? <p className="mt-7 border border-black/10 bg-cream p-5 text-sm text-black/50">Kunde inte hämta historiken just nu.</p> : items.length ? <div className="mt-7 space-y-2">{items.map((item) => <div key={`${kind}-${item.name}-${item.date ?? ""}`} className="border border-black/10 bg-cream p-4"><div className="flex items-start justify-between gap-3"><strong className="text-base">{item.name}</strong>{item.date ? <span className="shrink-0 text-xs font-bold text-black/40">{activityYear(item.date)}</span> : null}</div>{item.groups?.length ? <div className="mt-3 flex flex-wrap gap-1.5">{item.groups.map((group) => <span key={group} className="border border-black/10 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-black/55">{group}</span>)}</div> : null}</div>)}</div> : <p className="mt-7 border border-dashed border-black/20 bg-cream p-5 text-sm text-black/50">{kind === "event" ? "Inga registrerade event ännu." : "Ingen tidigare träningshistorik hittades."}</p>}<p className="mt-5 text-[11px] leading-relaxed text-black/40">Historiken bygger på registrerat deltagande. Inga spelarnivåer eller omdömen visas.</p></article>;
+}
+
+function activityYear(value: string) {
+  const parsed = new Date(`${value}T12:00:00`);
+  return Number.isNaN(parsed.getTime()) ? value.slice(0, 4) : new Intl.DateTimeFormat("sv-SE", { year: "numeric" }).format(parsed);
 }
 
 function OverviewStat({ value, label, accent }: { value: number | string; label: string; accent: string }) {
