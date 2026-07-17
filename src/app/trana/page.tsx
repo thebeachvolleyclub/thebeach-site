@@ -35,12 +35,12 @@ export default function TranaPage() {
         {/* 1. Hero — bg-base (dark) */}
         <TranaHero />
         <Ticker />
-        {/* 1b. Hitta din väg — bg-panel (dark) */}
+        {/* 1b. Fotoremsa — folk som tränar (dra för att styra) */}
+        <PhotoMarquee />
+        {/* 1c. Hitta din väg — bg-panel (dark) */}
         <PathFinder />
         {/* 2. Kursstegen — bg-cream (light) */}
         <CourseLadder />
-        {/* 2b. Fotoremsa — folk som tränar */}
-        <PhotoMarquee />
         {/* 3. Träningsgrupper — bg-panel (dark) */}
         <TrainingGroups />
         {/* 4. Barn & ungdom — bg-mint (accent/light) */}
