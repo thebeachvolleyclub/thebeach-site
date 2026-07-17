@@ -13,9 +13,8 @@ type Card = {
 const CARDS: Card[] = [
   { level: "Nybörjare", title: "Grundkurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Spela, träna och lär känna sporten från grunden.", badge: "Anmälan öppen", spots: "open" },
   { level: "Mellannivå", title: "Fortsättningskurs", when: "Startar 1 sept & 3 sept · Kvällstider", desc: "Du kan grunderna — nu tar vi ditt spel till nästa nivå.", badge: "Anmälan öppen", spots: "open" },
-  { level: "Avancerat", title: "Senior & Elitträning", when: "Schema bekräftas 1 aug", desc: "Träning med coacher på nationell nivå.", badge: "Anmälan öppnar 1 aug 20:00", spots: "few" },
+  { level: "Avancerat", title: "Träningsgrupper", when: "Höstsäsong · Start 30 aug", desc: "Jämna grupper på din nivå — träning med coacher på nationell nivå.", badge: "Anmälan öppnar 1 aug 20:00", spots: "few" },
   { level: "Barn & Ungdom", title: "Juniorträning", when: "Hela terminen · Weekends", desc: "För barn och unga som vill lära sig beachvolley på riktigt.", badge: "Anmälan öppen", spots: "open" },
-  { level: "Drop-in", title: "Prova på gratis", when: "28 juni 15:00–16:30", desc: "Gratis provpass för nya spelare. Inga förkunskaper krävs.", badge: "Begränsade platser", spots: "few" },
 ];
 
 export default function Training() {
@@ -82,7 +81,7 @@ export default function Training() {
           >
             <div>
               <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
-                Anmälan öppnar 1 aug kl 20:00
+                Kurserna: öppna nu · Grupperna: 1 aug 20:00
               </div>
               <div className="font-display text-xl uppercase text-white">
                 Se alla kurser & anmäl dig

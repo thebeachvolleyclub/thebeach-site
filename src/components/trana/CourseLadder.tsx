@@ -14,22 +14,29 @@ const COURSES = [
       "Start: tisdagar fr.o.m. 1 sep eller torsdagar fr.o.m. 3 sep 2026",
     ],
     quote: "Ingen tidigare erfarenhet krävs. Ta bara med motivation och en bra attityd.",
-    cta: { label: "Boka via MATCHi", href: "https://www.matchi.se/facilities/thebeach" },
+    ctas: [
+      { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/ktBCZ2GXucftaFS3ZEup" },
+      { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/RX12Z2RxHWrtXCoj7pjf" },
+    ],
   },
   {
     no: "02",
     tag: "Mellannivå",
     title: "Fortsättningskurs",
-    price: null, // price gap — do not show
-    priceNote: null,
+    price: "3 695 kr",
+    priceNote: "15 pass · Under 26 år: 1 000 kr MATCHi-kredit tillbaka",
     details: [
-      "Rörelse & positionering",
-      "Bollkontroll, försvar & attack",
+      "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
+      "Rörelse & positionering, bollkontroll, försvar & attack",
       "Spelförståelse & matchspel i högre tempo",
       "Start: tisdagar 1 sep eller torsdagar 3 sep 2026",
     ],
-    quote: null,
-    cta: { label: "Boka via MATCHi", href: "https://www.matchi.se/facilities/thebeach" },
+    quote:
+      "Spelat förr men det var länge sen? Det här är rätt ingång för din comeback — du behöver inte börja om från noll.",
+    ctas: [
+      { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/Z9N6ftKeWIuuyawEomEY" },
+      { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/2Pszaq85oY1vuddVDZWk" },
+    ],
   },
 ];
 
@@ -113,22 +120,27 @@ export default function CourseLadder() {
               ))}
             </ul>
 
-            {/* Verbatim quote (Grundkurs only) */}
+            {/* Quote */}
             {c.quote && (
               <blockquote className="mb-5 border-l-2 border-lime pl-4 text-[13px] italic leading-snug text-black/50">
                 &ldquo;{c.quote}&rdquo;
               </blockquote>
             )}
 
-            {/* CTA — both courses link to external sites */}
-            <a
-              href={c.cta.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
-            >
-              {c.cta.label} <span aria-hidden="true">→</span>
-            </a>
+            {/* CTAs — deep links to each MATCHi course form */}
+            <div className="flex flex-col gap-1 sm:flex-row sm:gap-6">
+              {c.ctas.map((cta) => (
+                <a
+                  key={cta.href}
+                  href={cta.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
+                >
+                  {cta.label} <span aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
           </Reveal>
         ))}
       </div>

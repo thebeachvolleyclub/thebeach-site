@@ -5,6 +5,7 @@ import Newsletter from "@/components/Newsletter";
 import Ticker from "@/components/Ticker";
 import TranaHero from "@/components/trana/TranaHero";
 import CourseLadder from "@/components/trana/CourseLadder";
+import PathFinder from "@/components/trana/PathFinder";
 import TrainingGroups from "@/components/trana/TrainingGroups";
 import YouthTraining from "@/components/trana/YouthTraining";
 import PtGroup from "@/components/trana/PtGroup";
@@ -33,6 +34,8 @@ export default function TranaPage() {
         {/* 1. Hero — bg-base (dark) */}
         <TranaHero />
         <Ticker />
+        {/* 1b. Hitta din väg — bg-panel (dark) */}
+        <PathFinder />
         {/* 2. Kursstegen — bg-cream (light) */}
         <CourseLadder />
         {/* 3. Träningsgrupper — bg-panel (dark) */}
