@@ -3,6 +3,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
+import EventPhotoMarquee from "@/components/events/EventPhotoMarquee";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function JulbordPage() {
             </Link>
           }
         />
+        <EventPhotoMarquee />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
           <div className="grid grid-cols-1 gap-0.5 lg:grid-cols-3">
