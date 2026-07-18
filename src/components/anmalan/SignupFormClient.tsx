@@ -46,6 +46,7 @@ type Config = {
   contact_email: string;
   opens_at: string | null;
   closes_at: string | null;
+  before_open: boolean;
   max_sessions_per_week: number;
   slots: Slot[];
   config: Record<string, unknown> & {
@@ -395,7 +396,10 @@ export default function SignupFormClient() {
     }
   }, [applySubmission]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   const existing = mine?.submission ?? null;
   const readOnly = !!existing && mine?.can_edit === false;
@@ -637,7 +641,7 @@ export default function SignupFormClient() {
 
   // Signup closed and nothing to edit.
   if (!canSignup && !existing) {
-    const opensInFuture = config.opens_at && new Date(config.opens_at).getTime() > Date.now();
+    const opensInFuture = config.before_open && !!config.opens_at;
     return (
       <div>
         {langRow}
@@ -1037,6 +1041,10 @@ function PlayerSearch({ t, chosenName, chosenManual, onPick, onManual, onClear }
   const [manualMode, setManualMode] = useState(false);
   const [manualName, setManualName] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
 
   const reset = () => { setQ(""); setResults([]); setSearched(false); setManualMode(false); setManualName(""); };
 
