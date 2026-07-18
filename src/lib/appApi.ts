@@ -1,33 +1,18 @@
 import "server-only";
-import { createHmac } from "node:crypto";
 
 const APP_API_URL = (process.env.APP_API_URL ?? "https://api.beachtv.se").replace(/\/$/, "");
 const APP_API_KEY = process.env.APP_API_KEY ?? "thebeach-matchmaking-2026";
-// Private shared secret (NOT the public API key) that lets the API trust the
-// visitor IP we forward. When unset, no IP is forwarded and the API falls back
-// to a coarse peer-based backstop — never trusting an unsigned header.
-const PROXY_IP_SECRET = process.env.PROXY_IP_SECRET ?? "";
 
 export async function appApi(
   path: string,
   init?: RequestInit,
-  options?: { token?: string; userId?: string; deviceId?: string; clientIp?: string },
+  options?: { token?: string; userId?: string; deviceId?: string },
 ): Promise<Response> {
   const headers = new Headers(init?.headers);
   headers.set("X-API-Key", APP_API_KEY);
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options?.userId) headers.set("X-User-Id", options.userId);
   if (options?.deviceId) headers.set("X-Device-Id", options.deviceId);
-  // Forward the real website-visitor IP so the API can throttle per visitor
-  // instead of collapsing every signed-out visitor to the site-container IP.
-  // Signed with the private shared secret so the API can trust it (a raw,
-  // unsigned header is ignored upstream — the API key is public).
-  if (options?.clientIp && PROXY_IP_SECRET) {
-    const ip = options.clientIp.slice(0, 64);
-    const sig = createHmac("sha256", PROXY_IP_SECRET).update(ip).digest("hex");
-    headers.set("X-Client-IP", ip);
-    headers.set("X-Client-IP-Sig", sig);
-  }
   if (typeof init?.body === "string" && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
