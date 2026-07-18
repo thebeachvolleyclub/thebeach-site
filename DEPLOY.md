@@ -99,11 +99,16 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
      staging). It `RequestHeader unset X-TB-Client-IP early` (strips any inbound
      client copy) then `RequestHeader set X-TB-Client-IP "expr=%{REMOTE_ADDR}"`
      (stamps the real peer, mod_remoteip-corrected if a CDN is upstream).
-     `a2enmod headers remoteip && systemctl reload apache2`. Until installed the
-     header is absent ⇒ the route forwards no signed IP (safe degrade to the
-     API's coarse peer bucket + global cap). Verify a client-sent
+     `a2enmod headers remoteip && systemctl reload apache2`. Verify a client-sent
      `X-TB-Client-IP: 1.2.3.4` is ignored.
-  2. **Secret (NO default):** set `CLIENT_IP_SECRET` in the env's `.env` to the
+  2. **DEFAULT-CLOSED opt-in:** set `TRUST_PROXY_CLIENT_IP=1` in the env's `.env`
+     **only after** the Apache snippet above is installed. This is the explicit
+     assertion that the strip-and-overwrite boundary exists. When it is unset
+     (the default) the route reads NO forwarded IP header at all — so even if
+     the Apache config is missing, a client-injected `X-TB-Client-IP` can never
+     be signed as a trusted identity; the API degrades to its coarse peer bucket
+     + global cap. Set the flag and install the snippet together, as one step.
+  3. **Secret (NO default):** set `CLIENT_IP_SECRET` in the env's `.env` to the
      SAME value as the API. Unset ⇒ no signed IP is forwarded (same safe degrade).
 - The pre-container placeholder site is archived at
   `/home/beachinfo/site-backups/thebeach.one-placeholder-20260710.tar.gz`

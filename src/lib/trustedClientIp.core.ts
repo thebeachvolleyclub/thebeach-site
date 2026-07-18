@@ -20,14 +20,33 @@ export interface HeaderBag {
 export const INTERNAL_CLIENT_IP_HEADER = "x-tb-client-ip";
 
 /**
- * The client IP as stamped by our trusted reverse proxy on the dedicated
- * internal header. Returns null when the proxy did not stamp it (e.g. the
- * Apache rewrite is not deployed) — the caller then forwards no signed IP and
- * the API degrades to its coarse peer bucket + global cap. We never fall back
- * to a caller-controllable header, so a forged `X-Real-IP` can never become a
- * trusted signed identity.
+ * Whether the operator has ASSERTED the Apache strip-and-overwrite trust
+ * boundary is installed (env TRUST_PROXY_CLIENT_IP). DEFAULT-CLOSED: anything
+ * other than an explicit truthy opt-in ("1" / "true" / "yes") is false, so an
+ * unset/empty/typo'd value means we trust no forwarded IP header.
  */
-export function parseTrustedIp(headers: HeaderBag): string | null {
+export function isProxyTrusted(envValue: string | undefined | null): boolean {
+  const v = (envValue ?? "").trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
+/**
+ * The client IP as stamped by our trusted reverse proxy on the dedicated
+ * internal header.
+ *
+ * DEFAULT-CLOSED: `proxyTrusted` must be true — the operator's explicit
+ * assertion that the Apache strip-and-overwrite snippet is installed (env
+ * TRUST_PROXY_CLIENT_IP). When it is false we return null and read NOTHING,
+ * so if the proxy config is absent a client-injected `X-TB-Client-IP` can
+ * never be signed and forwarded as a trusted identity — the "absent config
+ * safely degrades" property holds by construction, not by hoping the proxy
+ * stripped the header. With no trusted stamp the caller forwards no signed IP
+ * and the API keys on its coarse peer bucket + global cap.
+ *
+ * We never fall back to a caller-controllable header (X-Real-IP / XFF).
+ */
+export function parseTrustedIp(headers: HeaderBag, proxyTrusted: boolean): string | null {
+  if (!proxyTrusted) return null; // trust boundary not asserted → trust nothing
   const stamped = headers.get(INTERNAL_CLIENT_IP_HEADER);
   if (stamped) {
     const ip = stamped.trim().slice(0, 64);
