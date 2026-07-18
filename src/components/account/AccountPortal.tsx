@@ -7,6 +7,7 @@ type Profile = {
   id: string;
   email: string;
   name: string | null;
+  birthdate: string | null;
   swish_phone: string | null;
   emoji_icon: string;
   description: string | null;
@@ -16,6 +17,10 @@ type Profile = {
   banner_url: string | null;
   profile_complete: boolean;
   canonical_player_id: number | null;
+  // Set on a profile save that hit the duplicate guard: a master-registry
+  // player with the same name (+ birthdate when known). BeachID creation is
+  // deferred until the user picks a path — see the alert card.
+  duplicate_match?: { player_id: number; masked_email: string | null; birthdate_match: boolean } | null;
 };
 
 type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null };
@@ -88,8 +93,12 @@ export default function AccountPortal() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
+  const [birthdate, setBirthdate] = useState("");
   const [swish, setSwish] = useState("");
   const [description, setDescription] = useState("");
+  // Duplicate-account alert (profile-setup guard) + merge confirmation.
+  const [dupAlert, setDupAlert] = useState<NonNullable<Profile["duplicate_match"]> | null>(null);
+  const [mergeMessage, setMergeMessage] = useState("");
   const [emoji, setEmoji] = useState("🏐");
   const [isPublic, setIsPublic] = useState(true);
   const [newEmail, setNewEmail] = useState("");
@@ -111,6 +120,7 @@ export default function AccountPortal() {
   const applyProfile = useCallback((next: Profile) => {
     setProfile(next);
     setName(next.name ?? "");
+    setBirthdate(next.birthdate ?? "");
     setSwish(next.swish_phone ?? "");
     setDescription(next.description ?? "");
     setEmoji(next.emoji_icon || "🏐");
@@ -128,8 +138,16 @@ export default function AccountPortal() {
     if (raw && /^\/[a-zA-Z0-9\-_/]*$/.test(raw) && !raw.startsWith("//")) setNextPath(raw);
   }, []);
   useEffect(() => {
-    if (nextPath && profile?.name?.trim()) window.location.assign(nextPath);
-  }, [nextPath, profile?.name]);
+    // Hold the hand-back while the duplicate alert is open — the user must
+    // pick a path (old login / merge / new player) before continuing.
+    if (nextPath && profile?.name?.trim() && !dupAlert) window.location.assign(nextPath);
+  }, [nextPath, profile?.name, dupAlert]);
+
+  // A fresh account has no name yet — profile completion IS the next step,
+  // so land new registrants straight on the profile tab.
+  useEffect(() => {
+    if (profile && !profile.name?.trim()) setTab("profile");
+  }, [profile]);
 
   const loadSession = useCallback(async () => {
     setLoading(true);
@@ -231,12 +249,42 @@ export default function AccountPortal() {
     finally { setBusy(false); }
   };
 
-  const saveProfile = async () => {
+  const saveProfile = async (confirmNewIdentity = false) => {
     setBusy(true); setError(""); setMessage("");
     try {
-      const next = await api<Profile>("/api/account/profile", { method: "PUT", body: JSON.stringify({ name, swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic }) });
-      applyProfile(next); setMessage("Profilen är sparad och uppdaterad i appen.");
+      const next = await api<Profile>("/api/account/profile", {
+        method: "PUT",
+        body: JSON.stringify({
+          name, swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic,
+          birthdate: birthdate.trim() || undefined,
+          // Duplicate guard: a name/birthdate match in the player registry
+          // pauses BeachID creation and raises the alert card instead.
+          check_duplicates: true,
+          confirm_new_identity: confirmNewIdentity || undefined,
+        }),
+      });
+      applyProfile(next);
+      if (next.duplicate_match) {
+        setDupAlert(next.duplicate_match);
+      } else {
+        setDupAlert(null);
+        setMessage("Profilen är sparad och uppdaterad i appen.");
+      }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte spara profilen"); }
+    finally { setBusy(false); }
+  };
+
+  const requestMerge = async () => {
+    if (!dupAlert) return;
+    setBusy(true); setError("");
+    try {
+      const result = await api<{ success: boolean; message?: string }>(
+        "/api/account/merge-request",
+        { method: "POST", body: JSON.stringify({ player_id: dupAlert.player_id }) },
+      );
+      setMergeMessage(result.message || "Begäran är registrerad. Fortsätt att skapa din profil — vi kontaktar dig när vi hanterat sammanslagningen.");
+      setDupAlert(null);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte skicka begäran"); }
     finally { setBusy(false); }
   };
 
@@ -390,13 +438,41 @@ export default function AccountPortal() {
       cancellingBookingId={cancellingBookingId}
     /> : null}
 
-    {tab === "profile" ? <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
+    {tab === "profile" ? <>
+    {dupAlert ? <div className="border-x border-b border-orange/40 bg-orange/10 p-6">
+      <p className="font-display text-2xl uppercase text-black">Är det här du?</p>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
+        En spelare med ditt namn{dupAlert.birthdate_match ? " och födelsedatum" : ""} finns redan i våra
+        register{dupAlert.masked_email ? <>, kopplad till e-postadressen <strong className="text-black">{dupAlert.masked_email}</strong></> : null}.
+      </p>
+      <p className="mt-4 text-sm font-bold text-black">Om detta är din profil kan du:</p>
+      <ol className="mt-2 max-w-2xl space-y-3 text-sm leading-relaxed text-black/75">
+        <li className="flex gap-2"><span className="font-bold">1.</span><span>
+          Om du fortfarande har tillgång till den e-postadressen: logga ut och logga in med den i stället.
+          Du kan sedan ändra din e-post här under profilinställningarna.{" "}
+          <button type="button" onClick={logout} className="cursor-pointer font-bold text-teal underline underline-offset-4">Logga ut och logga in med den →</button>
+        </span></li>
+        <li className="flex gap-2"><span className="font-bold">2.</span><span>
+          Om du inte längre har tillgång till den e-postadressen: begär att din profil slås ihop med din
+          gamla data så löser vi det inom kort. Fortsätt sedan att skapa din profil — vi kontaktar dig när
+          vi hanterat sammanslagningen.{" "}
+          <button type="button" onClick={requestMerge} disabled={busy} className="cursor-pointer font-bold text-teal underline underline-offset-4 disabled:opacity-40">Begär sammanslagning →</button>
+        </span></li>
+      </ol>
+      <div className="mt-5 border-t border-black/10 pt-4">
+        <p className="text-sm leading-relaxed text-black/60">Om detta inte är du kan du helt enkelt fortsätta att skapa din profil som vanligt.</p>
+        <button type="button" onClick={() => saveProfile(true)} disabled={busy} className="mt-2 min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Det är inte jag — fortsätt som vanligt</button>
+      </div>
+    </div> : null}
+    {mergeMessage ? <div className="border-x border-b border-teal/30 bg-mint p-5 text-sm leading-relaxed text-teal">{mergeMessage}</div> : null}
+    <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
       <section className="bg-white p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Uppgifter</p><div className="space-y-4">
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Namn</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Namn *</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs — för- och efternamn.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum</span><input value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Frivilligt — men hjälper oss koppla din spelhistorik och undvika dubbletter.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
-        <button type="button" onClick={saveProfile} disabled={busy || name.trim().length < 2} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+        <button type="button" onClick={() => saveProfile()} disabled={busy || name.trim().length < 2} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
       </div></section>
       <section className="bg-cream p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Avatar och bilder</p><strong className="mb-2 block text-sm">Emoji-avatar</strong><div className="mb-6 flex flex-wrap gap-2">{EMOJIS.map((item) => <button key={item} type="button" onClick={() => setEmoji(item)} className={`grid h-11 w-11 cursor-pointer place-items-center border text-xl ${emoji === item ? "border-black bg-black" : "border-black/15 bg-white"}`}>{item}</button>)}</div>
         <div className="space-y-3"><label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj profilfoto</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("avatar", e.target.files?.[0])} /><span>Välj →</span></label>{profile.avatar_url ? <button type="button" onClick={() => removeImage("avatar")} className="text-xs font-bold uppercase text-orange">Ta bort profilfoto</button> : null}<label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj omslagsbild</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("banner", e.target.files?.[0])} /><span>Välj →</span></label><button type="button" onClick={() => removeImage("banner")} className="text-xs font-bold uppercase text-orange">Återställ omslagsbild</button></div>
@@ -411,7 +487,7 @@ export default function AccountPortal() {
           </div>
         </div>
       </section>
-    </div> : null}
+    </div></> : null}
 
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
     {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}</article>)}</div>}</section> : null}
