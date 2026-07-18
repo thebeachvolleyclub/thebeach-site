@@ -441,7 +441,6 @@ export default function AccountPortal() {
     {tab === "training" ? <AccountTraining
       loading={overviewLoading}
       trainingGroups={trainingGroups}
-      activity={activity}
       availability={overviewAvailability}
     /> : null}
 
@@ -553,7 +552,7 @@ function AccountOverview({
       <OverviewStat value={loading || !availability.invoices ? "—" : activeInvoiceCount} label="Fakturor att hantera" accent={activeInvoiceCount ? "text-orange" : "text-teal"} />
     </div>
 
-    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-[1.15fr_0.85fr]">
+    <div className="mt-px">
       <article className="bg-white p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -578,8 +577,12 @@ function AccountOverview({
           <Link href="/boka" className="mt-5 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-teal underline underline-offset-4">Se lediga tider →</Link>
         </div>}
       </article>
+    </div>
 
+    {/* Player history together (Henric): events + previous training groups */}
+    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-2">
       <ActivityHistoryCard title="Event jag deltagit i" eyebrow="Min Beach-historik" items={activity.events} loading={loading} available={availability.activity} kind="event" />
+      <ActivityHistoryCard title="Tidigare träningsgrupper" eyebrow="Träningshistorik" items={activity.training_groups} loading={loading} available={availability.activity} kind="training" />
     </div>
 
     <div className="mt-px grid gap-px bg-black/10 sm:grid-cols-3">
@@ -594,29 +597,27 @@ function AccountOverview({
 }
 
 // Dedicated Träningsgrupper tab (Henric, 2026-07-18): current groups + signup
-// status + training history in one place, instead of buried at the bottom of
-// the overview below the historical data.
+// status. (Training HISTORY lives with the rest of the player history on the
+// Översikt tab.)
 function AccountTraining({
   loading,
   trainingGroups,
-  activity,
   availability,
 }: {
   loading: boolean;
   trainingGroups: TrainingGroup[];
-  activity: ActivityFeed;
   availability: OverviewAvailability;
 }) {
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Träning</p>
       <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träningsgrupper</h3>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella grupper, din anmälan och din träningshistorik.</p>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella grupper och din anmälan.</p>
     </div>
 
     <SignupStatusCard />
 
-    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-2">
+    <div className="mt-px">
       <article className="bg-black p-6 text-cream sm:p-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Aktuellt</p>
         <h4 className="mt-2 font-display text-3xl text-cream">Mina träningsgrupper</h4>
@@ -626,8 +627,6 @@ function AccountTraining({
         </div>)}</div> : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
         <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
-
-      <ActivityHistoryCard title="Tidigare träningsgrupper" eyebrow="Träningshistorik" items={activity.training_groups} loading={loading} available={availability.activity} kind="training" />
     </div>
   </section>;
 }

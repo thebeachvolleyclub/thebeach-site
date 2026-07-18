@@ -163,6 +163,11 @@ const STR = {
     optNewsletter: "Jag vill ta emot nyhetsbrev från The Beach.",
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
     cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
+    viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
+    editBtn: "Ändra min anmälan",
+    backToView: "← Tillbaka utan att spara",
+    errDescription: "Beskriv dig själv som spelare.",
+    phonePh: "+46 70 123 45 67",
     cancelConfirm: "Avbryta anmälan? Din anmälan tas bort ur säsongens gruppbygge. Du kan anmäla dig igen så länge anmälan är öppen.",
     errIdentity: "Fyll i namn, e-post, födelsedatum (ÅÅÅÅ-MM-DD) och kön.",
     errSlots: (n: number) => `Välj förstahandstider på minst ${n} olika ${n === 1 ? "dag" : "dagar"} – eller kryssa i "vilken dag/tid som helst".`,
@@ -254,6 +259,11 @@ const STR = {
     optNewsletter: "I'd like to receive newsletters from The Beach.",
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
     cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
+    viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
+    editBtn: "Change my registration",
+    backToView: "← Back without saving",
+    errDescription: "Describe yourself as a player.",
+    phonePh: "+46 70 123 45 67",
     cancelConfirm: "Cancel your registration? It is removed from the season group planning. You can register again while registration is open.",
     errIdentity: "Fill in name, email, date of birth (YYYY-MM-DD) and gender.",
     errSlots: (n: number) => `Choose first-choice times on at least ${n} separate ${n === 1 ? "day" : "days"} — or tick "any day/any time".`,
@@ -330,6 +340,9 @@ export default function SignupFormClient() {
   const [viewerIsTester, setViewerIsTester] = useState(false);
 
   const [busy, setBusy] = useState(false);
+  // Read-only-first (Henric, 2026-07-18): an existing registration OPENS as a
+  // read-only view; editing is an explicit separate step into the form.
+  const [editing, setEditing] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<"created" | "updated" | null>(null);
@@ -382,6 +395,7 @@ export default function SignupFormClient() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setEditing(false);
     try {
       const cfg = await api<Config>("/api/signup/config").catch(() => null);
       setConfig(cfg);
@@ -468,7 +482,8 @@ export default function SignupFormClient() {
   const birthdateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim());
   const identityOk = !!(firstName.trim() && lastName.trim() && email.trim() && birthdateValid && gender);
   const acksOk = commitmentAck && paymentAck && cancellationAck;
-  const canSubmit = identityOk && acksOk && slotsOk;
+  const descriptionOk = !!description.trim();
+  const canSubmit = identityOk && descriptionOk && acksOk && slotsOk;
 
   const togglePrimary = useCallback((key: string) => {
     setPrimarySlots((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
@@ -503,6 +518,7 @@ export default function SignupFormClient() {
   const submit = useCallback(async () => {
     setError("");
     if (!identityOk) { setError(t.errIdentity); return; }
+    if (!descriptionOk) { setError(t.errDescription); return; }
     if (!acksOk) { setError(t.errAcks); return; }
     if (!slotsOk) { setError(t.errSlots(sessions)); return; }
 
@@ -533,8 +549,9 @@ export default function SignupFormClient() {
           // echo the printed values (and fill birthdate/gender gaps).
           first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(),
           birthdate: birthdate.trim(), gender,
-          phone: phone.trim() || null, address: address.trim() || null,
-          postcode: postcode.trim() || null, city: city.trim() || null,
+          // Address fields are hidden (unused — master has no address data);
+          // nulls are PATCH-preserved server-side.
+          phone: phone.trim() || null,
           player_description: description.trim() || null,
           sessions_per_week: sessions, any_slot: anySlot, language_pref: null,
           newsletter_opt_in: newsletterOptIn, commitment_ack: commitmentAck,
@@ -550,7 +567,7 @@ export default function SignupFormClient() {
     } finally {
       setBusy(false);
     }
-  }, [identityOk, acksOk, slotsOk, t, sessions, wishes, primarySlots, secondarySlots,
+  }, [identityOk, descriptionOk, acksOk, slotsOk, t, sessions, wishes, primarySlots, secondarySlots,
     existing, config, firstName, lastName, email, birthdate, gender, phone, address,
     postcode, city, description, anySlot, newsletterOptIn, commitmentAck, paymentAck,
     cancellationAck, corrections]);
@@ -731,6 +748,45 @@ export default function SignupFormClient() {
     );
   }
 
+  // Read-only-first (Henric, 2026-07-18): an existing registration OPENS as
+  // a read-only view; the form is a separate, explicit "Ändra" step.
+  if (existing && !editing) {
+    return (
+      <div>
+        {langRow}
+        {!!title && <h2 className="mb-2 font-display text-3xl uppercase text-black">{title}</h2>}
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.1em] text-black/45">
+          {t.loggedInAs(accountName || email || "–")}
+        </p>
+        <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
+          {t.viewBanner(fmtDate(existing.created_at))}
+          {existing.is_changed && existing.changed_at ? ` ${t.changedNote(fmtDate(existing.changed_at) as string)}` : ""}
+        </div>
+        <ReadOnlySummary sub={existing} config={config} t={t} />
+        {error ? (
+          <p role="alert" className="mt-4 border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">{error}</p>
+        ) : null}
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => { setError(""); setEditing(true); }}
+            className="inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 bg-black px-9 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
+          >
+            {t.editBtn} <span aria-hidden="true">→</span>
+          </button>
+          <button
+            type="button"
+            onClick={cancelSignup}
+            disabled={cancelBusy}
+            className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center border border-orange px-6 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50"
+          >
+            {cancelBusy ? t.cancelling : t.cancelBtn}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {langRow}
@@ -744,8 +800,17 @@ export default function SignupFormClient() {
 
       {existing ? (
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
-          {t.editBanner(fmtDate(existing.created_at))}
-          {existing.is_changed && existing.changed_at ? ` ${t.changedNote(fmtDate(existing.changed_at) as string)}` : ""}
+          <p>
+            {t.editBanner(fmtDate(existing.created_at))}
+            {existing.is_changed && existing.changed_at ? ` ${t.changedNote(fmtDate(existing.changed_at) as string)}` : ""}
+          </p>
+          <button
+            type="button"
+            onClick={() => { setError(""); setEditing(false); }}
+            className="mt-2 cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-teal underline underline-offset-4"
+          >
+            {t.backToView}
+          </button>
         </div>
       ) : mine?.last_cancelled ? (
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
@@ -831,19 +896,7 @@ export default function SignupFormClient() {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="su-phone" className={labelCls}>{t.phone}</label>
-              <input id="su-phone" type="tel" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+46…" autoComplete="tel" />
-            </div>
-            <div>
-              <label htmlFor="su-address" className={labelCls}>{t.address}</label>
-              <input id="su-address" className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="street-address" />
-            </div>
-            <div>
-              <label htmlFor="su-postcode" className={labelCls}>{t.postcode}</label>
-              <input id="su-postcode" className={inputCls} value={postcode} onChange={(e) => setPostcode(e.target.value)} autoComplete="postal-code" />
-            </div>
-            <div>
-              <label htmlFor="su-city" className={labelCls}>{t.city}</label>
-              <input id="su-city" className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} autoComplete="address-level2" />
+              <input id="su-phone" type="tel" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.phonePh} autoComplete="tel" />
             </div>
           </div>
         </section>
@@ -852,7 +905,7 @@ export default function SignupFormClient() {
         <section className={cardCls}>
           <h3 className={headingCls}>{t.aboutTitle}</h3>
           <p className={`${hintCls} mb-6`}>{t.aboutHint}</p>
-          <label htmlFor="su-desc" className={labelCls}>{t.describe}</label>
+          <label htmlFor="su-desc" className={labelCls}>{t.describe} *</label>
           <textarea
             id="su-desc"
             className={`${inputCls} min-h-[110px] resize-y`}
@@ -977,7 +1030,7 @@ export default function SignupFormClient() {
           </button>
           {!canSubmit && (
             <p className="text-center text-[13px] text-black/45">
-              {!identityOk ? t.errIdentity : !slotsOk ? t.errSlots(sessions) : t.errAcks}
+              {!identityOk ? t.errIdentity : !descriptionOk ? t.errDescription : !slotsOk ? t.errSlots(sessions) : t.errAcks}
             </p>
           )}
           {existing ? (
