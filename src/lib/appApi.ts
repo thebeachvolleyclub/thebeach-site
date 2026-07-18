@@ -10,9 +10,9 @@ export async function appApi(
     token?: string;
     userId?: string;
     deviceId?: string;
-    // Proxy-authenticated visitor identity (opaque id + HMAC signature), so the
-    // API can throttle per visitor instead of per site-container peer.
-    visitor?: { id: string; sig: string };
+    // Trusted network identity (client IP + HMAC signature) so the API can
+    // throttle per client IP instead of per site-container peer.
+    signedClientIp?: { ip: string; sig: string };
   },
 ): Promise<Response> {
   const headers = new Headers(init?.headers);
@@ -20,9 +20,9 @@ export async function appApi(
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options?.userId) headers.set("X-User-Id", options.userId);
   if (options?.deviceId) headers.set("X-Device-Id", options.deviceId);
-  if (options?.visitor) {
-    headers.set("X-Visitor-Id", options.visitor.id);
-    headers.set("X-Visitor-Sig", options.visitor.sig);
+  if (options?.signedClientIp) {
+    headers.set("X-Client-IP", options.signedClientIp.ip);
+    headers.set("X-Client-IP-Sig", options.signedClientIp.sig);
   }
   if (typeof init?.body === "string" && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
