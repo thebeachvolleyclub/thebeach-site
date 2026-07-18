@@ -89,17 +89,22 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
   verified bearer token); the routes forward that token and never trust a
   browser-supplied user id.
 - **Anonymous season-signup throttle** (`/api/signup/submit`): the route keys
-  abuse control on the client's TRUSTED NETWORK IP (as seen by Apache), NOT a
-  cookie — a visitor cannot reset their bucket by clearing cookies. It reads
-  the proxy-set address (`X-Real-IP` / right-most `X-Forwarded-For` hop),
-  HMAC-signs it, and forwards `X-Client-IP`/`X-Client-IP-Sig` to the API.
-  **Required prod env (fail-closed, NO default):** set `CLIENT_IP_SECRET` in
-  the env's `.env` to the SAME value as the API (`CLIENT_IP_SECRET` on
-  `thebeach-api`). Unset ⇒ no signed IP is forwarded and the API degrades to a
-  coarse per-container bucket + a global cap (safe, but not per-client).
-  **Apache must set the client address authoritatively** (mod_remoteip /
-  `RemoteIPHeader`) so `X-Real-IP` / the last XFF hop reflect the real peer and
-  cannot be spoofed by a client-supplied header.
+  abuse control on the client's TRUSTED NETWORK IP, NOT a cookie — a visitor
+  cannot reset their bucket by clearing cookies. It reads ONLY the dedicated
+  internal header `X-TB-Client-IP` (never a caller-supplied `X-Real-IP` /
+  `X-Forwarded-For`), HMAC-signs it, and forwards `X-Client-IP`/`X-Client-IP-Sig`
+  to the API. Two prod prerequisites, both fail-closed:
+  1. **Apache trust boundary (versioned):** install
+     `deploy/apache/thebeach-site-clientip.conf` into each site vhost (prod +
+     staging). It `RequestHeader unset X-TB-Client-IP early` (strips any inbound
+     client copy) then `RequestHeader set X-TB-Client-IP "expr=%{REMOTE_ADDR}"`
+     (stamps the real peer, mod_remoteip-corrected if a CDN is upstream).
+     `a2enmod headers remoteip && systemctl reload apache2`. Until installed the
+     header is absent ⇒ the route forwards no signed IP (safe degrade to the
+     API's coarse peer bucket + global cap). Verify a client-sent
+     `X-TB-Client-IP: 1.2.3.4` is ignored.
+  2. **Secret (NO default):** set `CLIENT_IP_SECRET` in the env's `.env` to the
+     SAME value as the API. Unset ⇒ no signed IP is forwarded (same safe degrade).
 - The pre-container placeholder site is archived at
   `/home/beachinfo/site-backups/thebeach.one-placeholder-20260710.tar.gz`
   (offbox copy on beachapps-dev: `~/site-promote/offbox-backups/`).
