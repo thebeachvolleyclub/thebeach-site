@@ -6,13 +6,24 @@ const APP_API_KEY = process.env.APP_API_KEY ?? "thebeach-matchmaking-2026";
 export async function appApi(
   path: string,
   init?: RequestInit,
-  options?: { token?: string; userId?: string; deviceId?: string },
+  options?: {
+    token?: string;
+    userId?: string;
+    deviceId?: string;
+    // Proxy-authenticated visitor identity (opaque id + HMAC signature), so the
+    // API can throttle per visitor instead of per site-container peer.
+    visitor?: { id: string; sig: string };
+  },
 ): Promise<Response> {
   const headers = new Headers(init?.headers);
   headers.set("X-API-Key", APP_API_KEY);
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options?.userId) headers.set("X-User-Id", options.userId);
   if (options?.deviceId) headers.set("X-Device-Id", options.deviceId);
+  if (options?.visitor) {
+    headers.set("X-Visitor-Id", options.visitor.id);
+    headers.set("X-Visitor-Sig", options.visitor.sig);
+  }
   if (typeof init?.body === "string" && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
