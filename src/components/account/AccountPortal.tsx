@@ -117,6 +117,20 @@ export default function AccountPortal() {
     setIsPublic(next.is_public);
   }, []);
 
+  // Profile-first hand-back (?next=/anmalan): pages that require a signed-in
+  // profile send visitors here to log in / register, then get them back.
+  // Redirect ONLY once the profile has a name — a brand-new registrant stays
+  // to complete their profile first, and bounces back right after saving it.
+  // Strictly same-origin relative paths; anything else is ignored.
+  const [nextPath, setNextPath] = useState<string | null>(null);
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("next");
+    if (raw && /^\/[a-zA-Z0-9\-_/]*$/.test(raw) && !raw.startsWith("//")) setNextPath(raw);
+  }, []);
+  useEffect(() => {
+    if (nextPath && profile?.name?.trim()) window.location.assign(nextPath);
+  }, [nextPath, profile?.name]);
+
   const loadSession = useCallback(async () => {
     setLoading(true);
     try {

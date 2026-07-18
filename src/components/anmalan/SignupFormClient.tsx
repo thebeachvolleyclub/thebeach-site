@@ -113,6 +113,15 @@ const STR = {
     loginNudgeTitle: "Har du ett Beach-konto?",
     loginNudge: "Logga in så fyller vi i dina uppgifter — och du kan öppna och ändra din anmälan senare.",
     loginCta: "Logga in på Mitt konto",
+    profileFirstTitle: "Skapa din Beach-profil först",
+    profileFirstIntro: "Anmälan görs med din Beach-profil — så hämtas dina uppgifter automatiskt, och du kan öppna, ändra och avbryta din anmälan när du vill.",
+    profileFirstStep1: "Logga in med din e-post — eller skapa en profil om du inte har någon (tar en minut).",
+    profileFirstStep2: "Kom tillbaka hit och anmäl dig till träningsgrupperna.",
+    profileFirstCta: "Logga in eller skapa profil",
+    fromProfileHint: "Namn och e-post hämtas från din Beach-profil och kan inte ändras här.",
+    updateProfileLink: "Uppdatera din profil",
+    nameMissingTitle: "Din profil saknar namn",
+    nameMissingBody: "Fyll i ditt namn i din profil, så kan du anmäla dig direkt efteråt.",
     loggedInAs: (n: string) => `Inloggad som ${n}`,
     editBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}. Du kan ändra den nedan och spara igen, eller avbryta den.`,
     changedNote: (d: string) => `Senast ändrad ${d}.`,
@@ -195,6 +204,15 @@ const STR = {
     loginNudgeTitle: "Have a Beach account?",
     loginNudge: "Sign in and we prefill your details — and you can open and change your registration later.",
     loginCta: "Sign in to My account",
+    profileFirstTitle: "Create your Beach profile first",
+    profileFirstIntro: "Registration uses your Beach profile — your details are filled in automatically, and you can open, change and cancel your registration whenever you like.",
+    profileFirstStep1: "Sign in with your email — or create a profile if you don't have one (takes a minute).",
+    profileFirstStep2: "Come back here and sign up for the training groups.",
+    profileFirstCta: "Sign in or create a profile",
+    fromProfileHint: "Name and email come from your Beach profile and can't be changed here.",
+    updateProfileLink: "Update your profile",
+    nameMissingTitle: "Your profile has no name yet",
+    nameMissingBody: "Add your name to your profile, then sign up right after.",
     loggedInAs: (n: string) => `Signed in as ${n}`,
     editBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}. You can change it below and save again, or cancel it.`,
     changedNote: (d: string) => `Last changed ${d}.`,
@@ -389,7 +407,19 @@ export default function SignupFormClient() {
           setDescription(pf.description ?? "");
         }
         setMine(mineState);
-        if (mineState?.submission) applySubmission(mineState.submission);
+        if (mineState?.submission) {
+          applySubmission(mineState.submission);
+          // Identity is PROFILE-authoritative (printed read-only): re-apply
+          // it over the stored submission's copy so the display always shows
+          // current profile data — the server stores the same on save.
+          if (pf) {
+            setFirstName(pf.first_name ?? "");
+            setLastName(pf.last_name ?? "");
+            setEmail(pf.email ?? "");
+            if (pf.birthdate) setBirthdate(pf.birthdate);
+            if (pf.gender) setGender(pf.gender);
+          }
+        }
       }
     } finally {
       setLoading(false);
@@ -498,6 +528,9 @@ export default function SignupFormClient() {
         method: "POST",
         body: JSON.stringify({
           season_id: config?.season_id,
+          source: "web",
+          // Identity is profile-authoritative server-side — these merely
+          // echo the printed values (and fill birthdate/gender gaps).
           first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(),
           birthdate: birthdate.trim(), gender,
           phone: phone.trim() || null, address: address.trim() || null,
@@ -665,6 +698,39 @@ export default function SignupFormClient() {
     );
   }
 
+  // PROFILE-FIRST (Henric, 2026-07-18): the flow is register/log in on your
+  // Beach profile, THEN sign up — no anonymous form. The API enforces the
+  // same (submit requires a verified bearer); this is the friendly half.
+  if (!authed) {
+    return (
+      <div>
+        {langRow}
+        {!!title && <h2 className="mb-2 font-display text-3xl uppercase text-black">{title}</h2>}
+        {!!intro && <p className="mb-6 text-[15px] leading-relaxed text-black/70">{intro}</p>}
+        <div className={cardCls}>
+          <p className="font-display text-2xl uppercase text-black">{t.profileFirstTitle}</p>
+          <p className={hintCls}>{t.profileFirstIntro}</p>
+          <ol className="mt-5 space-y-3">
+            {[t.profileFirstStep1, t.profileFirstStep2].map((step, i) => (
+              <li key={step} className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center bg-black font-display text-sm text-lime">
+                  {i + 1}
+                </span>
+                <span className="text-sm leading-relaxed text-black/70">{step}</span>
+              </li>
+            ))}
+          </ol>
+          <Link
+            href="/konto?next=/anmalan"
+            className="mt-6 inline-flex min-h-12 items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-teal"
+          >
+            {t.profileFirstCta} →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {langRow}
@@ -672,24 +738,9 @@ export default function SignupFormClient() {
       {!!title && <h2 className="mb-2 font-display text-3xl uppercase text-black">{title}</h2>}
       {!!intro && <p className="mb-6 text-[15px] leading-relaxed text-black/70">{intro}</p>}
 
-      {authed ? (
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.1em] text-black/45">
-          {t.loggedInAs(accountName || email || "–")}
-        </p>
-      ) : (
-        <div className="mb-6 flex flex-col gap-2 border border-teal/25 bg-mint p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <strong className="block text-sm text-teal">{t.loginNudgeTitle}</strong>
-            <span className="text-sm leading-relaxed text-teal/80">{t.loginNudge}</span>
-          </div>
-          <Link
-            href="/konto"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-teal"
-          >
-            {t.loginCta} →
-          </Link>
-        </div>
-      )}
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.1em] text-black/45">
+        {t.loggedInAs(accountName || email || "–")}
+      </p>
 
       {existing ? (
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
@@ -703,45 +754,80 @@ export default function SignupFormClient() {
       ) : null}
 
       <div className="space-y-6">
-        {/* Identity */}
+        {/* Identity — PRINTED from the Beach profile, not editable here.
+            Only genuine profile gaps (birthdate/gender a fresh web account
+            lacks) render as inputs; the server enforces the same contract. */}
         <section className={cardCls}>
           <h3 className={headingCls}>{t.detailsTitle}</h3>
           <p className={`${hintCls} mb-6`}>{t.detailsHint}</p>
+          {!firstName.trim() || !lastName.trim() ? (
+            <div className="mb-5 border-l-4 border-orange bg-orange/10 p-4">
+              <p className="text-sm font-bold text-orange">{t.nameMissingTitle}</p>
+              <p className="mt-1 text-sm leading-relaxed text-black/70">
+                {t.nameMissingBody}{" "}
+                <Link href="/konto?next=/anmalan" className="font-semibold text-teal underline underline-offset-4">
+                  {t.updateProfileLink} →
+                </Link>
+              </p>
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="su-first" className={labelCls}>{t.firstName} *</label>
-              <input id="su-first" className={inputCls} value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" />
+              <span className={labelCls}>{t.firstName}</span>
+              <p className="min-h-6 text-[15px] font-semibold text-black">{firstName || "–"}</p>
             </div>
             <div>
-              <label htmlFor="su-last" className={labelCls}>{t.lastName} *</label>
-              <input id="su-last" className={inputCls} value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" />
+              <span className={labelCls}>{t.lastName}</span>
+              <p className="min-h-6 text-[15px] font-semibold text-black">{lastName || "–"}</p>
             </div>
             <div>
-              <label htmlFor="su-email" className={labelCls}>{t.email} *</label>
-              <input id="su-email" type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+              <span className={labelCls}>{t.email}</span>
+              <p className="min-h-6 text-[15px] font-semibold text-black">{email || "–"}</p>
             </div>
-            <div>
-              <label htmlFor="su-birth" className={labelCls}>{t.birthdate} (ÅÅÅÅ-MM-DD) *</label>
-              <input id="su-birth" className={inputCls} value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="1990-05-15" inputMode="numeric" />
-            </div>
+            {prefill?.birthdate ? (
+              <div>
+                <span className={labelCls}>{t.birthdate}</span>
+                <p className="min-h-6 text-[15px] font-semibold text-black">{birthdate || "–"}</p>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="su-birth" className={labelCls}>{t.birthdate} (ÅÅÅÅ-MM-DD) *</label>
+                <input id="su-birth" className={inputCls} value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="1990-05-15" inputMode="numeric" />
+              </div>
+            )}
           </div>
-          <div className="mt-4">
-            <span className={labelCls}>{t.iAm} *</span>
-            <div className="flex gap-2">
-              {([["W", t.woman], ["M", t.man]] as const).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setGender(value)}
-                  className={`min-h-12 flex-1 cursor-pointer border text-sm font-semibold transition-colors ${
-                    gender === value ? "border-black bg-black text-lime" : "border-black/15 bg-white text-black hover:border-black"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+          {prefill?.gender ? (
+            <div className="mt-4">
+              <span className={labelCls}>{t.iAm}</span>
+              <p className="min-h-6 text-[15px] font-semibold text-black">{gender === "W" ? t.woman : gender === "M" ? t.man : "–"}</p>
             </div>
-          </div>
+          ) : (
+            <div className="mt-4">
+              <span className={labelCls}>{t.iAm} *</span>
+              <div className="flex gap-2">
+                {([["W", t.woman], ["M", t.man]] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setGender(value)}
+                    className={`min-h-12 flex-1 cursor-pointer border text-sm font-semibold transition-colors ${
+                      gender === value ? "border-black bg-black text-lime" : "border-black/15 bg-white text-black hover:border-black"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Plain /konto (no ?next): a named profile would bounce straight
+              back before the user could edit anything. */}
+          <p className="mt-5 border-t border-black/10 pt-4 text-xs leading-relaxed text-black/50">
+            {t.fromProfileHint}{" "}
+            <Link href="/konto" className="font-semibold text-teal underline underline-offset-4">
+              {t.updateProfileLink} →
+            </Link>
+          </p>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="su-phone" className={labelCls}>{t.phone}</label>
