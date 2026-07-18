@@ -37,7 +37,7 @@ type Booking = {
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
 type Invoice = { id: string; amount_sek: number; status: string; paid_at?: string | null; created_at?: string | null; lines?: InvoiceLine[] };
 type InvoiceFeed = { invoices: Invoice[]; active_count?: number };
-type TrainingGroup = { group_name: string; day_time: string; court: number | null };
+type TrainingGroup = { group_name: string; day_time: string; court: number | null; season?: string | null };
 type TrainingLookup = { found: boolean; groups: TrainingGroup[]; message?: string | null };
 type EmailAddress = { email: string; is_primary: boolean };
 type EmailFeed = { addresses: EmailAddress[] };
@@ -116,6 +116,9 @@ export default function AccountPortal() {
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+  // Signup status shared by the Träningsgrupper tab badge + status card.
+  const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
+  const [signupLoaded, setSignupLoaded] = useState(false);
 
   const applyProfile = useCallback((next: Profile) => {
     setProfile(next);
@@ -180,6 +183,15 @@ export default function AccountPortal() {
   }, [applyProfile]);
 
   const profileId = profile?.id;
+  useEffect(() => {
+    if (!profileId) { setSignupMine(null); setSignupLoaded(false); return; }
+    let active = true;
+    api<SignupMine>("/api/signup/mine")
+      .then((result) => { if (active) setSignupMine(result); })
+      .catch(() => null)
+      .finally(() => { if (active) setSignupLoaded(true); });
+    return () => { active = false; };
+  }, [profileId]);
   useEffect(() => {
     if (!profileId) return;
     let active = true;
@@ -416,7 +428,14 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span></div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>{label}</button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
+      {label}
+      {value === "training" && signupMine?.submission ? (
+        <span className="grid h-4 w-4 place-items-center rounded-full bg-lime text-[10px] font-bold text-black" aria-label="Anmäld" title="Anmäld">✓</span>
+      ) : value === "training" && signupMine?.can_signup ? (
+        <span className="rounded-full bg-lime px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-black">Anmälan öppen</span>
+      ) : null}
+    </button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
 
     {(!profile.name || !profile.swish_phone) ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Namn krävs för kontot och Swish-nummer krävs när du bokar bana.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
     {message ? <p className="border-x border-b border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{message}</p> : null}
@@ -442,6 +461,8 @@ export default function AccountPortal() {
       loading={overviewLoading}
       trainingGroups={trainingGroups}
       availability={overviewAvailability}
+      signupMine={signupMine}
+      signupLoaded={signupLoaded}
     /> : null}
 
     {tab === "profile" ? <>
@@ -603,10 +624,14 @@ function AccountTraining({
   loading,
   trainingGroups,
   availability,
+  signupMine,
+  signupLoaded,
 }: {
   loading: boolean;
   trainingGroups: TrainingGroup[];
   availability: OverviewAvailability;
+  signupMine: SignupMine | null;
+  signupLoaded: boolean;
 }) {
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
@@ -615,16 +640,31 @@ function AccountTraining({
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella grupper och din anmälan.</p>
     </div>
 
-    <SignupStatusCard />
+    <SignupStatusCard mine={signupMine} loaded={signupLoaded} />
 
     <div className="mt-px">
       <article className="bg-black p-6 text-cream sm:p-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Aktuellt</p>
         <h4 className="mt-2 font-display text-3xl text-cream">Mina träningsgrupper</h4>
-        {loading ? <OverviewLoading /> : !availability.training ? <p className="mt-7 border border-white/15 bg-white/5 p-5 text-sm text-white/60">Kunde inte hämta dina träningsgrupper just nu.</p> : trainingGroups.length ? <div className="mt-7 space-y-2">{trainingGroups.map((group) => <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
-          <strong className="block text-base text-cream">{group.group_name}</strong>
-          <span className="mt-1 block text-sm text-cream/65">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
-        </div>)}</div> : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
+        {loading ? <OverviewLoading /> : !availability.training ? <p className="mt-7 border border-white/15 bg-white/5 p-5 text-sm text-white/60">Kunde inte hämta dina träningsgrupper just nu.</p> : trainingGroups.length ? (
+          // Split per season (Henric): the API orders chronologically and
+          // labels each group ("Våren 2026" / "Sommar 2026").
+          <div className="mt-7 space-y-6">
+            {[...new Set(trainingGroups.map((g) => g.season ?? ""))].map((season) => (
+              <div key={season || "current"}>
+                {season ? <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-lime/80">{season}</p> : null}
+                <div className="space-y-2">
+                  {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => (
+                    <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
+                      <strong className="block text-base text-cream">{group.group_name}</strong>
+                      <span className="mt-1 block text-sm text-cream/65">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
         <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
     </div>
@@ -639,37 +679,50 @@ type SignupMine = {
   last_cancelled: { cancelled_at: string | null } | null;
 };
 
-function SignupStatusCard() {
-  const [mine, setMine] = useState<SignupMine | null>(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    api<SignupMine>("/api/signup/mine")
-      .then((result) => { if (active) setMine(result); })
-      .catch(() => null)
-      .finally(() => { if (active) setLoaded(true); });
-    return () => { active = false; };
-  }, []);
-
+function SignupStatusCard({ mine, loaded }: { mine: SignupMine | null; loaded: boolean }) {
   // Show nothing until we know — and nothing at all unless there's a
   // registration, a recent cancellation, or this viewer may sign up now
   // (public open, or preview open and they're a tester → can_signup).
   if (!loaded || (!mine?.submission && !mine?.can_signup && !mine?.last_cancelled)) return null;
 
   const sub = mine?.submission ?? null;
-  const status = sub
-    ? `Anmäld${sub.created_at ? ` ${sub.created_at.slice(0, 10)}` : ""}${sub.is_changed && sub.changed_at ? ` · ändrad ${sub.changed_at.slice(0, 10)}` : ""}${mine?.can_edit === false ? " · låst för ändringar" : ""}`
-    : mine?.last_cancelled
-      ? `Avbruten${mine.last_cancelled.cancelled_at ? ` ${mine.last_cancelled.cancelled_at.slice(0, 10)}` : ""}${mine?.can_signup ? " · du kan anmäla dig igen" : ""}`
-      : "Anmälan är öppen — säkra din plats";
+  const cancelled = !sub && !!mine?.last_cancelled;
+
+  // Visual status coding (on brand): lime ✓ = submitted, lime pill = open
+  // signup nudge, orange accent = cancelled.
+  if (sub) {
+    return <div className="mt-px">
+      <Link href="/anmalan" className="group flex flex-wrap items-center justify-between gap-4 border-l-4 border-lime bg-black p-5 text-cream transition-colors hover:bg-teal sm:p-6">
+        <span className="flex min-w-0 items-start gap-4">
+          <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lime text-lg font-bold text-black" aria-hidden="true">✓</span>
+          <span className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Anmäld till träningsgrupperna</span>
+            <strong className="mt-1 block text-base text-cream">
+              {`Din anmälan är registrerad${sub.created_at ? ` ${sub.created_at.slice(0, 10)}` : ""}${sub.is_changed && sub.changed_at ? ` · ändrad ${sub.changed_at.slice(0, 10)}` : ""}${mine?.can_edit === false ? " · låst för ändringar" : ""}`}
+            </strong>
+            <span className="mt-1 block text-xs text-cream/60">{mine?.can_edit === false ? "Öppna och se din anmälan" : "Öppna, ändra eller avbryt din anmälan"}</span>
+          </span>
+        </span>
+        <span className="text-lime" aria-hidden="true">→</span>
+      </Link>
+    </div>;
+  }
 
   return <div className="mt-px">
-    <Link href="/anmalan" className="group flex flex-wrap items-center justify-between gap-3 bg-black p-5 text-cream transition-colors hover:bg-teal sm:p-6">
+    <Link href="/anmalan" className={`group flex flex-wrap items-center justify-between gap-4 p-5 text-cream transition-colors hover:bg-teal sm:p-6 ${cancelled ? "border-l-4 border-orange bg-black" : "bg-black"}`}>
       <span className="min-w-0">
-        <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Träningsgrupper</span>
-        <strong className="mt-1 block text-base text-cream">Min anmälan — {status}</strong>
-        <span className="mt-1 block text-xs text-cream/60">{sub ? (mine?.can_edit === false ? "Öppna och se din anmälan" : "Öppna, ändra eller avbryt din anmälan") : "Öppna anmälningsformuläret"}</span>
+        <span className="inline-flex items-center gap-2">
+          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${cancelled ? "bg-orange text-white" : "bg-lime text-black"}`}>
+            {cancelled ? "Avbruten" : "Anmälan öppen"}
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-cream/50">Träningsgrupper</span>
+        </span>
+        <strong className="mt-2 block text-base text-cream">
+          {cancelled
+            ? `Din anmälan är avbruten${mine?.last_cancelled?.cancelled_at ? ` (${mine.last_cancelled.cancelled_at.slice(0, 10)})` : ""}${mine?.can_signup ? " — du kan anmäla dig igen" : ""}`
+            : "Du har inte anmält dig ännu — säkra din plats"}
+        </strong>
+        <span className="mt-1 block text-xs text-cream/60">Öppna anmälningsformuläret</span>
       </span>
       <span className="text-lime" aria-hidden="true">→</span>
     </Link>
