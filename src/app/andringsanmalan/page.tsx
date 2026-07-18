@@ -22,7 +22,7 @@ export default function AndringsanmalanPage() {
           intro="Ändrade förutsättningar, eller känns gruppen fel? Så går du vidare."
           minH="min-h-[46svh]"
         />
-        <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <section className="bg-cream px-5 py-16 text-black sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl space-y-10">
             <Reveal>
               <p className="text-[17px] leading-relaxed text-black/70">

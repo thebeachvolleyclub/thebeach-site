@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 /**
  * Section rhythm (dark/light alternation):
- * 1. KalenderHero    — bg-base (dark)
+ * 1. KalenderHero    — bg-black (dark)
  * 2. Ticker          — accent strip
  * 3. UpcomingEvents  — bg-cream (light)
  * 4. EventTypes      — bg-panel (dark)

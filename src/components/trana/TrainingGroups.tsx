@@ -61,7 +61,7 @@ export default function TrainingGroups() {
               Träningsgrupper höstsäsong 2026 — dag, tid och pris
             </caption>
             <thead>
-              <tr className="border-b border-line bg-base">
+              <tr className="border-b border-line bg-black">
                 <th
                   scope="col"
                   className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40"
@@ -87,7 +87,7 @@ export default function TrainingGroups() {
                 <tr
                   key={`${row.day}-${row.time}`}
                   className={`border-b border-line text-sm ${
-                    i % 2 === 0 ? "bg-panel" : "bg-base"
+                    i % 2 === 0 ? "bg-panel" : "bg-black"
                   }`}
                 >
                   <td className="px-5 py-4 font-semibold text-bone">
@@ -106,7 +106,7 @@ export default function TrainingGroups() {
 
       {/* Notes band */}
       <Reveal delay={0.1}>
-        <div className="mt-6 flex flex-col gap-4 border border-line bg-base p-6 sm:flex-row sm:items-start sm:gap-10 lg:p-8">
+        <div className="mt-6 flex flex-col gap-4 border border-line bg-black p-6 sm:flex-row sm:items-start sm:gap-10 lg:p-8">
           <div className="flex-1">
             <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-lime">
               Ungdomsrabatt

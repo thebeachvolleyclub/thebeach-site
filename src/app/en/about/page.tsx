@@ -68,7 +68,7 @@ export default function EnAbout() {
         </section>
         )}
 
-        <section className="bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
+        <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
           <Reveal className="mb-10 lg:mb-14">
             <p className="eyebrow mb-4">The team</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">

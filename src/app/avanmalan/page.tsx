@@ -30,7 +30,7 @@ export default function AvanmalanPage() {
           intro="Så fungerar betalning och avanmälan för våra träningsgrupper — och varför reglerna ser ut som de gör."
           minH="min-h-[46svh]"
         />
-        <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <section className="bg-cream px-5 py-16 text-black sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl space-y-12">
             <Reveal>
               <h2 className="mb-3 font-display text-2xl uppercase text-black">Betalning</h2>

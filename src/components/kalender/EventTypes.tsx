@@ -77,7 +77,7 @@ export default function EventTypes() {
           <Reveal
             key={t.no}
             delay={i * 0.08}
-            className="flex flex-col border border-line bg-base p-7 lg:p-9"
+            className="flex flex-col border border-line bg-black p-7 lg:p-9"
           >
             {/* Number + icon row */}
             <div className="mb-5 flex items-center justify-between">

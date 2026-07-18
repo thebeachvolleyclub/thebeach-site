@@ -4,7 +4,7 @@ import Magnetic from "./Magnetic";
 
 export default function CTASection() {
   return (
-    <section id="kontakt" className="bg-base py-24 sm:py-32">
+    <section id="kontakt" className="bg-black py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal>
           <div className="relative overflow-hidden rounded-[2.5rem] border border-brass/25 bg-[radial-gradient(120%_140%_at_50%_-20%,#15414a_0%,#0f2a33_55%,#0b1a22_100%)] px-6 py-16 text-center sm:px-12 sm:py-24">

@@ -97,7 +97,7 @@ export default function DesktopStickies() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 24, opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-6 left-6 z-40 hidden w-[330px] border border-bone/10 bg-base/95 p-5 shadow-2xl shadow-black/50 backdrop-blur-xl lg:block"
+            className="fixed bottom-6 left-6 z-40 hidden w-[330px] border border-bone/10 bg-black/95 p-5 shadow-2xl shadow-black/50 backdrop-blur-xl lg:block"
           >
             <button
               type="button"

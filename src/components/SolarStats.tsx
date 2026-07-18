@@ -17,7 +17,7 @@ function StatGrid({ stats }: { stats: Stat[] }) {
   return (
     <div className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
       {stats.map((s, i) => (
-        <Reveal key={s.label} delay={i * 0.06} className="bg-base px-4 py-9 text-center">
+        <Reveal key={s.label} delay={i * 0.06} className="bg-black px-4 py-9 text-center">
           <div className="font-display text-4xl text-lime sm:text-5xl">{s.value}</div>
           <div className="mt-3 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-cream/60">
             {s.label}
@@ -83,7 +83,7 @@ export default async function SolarStats({ compact = false }: { compact?: boolea
   }
 
   return (
-    <section className="border-y border-line bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-20">
+    <section className="border-y border-line bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-20">
       <div className="mx-auto max-w-[1500px]">
         <div className="mb-7 flex items-center justify-between gap-4">
           <p className="eyebrow">Grön arena</p>

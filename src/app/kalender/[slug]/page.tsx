@@ -81,7 +81,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
       <JsonLd data={eventLd} />
       <Navbar />
       <main className="flex-1">
-        <section className="relative isolate overflow-hidden bg-base px-5 pb-14 pt-36 sm:px-10 lg:px-14 lg:pb-20">
+        <section className="relative isolate overflow-hidden bg-black px-5 pb-14 pt-36 sm:px-10 lg:px-14 lg:pb-20">
           <div className="pointer-events-none absolute -right-40 -top-40 h-[480px] w-[480px] rounded-full bg-lime/10 blur-[120px]" />
           <div className="relative z-10 mx-auto w-full max-w-[1500px]">
             <Reveal>

@@ -58,7 +58,7 @@ export default function CookieConsent() {
     <div
       role="dialog"
       aria-label={en ? "Cookie settings" : "Cookie-inställningar"}
-      className="fixed inset-x-4 bottom-4 z-[120] max-w-md border border-white/15 bg-base/95 p-5 shadow-2xl backdrop-blur sm:left-6 sm:right-auto"
+      className="fixed inset-x-4 bottom-4 z-[120] max-w-md border border-white/15 bg-black/95 p-5 shadow-2xl backdrop-blur sm:left-6 sm:right-auto"
     >
       <p className="text-sm leading-relaxed text-white/80">
         {en ? (

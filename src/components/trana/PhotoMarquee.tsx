@@ -117,7 +117,7 @@ export default function PhotoMarquee() {
   return (
     <section
       aria-label="Bilder från träningen"
-      className="overflow-hidden bg-base py-10 lg:py-14"
+      className="overflow-hidden bg-black py-10 lg:py-14"
     >
       {reduce ? (
         <div className="no-scrollbar flex overflow-x-auto">

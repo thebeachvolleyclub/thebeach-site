@@ -20,8 +20,11 @@
   --color-warm-gray: #c0bfb4;
   --color-white: #ffffff;
 
-  /* Semantic surfaces on the near-black base */
-  --color-base: #14160f; /* page background */
+  /* Semantic surfaces on the near-black base.
+     NOTE: never define a token named --color-base — it turns Tailwind's
+     `text-base` FONT-SIZE utility into a near-black COLOR utility, which
+     painted every `text-base` string dark regardless of context (the
+     black-on-black "Träningsgrupper" card, 2026-07-18). Use `bg-black`. */
   --color-panel: #1c1f15; /* sections / cards on black */
   --color-panel-2: #24281b; /* raised cards */
   --color-line: #33392a; /* hairline borders */

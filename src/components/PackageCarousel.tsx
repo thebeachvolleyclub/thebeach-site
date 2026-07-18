@@ -71,7 +71,7 @@ function PackageCard({ pkg, lift = false }: { pkg: Pkg; lift?: boolean }) {
         href="#kontakt"
         className={`group mt-9 inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] transition-colors duration-300 ${
           pkg.popular
-            ? "bg-base text-bone hover:bg-panel"
+            ? "bg-black text-bone hover:bg-panel"
             : "border border-bone/25 text-bone hover:border-brass hover:text-brass"
         }`}
       >

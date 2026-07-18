@@ -39,7 +39,7 @@ export default function PageHero({
   return (
     <section
       id="top"
-      className={`relative isolate flex ${minH} flex-col justify-end overflow-hidden bg-base px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14`}
+      className={`relative isolate flex ${minH} flex-col justify-end overflow-hidden bg-black px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14`}
     >
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.09]"

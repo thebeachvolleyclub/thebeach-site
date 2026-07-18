@@ -32,7 +32,7 @@ export default function TranaPage() {
     <>
       <Navbar />
       <main className="flex-1">
-        {/* 1. Hero — bg-base (dark) */}
+        {/* 1. Hero — bg-black (dark) */}
         <TranaHero />
         <Ticker />
         {/* 1b. Fotoremsa — folk som tränar (dra för att styra) */}

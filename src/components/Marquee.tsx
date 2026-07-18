@@ -72,7 +72,7 @@ export default function Marquee() {
   return (
     <section
       aria-label="Det vi gör"
-      className="overflow-hidden border-y border-line bg-base py-7 text-3xl sm:py-9 sm:text-4xl"
+      className="overflow-hidden border-y border-line bg-black py-7 text-3xl sm:py-9 sm:text-4xl"
     >
       {reduce ? (
         <div className="flex justify-center gap-10 px-4 text-center">

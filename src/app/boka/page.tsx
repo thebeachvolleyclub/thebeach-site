@@ -34,7 +34,7 @@ export default function BokaPage() {
         <BookingWidget />
       </section>
 
-      <section className="bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+      <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
         <Reveal className="mb-10"><p className="eyebrow mb-4">Så funkar det</p><h2 className="font-display text-[clamp(2.25rem,9vw,4.5rem)] text-bone">Tre steg till sanden</h2></Reveal>
         <div className="grid gap-0.5 lg:grid-cols-3">{steps.map((step, index) => <Reveal key={step.title} delay={index * 0.06} className="border border-white/10 bg-white/[0.03] p-7 lg:p-9"><span className="mb-4 block font-display text-3xl text-lime/40">0{index + 1}</span><h3 className="mb-3 font-display text-2xl text-bone">{step.title}</h3><p className="text-sm leading-relaxed text-bone/55">{step.text}</p></Reveal>)}</div>
       </section>

@@ -37,7 +37,7 @@ const PILLARS = [
 
 export default function Pillars() {
   return (
-    <section className="bg-base py-24 sm:py-32">
+    <section className="bg-black py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-14 max-w-2xl">
           <Reveal>

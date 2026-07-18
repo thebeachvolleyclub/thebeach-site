@@ -83,7 +83,7 @@ export default function HallbarhetPage() {
         </section>
 
         {/* Grundare / långsiktighet */}
-        <section className="bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto grid max-w-[1500px] grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
             <Reveal>
               <p className="eyebrow mb-4">Långsiktighet</p>

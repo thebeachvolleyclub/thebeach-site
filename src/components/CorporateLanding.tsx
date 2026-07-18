@@ -78,7 +78,7 @@ export default function CorporateLanding({
           </div>
         </section>
 
-        <section className="bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-[1500px]">
             <Reveal className="mb-10">
               <p className="eyebrow mb-4">Därför The Beach</p>

@@ -50,7 +50,7 @@ export default function SubscribeCalendar() {
 
         {/* Platform chips */}
         <Reveal delay={0.1}>
-          <div className="border border-line bg-base p-6 lg:p-8">
+          <div className="border border-line bg-black p-6 lg:p-8">
             <div className="mb-5 flex items-center gap-3">
               <Calendar className="h-5 w-5 text-lime/60" />
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-bone/40">

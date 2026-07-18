@@ -155,7 +155,7 @@ export default function PricingTiers() {
         <div
           role="group"
           aria-label="Välj tid på dagen"
-          className="inline-flex shrink-0 items-center gap-0.5 rounded-sm border border-white/15 bg-base p-1"
+          className="inline-flex shrink-0 items-center gap-0.5 rounded-sm border border-white/15 bg-black p-1"
         >
           <button
             type="button"
@@ -203,7 +203,7 @@ export default function PricingTiers() {
             <Reveal
               key={tier.name}
               delay={reduce ? 0 : i * 0.08}
-              className="flex flex-col overflow-hidden border border-line bg-base"
+              className="flex flex-col overflow-hidden border border-line bg-black"
             >
               {/* Tier image */}
               {/* eslint-disable-next-line @next/next/no-img-element */}

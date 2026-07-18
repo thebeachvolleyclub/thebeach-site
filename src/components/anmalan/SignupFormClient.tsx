@@ -1181,7 +1181,7 @@ function PlayerSearch({ t, chosenName, chosenManual, onPick, onManual, onClear }
             const showAge = nameCounts[p.name] > 1 && p.age != null;
             return (
               <button key={p.id} type="button" onClick={() => { onPick(p); reset(); }}
-                className="block w-full cursor-pointer border-b border-black/5 px-4 py-2.5 text-left text-sm hover:bg-mint">
+                className="block w-full cursor-pointer border-b border-black/5 px-4 py-2.5 text-left text-sm text-black hover:bg-mint">
                 {p.name}
                 {showAge ? <span className="text-black/45">{`  ·  ${t.ageUnit(p.age as number)}`}</span> : null}
               </button>

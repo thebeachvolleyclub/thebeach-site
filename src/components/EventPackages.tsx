@@ -62,7 +62,7 @@ export default function EventPackages() {
         {/* top & bottom: dissolve the hard edges into the surrounding section */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-panel via-transparent to-panel" />
         {/* mobile: full-width text needs a stronger scrim than the side gradient gives */}
-        <div className="absolute inset-0 -z-10 bg-base/35 sm:hidden" />
+        <div className="absolute inset-0 -z-10 bg-black/35 sm:hidden" />
         {/* warm brass bloom from the candlelight */}
         <div className="pointer-events-none absolute -z-10 right-[12%] top-1/3 h-64 w-64 rounded-full bg-brass/15 blur-[100px]" />
 

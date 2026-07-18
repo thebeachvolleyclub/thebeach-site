@@ -28,7 +28,7 @@ export default function TranaHero() {
   return (
     <section
       id="top"
-      className="relative isolate flex min-h-[72svh] flex-col justify-end overflow-hidden bg-base px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14"
+      className="relative isolate flex min-h-[72svh] flex-col justify-end overflow-hidden bg-black px-5 pb-16 pt-32 sm:px-10 sm:pb-20 lg:px-14"
     >
       {/* Topo-line SVG decoration — lime, brand-kit pattern */}
       <svg

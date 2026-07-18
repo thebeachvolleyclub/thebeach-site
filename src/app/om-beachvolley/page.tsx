@@ -93,7 +93,7 @@ export default function OmBeachvolleyPage() {
         </section>
 
         {/* Tävlingsstruktur */}
-        <section className="bg-base px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <Reveal className="mb-10">
             <p className="eyebrow mb-4">Tävla i Sverige</p>
             <h2 className="font-display text-[clamp(2.25rem,9vw,3.5rem)] leading-[0.9] text-bone">
