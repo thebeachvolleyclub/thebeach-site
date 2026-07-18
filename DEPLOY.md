@@ -88,6 +88,18 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
   Season-signup identity is the HttpOnly `tb_account_session` cookie (a
   verified bearer token); the routes forward that token and never trust a
   browser-supplied user id.
+- **Anonymous season-signup throttle** (`/api/signup/submit`): the route keys
+  abuse control on the client's TRUSTED NETWORK IP (as seen by Apache), NOT a
+  cookie — a visitor cannot reset their bucket by clearing cookies. It reads
+  the proxy-set address (`X-Real-IP` / right-most `X-Forwarded-For` hop),
+  HMAC-signs it, and forwards `X-Client-IP`/`X-Client-IP-Sig` to the API.
+  **Required prod env (fail-closed, NO default):** set `CLIENT_IP_SECRET` in
+  the env's `.env` to the SAME value as the API (`CLIENT_IP_SECRET` on
+  `thebeach-api`). Unset ⇒ no signed IP is forwarded and the API degrades to a
+  coarse per-container bucket + a global cap (safe, but not per-client).
+  **Apache must set the client address authoritatively** (mod_remoteip /
+  `RemoteIPHeader`) so `X-Real-IP` / the last XFF hop reflect the real peer and
+  cannot be spoofed by a client-supplied header.
 - The pre-container placeholder site is archived at
   `/home/beachinfo/site-backups/thebeach.one-placeholder-20260710.tar.gz`
   (offbox copy on beachapps-dev: `~/site-promote/offbox-backups/`).
