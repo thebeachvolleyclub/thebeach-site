@@ -43,7 +43,7 @@ type EmailAddress = { email: string; is_primary: boolean };
 type EmailFeed = { addresses: EmailAddress[] };
 type ActivityEntry = { name: string; date: string | null; groups?: string[] };
 type ActivityFeed = { events: ActivityEntry[]; training_groups: ActivityEntry[] };
-type AccountTab = "overview" | "bookings" | "invoices" | "profile";
+type AccountTab = "overview" | "training" | "bookings" | "invoices" | "profile";
 type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean };
 type CancellationResult = {
   booking: Booking;
@@ -416,7 +416,7 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span></div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>{label}</button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`cursor-pointer px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>{label}</button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
 
     {(!profile.name || !profile.swish_phone) ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Namn krävs för kontot och Swish-nummer krävs när du bokar bana.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
     {message ? <p className="border-x border-b border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{message}</p> : null}
@@ -436,6 +436,13 @@ export default function AccountPortal() {
       onOpenInvoices={() => setTab("invoices")}
       onCancelBooking={cancelBooking}
       cancellingBookingId={cancellingBookingId}
+    /> : null}
+
+    {tab === "training" ? <AccountTraining
+      loading={overviewLoading}
+      trainingGroups={trainingGroups}
+      activity={activity}
+      availability={overviewAvailability}
     /> : null}
 
     {tab === "profile" ? <>
@@ -572,6 +579,44 @@ function AccountOverview({
         </div>}
       </article>
 
+      <ActivityHistoryCard title="Event jag deltagit i" eyebrow="Min Beach-historik" items={activity.events} loading={loading} available={availability.activity} kind="event" />
+    </div>
+
+    <div className="mt-px grid gap-px bg-black/10 sm:grid-cols-3">
+      <DashboardAction eyebrow="Spela" title="Boka en bana" href="/boka" />
+      <DashboardAction eyebrow="Håll koll" title="Se kalendern" href="/kalender" />
+      <button type="button" onClick={activeInvoiceCount ? onOpenInvoices : onOpenProfile} className="group cursor-pointer bg-white p-5 text-left transition-colors hover:bg-black hover:text-white sm:p-6">
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/40 group-hover:text-lime">Ditt konto</span>
+        <strong className="mt-2 flex items-center justify-between text-base"><span>{activeInvoiceCount ? "Hantera fakturor" : "Ändra profil"}</span><span className="text-teal group-hover:text-lime" aria-hidden="true">→</span></strong>
+      </button>
+    </div>
+  </section>;
+}
+
+// Dedicated Träningsgrupper tab (Henric, 2026-07-18): current groups + signup
+// status + training history in one place, instead of buried at the bottom of
+// the overview below the historical data.
+function AccountTraining({
+  loading,
+  trainingGroups,
+  activity,
+  availability,
+}: {
+  loading: boolean;
+  trainingGroups: TrainingGroup[];
+  activity: ActivityFeed;
+  availability: OverviewAvailability;
+}) {
+  return <section className="bg-cream p-5 sm:p-8 lg:p-10">
+    <div className="border-b border-black/10 pb-7">
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Träning</p>
+      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träningsgrupper</h3>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella grupper, din anmälan och din träningshistorik.</p>
+    </div>
+
+    <SignupStatusCard />
+
+    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-2">
       <article className="bg-black p-6 text-cream sm:p-8">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Aktuellt</p>
         <h4 className="mt-2 font-display text-3xl text-cream">Mina träningsgrupper</h4>
@@ -581,22 +626,8 @@ function AccountOverview({
         </div>)}</div> : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
         <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
-    </div>
 
-    <div className="mt-px grid gap-px bg-black/10 lg:grid-cols-2">
-      <ActivityHistoryCard title="Event jag deltagit i" eyebrow="Min Beach-historik" items={activity.events} loading={loading} available={availability.activity} kind="event" />
       <ActivityHistoryCard title="Tidigare träningsgrupper" eyebrow="Träningshistorik" items={activity.training_groups} loading={loading} available={availability.activity} kind="training" />
-    </div>
-
-    <SignupStatusCard />
-
-    <div className="mt-px grid gap-px bg-black/10 sm:grid-cols-3">
-      <DashboardAction eyebrow="Spela" title="Boka en bana" href="/boka" />
-      <DashboardAction eyebrow="Håll koll" title="Se kalendern" href="/kalender" />
-      <button type="button" onClick={activeInvoiceCount ? onOpenInvoices : onOpenProfile} className="group cursor-pointer bg-white p-5 text-left transition-colors hover:bg-black hover:text-white sm:p-6">
-        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/40 group-hover:text-lime">Ditt konto</span>
-        <strong className="mt-2 flex items-center justify-between text-base"><span>{activeInvoiceCount ? "Hantera fakturor" : "Ändra profil"}</span><span className="text-teal group-hover:text-lime" aria-hidden="true">→</span></strong>
-      </button>
     </div>
   </section>;
 }
@@ -638,7 +669,7 @@ function SignupStatusCard() {
     <Link href="/anmalan" className="group flex flex-wrap items-center justify-between gap-3 bg-black p-5 text-cream transition-colors hover:bg-teal sm:p-6">
       <span className="min-w-0">
         <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Träningsgrupper</span>
-        <strong className="mt-1 block text-base">Min anmälan — {status}</strong>
+        <strong className="mt-1 block text-base text-cream">Min anmälan — {status}</strong>
         <span className="mt-1 block text-xs text-cream/60">{sub ? (mine?.can_edit === false ? "Öppna och se din anmälan" : "Öppna, ändra eller avbryt din anmälan") : "Öppna anmälningsformuläret"}</span>
       </span>
       <span className="text-lime" aria-hidden="true">→</span>
