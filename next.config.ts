@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // The staging workshop serves `next dev` through the Apache proxy on
   // staging.thebeach.one — allow that origin for dev assets/HMR.
-  allowedDevOrigins: ["staging.thebeach.one", "beachapps-dev.tailde130d.ts.net"],
+  allowedDevOrigins: ["staging.thebeach.one"],
   // Gamla WordPress-adresser (thebeach.se) 301:as path-bevarande hit av
   // Loopia — mappa dem till rätt nya sidor så länkkraften inte dör i 404.
   async redirects() {

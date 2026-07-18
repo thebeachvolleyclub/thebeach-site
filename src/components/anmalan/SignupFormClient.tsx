@@ -309,7 +309,7 @@ export default function SignupFormClient() {
   const [mine, setMine] = useState<MineState | null>(null);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
-  const [viewerIsTester, setViewerIsTester] = useState(true); /* TEMP-LOCAL-TEST: revert to false */
+  const [viewerIsTester, setViewerIsTester] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
