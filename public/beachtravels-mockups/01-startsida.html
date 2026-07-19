@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeachTravels — Startsida (Mockup v1)</title>
+<style>
+  :root{
+    --sand:#F6EFE4;
+    --ocean:#0E5E6F;
+    --deep:#0A3A44;
+    --sun:#FFB640;
+    --coral:#FF5A5F;
+    --ink:#14232A;
+    --white:#fff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:var(--sand)}
+  h1,h2,h3,.nav-logo{font-family:Futura,'Avenir Next','Helvetica Neue',sans-serif}
+  img{display:block;max-width:100%}
+  a{text-decoration:none;color:inherit}
+
+  .note{position:fixed;bottom:14px;left:14px;z-index:99;background:var(--ink);color:#fff;font-size:11px;padding:6px 12px;border-radius:20px;opacity:.85}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:linear-gradient(rgba(10,30,38,.75),transparent);backdrop-filter:blur(4px)}
+  nav .nav-logo img{height:52px}
+  nav ul{display:flex;gap:28px;list-style:none;align-items:center}
+  nav ul a{color:#fff;font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  nav .cta{background:var(--sun);color:var(--ink);padding:10px 22px;border-radius:30px;font-weight:800}
+
+  /* HERO */
+  .hero{position:relative;height:92vh;min-height:560px;overflow:hidden;display:flex;align-items:flex-end}
+  .hero video, .hero .hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,40,48,.25) 0%,rgba(10,40,48,.05) 40%,rgba(10,40,48,.75) 100%)}
+  .hero-inner{position:relative;z-index:2;padding:0 32px 70px;max-width:1100px}
+  .hero .kicker{color:var(--sun);font-weight:800;letter-spacing:.2em;text-transform:uppercase;font-size:13px;margin-bottom:14px}
+  .hero h1{color:#fff;font-size:clamp(38px,6vw,74px);line-height:1.02;text-transform:uppercase;letter-spacing:.01em}
+  .hero p{color:#fff;font-size:clamp(16px,2vw,21px);margin:18px 0 28px;max-width:640px;opacity:.95}
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:15px 32px;border-radius:34px;font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase}
+  .btn-primary{background:var(--sun);color:var(--ink)}
+  .btn-ghost{border:2px solid #fff;color:#fff}
+  .media-tag{position:absolute;top:96px;right:24px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:6px 12px;border-radius:16px}
+
+  /* TRUST BAR */
+  .trust{background:var(--deep);color:#fff;display:flex;justify-content:center;gap:clamp(24px,6vw,90px);padding:22px 20px;flex-wrap:wrap;text-align:center}
+  .trust b{display:block;font-size:22px;color:var(--sun)}
+  .trust span{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;opacity:.85}
+
+  section{padding:84px 32px}
+  .wrap{max-width:1180px;margin:0 auto}
+  .sec-kicker{color:var(--coral);font-weight:800;letter-spacing:.18em;text-transform:uppercase;font-size:12.5px;margin-bottom:10px}
+  .sec-title{font-size:clamp(28px,4vw,46px);text-transform:uppercase;line-height:1.05;margin-bottom:14px}
+  .sec-lead{font-size:17px;max-width:680px;color:#3c4b52;margin-bottom:44px}
+
+  /* DESTINATIONS */
+  .dest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+  .card{position:relative;border-radius:18px;overflow:hidden;height:460px;display:flex;align-items:flex-end;color:#fff;box-shadow:0 12px 30px rgba(10,40,48,.18);transition:transform .25s}
+  .card:hover{transform:translateY(-6px)}
+  .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(8,30,38,.88))}
+  .card-body{position:relative;z-index:2;padding:26px}
+  .pill{display:inline-block;background:var(--sun);color:var(--ink);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:12px}
+  .pill.new{background:var(--coral);color:#fff}
+  .card h3{font-size:30px;text-transform:uppercase;line-height:1}
+  .card .country{font-size:14px;opacity:.85;margin:4px 0 10px}
+  .card .date{font-weight:700;font-size:15px;margin-bottom:14px;color:var(--sun)}
+  .card .link{font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--sun);padding-bottom:2px}
+
+  /* JUMPSET / OS-GULD */
+  .jumpset{background:var(--ocean);color:#fff}
+  .jumpset .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+  .jumpset .sec-kicker{color:var(--sun)}
+  .jumpset p{opacity:.92;margin-bottom:18px;font-size:16.5px;line-height:1.6}
+  .jumpset .quote{border-left:4px solid var(--sun);padding-left:18px;font-style:italic;font-size:18px;margin:26px 0}
+  .jumpset .who{display:flex;align-items:center;gap:14px;margin-top:10px}
+  .jumpset .who img{width:52px;height:52px;border-radius:50%;object-fit:cover}
+  .jumpset .who small{opacity:.8;display:block}
+  .jumpset .media{border-radius:18px;overflow:hidden;position:relative;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+  .jumpset .media img{width:100%;height:100%;object-fit:cover}
+  .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .play span{width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--ocean);padding-left:5px}
+
+  /* NIVÅER */
+  .levels .dest-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .level-card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(10,40,48,.1)}
+  .level-card img{height:230px;width:100%;object-fit:cover}
+  .level-card .lc-body{padding:22px}
+  .level-card h3{font-size:20px;text-transform:uppercase;margin-bottom:8px;color:var(--ocean)}
+  .level-card p{font-size:14.5px;color:#4a585f;line-height:1.55}
+
+  /* SOCIAL */
+  .social{background:var(--sand)}
+  .ig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .ig-grid img{aspect-ratio:1/1;object-fit:cover;border-radius:12px;width:100%}
+  .social .follow{margin-top:26px}
+
+  /* NEWSLETTER */
+  .newsletter{background:var(--deep);color:#fff;text-align:center}
+  .newsletter .sec-title{color:#fff}
+  .newsletter form{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .newsletter input{padding:15px 22px;border-radius:34px;border:none;min-width:300px;font-size:15px}
+  .newsletter .btn-primary{border:none;cursor:pointer}
+
+  footer{background:var(--ink);color:#93a3ab;padding:56px 32px;font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap}
+  footer h4{color:#fff;margin-bottom:12px;font-size:14px;text-transform:uppercase;letter-spacing:.08em}
+  footer li{list-style:none;margin-bottom:8px}
+
+  @media(max-width:860px){
+    nav ul li:not(.keep){display:none}
+    .jumpset .wrap{grid-template-columns:1fr}
+    .ig-grid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<div class="note">MOCKUP v1 — Startsida · ej byggd sida</div>
+
+<nav>
+  <a class="nav-logo" href="#"><img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/BT-logga-med-vit-kant.png?fit=1024%2C847&ssl=1" alt="BeachTravels"></a>
+  <ul>
+    <li><a href="#destinationer">Destinationer</a></li>
+    <li><a href="#jumpset">Swedish Jumpset</a></li>
+    <li><a href="#">Träningskoncept</a></li>
+    <li><a href="#">Om oss</a></li>
+    <li class="keep"><a class="cta" href="#destinationer">Boka resa</a></li>
+  </ul>
+</nav>
+
+<!-- HERO: helskärmsvideo (er bästa dronefilm), autoplay muted loop -->
+<header class="hero">
+  <img class="hero-media" src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2024/10/Portugal_2025_10s-hemsida.gif?fit=1024%2C576&ssl=1" alt="">
+  <span class="media-tag">🎬 Här: helskärms-VIDEO (er bästa destinationsfilm, autoplay/loop)</span>
+  <div class="hero-inner">
+    <div class="kicker">Beachvolleyresor sedan 2011</div>
+    <h1>Sommar året runt.<br>Träning i världsklass.</h1>
+    <p>Följ med till magiska stränder och lär dig spelsystemet bakom OS-guldet. Alla nivåer — från första servern till landslagssatsning.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="#destinationer">Se våra resor</a>
+      <a class="btn btn-ghost" href="#jumpset">Vad är Swedish Jumpset?</a>
+    </div>
+  </div>
+</header>
+
+<!-- TRUST BAR -->
+<div class="trust">
+  <div><b>OS-guld</b><span>Paris 2024 · Åhman/Hellvig</span></div>
+  <div><b>2011</b><span>Grundat av 4 beachälskare</span></div>
+  <div><b>4 900+</b><span>Deltagare från 32 länder</span></div>
+  <div><b>Max 6</b><span>Spelare per coach</span></div>
+</div>
+
+<!-- DESTINATIONER -->
+<section id="destinationer">
+  <div class="wrap">
+    <div class="sec-kicker">Destinationer</div>
+    <h2 class="sec-title">Vart vill du åka?</h2>
+    <p class="sec-lead">Två klassiker och en nyhet. Samma koncept överallt: träning i världsklass på förmiddagen, turneringar, yoga och skönaste hänget resten av dagen.</p>
+    <div class="dest-grid">
+
+      <a class="card" href="02-destination-sperlonga.html">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2023/03/Fredag-60-1-low-quality.jpg?fit=1024%2C683&ssl=1" alt="Sperlonga">
+        <div class="card-body">
+          <span class="pill">Få platser kvar</span>
+          <h3>Sperlonga</h3>
+          <div class="country">Italien 🇮🇹</div>
+          <div class="date">26 sep – 3 okt 2026</div>
+          <span class="link">Läs mer & boka</span>
+        </div>
+      </a>
+
+      <a class="card" href="#">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/DSC04404-2.jpg?fit=1024%2C683&ssl=1" alt="Praia da Rocha">
+        <div class="card-body">
+          <span class="pill">Öppen för bokning</span>
+          <h3>Praia da Rocha</h3>
+          <div class="country">Algarve, Portugal 🇵🇹</div>
+          <div class="date">1 – 8 maj 2027</div>
+          <span class="link">Läs mer & boka</span>
+        </div>
+      </a>
+
+      <a class="card" href="#">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/MPB03442.jpg?fit=1024%2C683&ssl=1" alt="Teneriffa">
+        <div class="card-body">
+          <span class="pill new">Nyhet</span>
+          <h3>Teneriffa</h3>
+          <div class="country">Spanien 🇪🇸</div>
+          <div class="date">Datum släpps snart</div>
+          <span class="link">Gör intresseanmälan</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- SWEDISH JUMPSET -->
+<section class="jumpset" id="jumpset">
+  <div class="wrap">
+    <div>
+      <div class="sec-kicker">#SwedishJumpset</div>
+      <h2 class="sec-title">Lär dig spelet bakom OS-guldet</h2>
+      <p>Vi skapade Swedish Jumpset — spelsystemet med hoppass och andraboll som tog Åhman/Hellvig till OS-guld i Paris 2024. På våra resor lär du dig samma teknik och spelidé, direkt i sanden, av coacherna som utvecklade det.</p>
+      <div class="quote">"Detta är en unik chans att lära dig samma spelsystem som Åhman/Hellvig spelar."</div>
+      <div class="who">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/Screenshot-2019-09-19-at-13.20.20.png?fit=655%2C578&ssl=1" alt="Rasmus Jonsson">
+        <div><b>Rasmus Jonsson</b><small>Förbundskapten, svenska herrlandslaget</small></div>
+      </div>
+    </div>
+    <div class="media">
+      <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/DSC_9806.jpg?fit=1024%2C684&ssl=1" alt="">
+      <div class="play"><span>▶</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- NIVÅER -->
+<section class="levels">
+  <div class="wrap">
+    <div class="sec-kicker">För alla nivåer</div>
+    <h2 class="sec-title">Alla kan åka med</h2>
+    <p class="sec-lead">Nivåanpassad kvalitetsträning med max 6 spelare per coach — oavsett om du aldrig spelat eller siktar på landslaget.</p>
+    <div class="dest-grid">
+      <div class="level-card">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/Nybo%CC%88rjare.jpg?fit=1535%2C1535&ssl=1" alt="">
+        <div class="lc-body"><h3>Jag vill lära mig</h3><p>För dig som precis börjat eller vill prova beachvolley för första gången.</p></div>
+      </div>
+      <div class="level-card">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/Tra%CC%88ningsniva%CC%8A-medel.jpg?fit=3836%2C3836&ssl=1" alt="">
+        <div class="lc-body"><h3>Jag vill utvecklas</h3><p>För dig som kan grunderna och vill ta ditt spel till nästa nivå.</p></div>
+      </div>
+      <div class="level-card">
+        <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2023/10/Slide3.jpg?fit=3198%2C3198&ssl=1" alt="">
+        <div class="lc-body"><h3>Jag vill bli bäst</h3><p>För dig som är riktigt duktig och vill vässa spelet mot elitnivå.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF / IG -->
+<section class="social">
+  <div class="wrap">
+    <div class="sec-kicker">@beachtravels</div>
+    <h2 class="sec-title">Livet med BeachTravels</h2>
+    <p class="sec-lead">Färskt flöde direkt från Instagram — resorna säljer sig själva när folk ser stämningen.</p>
+    <div class="ig-grid">
+      <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/DSC04404-2.jpg?fit=1024%2C683&ssl=1" alt="">
+      <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/MPB03442.jpg?fit=1024%2C683&ssl=1" alt="">
+      <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2023/03/Fredag-1-2-1-low-q.jpg?fit=1024%2C683&ssl=1" alt="">
+      <img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/DSC_9806.jpg?fit=1024%2C684&ssl=1" alt="">
+    </div>
+    <div class="follow"><a class="btn btn-primary" href="https://www.instagram.com/beachtravels/">Följ @beachtravels</a></div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <div class="wrap">
+    <h2 class="sec-title">Först till nya datum & erbjudanden</h2>
+    <p>Coach Razzies nyhetsbrev — nyheter från the Swedish Jumpsetters och först ut när nya resor släpps.</p>
+    <form onsubmit="return false">
+      <input type="email" placeholder="Din mejladress">
+      <button class="btn btn-primary">Signa upp</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <h4>BeachTravels Sweden AB</h4>
+      <ul><li>Novavägen 35, 141 44 Huddinge</li><li>ask@beachtravels.se</li></ul>
+    </div>
+    <div>
+      <h4>Destinationer</h4>
+      <ul><li>Sperlonga</li><li>Praia da Rocha</li><li>Teneriffa</li></ul>
+    </div>
+    <div>
+      <h4>Info</h4>
+      <ul><li>Vårt träningskoncept</li><li>Om oss</li><li>Resevillkor</li><li>GDPR</li></ul>
+    </div>
+    <div>
+      <h4>Följ oss</h4>
+      <ul><li>Instagram</li><li>Facebook</li><li>TikTok</li></ul>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

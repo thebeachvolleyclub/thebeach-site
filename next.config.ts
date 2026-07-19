@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
   // Loopia — mappa dem till rätt nya sidor så länkkraften inte dör i 404.
   async redirects() {
     return [
+      {
+        source: "/beachtravels-mockups",
+        destination: "/beachtravels-mockups/01-startsida.html",
+        permanent: false,
+      },
       { source: "/hem", destination: "/", permanent: true },
       { source: "/spela_beachvolley", destination: "/trana", permanent: true },
       { source: "/spela_beachvolley/:path*", destination: "/trana", permanent: true },

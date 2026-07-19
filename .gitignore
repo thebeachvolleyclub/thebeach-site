@@ -46,6 +46,3 @@ next-env.d.ts
 # runtime logs
 dev.log
 prod.log
-
-# BeachTravels-mockups (endast staging-preview, ej del av sajten)
-/public/beachtravels-mockups/
