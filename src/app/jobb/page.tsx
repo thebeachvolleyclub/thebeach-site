@@ -173,6 +173,17 @@ export default function JobbPage() {
                 </p>
               </div>
             </Reveal>
+
+            <Reveal delay={0.1} className="mt-8">
+              <div className="border-l-2 border-[#639922] bg-black/[0.03] py-4 pl-5 pr-4">
+                <p className="text-[15px] leading-relaxed text-black/70">
+                  <strong className="text-black">En sak att veta:</strong> det händer mest hos oss när andra
+                  är lediga. Gästerna kommer efter jobbet och på helgerna — det är då arenan lever och köket
+                  behövs som mest. Söker du ett renodlat 9–5 är det här nog inte rätt roll. Men trivs du med
+                  kvällar, helger och känslan när det är full fart, då passar du oss.
+                </p>
+              </div>
+            </Reveal>
           </div>
         </section>
 
