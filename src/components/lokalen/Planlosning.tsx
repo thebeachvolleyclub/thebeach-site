@@ -17,8 +17,8 @@ export default function Planlosning() {
           </h2>
           <p className="mb-10 max-w-2xl text-sm leading-relaxed text-black/60 lg:text-base">
             10 sandbanor inomhus och 7 utomhus, med bar och kök centralt placerade i mitten.
-            Samtliga funktionsytor ligger en halvmeter högre än sandytorna — man kliver ner i
-            sanden och upp till loungen.
+            Samtliga funktionsytor ligger 40 cm högre än sandytorna — man kliver ner i sanden
+            och upp till loungen. Varje sandplan har en egen nedgång.
           </p>
         </Reveal>
 

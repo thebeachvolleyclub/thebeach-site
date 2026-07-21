@@ -121,7 +121,7 @@ export const FAKTA: { etikett: string; varde: string }[] = [
   { etikett: "Banor inomhus", varde: "10 sandbanor" },
   { etikett: "Banor utomhus", varde: "7 sandbanor" },
   { etikett: "Sandyta inomhus", varde: "ca 2 200 m²" },
-  { etikett: "Nivåskillnad", varde: "0,5 m ner i sanden" },
+  { etikett: "Nivåskillnad", varde: "0,4 m ner i sanden" },
   { etikett: "Scen & ljud", varde: "Fast scen, ljud och ljus" },
   { etikett: "Mat & dryck", varde: "Eget kök och bar" },
   { etikett: "Konferens", varde: "Projektor, skärm och whiteboard" },
