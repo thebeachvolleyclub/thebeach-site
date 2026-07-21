@@ -18,17 +18,23 @@ are Let's Encrypt via certbot, auto-renewed by `certbot.timer`.
 
 ## Deploy
 
-From the env's clone on beachinfo-azure, as user `beachinfo`:
+Production is published from its clone on beachinfo-azure, as user `beachinfo`:
 
 ```bash
-# staging from main
-cd /home/beachinfo/thebeach-site-staging && ./deploy.sh staging main
-
 # prod from main (manual publish only)
 cd /home/beachinfo/thebeach-site && ./deploy.sh prod main
 ```
 
-`deploy.sh` does: `git fetch` + detached checkout of the ref → `docker build
+`deploy.sh` is deliberately **prod-only**. A `staging` argument fails closed:
+staging is the persistent development workshop documented below, and replacing
+it with the production-style image removes its `dev` user and `/work` volume.
+Provision or repair staging only with:
+
+```bash
+cd /home/beachinfo/thebeach-site-deploy/workshop && ./run-workshop.sh
+```
+
+For prod, `deploy.sh` does: `git fetch` + detached checkout of the ref → `docker build
 -t thebeach-site:<git-short-sha> .` → retag `thebeach-site:<env>` → replace the
 `<env>-thebeach-site` container (`--restart unless-stopped`, loopback publish,
 `--memory=512m --memory-swap=1g --cpus=1`, json-file logs max-size=10m

@@ -1,33 +1,36 @@
 #!/usr/bin/env bash
-# deploy.sh <staging|prod> [git-ref]
+# deploy.sh prod [git-ref]
 #
-# Deploys thebeach-site as a Docker container on beachinfo-azure, per the
+# Deploys thebeach-site production container on beachinfo-azure, per the
 # prod-container architecture (supervisor/platform/prod-container-architecture.md).
 #
-#   deploy.sh staging main       # deploy staging from origin/main
 #   deploy.sh prod main          # deploy prod from origin/main
 #   deploy.sh prod 380e7cc       # rollback/pin prod to a specific commit
 #
-# Run from the env's own clone:
-#   prod:    /home/beachinfo/thebeach-site
-#   staging: /home/beachinfo/thebeach-site-staging
+# Run from /home/beachinfo/thebeach-site.
 #
-# Port map (host loopback -> container 3000):
-#   prod    127.0.0.1:3000  container prod-thebeach-site     vhost thebeach.one (+www)
-#   staging 127.0.0.1:3001  container staging-thebeach-site  vhost staging.thebeach.one
+# IMPORTANT: staging.thebeach.one is the persistent development workshop, not
+# a runtime deployment target. Replacing it with this production-style image
+# removes the dev user and /work volume and breaks the Site Deploy panel. Use
+# /home/beachinfo/thebeach-site-deploy/workshop/run-workshop.sh to provision or
+# repair staging instead.
 #
 # Images are tagged thebeach-site:<git-short-sha> (release ledger; old tags are
 # kept) and retagged thebeach-site:<env>. Rollback = rerun with the old sha.
 set -euo pipefail
 
-ENV_NAME="${1:?usage: deploy.sh <staging|prod> [git-ref]}"
+ENV_NAME="${1:?usage: deploy.sh prod [git-ref]}"
 REF="${2:-main}"
 
 APP=thebeach-site
 case "$ENV_NAME" in
   prod)    HOST_PORT=3000 ;;
-  staging) HOST_PORT=3001 ;;
-  *) echo "error: env must be 'staging' or 'prod'" >&2; exit 1 ;;
+  staging)
+    echo "error: staging is the persistent workshop, not a deploy.sh target" >&2
+    echo "use: /home/beachinfo/thebeach-site-deploy/workshop/run-workshop.sh" >&2
+    exit 2
+    ;;
+  *) echo "error: env must be 'prod'" >&2; exit 1 ;;
 esac
 CONTAINER="${ENV_NAME}-${APP}"
 
