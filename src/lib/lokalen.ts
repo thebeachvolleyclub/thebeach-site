@@ -73,12 +73,13 @@ const SNURRA = "/media/event-snurra/";
 const NY = "/media/lokalen/";
 
 export const HERO = {
-  fil: SNURRA + "alfa_laval_245.webp",
-  alt: "Scen med ljus och publik i sanden under ett företagsevent på The Beach",
+  fil: NY + "c-dans.webp",
+  alt: "Gäster dansar i sanden framför scenen under ett kvällsevent på The Beach",
 };
 
 export const BILDER: Bild[] = [
-  { fil: NY + "a-konferens-solstolar.webp", alt: "Konferens med biosittning i solstolar och storbildsskärm", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
+  { fil: SNURRA + "caia3_bianca.webp", alt: "Lanseringsfest i sanden — varumärkesaktivering med influencers", yta: ["sandplan-b"], typ: ["massa","fest"], format: "staende", prio: 1 },
+  { fil: NY + "a-konferens-solstolar.webp", alt: "Konferens med biosittning i solstolar och storbildsskärm", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "staende", prio: 4 },
   { fil: NY + "b-brollop-langbord.webp", alt: "Bröllopsdukning med långbord, ljusslingor och grönska i sanden", yta: ["sandplan-b"], typ: ["brollop", "fest"], format: "liggande", prio: 1 },
   { fil: NY + "b-brollop-oversikt.webp", alt: "Dukade långbord sedda över hela sandplanen", yta: ["sandplan-b"], typ: ["brollop", "fest", "julbord"], format: "liggande", prio: 1 },
   { fil: NY + "b-dukning-detalj.webp", alt: "Dukat bord med lyktor och levande ljus i sanden", yta: ["sandplan-b"], typ: ["fest", "brollop", "julbord"], format: "staende", prio: 1 },
@@ -95,7 +96,7 @@ export const BILDER: Bild[] = [
   { fil: NY + "b-picknick-middag.webp", alt: "Middag i picknickstil direkt i sanden", yta: ["sandplan-b"], typ: ["fest", "kickoff"], format: "liggande", prio: 2 },
   { fil: NY + "b-pingis.webp", alt: "Pingisbord uppställt i sanden som aktivitet", yta: ["sandplan-b"], typ: ["kickoff", "massa"], format: "staende", prio: 3 },
   { fil: NY + "b-sandlekar.webp", alt: "Lekar och aktiviteter i sanden under event", yta: ["sandplan-b"], typ: ["kickoff"], format: "staende", prio: 3 },
-  { fil: NY + "b-solstolar-prepp.webp", alt: "Solstolar uppställda i rader inför konferens", yta: ["sandplan-b"], typ: ["konferens"], format: "staende", prio: 2 },
+  { fil: NY + "b-solstolar-prepp.webp", alt: "Solstolar uppställda i rader inför konferens", yta: ["sandplan-b"], typ: ["konferens"], format: "staende", prio: 4 },
   { fil: NY + "bankett-dukning.webp", alt: "Dukat långbord med glas och ljus i sanden", yta: ["sandplan-c"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
   { fil: NY + "bankett-marschaller.webp", alt: "Långbord med marschaller och levande ljus dukade direkt i sanden", yta: ["sandplan-c"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
   { fil: NY + "bar-bartender.webp", alt: "Bartender häller upp en drink", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 2 },
@@ -107,7 +108,6 @@ export const BILDER: Bild[] = [
   { fil: NY + "bar-plockmat.webp", alt: "Plockmat och tilltugg upplagt på fat", yta: ["bar"], typ: ["fest", "kickoff", "julbord"], format: "staende", prio: 1 },
   { fil: NY + "bar-publik.webp", alt: "Gäster vid baren under event", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 3 },
   { fil: NY + "bar-servering.webp", alt: "Servering i baren", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 2 },
-  { fil: NY + "bar-tom.webp", alt: "Baren med grön växtvägg, redo för event", yta: ["bar"], typ: ["fest", "massa"], format: "liggande", prio: 2 },
   { fil: NY + "bar-welcomedrinks-2.webp", alt: "Bartender dukar upp welcome drinks", yta: ["bar"], typ: ["fest", "kickoff"], format: "liggande", prio: 2 },
   { fil: NY + "bar-welcomedrinks.webp", alt: "Welcome drinks uppdukade på baren", yta: ["bar"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
   { fil: NY + "boka-vagg.webp", alt: "Banorna framför den orange väggvepan i hallen", yta: ["sandplan-c"], typ: ["turnering"], format: "liggande", prio: 3 },
@@ -143,7 +143,7 @@ export const BILDER: Bild[] = [
   { fil: NY + "gruppbild-sand.webp", alt: "Gruppbild framför solnedgångsväggen med palmer och sand", yta: ["sandplan-c"], typ: ["kickoff", "konferens"], format: "staende", prio: 2 },
   { fil: NY + "koncept-b-uppbyggnad.webp", alt: "Konceptbild: möjlig uppbyggnad med scen och barhus i sanden", yta: ["sandplan-b"], typ: ["massa", "fest"], format: "liggande", prio: 3, koncept: true },
   { fil: NY + "konferens-skarm.webp", alt: "Konferens i hallen med storbildsskärm, scen och solstolar i biosittning", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "liggande", prio: 1 },
-  { fil: NY + "konferens-solstolar.webp", alt: "Rader av solstolar uppställda för konferens i sanden", yta: ["sandplan-c"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
+  { fil: NY + "konferens-solstolar.webp", alt: "Rader av solstolar uppställda för konferens i sanden", yta: ["sandplan-c"], typ: ["konferens", "kickoff"], format: "staende", prio: 4 },
   { fil: NY + "lounge-branding.webp", alt: "Baren med The Beach-branding", yta: ["lounge"], typ: ["massa", "fest"], format: "staende", prio: 3 },
   { fil: NY + "lounge-catering.webp", alt: "Enklare catering uppdukad i loungen", yta: ["lounge"], typ: ["konferens", "kickoff"], format: "staende", prio: 2 },
   { fil: NY + "lounge-dukning.webp", alt: "Dukning i loungen med rottinglampor", yta: ["lounge"], typ: ["fest", "konferens"], format: "staende", prio: 1 },
@@ -197,3 +197,46 @@ export function aktivaTyper(bilder: Bild[] = BILDER) {
 
 /** Planlösningen — sätts till true när bilden är uppladdad. */
 export const HAR_PLANLOSNING = true;
+
+/** Filmer — poster laddas som bild, videon först vid klick. */
+export type Film = {
+  fil: string;
+  poster: string;
+  titel: string;
+  yta: YtaKey[];
+  typ: TypKey[];
+  format: "liggande" | "staende";
+};
+
+const V = "/media/lokalen/film/";
+
+export const FILMER: Film[] = [
+  { fil: V + "entre-inflygning.mp4", poster: V + "entre-inflygning.webp", titel: "Ankomst — genom entrén innan gästerna kommer", yta: ["entre"], typ: ["kickoff","fest"], format: "liggande" },
+  { fil: V + "entre-till-lounge.mp4", poster: V + "entre-till-lounge.webp", titel: "Från entrén in i loungen under mingel", yta: ["entre","lounge"], typ: ["fest","kickoff"], format: "liggande" },
+  { fil: V + "entre-b-till-c.mp4", poster: V + "entre-b-till-c.webp", titel: "Genom hallen från Sandplan B till C", yta: ["entre","sandplan-b","sandplan-c"], typ: ["turnering","kickoff"], format: "staende" },
+  { fil: V + "entre-lounge-passage.mp4", poster: V + "entre-lounge-passage.webp", titel: "Passagen mellan entrén och loungen", yta: ["entre","lounge"], typ: ["fest"], format: "liggande" },
+  { fil: V + "lounge-mingel.mp4", poster: V + "lounge-mingel.webp", titel: "Mingel i loungen", yta: ["lounge"], typ: ["fest","kickoff"], format: "liggande" },
+  { fil: V + "lounge-speaker-slowmo.mp4", poster: V + "lounge-speaker-slowmo.webp", titel: "Talare i loungen", yta: ["lounge"], typ: ["konferens","kickoff"], format: "liggande" },
+  { fil: V + "bar-mingel.mp4", poster: V + "bar-mingel.webp", titel: "Mingel vid baren", yta: ["bar"], typ: ["fest","kickoff"], format: "liggande" },
+  { fil: V + "bar-personal.mp4", poster: V + "bar-personal.webp", titel: "Bartendrarna i arbete", yta: ["bar"], typ: ["fest"], format: "liggande" },
+  { fil: V + "bar-plockmat.mp4", poster: V + "bar-plockmat.webp", titel: "Plockmat och servering", yta: ["bar"], typ: ["fest","kickoff","julbord"], format: "liggande" },
+  { fil: V + "b-dans.mp4", poster: V + "b-dans.webp", titel: "Dans i sanden på Sandplan B", yta: ["sandplan-b"], typ: ["fest"], format: "liggande" },
+  { fil: V + "b-pingis.mp4", poster: V + "b-pingis.webp", titel: "Pingis som aktivitet i sanden", yta: ["sandplan-b"], typ: ["kickoff","massa"], format: "liggande" },
+  { fil: V + "b-livemusik-oktagon.mp4", poster: V + "b-livemusik-oktagon.webp", titel: "Livemusik i festuppbyggnaden", yta: ["sandplan-b"], typ: ["fest","massa"], format: "liggande" },
+  { fil: V + "b-klipp-1.mp4", poster: V + "b-klipp-1.webp", titel: "Stämning på Sandplan B", yta: ["sandplan-b"], typ: ["fest"], format: "staende" },
+  { fil: V + "b-klipp-2.mp4", poster: V + "b-klipp-2.webp", titel: "Kvällsevent på Sandplan B", yta: ["sandplan-b"], typ: ["fest"], format: "staende" },
+  { fil: V + "b-klipp-3.mp4", poster: V + "b-klipp-3.webp", titel: "Fest i sanden", yta: ["sandplan-b"], typ: ["fest"], format: "staende" },
+  { fil: V + "b-klipp-4.mp4", poster: V + "b-klipp-4.webp", titel: "Gäster på Sandplan B", yta: ["sandplan-b"], typ: ["fest"], format: "staende" },
+  { fil: V + "b-klipp-5.mp4", poster: V + "b-klipp-5.webp", titel: "Sent på kvällen på Sandplan B", yta: ["sandplan-b"], typ: ["fest"], format: "staende" },
+  { fil: V + "c-publikhav.mp4", poster: V + "c-publikhav.webp", titel: "Publikhav framför scenen", yta: ["sandplan-c"], typ: ["fest"], format: "liggande" },
+  { fil: V + "c-livemusik-hey-ya.mp4", poster: V + "c-livemusik-hey-ya.webp", titel: "Liveband på scenen", yta: ["sandplan-c"], typ: ["fest"], format: "liggande" },
+  { fil: V + "c-livemusik-kort.mp4", poster: V + "c-livemusik-kort.webp", titel: "Scenen under konserten", yta: ["sandplan-c"], typ: ["fest"], format: "liggande" },
+  { fil: V + "c-livemusik-snack.mp4", poster: V + "c-livemusik-snack.webp", titel: "Peppsnack från scenen", yta: ["sandplan-c"], typ: ["kickoff","fest"], format: "liggande" },
+  { fil: V + "c-discodans-panorering.mp4", poster: V + "c-discodans-panorering.webp", titel: "Panorering över dansgolvet och satellitbaren", yta: ["sandplan-c","bar"], typ: ["fest"], format: "liggande" },
+  { fil: V + "c-discodans.mp4", poster: V + "c-discodans.webp", titel: "Disco i sanden", yta: ["sandplan-c"], typ: ["fest"], format: "liggande" },
+  { fil: V + "c-klipp-1.mp4", poster: V + "c-klipp-1.webp", titel: "Kvällsstämning på Sandplan C", yta: ["sandplan-c"], typ: ["fest"], format: "staende" },
+  { fil: V + "c-klipp-2.mp4", poster: V + "c-klipp-2.webp", titel: "Event på Sandplan C", yta: ["sandplan-c"], typ: ["fest"], format: "staende" },
+  { fil: V + "ute-turnering-dronare.mp4", poster: V + "ute-turnering-dronare.webp", titel: "Drönarvy över utebanorna under turnering", yta: ["utebanor"], typ: ["turnering","kickoff"], format: "staende" },
+  { fil: V + "ute-klubblags-sm.mp4", poster: V + "ute-klubblags-sm.webp", titel: "Klubblags-SM på utebanorna", yta: ["utebanor"], typ: ["turnering"], format: "staende" },
+  { fil: V + "brollop-reel.mp4", poster: V + "brollop-reel.webp", titel: "Bröllop på The Beach", yta: ["sandplan-b"], typ: ["brollop"], format: "staende" },
+];
