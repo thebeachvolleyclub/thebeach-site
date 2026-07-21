@@ -24,13 +24,20 @@ export type TypKey =
   | "brollop"
   | "julbord";
 
-export const YTOR: { key: YtaKey; namn: string; beskrivning: string }[] = [
-  { key: "sandplan-a", namn: "Sandplan A", beskrivning: "Banor 6–10 — den stora ytan, scen och dansgolv" },
-  { key: "sandplan-b", namn: "Sandplan B", beskrivning: "Banor 1–2 — intill entrén" },
-  { key: "sandplan-c", namn: "Sandplan C", beskrivning: "Banor 3–5" },
+export const YTOR: {
+  key: YtaKey;
+  namn: string;
+  banor?: string;
+  matt?: string;
+  kvm?: string;
+  beskrivning: string;
+}[] = [
+  { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "ca 21 × 20 m", kvm: "ca 430 m²", beskrivning: "Närmast entrén" },
+  { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 30 m", kvm: "ca 600 m²", beskrivning: "Mellersta sandytan" },
+  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "ca 21 × 52 m", kvm: "ca 1 100 m²", beskrivning: "Den stora ytan — scen och dansgolv" },
   { key: "tradack", namn: "Trädäck & altan", beskrivning: "Uteytan mot utebanorna" },
-  { key: "bar", namn: "Bar & lounge", beskrivning: "Bar, reception och loungeytor" },
-  { key: "utebanor", namn: "Utebanor", beskrivning: "7 banor utomhus" },
+  { key: "bar", namn: "Bar & lounge", beskrivning: "Bar, kök och lounge — centralt, en nivå upp" },
+  { key: "utebanor", namn: "Utebanor", banor: "Banor 1–7", beskrivning: "7 banor utomhus" },
 ];
 
 export const TYPER: { key: TypKey; namn: string }[] = [
@@ -63,37 +70,37 @@ export const HERO = {
 
 export const BILDER: Bild[] = [
   // --- Fest, scen & bankett ---
-  { fil: SNURRA + "alfa_laval_245.webp", alt: "Scen med ljuseffekter och publik i sanden", yta: ["sandplan-a"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
-  { fil: SNURRA + "alfa_laval_192.webp", alt: "Gäster dansar med armarna i luften framför scenen", yta: ["sandplan-a"], typ: ["fest"], format: "liggande", prio: 1 },
-  { fil: SNURRA + "508687863_18506196583011036_836687121168.webp", alt: "Liveband på scenen under ett kvällsevent", yta: ["sandplan-a"], typ: ["fest"], format: "liggande", prio: 2 },
-  { fil: SNURRA + "505470545_18505253833011036_905929504629.webp", alt: "Scenen i blått ljus sedd över sanden", yta: ["sandplan-a"], typ: ["fest"], format: "liggande", prio: 2 },
-  { fil: SNURRA + "pxl_20260124_194423008mp.webp", alt: "Långbord dukade för middag i hallen", yta: ["sandplan-a"], typ: ["fest", "julbord"], format: "liggande", prio: 1 },
-  { fil: SNURRA + "dji_20251128_210558_170.webp", alt: "Fullsatt hall med gäster under takkonstruktionen", yta: ["sandplan-a"], typ: ["fest"], format: "liggande", prio: 2 },
+  { fil: SNURRA + "alfa_laval_245.webp", alt: "Scen med ljuseffekter och publik i sanden", yta: ["sandplan-c"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
+  { fil: SNURRA + "alfa_laval_192.webp", alt: "Gäster dansar med armarna i luften framför scenen", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 1 },
+  { fil: SNURRA + "508687863_18506196583011036_836687121168.webp", alt: "Liveband på scenen under ett kvällsevent", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 2 },
+  { fil: SNURRA + "505470545_18505253833011036_905929504629.webp", alt: "Scenen i blått ljus sedd över sanden", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 2 },
+  { fil: SNURRA + "pxl_20260124_194423008mp.webp", alt: "Långbord dukade för middag i hallen", yta: ["sandplan-c"], typ: ["fest", "julbord"], format: "liggande", prio: 1 },
+  { fil: SNURRA + "dji_20251128_210558_170.webp", alt: "Fullsatt hall med gäster under takkonstruktionen", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 2 },
 
   // --- Bar & lounge ---
   { fil: SNURRA + "464906822_18461757397011036_773880143378.webp", alt: "Bartender häller upp en drink i baren", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 2 },
 
   // --- Mässa & aktivering ---
-  { fil: SNURRA + "caia.webp", alt: "Publik och energi under ett aktiveringsevent", yta: ["sandplan-a"], typ: ["massa", "fest"], format: "liggande", prio: 2 },
-  { fil: SNURRA + "caia2.webp", alt: "Gäster firar under ett lanseringsevent i hallen", yta: ["sandplan-a"], typ: ["massa", "fest"], format: "liggande", prio: 3 },
-  { fil: SNURRA + "caia_4.webp", alt: "Dansande gäster i sanden", yta: ["sandplan-a"], typ: ["massa", "fest"], format: "liggande", prio: 3 },
+  { fil: SNURRA + "caia.webp", alt: "Publik och energi under ett aktiveringsevent", yta: ["sandplan-c"], typ: ["massa", "fest"], format: "liggande", prio: 2 },
+  { fil: SNURRA + "caia2.webp", alt: "Gäster firar under ett lanseringsevent i hallen", yta: ["sandplan-c"], typ: ["massa", "fest"], format: "liggande", prio: 3 },
+  { fil: SNURRA + "caia_4.webp", alt: "Dansande gäster i sanden", yta: ["sandplan-c"], typ: ["massa", "fest"], format: "liggande", prio: 3 },
 
   // --- Kundens varumärke i lokalen ---
-  { fil: SNURRA + "avanza-logga_dji_20251128_194332_727.webp", alt: "Kundens logotyp projicerad på solnedgångsväggen bakom scenen", yta: ["sandplan-a"], typ: ["kickoff", "fest", "massa"], format: "liggande", prio: 1 },
+  { fil: SNURRA + "avanza-logga_dji_20251128_194332_727.webp", alt: "Kundens logotyp projicerad på solnedgångsväggen bakom scenen", yta: ["sandplan-c"], typ: ["kickoff", "fest", "massa"], format: "liggande", prio: 1 },
   // === Uppladdade 2026-07-21 (public/media/lokalen/) ===
 
   // --- Bankett & middag ---
-  { fil: NY + "bankett-marschaller.webp", alt: "Långbord med marschaller och levande ljus dukade direkt i sanden", yta: ["sandplan-a"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
-  { fil: NY + "bankett-dukning.webp", alt: "Dukat långbord med glas och ljus i sanden", yta: ["sandplan-a"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
+  { fil: NY + "bankett-marschaller.webp", alt: "Långbord med marschaller och levande ljus dukade direkt i sanden", yta: ["sandplan-c"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
+  { fil: NY + "bankett-dukning.webp", alt: "Dukat långbord med glas och ljus i sanden", yta: ["sandplan-c"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
 
   // --- Konferens & dagsljus ---
-  { fil: NY + "konferens-skarm.webp", alt: "Konferens i hallen med storbildsskärm, scen och solstolar i biosittning", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "liggande", prio: 1 },
-  { fil: NY + "konferens-solstolar.webp", alt: "Rader av solstolar uppställda för konferens i sanden", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
-  { fil: NY + "gruppbild-sand.webp", alt: "Gruppbild framför solnedgångsväggen med palmer och sand", yta: ["sandplan-a"], typ: ["kickoff", "konferens"], format: "staende", prio: 2 },
+  { fil: NY + "konferens-skarm.webp", alt: "Konferens i hallen med storbildsskärm, scen och solstolar i biosittning", yta: ["sandplan-c"], typ: ["konferens", "kickoff"], format: "liggande", prio: 1 },
+  { fil: NY + "konferens-solstolar.webp", alt: "Rader av solstolar uppställda för konferens i sanden", yta: ["sandplan-c"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
+  { fil: NY + "gruppbild-sand.webp", alt: "Gruppbild framför solnedgångsväggen med palmer och sand", yta: ["sandplan-c"], typ: ["kickoff", "konferens"], format: "staende", prio: 2 },
 
   // --- Fest & scen ---
-  { fil: NY + "scen-publik.webp", alt: "Publik framför scenen under ett kvällsevent", yta: ["sandplan-a"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
-  { fil: NY + "mingel.webp", alt: "Gäster minglar i hallen under ett företagsevent", yta: ["sandplan-a"], typ: ["fest", "kickoff"], format: "liggande", prio: 2 },
+  { fil: NY + "scen-publik.webp", alt: "Publik framför scenen under ett kvällsevent", yta: ["sandplan-c"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
+  { fil: NY + "mingel.webp", alt: "Gäster minglar i hallen under ett företagsevent", yta: ["sandplan-c"], typ: ["fest", "kickoff"], format: "liggande", prio: 2 },
 
   // --- Bar & lounge ---
   { fil: NY + "bar-tom.webp", alt: "Baren med grön växtvägg, redo för event", yta: ["bar"], typ: ["fest", "massa"], format: "liggande", prio: 2 },
@@ -101,9 +108,9 @@ export const BILDER: Bild[] = [
   { fil: NY + "lounge-rod.webp", alt: "Den röda salongen med sammetssoffa och mönstrad tapet", yta: ["bar"], typ: ["fest", "brollop"], format: "liggande", prio: 2 },
 
   // --- Lokalen tom (skala och struktur) ---
-  { fil: NY + "tom-oversikt.webp", alt: "Hallen uppifrån med sandbanor och nät", yta: ["sandplan-a", "sandplan-b", "sandplan-c"], typ: ["turnering"], format: "liggande", prio: 2 },
-  { fil: NY + "tom-hall1.webp", alt: "Sandbanorna i den tomma hallen", yta: ["sandplan-a"], typ: ["turnering"], format: "liggande", prio: 3 },
-  { fil: NY + "boka-vagg.webp", alt: "Banorna framför den orange väggvepan i hallen", yta: ["sandplan-a"], typ: ["turnering"], format: "liggande", prio: 3 },
+  { fil: NY + "tom-oversikt.webp", alt: "Hallen uppifrån med sandbanor och nät", yta: ["sandplan-c", "sandplan-a", "sandplan-b"], typ: ["turnering"], format: "liggande", prio: 2 },
+  { fil: NY + "tom-hall1.webp", alt: "Sandbanorna i den tomma hallen", yta: ["sandplan-c"], typ: ["turnering"], format: "liggande", prio: 3 },
+  { fil: NY + "boka-vagg.webp", alt: "Banorna framför den orange väggvepan i hallen", yta: ["sandplan-c"], typ: ["turnering"], format: "liggande", prio: 3 },
 ];
 
 /** Snabbfakta — bostadsannonsens faktaruta. */
