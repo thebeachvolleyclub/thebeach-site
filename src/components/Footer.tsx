@@ -39,6 +39,7 @@ const COLS: { title: string; links: FLink[] }[] = [
       { label: "Hållbarhet", href: "/hallbarhet" },
       { label: "Kontakt", href: "/om-oss#kontakt" },
       { label: "FAQ", href: "/faq" },
+      { label: "Jobba hos oss", href: "/jobb" },
       { label: "BeachTravels", href: "/beachtravels" },
       { label: "Nyhetsbrev", href: "/#nyhetsbrev" },
     ],
