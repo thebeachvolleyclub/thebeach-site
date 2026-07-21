@@ -32,9 +32,9 @@ export const YTOR: {
   kvm?: string;
   beskrivning: string;
 }[] = [
-  { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "ca 21 × 20 m", kvm: "ca 430 m²", beskrivning: "Närmast entrén" },
-  { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 30 m", kvm: "ca 600 m²", beskrivning: "Mellersta sandytan" },
-  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "ca 21 × 52 m", kvm: "ca 1 100 m²", beskrivning: "Den stora ytan — scen och dansgolv" },
+  { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "21,9 × 20,0 m", kvm: "ca 430 m²", beskrivning: "Närmast entrén" },
+  { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 33 m", kvm: "ca 700 m²", beskrivning: "Vinklad yta mot entrésidan" },
+  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", beskrivning: "Den stora ytan — scen och dansgolv" },
   { key: "tradack", namn: "Trädäck & altan", beskrivning: "Uteytan mot utebanorna" },
   { key: "bar", namn: "Bar & lounge", beskrivning: "Bar, kök och lounge — centralt, en nivå upp" },
   { key: "utebanor", namn: "Utebanor", banor: "Banor 1–7", beskrivning: "7 banor utomhus" },
@@ -119,6 +119,8 @@ export const FAKTA: { etikett: string; varde: string }[] = [
   { etikett: "Kapacitet", varde: "Upp till 900 gäster" },
   { etikett: "Banor inomhus", varde: "10 sandbanor" },
   { etikett: "Banor utomhus", varde: "7 sandbanor" },
+  { etikett: "Sandyta inomhus", varde: "ca 2 200 m²" },
+  { etikett: "Nivåskillnad", varde: "0,5 m ner i sanden" },
   { etikett: "Scen & ljud", varde: "Fast scen, ljud och ljus" },
   { etikett: "Mat & dryck", varde: "Eget kök och bar" },
   { etikett: "Konferens", varde: "Projektor, skärm och whiteboard" },

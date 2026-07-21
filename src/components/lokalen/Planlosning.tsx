@@ -17,8 +17,8 @@ export default function Planlosning() {
           </h2>
           <p className="mb-10 max-w-2xl text-sm leading-relaxed text-black/60 lg:text-base">
             10 sandbanor inomhus och 7 utomhus, med bar och kök centralt placerade i mitten.
-            Samtliga funktionsytor ligger en nivå högre än sandytorna — man kliver ner i sanden
-            och upp till loungen.
+            Samtliga funktionsytor ligger en halvmeter högre än sandytorna — man kliver ner i
+            sanden och upp till loungen.
           </p>
         </Reveal>
 
@@ -53,8 +53,8 @@ export default function Planlosning() {
         </ul>
 
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-black/40">
-          Mått och ytor är uppmätta ur ritningen och avrundade — hör av er så tar vi fram exakta
-          siffror för just er uppställning.
+          Mått och ytor är hämtade ur bygglovsritningen (skala 1:300) och avrundade.
+          Sandplan B är vinklad — ytan är exakt, måtten ungefärliga.
         </p>
       </div>
     </section>
