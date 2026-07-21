@@ -62,13 +62,12 @@ export default function LokalenPage() {
             <div className="mx-auto w-full max-w-6xl">
               <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-lime">Lokalen</p>
               <h1 className="mb-5 max-w-3xl font-display text-[clamp(2.5rem,11vw,5.5rem)] uppercase leading-[0.88] tracking-[-0.02em] text-white">
-                3 150 m² sand
+                Här är det alltid
                 <br />
-                <span className="italic-accent">mitt i Stockholm</span>
+                <span className="italic-accent">sommar</span>
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-white lg:text-base">
-                En hall som blir vad ni gör den till — konferens på dagen, bankett på kvällen,
-                turnering på helgen. Plats för upp till 900 gäster.
+                3 150 m² sand, 25 grader och plats för 900 gäster. Tjugo minuter från city.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="#forfragan" className="rounded-full bg-lime px-6 py-3 text-sm font-semibold text-black transition hover:opacity-90">

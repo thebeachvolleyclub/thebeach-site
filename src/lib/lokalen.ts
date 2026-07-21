@@ -79,7 +79,7 @@ export const HERO = {
 
 export const BILDER: Bild[] = [
   { fil: NY + "b-palmer-mot-lounge.webp", alt: "Palmer och solnedgångsvägg sedda mot loungen", yta: ["sandplan-b"], typ: ["fest", "kickoff"], format: "staende", prio: 1 },
-  { fil: NY + "b-konferens-biosittning.webp", alt: "Konferens med biosittning mot storbildsskärm", yta: ["sandplan-b"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
+  { fil: NY + "b-konferens-biosittning.webp", alt: "Premiärvisning med kundens varumärke projicerat över hela väggen och biosittning i sanden", yta: ["sandplan-b"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
   { fil: NY + "b-dukning-detalj.webp", alt: "Dukat bord med lyktor och levande ljus i sanden", yta: ["sandplan-b"], typ: ["fest", "brollop", "julbord"], format: "staende", prio: 1 },
   { fil: NY + "c-scen-band.webp", alt: "Band på scenen under kvällsevent", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 1 },
   { fil: NY + "bar-bartender.webp", alt: "Bartender häller upp en drink", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 1 },
