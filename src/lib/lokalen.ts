@@ -30,11 +30,12 @@ export const YTOR: {
   banor?: string;
   matt?: string;
   kvm?: string;
+  nedgang?: string;
   beskrivning: string;
 }[] = [
-  { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "21,9 × 20,0 m", kvm: "ca 430 m²", beskrivning: "Närmast entrén" },
-  { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 33 m", kvm: "ca 700 m²", beskrivning: "Vinklad yta mot entrésidan" },
-  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", beskrivning: "Den stora ytan — scen och dansgolv" },
+  { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "21,9 × 20,0 m", kvm: "ca 430 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Närmast entrén" },
+  { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 33 m", kvm: "ca 700 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Vinklad yta mot entrésidan" },
+  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Den stora ytan — scen och dansgolv" },
   { key: "tradack", namn: "Trädäck & altan", beskrivning: "Uteytan mot utebanorna" },
   { key: "bar", namn: "Bar & lounge", beskrivning: "Bar, kök och lounge — centralt, en nivå upp" },
   { key: "utebanor", namn: "Utebanor", banor: "Banor 1–7", beskrivning: "7 banor utomhus" },

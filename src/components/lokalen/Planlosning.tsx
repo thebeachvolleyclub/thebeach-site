@@ -47,6 +47,9 @@ export default function Planlosning() {
                   {[y.matt, y.kvm].filter(Boolean).join(" · ")}
                 </p>
               ) : null}
+              {y.nedgang ? (
+                <p className="mb-1 text-sm text-black/70">{y.nedgang}</p>
+              ) : null}
               <p className="text-xs leading-relaxed text-black/45">{y.beskrivning}</p>
             </li>
           ))}
@@ -54,7 +57,8 @@ export default function Planlosning() {
 
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-black/40">
           Mått och ytor är hämtade ur bygglovsritningen (skala 1:300) och avrundade.
-          Sandplan B är vinklad — ytan är exakt, måtten ungefärliga.
+          Sandplan B är vinklad — ytan är exakt, måtten ungefärliga. Nedgångarnas bredd är
+          uppmätt på plats (ritningen visar 120 cm).
         </p>
       </div>
     </section>
