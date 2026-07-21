@@ -99,6 +99,11 @@ export default function Galleri() {
                   className="h-auto w-full transition duration-500 group-hover:scale-[1.03]"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
+                {b.koncept ? (
+                  <span className="absolute left-3 top-3 rounded-full bg-black/75 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white">
+                    Konceptbild
+                  </span>
+                ) : null}
               </button>
             ))}
           </div>
@@ -134,7 +139,14 @@ export default function Galleri() {
               height={1100}
               className="max-h-[80svh] w-auto rounded-lg object-contain"
             />
-            <figcaption className="mt-3 text-center text-sm text-white/70">{bilder[oppen].alt}</figcaption>
+            <figcaption className="mt-3 text-center text-sm text-white/70">
+              {bilder[oppen].alt}
+              {bilder[oppen].koncept ? (
+                <span className="mt-1 block text-xs text-white/45">
+                  Konceptbild — visualisering av en möjlig uppbyggnad, inte ett foto.
+                </span>
+              ) : null}
+            </figcaption>
           </figure>
           <button
             className="absolute right-4 text-4xl text-white/60 hover:text-white"

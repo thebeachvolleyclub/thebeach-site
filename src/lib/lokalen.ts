@@ -13,6 +13,9 @@ export type YtaKey =
   | "sandplan-c"
   | "tradack"
   | "bar"
+  | "lounge"
+  | "entre"
+  | "faciliteter"
   | "utebanor";
 
 export type TypKey =
@@ -37,7 +40,10 @@ export const YTOR: {
   { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 33 m", kvm: "ca 700 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Vinklad yta mot entrésidan" },
   { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Den stora ytan — scen och dansgolv" },
   { key: "tradack", namn: "Trädäck & altan", beskrivning: "Uteytan mot utebanorna" },
-  { key: "bar", namn: "Bar & lounge", beskrivning: "Bar, kök och lounge — centralt, en nivå upp" },
+  { key: "bar", namn: "Baren", beskrivning: "Baren och serveringen — centralt, en nivå upp" },
+  { key: "lounge", namn: "Loungen", beskrivning: "Sittningar, marmorbord och mingelytor" },
+  { key: "entre", namn: "Entrén", beskrivning: "Ankomst och entrésluss" },
+  { key: "faciliteter", namn: "Faciliteter", beskrivning: "Omklädning, dusch och toaletter" },
   { key: "utebanor", namn: "Utebanor", banor: "Banor 1–7", beskrivning: "7 banor utomhus" },
 ];
 
@@ -59,6 +65,8 @@ export type Bild = {
   format: "liggande" | "staende";
   /** 1 = starkast, visas först. */
   prio?: number;
+  /** Visualisering, inte foto — märks tydligt i galleriet. */
+  koncept?: boolean;
 };
 
 const SNURRA = "/media/event-snurra/";
