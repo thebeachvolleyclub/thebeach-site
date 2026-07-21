@@ -66,7 +66,7 @@ export default function LokalenPage() {
                 <br />
                 <span className="italic-accent">mitt i Stockholm</span>
               </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-white/85 lg:text-base">
+              <p className="max-w-xl text-sm leading-relaxed text-white lg:text-base">
                 En hall som blir vad ni gör den till — konferens på dagen, bankett på kvällen,
                 turnering på helgen. Plats för upp till 900 gäster.
               </p>

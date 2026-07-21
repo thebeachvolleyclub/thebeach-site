@@ -38,7 +38,7 @@ export const YTOR: {
 }[] = [
   { key: "sandplan-a", namn: "Sandplan A", banor: "Banor 1–2", matt: "21,9 × 20,0 m", kvm: "ca 430 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Närmast entrén" },
   { key: "sandplan-b", namn: "Sandplan B", banor: "Banor 3–5", matt: "ca 21 × 33 m", kvm: "ca 700 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Vinklad yta mot entrésidan" },
-  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Den stora ytan — scen och dansgolv" },
+  { key: "sandplan-c", namn: "Sandplan C", banor: "Banor 6–10", matt: "20,8 × 52,6 m", kvm: "ca 1 080 m²", nedgang: "1 nedgång · 140 cm bred", beskrivning: "Den stora ytan — väggvepa i solnedgång, 52 × 11 m" },
   { key: "tradack", namn: "Trädäck & altan", beskrivning: "Uteytan mot utebanorna" },
   { key: "bar", namn: "Baren", beskrivning: "Baren och serveringen — centralt, en nivå upp" },
   { key: "lounge", namn: "Loungen", beskrivning: "Sittningar, marmorbord och mingelytor" },
@@ -73,8 +73,8 @@ const SNURRA = "/media/event-snurra/";
 const NY = "/media/lokalen/";
 
 export const HERO = {
-  fil: NY + "c-dans.webp",
-  alt: "Gäster dansar i sanden framför scenen under ett kvällsevent på The Beach",
+  fil: NY + "b-dukning-langbord.webp",
+  alt: "Långbord dukade direkt i sanden med levande ljus, baren i bakgrunden",
 };
 
 export const BILDER: Bild[] = [

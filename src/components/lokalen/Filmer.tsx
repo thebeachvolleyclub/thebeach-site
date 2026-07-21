@@ -18,15 +18,11 @@ export default function Filmer() {
     <section id="film" className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
       <div className="mx-auto max-w-6xl">
         <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/40">Film</p>
-        <h2 className="mb-4 font-display text-[clamp(2rem,7vw,3.25rem)] uppercase leading-[0.95] tracking-[-0.02em] text-white">
+        <h2 className="mb-10 font-display text-[clamp(2rem,7vw,3.25rem)] uppercase leading-[0.95] tracking-[-0.02em] text-white">
           Lokalen i rörelse
         </h2>
-        <p className="mb-10 max-w-2xl text-sm leading-relaxed text-white/55">
-          Stillbilder visar hur det ser ut. Film visar hur det känns — ljudnivån, ljuset,
-          hur folk rör sig genom huset.
-        </p>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FILMER.map((f) => {
             const aktiv = spelar === f.fil;
             return (

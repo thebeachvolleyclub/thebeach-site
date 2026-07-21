@@ -57,8 +57,7 @@ export default function Planlosning() {
 
         <p className="mt-8 max-w-2xl text-xs leading-relaxed text-black/40">
           Mått och ytor är hämtade ur bygglovsritningen (skala 1:300) och avrundade.
-          Sandplan B är vinklad — ytan är exakt, måtten ungefärliga. Nedgångarnas bredd är
-          uppmätt på plats (ritningen anger 1250 mm).
+          Sandplan B är vinklad — ytan är exakt, måtten ungefärliga.
         </p>
       </div>
     </section>
