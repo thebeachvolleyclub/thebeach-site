@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 const ANSVAR = [
   "Den dagliga driften av köket",
-  "Menyer, rätter, smoothies och nya produkter",
+  "Menyer & produkter",
   "Inköp och planering av råvaror",
   "Hög kvalitet på mat, presentation och service",
   "Att maten blir en naturlig del av våra event",
@@ -83,7 +83,7 @@ export default function JobbPage() {
         <PageHero
           eyebrow="Jobba hos oss"
           title={<>Skapa ett kök folk <span className="italic-accent">längtar</span> tillbaka till</>}
-          intro="Vi söker en köksansvarig som älskar mat, gillar människor och får energi av att skapa upplevelser. Hos oss är köket en del av hela upplevelsen — inte en service vid sidan av."
+          intro="Vi söker dig som älskar mat, gillar människor och får energi av att skapa upplevelser. Med dig ska köket bli en ännu större del av hela upplevelsen — inte en service vid sidan av."
           cta={cta}
         />
 
@@ -220,8 +220,14 @@ export default function JobbPage() {
                 Låter det som du?
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-black/60">
-                Vi söker framför allt rätt person. Skicka några rader om dig själv så läser vi löpande och hör
-                av oss snabbt. Frågor? Ring David på{" "}
+                Vi söker framför allt rätt person. Skicka några rader om dig själv till{" "}
+                <a
+                  href="mailto:david@thebeach.one?subject=Ansökan%20%E2%80%94%20Köksansvarig%20The%20Beach"
+                  className="font-semibold underline"
+                >
+                  david@thebeach.one
+                </a>{" "}
+                så läser vi löpande och hör av oss snabbt. Frågor? Ring David på{" "}
                 <a href="tel:+46704322028" className="font-semibold underline">070-432 20 28</a>.
               </p>
             </Reveal>
