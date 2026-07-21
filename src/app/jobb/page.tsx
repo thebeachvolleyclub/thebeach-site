@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
+import Link from "next/link";
 
 const TITLE = "Köksansvarig till The Beach";
 const DESC =
@@ -150,6 +151,15 @@ export default function JobbPage() {
                   herrlandslaget sin träningsbas, och vi har en stor barn- och juniorverksamhet. Det smittar
                   av sig: vare sig du vill eller inte kommer du att snacka en hel del beachvolley, träningslära
                   och kost runt köksbänken. Gillar du sportfånar kommer du trivas hos oss.
+                </p>
+                <p>
+                  Nyfiken på hur det ser ut hos oss?{" "}
+                  <Link
+                    href="/lokalen"
+                    className="font-semibold text-lime underline underline-offset-2 transition-colors hover:text-lime-bright"
+                  >
+                    Ta en titt på lokalen →
+                  </Link>
                 </p>
               </div>
             </Reveal>
