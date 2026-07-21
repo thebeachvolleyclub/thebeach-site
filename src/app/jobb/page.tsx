@@ -145,6 +145,12 @@ export default function JobbPage() {
                   efter träningen, ta en lunch med kompisarna, beställa något gott eller samla kollegorna runt
                   en riktigt bra måltid.
                 </p>
+                <p>
+                  Och som du säkert förstår — vi är passionerade beachvolleyälskare. Här har både dam- och
+                  herrlandslaget sin träningsbas, och vi har en stor barn- och juniorverksamhet. Det smittar
+                  av sig: vare sig du vill eller inte kommer du att snacka en hel del beachvolley, träningslära
+                  och kost runt köksbänken. Gillar du sportfånar kommer du trivas hos oss.
+                </p>
               </div>
             </Reveal>
           </div>
