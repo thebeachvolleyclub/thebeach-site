@@ -66,7 +66,7 @@ export default function LokalenPage() {
                 <br />
                 <span className="italic-accent">sommar</span>
               </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-white lg:text-base">
+              <p className="max-w-xl text-sm leading-relaxed text-white lg:text-[1.0625rem]">
                 3 150 m² sand, 25 grader och plats för 900 gäster. Tjugo minuter från city.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">

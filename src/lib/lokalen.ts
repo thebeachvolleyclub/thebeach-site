@@ -73,8 +73,8 @@ const SNURRA = "/media/event-snurra/";
 const NY = "/media/lokalen/";
 
 export const HERO = {
-  fil: NY + "b-dukning-langbord.webp",
-  alt: "Långbord dukade direkt i sanden med levande ljus, baren i bakgrunden",
+  fil: NY + "hero-dukning.webp",
+  alt: "Långbord dukade direkt i sanden med levande ljus och lyktor, gäster vid baren i bakgrunden",
 };
 
 export const BILDER: Bild[] = [
