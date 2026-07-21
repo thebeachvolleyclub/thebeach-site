@@ -10,6 +10,7 @@ const COLS: { title: string; links: FLink[] }[] = [
       { label: "Boka bana", href: "/boka" },
       { label: "Träna", href: "/trana" },
       { label: "Kalender", href: "/kalender" },
+      { label: "The Beach TV", href: "https://tv.thebeach.one", ext: true },
       { label: "Föreningen", href: "/foreningen" },
       { label: "Skolor", href: "/skola" },
     ],

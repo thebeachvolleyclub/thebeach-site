@@ -143,6 +143,22 @@ export default function Tournaments() {
                 →
               </span>
             </a>
+            <a
+              href="https://tv.thebeach.one"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex min-h-[44px] flex-1 cursor-pointer items-center justify-between border border-line bg-panel p-5 transition-colors duration-200 hover:bg-panel-2 lg:px-7"
+            >
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-bone/70">
+                The Beach TV — matcher, resultat &amp; stream
+              </span>
+              <span
+                className="text-bone/40 transition-transform duration-200 group-hover:translate-x-1"
+                aria-hidden="true"
+              >
+                →
+              </span>
+            </a>
             <Link
               href="/trana"
               className="group flex min-h-[44px] flex-1 cursor-pointer items-center justify-between border border-line bg-panel p-5 transition-colors duration-200 hover:bg-panel-2 lg:px-7"
