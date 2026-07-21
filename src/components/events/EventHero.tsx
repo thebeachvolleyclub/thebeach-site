@@ -113,6 +113,12 @@ export default function EventHero() {
               Se koncepten <span aria-hidden="true">→</span>
             </a>
             <Link
+              href="/lokalen"
+              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
+            >
+              Se lokalen — bilder & planlösning
+            </Link>
+            <Link
               href="#forfragan"
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
