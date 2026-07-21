@@ -54,6 +54,7 @@ export type Bild = {
 };
 
 const SNURRA = "/media/event-snurra/";
+const NY = "/media/lokalen/";
 
 export const HERO = {
   fil: SNURRA + "alfa_laval_245.webp",
@@ -79,6 +80,30 @@ export const BILDER: Bild[] = [
 
   // --- Kundens varumärke i lokalen ---
   { fil: SNURRA + "avanza-logga_dji_20251128_194332_727.webp", alt: "Kundens logotyp projicerad på solnedgångsväggen bakom scenen", yta: ["sandplan-a"], typ: ["kickoff", "fest", "massa"], format: "liggande", prio: 1 },
+  // === Uppladdade 2026-07-21 (public/media/lokalen/) ===
+
+  // --- Bankett & middag ---
+  { fil: NY + "bankett-marschaller.webp", alt: "Långbord med marschaller och levande ljus dukade direkt i sanden", yta: ["sandplan-a"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
+  { fil: NY + "bankett-dukning.webp", alt: "Dukat långbord med glas och ljus i sanden", yta: ["sandplan-a"], typ: ["fest", "julbord", "brollop"], format: "liggande", prio: 1 },
+
+  // --- Konferens & dagsljus ---
+  { fil: NY + "konferens-skarm.webp", alt: "Konferens i hallen med storbildsskärm, scen och solstolar i biosittning", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "liggande", prio: 1 },
+  { fil: NY + "konferens-solstolar.webp", alt: "Rader av solstolar uppställda för konferens i sanden", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "staende", prio: 1 },
+  { fil: NY + "gruppbild-sand.webp", alt: "Gruppbild framför solnedgångsväggen med palmer och sand", yta: ["sandplan-a"], typ: ["kickoff", "konferens"], format: "staende", prio: 2 },
+
+  // --- Fest & scen ---
+  { fil: NY + "scen-publik.webp", alt: "Publik framför scenen under ett kvällsevent", yta: ["sandplan-a"], typ: ["fest", "kickoff"], format: "liggande", prio: 1 },
+  { fil: NY + "mingel.webp", alt: "Gäster minglar i hallen under ett företagsevent", yta: ["sandplan-a"], typ: ["fest", "kickoff"], format: "liggande", prio: 2 },
+
+  // --- Bar & lounge ---
+  { fil: NY + "bar-tom.webp", alt: "Baren med grön växtvägg, redo för event", yta: ["bar"], typ: ["fest", "massa"], format: "liggande", prio: 2 },
+  { fil: NY + "lounge-hogbord.webp", alt: "Loungeyta med högbord och rottinglampor", yta: ["bar"], typ: ["fest", "massa"], format: "staende", prio: 2 },
+  { fil: NY + "lounge-rod.webp", alt: "Den röda salongen med sammetssoffa och mönstrad tapet", yta: ["bar"], typ: ["fest", "brollop"], format: "liggande", prio: 2 },
+
+  // --- Lokalen tom (skala och struktur) ---
+  { fil: NY + "tom-oversikt.webp", alt: "Hallen uppifrån med sandbanor och nät", yta: ["sandplan-a", "sandplan-b", "sandplan-c"], typ: ["turnering"], format: "liggande", prio: 2 },
+  { fil: NY + "tom-hall1.webp", alt: "Sandbanorna i den tomma hallen", yta: ["sandplan-a"], typ: ["turnering"], format: "liggande", prio: 3 },
+  { fil: NY + "boka-vagg.webp", alt: "Banorna framför den orange väggvepan i hallen", yta: ["sandplan-a"], typ: ["turnering"], format: "liggande", prio: 3 },
 ];
 
 /** Snabbfakta — bostadsannonsens faktaruta. */
@@ -106,4 +131,4 @@ export function aktivaTyper(bilder: Bild[] = BILDER) {
 }
 
 /** Planlösningen — sätts till true när bilden är uppladdad. */
-export const HAR_PLANLOSNING = false;
+export const HAR_PLANLOSNING = true;
