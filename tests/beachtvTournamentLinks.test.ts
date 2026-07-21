@@ -6,6 +6,11 @@ import {
   resolveBeachTvTournament,
   resolveBeachTvTournaments,
 } from "../src/lib/beachtv-tournaments.ts";
+// @ts-expect-error Node's native TS test runner needs the explicit extension.
+import {
+  attachBeachTvLinksToRenderedManualRows,
+  snapshotInvitationsForRenderedManualRows,
+} from "../src/lib/calendar-tv-links.core.ts";
 
 const jsonResponse = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
@@ -91,4 +96,46 @@ test("deduplicates identical ibIds within a calendar render", async () => {
   assert.equal(calls.length, 2);
   assert.equal(resolved.get("11039"), "https://tv.thebeach.one/turnering/by-ibid/11039");
   assert.equal(resolved.get("11040"), "https://tv.thebeach.one/turnering/by-ibid/11040");
+});
+
+test("a snapshot ibId enriches only an already-rendered manual tournament", () => {
+  const months = [
+    {
+      month: "Juli 2026",
+      events: [
+        { day: "11", type: "tournament", title: "SBT1" },
+        { day: "18", type: "training", title: "Träning" },
+      ],
+    },
+  ];
+  const snapshot = [
+    { date: "2026-07-11", ibId: "11003" },
+    { date: "2026-07-18", ibId: "11038" },
+    { date: "2026-07-25", ibId: "" },
+  ];
+  const sources = snapshotInvitationsForRenderedManualRows(months, snapshot);
+
+  assert.deepEqual(sources, [{ date: "2026-07-11", ibId: "11003" }]);
+  attachBeachTvLinksToRenderedManualRows(
+    months,
+    sources,
+    new Map([["11003", "https://tv.thebeach.one/turnering/by-ibid/11003"]]),
+  );
+
+  assert.equal(months.length, 1);
+  assert.equal(months[0].events.length, 2);
+  assert.deepEqual(months[0].events[0], {
+    day: "11",
+    type: "tournament",
+    title: "SBT1",
+    tvCta: {
+      label: "Se tävlingen på BeachTV",
+      href: "https://tv.thebeach.one/turnering/by-ibid/11003",
+    },
+  });
+  assert.deepEqual(months[0].events[1], {
+    day: "18",
+    type: "training",
+    title: "Träning",
+  });
 });

@@ -17,6 +17,10 @@
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
 import { getAppCalendarEvents } from "./app-events";
 import { resolveBeachTvTournaments } from "./beachtv-tournaments";
+import {
+  attachBeachTvLinksToRenderedManualRows,
+  snapshotInvitationsForRenderedManualRows,
+} from "./calendar-tv-links.core";
 import seed from "./profixio-seed.json";
 
 export type ProfixioEvent = {
@@ -189,8 +193,12 @@ export async function getMergedMonths(): Promise<Month[]> {
     console.error("[profixio-sync] oväntat fel, visar enbart manuella poster:", err);
   }
 
+  const snapshotEventsForRenderedManualRows = snapshotInvitationsForRenderedManualRows(
+    months,
+    seed as ProfixioEvent[],
+  );
   const beachTvByInvitationId = await resolveBeachTvTournaments(
-    profixio.map((event) => event.ibId),
+    [...profixio, ...snapshotEventsForRenderedManualRows].map((event) => event.ibId),
   );
 
   const taken = new Set<string>(
@@ -228,6 +236,15 @@ export async function getMergedMonths(): Promise<Month[]> {
       tvCta,
     });
   }
+
+  // Profixios live list can drop past rows that the manual calendar still shows.
+  // The committed snapshot supplies only their known invitation ids; it never
+  // creates or resurrects a calendar event.
+  attachBeachTvLinksToRenderedManualRows(
+    months,
+    snapshotEventsForRenderedManualRows,
+    beachTvByInvitationId,
+  );
 
   try {
     const appEvents = await getAppCalendarEvents();
