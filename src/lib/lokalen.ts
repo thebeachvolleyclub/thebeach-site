@@ -177,7 +177,7 @@ export const FAKTA: { etikett: string; varde: string }[] = [
   { etikett: "Scen & ljud", varde: "Fast scen, ljud och ljus" },
   { etikett: "Mat & dryck", varde: "Eget kök och bar" },
   { etikett: "Konferens", varde: "Projektor, skärm och whiteboard" },
-  { etikett: "Skärmar", varde: "7 st — 4 i CMS, 1 i loungen, 2 mobila" },
+  { etikett: "Skärmar", varde: "7 st — 4 i CMS, 3 via Chrome/HDMI" },
   { etikett: "Toaletter", varde: "7 st (6 unisex + HWC)" },
   { etikett: "Duschar", varde: "14 st (7 per omklädningsrum)" },
   { etikett: "Läge", varde: "Huddinge — 20 min från city" },

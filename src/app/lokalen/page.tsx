@@ -43,7 +43,7 @@ const ARGUMENT = [
   { rubrik: "Aktivitet som bryter isen", text: "Beachvolley funkar oavsett kondition, ålder eller vem som är chef. Ingen behöver vara bra." },
   { rubrik: "Mat och dryck i huset", text: "Eget kök och bar — buffé, BBQ eller sittande middag. Ingen extern catering att koordinera." },
   { rubrik: "Scen, ljud och ljus", text: "Fast scen med riggat ljud och ljus. Ta in artist, DJ eller talare utan att bygga från noll." },
-  { rubrik: "Er logga i hela huset", text: "Solnedgångsväggen bakom scenen blir er. Sju skärmar — fyra styrda från vårt CMS, en i loungen och två mobila — kör er grafik hela kvällen. Plus vepor, tyger och skyltning." },
+  { rubrik: "Er logga i hela huset", text: "Solnedgångsväggen bakom scenen blir er. Sju skärmar kör er grafik: fyra styrs från vårt CMS, tre via Chrome, USB eller HDMI — varav två mobila på hjul som ni ställer där ni vill. Plus vepor, tyger och skyltning." },
   { rubrik: "En kontakt hela vägen", text: "Samma person från förfrågan till avslutad kväll. Inga överlämningar mitt i." },
   { rubrik: "20 minuter från city", text: "Huddinge, gratis parkering utanför dörren. Enkelt för alla att ta sig till." },
 ];
