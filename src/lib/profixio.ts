@@ -16,6 +16,7 @@
 
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
 import { getAppCalendarEvents } from "./app-events";
+import { resolveBeachTvTournaments } from "./beachtv-tournaments";
 import seed from "./profixio-seed.json";
 
 export type ProfixioEvent = {
@@ -188,24 +189,35 @@ export async function getMergedMonths(): Promise<Month[]> {
     console.error("[profixio-sync] oväntat fel, visar enbart manuella poster:", err);
   }
 
+  const beachTvByInvitationId = await resolveBeachTvTournaments(
+    profixio.map((event) => event.ibId),
+  );
+
   const taken = new Set<string>(
     months.flatMap((m) => m.events.map((e) => e.slug)).filter(Boolean) as string[],
   );
 
   for (const p of profixio) {
-    if (p.date < today) continue; // bara framtida
-
     const d = new Date(p.date + "T12:00:00");
     const label = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
     let month = months.find((m) => m.month.toLowerCase() === label.toLowerCase());
+    const beachTvHref = beachTvByInvitationId.get(p.ibId.trim());
+    const tvCta = beachTvHref
+      ? { label: "Se tävlingen på BeachTV", href: beachTvHref }
+      : undefined;
+
+    const day = String(d.getDate());
+    const manual = month?.events.find((e) => e.day === day && e.type === "tournament");
+    if (manual) {
+      if (tvCta) manual.tvCta = tvCta;
+      continue;
+    }
+    if (p.date < today) continue;
+
     if (!month) {
       month = { month: label, events: [] };
       months.push(month);
     }
-
-    // Manuell post vinner: samma dag + tournament → hoppa över auto-posten.
-    const day = String(d.getDate());
-    if (month.events.some((e) => e.day === day && e.type === "tournament")) continue;
 
     const pres = presentation(p);
     month.events.push({
@@ -213,6 +225,7 @@ export async function getMergedMonths(): Promise<Month[]> {
       day,
       wd: WEEKDAYS[d.getDay()],
       slug: slugFor(p, pres.title, taken),
+      tvCta,
     });
   }
 

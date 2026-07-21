@@ -19,6 +19,7 @@ export type Ev = {
   beskrivning?: string;
   stycken?: string[];
   cta?: { label: string; href: string };
+  tvCta?: { label: string; href: string };
   schema?: { tid: string; vad: string }[];
   appCta?: boolean;
   skarm?: boolean;

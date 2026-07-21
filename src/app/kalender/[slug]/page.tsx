@@ -122,15 +122,29 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                   <RichText text={stycke} />
                 </p>
               ))}
-              {ev.cta && (
-                <a
-                  href={ev.cta.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-8 inline-flex cursor-pointer items-center gap-2 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
-                >
-                  {ev.cta.label} <span aria-hidden="true">&rarr;</span>
-                </a>
+              {(ev.cta || ev.tvCta) && (
+                <div className="mt-8 flex flex-wrap gap-3">
+                  {ev.cta && (
+                    <a
+                      href={ev.cta.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex cursor-pointer items-center gap-2 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85"
+                    >
+                      {ev.cta.label} <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  )}
+                  {ev.tvCta && (
+                    <a
+                      href={ev.tvCta.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex cursor-pointer items-center gap-2 border border-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
+                    >
+                      {ev.tvCta.label} <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  )}
+                </div>
               )}
             </Reveal>
             {(isApp || ev.appCta) && (
