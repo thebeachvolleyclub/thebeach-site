@@ -17,9 +17,24 @@ Förvänta dig uppströmsändringar när som helst.
 - Workshoppens standard-identitet är "The Beach Staging <github@thebeach.one>";
   sätt gärna din egen: `git config --global user.name/user.email`.
 
+## Appägarskap och plattformsgräns
+
+Webbägaren och dennes agent får självständigt ändra och publicera layout,
+innehåll, intern implementation, affärslogik och buggrättningar inom sajtens
+befintliga API- och dataåtkomst. Henric eller Supervisor behöver inte godkänna
+vanlig sajtutveckling.
+
+Om arbetet kräver en delad tabell/kolumn/migrering, ny åtkomst till en annan
+tjänsts data, ändrat publikt API/MCP-kontrakt, identitet eller behörighet:
+skapa ett plattformsärende i Klubbhuset med Business MCP-verktyget
+`hq_create_platform_request` och `requesting_project="site"`. Fortsätt med det
+arbete som inte korsar gränsen medan Supervisor granskar ärendet.
+
 ## Miljöer
-- **Workshop/staging**: /work/thebeach-site i staging-containern, `next dev`
-  med hot reload på https://staging.thebeach.one (Google-SSO-gated).
+- **Workshop/staging (valfri)**: /work/thebeach-site i staging-containern,
+  `next dev` med hot reload på https://staging.thebeach.one
+  (Google-SSO-gated). Permanent staging är inte ett publiceringskrav och kan
+  avvecklas separat.
 - **Prod**: https://thebeach.one — publiceras via Site Deploy-panelen
   (https://admin.thebeach.one/deploy) eller MCP-verktyget `publish_to_prod`.
 - Detaljer: [DEPLOY.md](DEPLOY.md).
