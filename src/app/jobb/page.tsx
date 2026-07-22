@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     description: DESC,
     url: "/jobb",
     type: "website",
+    images: [
+      {
+        url: "/media/lokalen/bar-plockmat.webp",
+        width: 1205,
+        height: 1600,
+        alt: "Plockmat i baren på The Beach",
+      },
+    ],
   },
 };
 
