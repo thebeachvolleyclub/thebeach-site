@@ -88,6 +88,21 @@ export default function JobbPage() {
           cta={cta}
         />
 
+        {/* Bildband — plockmat i baren */}
+        <section className="relative isolate h-[48vh] min-h-[340px] overflow-hidden lg:h-[62vh]">
+          <img
+            src="/media/lokalen/bar-plockmat.webp"
+            alt="Plockmat i baren på The Beach — crostini med prosciutto och ost, solnedgången på skärmen bakom"
+            className="absolute inset-0 h-full w-full object-cover object-[50%_60%]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 px-5 pb-8 sm:px-8 lg:px-14 lg:pb-12">
+            <p className="max-w-xl font-display text-2xl uppercase leading-[0.95] text-white lg:text-4xl">
+              Maten är en del av upplevelsen
+            </p>
+          </div>
+        </section>
+
         {/* Vem vi söker */}
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl">
