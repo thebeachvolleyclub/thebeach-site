@@ -139,8 +139,8 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
             Tack — er eventplan är hos oss!
           </h2>
           <p className="mx-auto max-w-md text-sm leading-relaxed text-white/50">
-            Vi återkommer inom 24 timmar med datum och en offert som bekräftar er plan.
-            Vill ni något under tiden? Mejla boka@thebeach.one.
+            Vi återkommer inom 24 timmar med datum och en offert.
+            Vill ni något under tiden? Mejla david@thebeach.one.
           </p>
         </div>
       </section>
@@ -496,7 +496,7 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
                   </button>
                 </div>
                 {err && (
-                  <p className="text-xs text-orange">Något gick fel — försök igen eller mejla boka@thebeach.one</p>
+                  <p className="text-xs text-orange">Något gick fel — försök igen eller mejla david@thebeach.one</p>
                 )}
               </form>
             )}
