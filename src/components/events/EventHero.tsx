@@ -121,9 +121,9 @@ export default function EventHero({ locale }: { locale: Locale }) {
             >
               {t.hero.linkVenue}
             </Link>
-            {/* Planeraren finns bara på svenska — engelska pekar på samma URL tills en engelsk planerare finns. */}
+            {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
             <Link
-              href="/events/planera"
+              href={locale === "en" ? "/en/events/plan" : "/events/planera"}
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
               {t.hero.linkPlanner}

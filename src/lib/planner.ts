@@ -2,7 +2,15 @@
  * Eventplaneraren — data, prislogik och tidsplansgenerator.
  * Priser ex moms, satta av David 2026-07-23. "från"-priser gör estimatet
  * till "Estimat från". Poster utan pris hamnar under "I offerten".
+ *
+ * i18n: textproducerande funktioner (welcomeLabel, calcSummary, buildTimeline)
+ * tar locale (default "sv") och slår upp etiketter i src/lib/i18n/planner.ts.
+ * WHENLBL/WELCOME behålls som svenska konstanter för bakåtkompatibilitet —
+ * förfrågningsdatat som skickas till teamet är alltid på svenska.
  */
+
+import type { Locale } from "@/lib/i18n";
+import { plannerDict } from "@/lib/i18n/planner";
 
 export type When = "day" | "weekeve" | "fri";
 export type TierKey = "lp" | "alg" | "mia";
@@ -66,6 +74,7 @@ export const initialState: PlannerState = {
   buss: false,
 };
 
+/** Svenska format-etiketter — används i förfrågningsdatat (alltid sv). */
 export const WHENLBL: Record<When, string> = {
   day: "vardag dagtid",
   weekeve: "kväll — mitt i beachlivet",
@@ -78,6 +87,7 @@ export const TIERS: Record<TierKey, { name: string; eve: number; day: number; un
   mia: { name: "Miami", eve: 1195, day: 1075, units: 2 },
 };
 
+/** Svenska etiketter + priser — etiketterna används i förfrågningsdatat (alltid sv). */
 export const WELCOME: Record<WelcomeKey, { lbl: string; lblNA?: string; pp: number }> = {
   cava: { lbl: "Cava vid ankomst", lblNA: "Alkoholfritt bubbel vid ankomst", pp: 79 },
   aperol: { lbl: "Aperol Spritz vid ankomst", pp: 96 },
@@ -111,9 +121,9 @@ export const tierPrice = (s: PlannerState) =>
 
 export const fmt = (n: number) => n.toLocaleString("sv-SE");
 
-export function welcomeLabel(s: PlannerState): string | null {
+export function welcomeLabel(s: PlannerState, locale: Locale = "sv"): string | null {
   if (!s.welcome) return null;
-  const w = WELCOME[s.welcome];
+  const w = plannerDict[locale].welcome[s.welcome];
   return s.policy === "none" && w.lblNA ? w.lblNA : w.lbl;
 }
 
@@ -136,7 +146,8 @@ export interface Summary {
   fran: boolean;
 }
 
-export function calcSummary(s: PlannerState): Summary {
+export function calcSummary(s: PlannerState, locale: Locale = "sv"): Summary {
+  const T = plannerDict[locale];
   const tp = tierPrice(s);
   const g = s.guests;
   const lines: SummaryLine[] = [];
@@ -149,26 +160,26 @@ export function calcSummary(s: PlannerState): Summary {
   const packageTotal = s.when === "fri" ? Math.max(base, MIN_FRI) : base;
   lines.push({
     t: TIERS[s.tier].name,
-    sub: `${WHENLBL[s.when]} · ${tp} kr/p × ${g}`,
+    sub: `${T.whenLbl[s.when]} · ${tp} kr/p × ${g}`,
     amount: `${fmt(base)} kr`,
   });
   if (s.when === "fri" && base < MIN_FRI) {
     lines.push({
-      t: "Exklusiv arena fre/lör",
-      sub: `minimiomsättning ${fmt(MIN_FRI)} kr på paketet`,
+      t: T.sum.exclusiveArena,
+      sub: `${T.sum.minTurnoverPre}${fmt(MIN_FRI)}${T.sum.minTurnoverPost}`,
       amount: `+${fmt(MIN_FRI - base)} kr`,
     });
   }
   if (s.policy === "none") {
     const disc = NOALC_UNIT_DISCOUNT * TIERS[s.tier].units;
     lines.push({
-      t: "Alkoholfritt — avdrag",
-      sub: `−${NOALC_UNIT_DISCOUNT} kr/enhet × ${TIERS[s.tier].units} ${TIERS[s.tier].units > 1 ? "enheter" : "enhet"} × ${g}`,
+      t: T.sum.noAlcDeduction,
+      sub: `−${NOALC_UNIT_DISCOUNT} ${T.sum.perUnit} × ${TIERS[s.tier].units} ${TIERS[s.tier].units > 1 ? T.sum.unitPlur : T.sum.unitSing} × ${g}`,
       amount: `−${fmt(disc * g)} kr`,
     });
     pp -= disc;
   }
-  const wl = welcomeLabel(s);
+  const wl = welcomeLabel(s, locale);
   if (wl && s.welcome) {
     const p = welcomePrice(s);
     lines.push({ t: wl, sub: `${p} kr/p × ${g}`, amount: `${fmt(p * g)} kr` });
@@ -177,55 +188,50 @@ export function calcSummary(s: PlannerState): Summary {
   if (s.units > 0) {
     const up = s.policy === "none" ? PRICES.unitNoAlc : PRICES.unit;
     lines.push({
-      t: `Extra dryckesenheter${s.policy === "none" ? " (alkoholfria)" : ""} × ${s.units}`,
+      t: `${T.sum.extraUnits}${s.policy === "none" ? T.sum.extraUnitsNoAlc : ""} × ${s.units}`,
       sub: `${up} kr/p × ${g}`,
       amount: `${fmt(up * s.units * g)} kr`,
     });
     pp += up * s.units;
   }
   if (s.dukning) {
-    lines.push({ t: "Dukad middag i sanden", sub: `${PRICES.dukning} kr/p × ${g}`, amount: `${fmt(PRICES.dukning * g)} kr` });
+    lines.push({ t: T.sum.dukning, sub: `${PRICES.dukning} kr/p × ${g}`, amount: `${fmt(PRICES.dukning * g)} kr` });
     pp += PRICES.dukning;
   }
   if (s.dekor) {
-    lines.push({ t: "Extra dekoration", sub: `${PRICES.dekor} kr/p × ${g}`, amount: `${fmt(PRICES.dekor * g)} kr` });
+    lines.push({ t: T.sum.dekor, sub: `${PRICES.dekor} kr/p × ${g}`, amount: `${fmt(PRICES.dekor * g)} kr` });
     pp += PRICES.dekor;
   }
   if (s.dessert) {
-    lines.push({ t: s.dessert === "lemon" ? "Lemonposset" : "Pannacotta", sub: `${PRICES.dessert} kr/p × ${g}`, amount: `${fmt(PRICES.dessert * g)} kr` });
+    lines.push({ t: s.dessert === "lemon" ? T.sum.lemon : T.sum.panna, sub: `${PRICES.dessert} kr/p × ${g}`, amount: `${fmt(PRICES.dessert * g)} kr` });
     pp += PRICES.dessert;
   }
   if (s.coffee) {
-    const [p, t] = s.coffee === "kaffe" ? [PRICES.kaffe, "Kaffe"] : [PRICES.godis, "Kaffe & godis"];
+    const [p, t] = s.coffee === "kaffe" ? [PRICES.kaffe, T.sum.kaffe] : [PRICES.godis, T.sum.godis];
     lines.push({ t, sub: `${p} kr/p × ${g}`, amount: `${fmt(p * g)} kr` });
     pp += p;
   }
   if (s.konf) {
-    lines.push({ t: "Konferenspaket", sub: `${PRICES.konf} kr/p × ${g}`, amount: `${fmt(PRICES.konf * g)} kr` });
+    lines.push({ t: T.sum.konf, sub: `${PRICES.konf} kr/p × ${g}`, amount: `${fmt(PRICES.konf * g)} kr` });
     pp += PRICES.konf;
   }
-  if (s.dj) { lines.push({ t: "DJ (normalt 22–00/01)", sub: "fast tillägg", amount: `från ${fmt(PRICES.dj)} kr` }); flat += PRICES.dj; fran = true; }
-  if (s.eld) { lines.push({ t: "Eldshow", sub: "fast tillägg", amount: `från ${fmt(PRICES.eld)} kr` }); flat += PRICES.eld; fran = true; }
-  if (s.scen) { lines.push({ t: "Scen", sub: "fast tillägg", amount: `från ${fmt(PRICES.scen)} kr` }); flat += PRICES.scen; fran = true; }
-  if (s.foto) { lines.push({ t: "Fotograf", sub: "fast tillägg", amount: `från ${fmt(PRICES.foto)} kr` }); flat += PRICES.foto; fran = true; }
+  if (s.dj) { lines.push({ t: T.sum.dj, sub: T.sum.flatFee, amount: `${T.sum.from} ${fmt(PRICES.dj)} kr` }); flat += PRICES.dj; fran = true; }
+  if (s.eld) { lines.push({ t: T.sum.eld, sub: T.sum.flatFee, amount: `${T.sum.from} ${fmt(PRICES.eld)} kr` }); flat += PRICES.eld; fran = true; }
+  if (s.scen) { lines.push({ t: T.sum.scen, sub: T.sum.flatFee, amount: `${T.sum.from} ${fmt(PRICES.scen)} kr` }); flat += PRICES.scen; fran = true; }
+  if (s.foto) { lines.push({ t: T.sum.foto, sub: T.sum.flatFee, amount: `${T.sum.from} ${fmt(PRICES.foto)} kr` }); flat += PRICES.foto; fran = true; }
 
-  const polTxt: Record<Policy, string> = {
-    none: "Ingen alkohol",
-    std: "Öl, vin, cider & cava (ej sprit)",
-    full: "Full bar",
-  };
-  offert.push(`Format: ${WHENLBL[s.when]}`);
-  offert.push(`Önskad starttid: ${s.start}`);
-  offert.push(`Alkoholpolicy: ${polTxt[s.policy]}`);
-  if (s.bar === "invoice") offert.push("Efter paketets enheter: öppen bar på faktura");
-  else if (s.bar === "pre") offert.push("Dryckesbiljetter vid ankomst (förköpta enheter)");
-  else offert.push("Efter paketets enheter: gästerna betalar själva");
-  if (s.band) offert.push("Liveband");
-  if (s.trubadur) offert.push("Trubadur");
-  if (s.dans) offert.push("Dansinstruktör");
-  if (s.akt) offert.push(`Utökade aktiviteter (pingis, cornhole, kubb)${s.lek ? " · med lekledare" : ""}`);
-  if (s.ljud) offert.push("Ljud & ljus utöver standard");
-  if (s.buss) offert.push("Busstransport (Interbus)");
+  offert.push(`${T.sum.format}: ${T.whenLbl[s.when]}`);
+  offert.push(`${T.sum.startTime}: ${s.start}`);
+  offert.push(`${T.sum.alcoholPolicy}: ${T.polTxt[s.policy]}`);
+  if (s.bar === "invoice") offert.push(T.sum.barInvoice);
+  else if (s.bar === "pre") offert.push(T.sum.barPre);
+  else offert.push(T.sum.barGuests);
+  if (s.band) offert.push(T.sum.band);
+  if (s.trubadur) offert.push(T.sum.trubadur);
+  if (s.dans) offert.push(T.sum.dans);
+  if (s.akt) offert.push(`${T.sum.akt}${s.lek ? T.sum.aktLek : ""}`);
+  if (s.ljud) offert.push(T.sum.ljud);
+  if (s.buss) offert.push(T.sum.buss);
 
   return { lines, offert, total: packageTotal + pp * g + flat, fran };
 }
@@ -245,21 +251,22 @@ export interface TimelineRow {
 }
 
 /** Exempel-tidsplan utifrån valen. Preliminär — körschemat spikas i offerten. */
-export function buildTimeline(s: PlannerState): TimelineRow[] {
+export function buildTimeline(s: PlannerState, locale: Locale = "sv"): TimelineRow[] {
+  const T = plannerDict[locale];
   const st = tmin(s.start || "17:30");
-  const meal = s.when === "day" ? "Lunch" : "Middag";
+  const meal = s.when === "day" ? T.timeline.lunch : T.timeline.dinner;
   const rows: TimelineRow[] = [];
-  rows.push({ time: tfmt(st - 15), label: "Ankomst och ombyte" });
+  rows.push({ time: tfmt(st - 15), label: T.timeline.arrival });
   rows.push({
     time: `${tfmt(st)}–${tfmt(st + 90)}`,
-    label: `Beachvolley — turnering med instruktör${st < tmin("17:00") ? ", fokus teambuilding" : ""}`,
+    label: `${T.timeline.volley}${st < tmin("17:00") ? T.timeline.volleyTeam : ""}`,
   });
-  rows.push({ time: tfmt(st + 90), label: "Dusch och ombyte för de som vill" });
+  rows.push({ time: tfmt(st + 90), label: T.timeline.shower });
   let m = st + 120;
   const dr: string[] = [];
-  const wl = welcomeLabel(s);
-  if (wl) dr.push(`${wl.replace(" vid ankomst", "")} serveras i baren`);
-  if (s.trubadur) dr.push("trubadur spelar i loungen");
+  const wl = welcomeLabel(s, locale);
+  if (wl) dr.push(`${wl.replace(T.timeline.welcomeStrip, "")}${T.timeline.servedInBar}`);
+  if (s.trubadur) dr.push(T.timeline.trubadurPlays);
   if (dr.length) {
     const t = dr.join(" · ");
     rows.push({ time: tfmt(st + 120), label: t.charAt(0).toUpperCase() + t.slice(1) });
@@ -267,21 +274,21 @@ export function buildTimeline(s: PlannerState): TimelineRow[] {
   }
   const after = s.eld || s.dj || s.band;
   const mealPlace = s.dukning
-    ? " — dukat långbord i sanden"
+    ? T.timeline.mealSand
     : s.when === "weekeve"
-      ? " i loungen — beachlivet pågår runt er"
-      : " i loungen";
+      ? T.timeline.mealLoungeShared
+      : T.timeline.mealLounge;
   rows.push({ time: after ? tfmt(m) : `${tfmt(m)}–${tfmt(m + 120)}`, label: meal + mealPlace });
   const cur = m + 120;
-  if (s.eld) rows.push({ time: tfmt(cur - 30), label: "Eldshow — bryggan till dansgolvet" });
+  if (s.eld) rows.push({ time: tfmt(cur - 30), label: T.timeline.fireShow });
   if (s.dj || s.band) {
-    rows.push({ time: tfmt(cur), label: `Dansgolv${s.dj ? " med DJ" : " — liveband"}` });
-    rows.push({ time: s.when === "day" ? tfmt(cur + 120) : "00.00", label: "Slut" });
+    rows.push({ time: tfmt(cur), label: `${T.timeline.danceFloor}${s.dj ? T.timeline.withDj : T.timeline.withBand}` });
+    rows.push({ time: s.when === "day" ? tfmt(cur + 120) : "00.00", label: T.timeline.end });
   } else if (s.konf && s.when === "day") {
-    rows.push({ time: `${tfmt(cur)}–${tfmt(cur + 180)}`, label: "Konferens (upp till 3 h)" });
-    rows.push({ time: tfmt(cur + 180), label: "Tack för idag" });
+    rows.push({ time: `${tfmt(cur)}–${tfmt(cur + 180)}`, label: T.timeline.conference });
+    rows.push({ time: tfmt(cur + 180), label: T.timeline.thanksDay });
   } else {
-    rows.push({ time: tfmt(cur), label: s.when === "day" ? "Tack för idag" : "Tack för i kväll" });
+    rows.push({ time: tfmt(cur), label: s.when === "day" ? T.timeline.thanksDay : T.timeline.thanksEve });
   }
   return rows;
 }

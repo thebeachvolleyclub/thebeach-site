@@ -199,10 +199,9 @@ export default function PricingTiers({ locale }: { locale: Locale }) {
                 </ul>
 
                 {/* CTA — min 44px tap height per WCAG 2.5.8 */}
-                {/* OBS: planeraren finns bara på svenska — engelska sidan pekar på samma
-                    svenska planerar-URL tills en engelsk planerare finns. */}
+                {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
                 <a
-                  href={`/events/planera?koncept=${tier.name === "Las Palmas" ? "lp" : tier.name === "Algarve" ? "alg" : "mia"}`}
+                  href={`${locale === "en" ? "/en/events/plan" : "/events/planera"}?koncept=${tier.name === "Las Palmas" ? "lp" : tier.name === "Algarve" ? "alg" : "mia"}`}
                   className="inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
                 >
                   {t.pricing.plannerCta}
@@ -219,8 +218,8 @@ export default function PricingTiers({ locale }: { locale: Locale }) {
         <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-bone/50">
           {t.pricing.builderLead}
         </p>
-        {/* Planeraren: samma svenska URL på båda språken tills en engelsk planerare finns. */}
-        <a href="/events/planera" className="mt-5 inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">
+        {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
+        <a href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="mt-5 inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">
           {t.pricing.builderCta} <span aria-hidden="true">→</span>
         </a>
       </div>

@@ -15,7 +15,7 @@ const staticPaths = [
   "/events/planera",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
   "/firmafest", "/svensexa", "/mohippa",
-  "/en", "/en/events", "/en/book", "/en/school", "/en/about", "/en/faq",
+  "/en", "/en/events", "/en/events/plan", "/en/book", "/en/school", "/en/about", "/en/faq",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

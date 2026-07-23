@@ -5,8 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { homeDict } from "@/lib/i18n/home";
 
 /** Startsidans eventsektion — paket och texter ur src/lib/i18n/home.ts.
- *  OBS: eventplaneraren (/events/planera) finns bara på svenska, så den
- *  länken pekar på den svenska rutten även på /en. */
+ *  Planerarlänken följer språket: /events/planera (sv) resp. /en/events/plan (en). */
 export default function Events({ locale = "sv" }: { locale?: Locale }) {
   const t = homeDict[locale].events;
   return (

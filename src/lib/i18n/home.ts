@@ -53,7 +53,7 @@ export interface HomeDict {
     title2: string;
     lead: string;
     linkPlanner: string;
-    /** Eventplaneraren finns bara på svenska — /events/planera även på /en. */
+    /** Planeraren: /events/planera (sv) resp. /en/events/plan (en). */
     linkPlannerHref: string;
     linkCustom: string;
     linkCustomHref: string;
@@ -320,8 +320,7 @@ export const homeDict: Dict<HomeDict> = {
       title2: "that stands out",
       lead: "Ready-made packages from after work to full-scale corporate events. Activity, food and drinks — everything included.",
       linkPlanner: "Plan your event →",
-      // Planeraren finns bara på svenska — länken pekar på den svenska rutten.
-      linkPlannerHref: "/events/planera",
+      linkPlannerHref: "/en/events/plan",
       linkCustom: "Custom event →",
       linkCustomHref: "/en/events",
       packages: [

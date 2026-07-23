@@ -26,8 +26,8 @@ export default function EventCTA({ locale }: { locale: Locale }) {
           </p>
           <p className="-mt-5 mb-9 text-sm font-semibold text-black">
             {t.cta.plannerLead}{" "}
-            {/* Planeraren: samma svenska URL på båda språken tills en engelsk planerare finns. */}
-            <a href="/events/planera" className="underline underline-offset-4 hover:opacity-70">
+            {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
+            <a href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="underline underline-offset-4 hover:opacity-70">
               {t.cta.plannerLink}
             </a>
           </p>
