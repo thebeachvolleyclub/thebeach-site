@@ -123,8 +123,11 @@ export default function CorporateLanding({
             </Reveal>
             <Reveal delay={0.06} className="shrink-0">
               <div className="flex flex-wrap items-center gap-3">
-                <Link href={forfraganHref} className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
-                  Skicka förfrågan <span aria-hidden="true">→</span>
+                <Link href="/events/planera" className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
+                  Planera ert event <span aria-hidden="true">→</span>
+                </Link>
+                <Link href={forfraganHref} className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">
+                  Skicka förfrågan
                 </Link>
                 <Link href="/lokalen" className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">
                   Se lokalen

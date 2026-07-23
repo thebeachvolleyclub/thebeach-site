@@ -269,15 +269,27 @@ export default function PricingTiers() {
 
                 {/* CTA — min 44px tap height per WCAG 2.5.8 */}
                 <a
-                  href="#forfragan"
+                  href={`/events/planera?koncept=${tier.name === "Las Palmas" ? "lp" : tier.name === "Algarve" ? "alg" : "mia"}`}
                   className="inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
                 >
-                  Skicka förfrågan →
+                  Planera ert event →
                 </a>
               </div>
             </Reveal>
           );
         })}
+      </div>
+      <div className="mx-auto mt-10 max-w-[1500px] border border-lime/25 bg-lime/[0.06] p-6 text-center lg:p-8">
+        <p className="font-display text-xl uppercase text-bone lg:text-2xl">
+          Bygg ert event själva — <span className="text-lime">se prisbilden direkt</span>
+        </p>
+        <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-bone/50">
+          Välj koncept, dryck, mat och underhållning steg för steg. Ni får ett estimat och en
+          exempeltidsplan på en gång — och skickar planen som en förfrågan.
+        </p>
+        <a href="/events/planera" className="mt-5 inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">
+          Planera ert event <span aria-hidden="true">→</span>
+        </a>
       </div>
     </section>
   );

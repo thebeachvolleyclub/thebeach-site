@@ -12,6 +12,7 @@ const staticPaths = [
   "/avanmalan", "/andringsanmalan",
   "/hallbarhet", "/beachtravels", "/presentkort",
   "/jobb",
+  "/events/planera",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
   "/firmafest", "/svensexa", "/mohippa",
   "/en", "/en/events", "/en/book", "/en/school", "/en/about", "/en/faq",
