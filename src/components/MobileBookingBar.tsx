@@ -43,7 +43,7 @@ export default function MobileBookingBar() {
             </a>
             <a
               href={en ? "/en/book" : "/boka"}
-              className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-brass px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-base transition-colors hover:bg-brass-bright"
+              className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-brass px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-black transition-colors hover:bg-brass-bright"
             >
               {bookLabel}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
