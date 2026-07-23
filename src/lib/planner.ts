@@ -68,8 +68,8 @@ export const initialState: PlannerState = {
 
 export const WHENLBL: Record<When, string> = {
   day: "vardag dagtid",
-  weekeve: "vardagskväll",
-  fri: "fredag/lördag",
+  weekeve: "kväll — mitt i beachlivet",
+  fri: "helkväll — exklusiv arena (fre/lör)",
 };
 
 export const TIERS: Record<TierKey, { name: string; eve: number; day: number }> = {
@@ -97,6 +97,8 @@ export const PRICES = {
   scen: 10000, // från
   foto: 10000, // från
 };
+
+export const MIN_FRI = 50000; // minimiomsättning på paketet vid exklusiv arena fre/lör
 
 export const partyAllowed = (s: PlannerState) => s.when === "fri";
 export const sandAllowed = (s: PlannerState) => s.when !== "weekeve";
@@ -129,15 +131,24 @@ export function calcSummary(s: PlannerState): Summary {
   const g = s.guests;
   const lines: SummaryLine[] = [];
   const offert: string[] = [];
-  let pp = tp;
+  let pp = 0; // tillval per person
   let flat = 0;
   let fran = false;
 
+  const base = tp * g;
+  const packageTotal = s.when === "fri" ? Math.max(base, MIN_FRI) : base;
   lines.push({
     t: TIERS[s.tier].name,
     sub: `${WHENLBL[s.when]} · ${tp} kr/p × ${g}`,
-    amount: `${fmt(tp * g)} kr`,
+    amount: `${fmt(base)} kr`,
   });
+  if (s.when === "fri" && base < MIN_FRI) {
+    lines.push({
+      t: "Exklusiv arena fre/lör",
+      sub: `minimiomsättning ${fmt(MIN_FRI)} kr på paketet`,
+      amount: `+${fmt(MIN_FRI - base)} kr`,
+    });
+  }
   const wl = welcomeLabel(s);
   if (wl && s.welcome) {
     const p = WELCOME[s.welcome].pp;
@@ -196,7 +207,7 @@ export function calcSummary(s: PlannerState): Summary {
   if (s.ljud) offert.push("Ljud & ljus utöver standard");
   if (s.buss) offert.push("Busstransport (Interbus)");
 
-  return { lines, offert, total: pp * g + flat, fran };
+  return { lines, offert, total: packageTotal + pp * g + flat, fran };
 }
 
 const tmin = (t: string) => {

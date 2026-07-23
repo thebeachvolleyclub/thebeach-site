@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   PlannerState, initialState, TIERS, WELCOME, WHENLBL, PRICES,
-  calcSummary, buildTimeline, partyAllowed, sandAllowed, tierPrice, fmt,
+  calcSummary, buildTimeline, partyAllowed, sandAllowed, tierPrice, fmt, MIN_FRI,
   type When, type TierKey, type Policy, type BarMode,
 } from "@/lib/planner";
 import { pushEvent } from "@/lib/gtm";
@@ -181,22 +181,29 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
                       </span>
                     </button>
                     <button type="button" onClick={() => setWhen("weekeve")} className={cardCls(s.when === "weekeve")}>
-                      <span className="block text-sm font-bold text-white">Vardagskväll (mån–tors)</span>
+                      <span className="block text-sm font-bold text-white">Kväll — mitt i beachlivet</span>
                       <span className="mt-1 block text-xs leading-relaxed text-white/40">
-                        Ert event mitt i beachlivet — aktivitet, middag och häng i loungen medan arenan lever runt er. Perfekt för 10–50 pers.
+                        Måndag–lördag. Ert event mitt i beachlivet — aktivitet, middag och häng i loungen medan
+                        arenan lever runt er. Perfekt för 10–50 pers, inget minimum.
                       </span>
                     </button>
                     <button type="button" onClick={() => setWhen("fri")} className={cardCls(s.when === "fri")}>
-                      <Badge>Helkväll</Badge>
-                      <span className="block text-sm font-bold text-white">Fredag & lördag</span>
+                      <Badge>Fre/lör</Badge>
+                      <span className="block text-sm font-bold text-white">Helkväll — exklusiv arena</span>
                       <span className="mt-1 block text-xs leading-relaxed text-white/40">
-                        Arenan är er — dansgolv, DJ, eldshow och sen bar. Kvällen har inget tak.
+                        Arenan är er, exklusivt — dansgolv, DJ, eldshow och sen bar. Minimiomsättning 50 000 kr på paketet, i praktiken från ca 50 pers.
                       </span>
                     </button>
                   </div>
                 </div>
                 <Note show={s.when === "weekeve" && s.guests > 50}>
-                  Fler än 50 en vardagskväll? Skicka planen ändå — då återkommer vi med ett skräddarsytt förslag.
+                  Fler än 50 med delad arena? Skicka planen ändå — då återkommer vi med ett skräddarsytt förslag.
+                </Note>
+                <Note show={s.when === "fri" && tierPrice(s) * s.guests < MIN_FRI}>
+                  Helkväll betyder att ni bokar hela arenan exklusivt — minimiomsättning {fmt(MIN_FRI)} kr på
+                  paketet, i praktiken från ca 50 personer. Estimatet nedan räknar med minimibeloppet. Är ni ett
+                  mindre gäng? Välj "Kväll — mitt i beachlivet" — det funkar alla dagar, även fredag och lördag,
+                  utan minimum.
                 </Note>
                 <div>
                   <p className={`${labelCls} mb-3`}>Hur många är ni?</p>
@@ -298,7 +305,7 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
             {step === 2 && (
               <div className="flex flex-col gap-7">
                 <Note show={!sandAllowed(s)}>
-                  Dukat i sanden kör vi dagtid och fredag/lördag — på vardagskvällar spelas det på banorna och middagen serveras i loungen.
+                  Dukat i sanden kör vi dagtid och vid exklusiv arena — när arenan delas spelas det på banorna och middagen serveras i loungen.
                 </Note>
                 <div>
                   <p className={`${labelCls} mb-3`}>Dukning</p>
@@ -334,9 +341,9 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
             {step === 3 && (
               <div className="flex flex-col gap-7">
                 <Note show={!partyAllowed(s)}>
-                  DJ, eldshow och liveband hör till helkvällsformatet (fredag & lördag) — då är arenan er. På vardagskvällar
-                  lever arenan runt ert event, och middagen i loungen är en del av charmen. Vill ni ta över hela arenan en
-                  vardag? Skriv det i meddelandet så återkommer vi med offert.
+                  DJ, eldshow och liveband hör till helkvällsformatet med exklusiv arena (fredag & lördag). När
+                  arenan delas lever den runt ert event, och middagen i loungen är en del av charmen. Vill ni ta
+                  över hela arenan en vardag? Skriv det i meddelandet så återkommer vi med offert.
                 </Note>
                 <div>
                   <p className={`${labelCls} mb-3`}>Musik & show</p>
@@ -436,7 +443,7 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
                   <p className={`${labelCls} mb-3`}>
                     Datum — vi återkommer om tillgänglighet{" "}
                     <span className="normal-case tracking-normal text-white/30">
-                      ({s.when === "fri" ? "en fredag eller lördag" : s.when === "weekeve" ? "måndag–torsdag" : "en vardag, dagtid"})
+                      ({s.when === "fri" ? "en fredag eller lördag" : s.when === "weekeve" ? "måndag–lördag, kväll" : "en vardag, dagtid"})
                     </span>
                   </p>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
