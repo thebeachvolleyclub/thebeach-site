@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { saveToDb, notifyByEmail, type Submission } from "@/lib/submit";
+import { saveToDb, notifyByEmail, receiptByEmail, type Submission } from "@/lib/submit";
 
 export async function POST(req: Request) {
   let body: Submission;
@@ -19,5 +19,6 @@ export async function POST(req: Request) {
   }
   // mejl är best-effort — får inte stoppa inskicket
   notifyByEmail(body).catch((e) => console.error("brevo notify failed", e));
+  receiptByEmail(body).catch((e) => console.error("brevo receipt failed", e));
   return NextResponse.json({ ok: true });
 }

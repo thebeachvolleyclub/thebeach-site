@@ -76,3 +76,34 @@ export async function notifyByEmail(s: Submission): Promise<void> {
     }),
   });
 }
+
+/** Kvitto till kunden — just nu bara för eventplaneraren. Kräver BREVO_API_KEY. */
+export async function receiptByEmail(s: Submission): Promise<void> {
+  const key = process.env.BREVO_API_KEY;
+  if (!key || s.form !== "eventplaneraren" || !s.epost) return;
+  const row = (label: string, v?: string) =>
+    v ? `<tr><td style="padding:5px 14px 5px 0;color:#8a8a7a;vertical-align:top;white-space:nowrap">${label}</td><td style="padding:5px 0"><strong>${v}</strong></td></tr>` : "";
+  const tidsplan = s.tidsplan
+    ? `<h3 style="margin:22px 0 6px">Exempel på tidsplan</h3><p style="margin:0;color:#444;line-height:1.7">${s.tidsplan.split(" / ").join("<br>")}</p><p style="color:#8a8a7a;font-size:12px">Preliminär — körschemat spikar vi tillsammans i offerten.</p>`
+    : "";
+  await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": key, "content-type": "application/json" },
+    body: JSON.stringify({
+      sender: { name: "The Beach", email: "boka@thebeach.one" },
+      to: [{ email: s.epost, name: s.namn }],
+      replyTo: { email: "david@thebeach.one" },
+      subject: "Er eventplan är mottagen — The Beach",
+      htmlContent: `<div style="font-family:sans-serif;font-size:14px;max-width:560px;margin:0 auto;color:#14160f">
+<h2 style="margin:0 0 4px">Tack${s.namn ? " " + s.namn : ""} — er eventplan är hos oss!</h2>
+<p style="color:#444;line-height:1.6">Vi återkommer inom 24 timmar med datum och en offert. Här är planen ni byggde:</p>
+<table style="font-size:14px;border-collapse:collapse">
+${row("Koncept", s.koncept)}${row("Format", s.format)}${row("Antal", s.antal)}${row("Önskad starttid", s.starttid)}${row("Önskat datum", s.datum)}${row("Alternativt datum", s["alternativt datum"])}${row("Välkomstdrink", s["välkomstdrink"])}${row("Tillval", s.tillval)}${row("I offerten", s["i offerten"])}${row("Estimat", s.estimat)}
+</table>
+${tidsplan}
+<p style="color:#444;line-height:1.6;margin-top:22px">Frågor eller ändringar? Svara på det här mejlet eller skriv till david@thebeach.one.</p>
+<p style="color:#8a8a7a;font-size:12px">The Beach · Novavägen 35, Huddinge · thebeach.one — där det alltid är sommar</p>
+</div>`,
+    }),
+  });
+}
