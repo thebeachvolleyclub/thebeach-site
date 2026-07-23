@@ -72,10 +72,10 @@ export const WHENLBL: Record<When, string> = {
   fri: "helkväll — exklusiv arena (fre/lör)",
 };
 
-export const TIERS: Record<TierKey, { name: string; eve: number; day: number }> = {
-  lp: { name: "Las Palmas", eve: 745, day: 670 },
-  alg: { name: "Algarve", eve: 945, day: 850 },
-  mia: { name: "Miami", eve: 1195, day: 1075 },
+export const TIERS: Record<TierKey, { name: string; eve: number; day: number; units: number }> = {
+  lp: { name: "Las Palmas", eve: 745, day: 670, units: 1 },
+  alg: { name: "Algarve", eve: 945, day: 850, units: 1 },
+  mia: { name: "Miami", eve: 1195, day: 1075, units: 2 },
 };
 
 export const WELCOME: Record<WelcomeKey, { lbl: string; lblNA?: string; pp: number }> = {
@@ -84,8 +84,12 @@ export const WELCOME: Record<WelcomeKey, { lbl: string; lblNA?: string; pp: numb
   other: { lbl: "Välkomstdrink 4 cl", lblNA: "Välkomstmocktail", pp: 96 },
 };
 
+export const NOALC_UNIT_DISCOUNT = 40; // avdrag per dryckesenhet vid alkoholfritt (ex moms)
+
 export const PRICES = {
   unit: 79,
+  unitNoAlc: 39, // 79 − 40
+  bubbelNoAlc: 61,
   dukning: 100,
   dekor: 79,
   dessert: 75,
@@ -111,6 +115,12 @@ export function welcomeLabel(s: PlannerState): string | null {
   if (!s.welcome) return null;
   const w = WELCOME[s.welcome];
   return s.policy === "none" && w.lblNA ? w.lblNA : w.lbl;
+}
+
+/** Vid alkoholfritt finns bara alkoholfri bubbel (61 kr) som välkomstdrink. */
+export function welcomePrice(s: PlannerState): number {
+  if (!s.welcome) return 0;
+  return s.policy === "none" ? PRICES.bubbelNoAlc : WELCOME[s.welcome].pp;
 }
 
 export interface SummaryLine {
@@ -149,19 +159,29 @@ export function calcSummary(s: PlannerState): Summary {
       amount: `+${fmt(MIN_FRI - base)} kr`,
     });
   }
+  if (s.policy === "none") {
+    const disc = NOALC_UNIT_DISCOUNT * TIERS[s.tier].units;
+    lines.push({
+      t: "Alkoholfritt — avdrag",
+      sub: `−${NOALC_UNIT_DISCOUNT} kr/enhet × ${TIERS[s.tier].units} ${TIERS[s.tier].units > 1 ? "enheter" : "enhet"} × ${g}`,
+      amount: `−${fmt(disc * g)} kr`,
+    });
+    pp -= disc;
+  }
   const wl = welcomeLabel(s);
   if (wl && s.welcome) {
-    const p = WELCOME[s.welcome].pp;
+    const p = welcomePrice(s);
     lines.push({ t: wl, sub: `${p} kr/p × ${g}`, amount: `${fmt(p * g)} kr` });
     pp += p;
   }
   if (s.units > 0) {
+    const up = s.policy === "none" ? PRICES.unitNoAlc : PRICES.unit;
     lines.push({
-      t: `Extra dryckesenheter × ${s.units}`,
-      sub: `${PRICES.unit} kr/p × ${g}`,
-      amount: `${fmt(PRICES.unit * s.units * g)} kr`,
+      t: `Extra dryckesenheter${s.policy === "none" ? " (alkoholfria)" : ""} × ${s.units}`,
+      sub: `${up} kr/p × ${g}`,
+      amount: `${fmt(up * s.units * g)} kr`,
     });
-    pp += PRICES.unit * s.units;
+    pp += up * s.units;
   }
   if (s.dukning) {
     lines.push({ t: "Dukad middag i sanden", sub: `${PRICES.dukning} kr/p × ${g}`, amount: `${fmt(PRICES.dukning * g)} kr` });

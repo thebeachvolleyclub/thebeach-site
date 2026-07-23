@@ -251,7 +251,7 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
                       ["full", "Full bar", "Hela sortimentet inklusive sprit och drinkar i baren."],
                     ] as [Policy, string, string][]).map(([k, t, d]) => (
                       <button key={k} type="button" className={cardCls(s.policy === k)}
-                        onClick={() => up({ policy: k, welcome: k === "none" && s.welcome === "aperol" ? null : s.welcome })}>
+                        onClick={() => up({ policy: k, welcome: k === "none" && s.welcome !== "cava" ? null : s.welcome })}>
                         {k === "std" && <Badge>Standard</Badge>}
                         <span className="block text-sm font-bold text-white">{t}</span>
                         <span className="mt-1 block text-xs leading-relaxed text-white/40">{d}</span>
@@ -260,27 +260,35 @@ export default function EventPlanner({ initialTier }: { initialTier?: TierKey })
                   </div>
                 </div>
                 <Note show={s.policy === "none"}>
-                  Alkoholfritt hela vägen — vi byter bubbel och drycker till alkoholfria motsvarigheter, samma pris.
+                  Alkoholfritt hela vägen — vi byter till alkoholfria motsvarigheter och drar av 40 kr per dryckesenhet i paketet.
                 </Note>
                 <div>
                   <p className={`${labelCls} mb-3`}>Välkomstdrink vid ankomst</p>
                   <div className="flex flex-col gap-2.5">
-                    <Addon sel={s.welcome === "cava"} title={s.policy === "none" ? "Alkoholfritt bubbel vid ankomst" : "Cava vid ankomst"}
-                      sub="Ett glas bubbel vid ankomst" price="79 kr/p"
-                      onClick={() => up({ welcome: s.welcome === "cava" ? null : "cava" })} />
-                    <Addon sel={s.welcome === "aperol"} dis={s.policy === "none"} title="Aperol Spritz vid ankomst"
-                      sub="Sommarklassikern — direkt semesterkänsla" price="96 kr/p"
-                      onClick={() => up({ welcome: s.welcome === "aperol" ? null : "aperol" })} />
-                    <Addon sel={s.welcome === "other"} title={s.policy === "none" ? "Välkomstmocktail" : "Välkomstdrink 4 cl"}
-                      sub="Valfri enkel drink — vi föreslår i offerten" price="96 kr/p"
-                      onClick={() => up({ welcome: s.welcome === "other" ? null : "other" })} />
+                    {s.policy === "none" ? (
+                      <Addon sel={s.welcome === "cava"} title="Alkoholfritt bubbel vid ankomst"
+                        sub="Ett glas alkoholfritt bubbel vid ankomst" price="61 kr/p"
+                        onClick={() => up({ welcome: s.welcome === "cava" ? null : "cava" })} />
+                    ) : (
+                      <>
+                        <Addon sel={s.welcome === "cava"} title="Cava vid ankomst"
+                          sub="Ett glas bubbel vid ankomst" price="79 kr/p"
+                          onClick={() => up({ welcome: s.welcome === "cava" ? null : "cava" })} />
+                        <Addon sel={s.welcome === "aperol"} title="Aperol Spritz vid ankomst"
+                          sub="Sommarklassikern — direkt semesterkänsla" price="96 kr/p"
+                          onClick={() => up({ welcome: s.welcome === "aperol" ? null : "aperol" })} />
+                        <Addon sel={s.welcome === "other"} title="Välkomstdrink 4 cl"
+                          sub="Valfri enkel drink — vi föreslår i offerten" price="96 kr/p"
+                          onClick={() => up({ welcome: s.welcome === "other" ? null : "other" })} />
+                      </>
+                    )}
                   </div>
                 </div>
                 <div>
                   <p className={`${labelCls} mb-3`}>Extra dryckesenheter (förköpta)</p>
                   <div className="flex flex-wrap items-center gap-4">
                     <Stepper value={s.units} onChange={(units) => up({ units })} min={0} max={6} />
-                    <span className="text-xs text-white/40">à 79 kr/person — utöver det som ingår i konceptet</span>
+                    <span className="text-xs text-white/40">à {s.policy === "none" ? "39" : "79"} kr/person — utöver det som ingår i konceptet</span>
                   </div>
                 </div>
                 <div>
