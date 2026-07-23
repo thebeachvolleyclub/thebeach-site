@@ -20,6 +20,7 @@ const COLS: { title: string; links: FLink[] }[] = [
     links: [
       { label: "Lokalen", href: "/lokalen" },
       { label: "Boka event", href: "/events" },
+      { label: "Planera ert event", href: "/events/planera" },
       { label: "Företagsevent", href: "/foretagsevent" },
       { label: "Konferens", href: "/konferens" },
       { label: "Kickoff", href: "/kickoff" },

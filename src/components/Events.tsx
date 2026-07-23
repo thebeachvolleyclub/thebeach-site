@@ -50,9 +50,14 @@ export default function Events() {
             Färdiga paket från after work till fullskala corporate event.
             Aktivitet, mat och dryck — allt ingår.
           </p>
-          <Link href="/events" className="text-xs font-bold uppercase tracking-[0.1em] text-lime [text-shadow:0_0_1px_rgba(0,0,0,0.4)]">
-            <span className="text-orange">Skräddarsytt event →</span>
-          </Link>
+          <div className="flex flex-col gap-1.5 lg:items-end">
+            <Link href="/events/planera" className="text-xs font-bold uppercase tracking-[0.1em] text-black underline-offset-4 hover:underline">
+              Planera ert event →
+            </Link>
+            <Link href="/events" className="text-xs font-bold uppercase tracking-[0.1em] text-lime [text-shadow:0_0_1px_rgba(0,0,0,0.4)]">
+              <span className="text-orange">Skräddarsytt event →</span>
+            </Link>
+          </div>
         </div>
       </Reveal>
 

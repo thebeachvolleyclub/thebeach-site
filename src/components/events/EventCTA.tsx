@@ -23,6 +23,12 @@ export default function EventCTA() {
             eller dagtid — så hittar vi rätt upplägg och håller datumet åt er.
             Vi hör av oss inom 24 timmar.
           </p>
+          <p className="-mt-5 mb-9 text-sm font-semibold text-black">
+            Vill ni hellre bygga eventet själva?{" "}
+            <a href="/events/planera" className="underline underline-offset-4 hover:opacity-70">
+              Planera ert event steg för steg →
+            </a>
+          </p>
         </Reveal>
 
         <Reveal delay={0.1}>

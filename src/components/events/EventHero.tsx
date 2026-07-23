@@ -119,6 +119,12 @@ export default function EventHero() {
               Se lokalen — bilder & planlösning
             </Link>
             <Link
+              href="/events/planera"
+              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
+            >
+              Planera ert event — se prisbilden direkt
+            </Link>
+            <Link
               href="#forfragan"
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
