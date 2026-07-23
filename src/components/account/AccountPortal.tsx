@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { bookingStreamLabel } from "@/lib/bookingStreams";
 
 type Profile = {
   id: string;
@@ -34,8 +33,6 @@ type Booking = {
   status: string;
   priceSek: number;
   streamRequested: boolean;
-  videoMasked?: boolean;
-  beachTvWatchUrl?: string | null;
 };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
 type Invoice = { id: string; amount_sek: number; status: string; paid_at?: string | null; created_at?: string | null; lines?: InvoiceLine[] };
@@ -592,8 +589,7 @@ function AccountOverview({
           <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-black/10 pt-4 text-xs">
             <span className="font-bold uppercase tracking-wide text-teal">{statusText(featuredBooking.status)}</span>
             <span className="text-black/45">{featuredBooking.priceSek} kr</span>
-            {bookingStreamLabel(featuredBooking) ? <span className="text-black/45">{bookingStreamLabel(featuredBooking)}</span> : null}
-            {featuredBooking.beachTvWatchUrl ? <a href={featuredBooking.beachTvWatchUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-teal underline underline-offset-4">Se stream</a> : null}
+            {featuredBooking.streamRequested ? <span className="text-black/45">BeachTV-stream beställd</span> : null}
           </div>
           {featuredIsUpcoming && featuredBooking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancelBooking(featuredBooking)} disabled={cancellingBookingId === featuredBooking.id} className="mt-4 min-h-10 cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50">{cancellingBookingId === featuredBooking.id ? "Avbokar…" : "Avboka bokning"}</button> : null}
         </div> : <div className="mt-8 border border-dashed border-black/20 bg-cream p-6">
@@ -766,5 +762,5 @@ function formatBookingDate(date: string) {
 }
 
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
-  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span>{bookingStreamLabel(booking) ? <span className="mt-1 block text-xs text-black/45">{bookingStreamLabel(booking)}</span> : null}{booking.beachTvWatchUrl ? <a href={booking.beachTvWatchUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-teal underline underline-offset-4">Se stream</a> : null}</div><div className="ml-auto text-right"><strong>{booking.priceSek} kr</strong></div>{onCancel && booking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancel(booking)} disabled={cancellingBookingId === booking.id} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{cancellingBookingId === booking.id ? "Avbokar…" : "Avboka"}</button> : null}</article>)}</div>}</div>;
+  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{booking.priceSek} kr</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel && booking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancel(booking)} disabled={cancellingBookingId === booking.id} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{cancellingBookingId === booking.id ? "Avbokar…" : "Avboka"}</button> : null}</article>)}</div>}</div>;
 }

@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     date: body.date,
     startTime: body.startTime,
     streamRequested: body.streamRequested === true,
-    streamConsentAttested: body.streamConsentAttested === true,
     clientReference: body.clientReference,
     channel: "WEB",
   };
