@@ -1,33 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
-const PATHS = [
-  {
-    no: "01",
-    title: "Företag & organisation",
-    desc: "After work, kickoff, konferens, team-building. Företag, kommun, region, förening — kväll eller dagtid.",
-    href: "#foretag",
-  },
-  {
-    no: "02",
-    title: "Barn & ungdom",
-    desc: "Barnkalas för de yngre och Teneriffa för ungdomslag och föreningar.",
-    href: "#barn",
-  },
-  {
-    no: "03",
-    title: "Privat",
-    desc: "Bröllop, födelsedagar och privata fester med sommarkänsla året runt.",
-    href: "#privat",
-  },
-  {
-    no: "04",
-    title: "Skräddarsytt & större",
-    desc: "Eventbyråer och företag som vill ha något utöver det vanliga. Upp till 900 gäster.",
-    href: "#privat",
-  },
-];
-
-export default function EventPaths() {
+export default function EventPaths({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   return (
     <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
       {/* Header row */}
@@ -35,21 +11,20 @@ export default function EventPaths() {
         <div>
           {/* eyebrow override: .eyebrow hard-codes lime which fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Hitta rätt event
+            {t.paths.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Fyra vägar in
+            {t.paths.title}
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-          Säg vilka ni är, så hittar ni rätt upplägg på två sekunder. Resten
-          fixar vi.
+          {t.paths.lead}
         </p>
       </Reveal>
 
       {/* Grid of entrance cards */}
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-4">
-        {PATHS.map((p, i) => (
+        {t.paths.items.map((p, i) => (
           <Reveal key={p.no} delay={i * 0.07}>
             <a
               href={p.href}

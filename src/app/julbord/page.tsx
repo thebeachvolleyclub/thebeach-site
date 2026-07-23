@@ -42,7 +42,7 @@ export default function JulbordPage() {
             </Link>
           }
         />
-        <EventPhotoMarquee />
+        <EventPhotoMarquee locale="sv" />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
           <div className="grid grid-cols-1 gap-0.5 lg:grid-cols-3">

@@ -105,7 +105,7 @@ export default function LokalenPage() {
           </div>
         </section>
 
-        <EventCTA />
+        <EventCTA locale="sv" />
       </main>
       <Footer />
     </>

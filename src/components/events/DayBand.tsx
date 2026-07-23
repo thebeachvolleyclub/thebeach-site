@@ -1,12 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
-const PRICE_TABLE = [
-  { name: "Las Palmas", eve: "745 kr", day: "670 kr" },
-  { name: "Algarve", eve: "945 kr", day: "850 kr" },
-  { name: "Miami", eve: "1 195 kr", day: "1 075 kr" },
-];
-
-export default function DayBand() {
+export default function DayBand({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   return (
     <section className="relative overflow-hidden bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
       {/* Topo lines */}
@@ -29,19 +26,16 @@ export default function DayBand() {
         <Reveal className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           {/* Copy */}
           <div>
-            <p className="eyebrow mb-4">Vardag dagtid</p>
+            <p className="eyebrow mb-4">{t.dayband.eyebrow}</p>
             <h2 className="mb-5 font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.92] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              Fyll dagen,{" "}
-              <span className="italic-accent">spara 10%</span>
+              {t.dayband.titleTop}{" "}
+              <span className="italic-accent">{t.dayband.titleAccent}</span>
             </h2>
             <p className="mb-4 max-w-lg text-[0.95rem] leading-relaxed text-bone/50">
-              Samma upplevelse, lägre pris. Kör ni på en vardag dagtid får ni
-              10% rabatt på alla tre nivåerna — med lunch i stället för middag.
-              Gjort för konferens, team-building och kommun/region som vill ha
-              en aktiv dag tillsammans.
+              {t.dayband.lead}
             </p>
             <p className="text-sm font-semibold text-lime">
-              Kombinera med konferens på förmiddagen — hela dagen på ett ställe.
+              {t.dayband.combo}
             </p>
           </div>
 
@@ -49,7 +43,7 @@ export default function DayBand() {
           <div className="overflow-hidden border border-line">
             <table className="w-full border-collapse">
               <caption className="sr-only">
-                Prisjämförelse kväll vs dagtid per eventnivå
+                {t.dayband.caption}
               </caption>
               <thead>
                 <tr className="border-b border-line bg-panel">
@@ -57,28 +51,28 @@ export default function DayBand() {
                     scope="col"
                     className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40"
                   >
-                    Nivå
+                    {t.dayband.colTier}
                   </th>
                   <th
                     scope="col"
                     className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40"
                   >
-                    Kväll
+                    {t.dayband.colEve}
                   </th>
                   <th
                     scope="col"
                     className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.18em] text-lime"
                   >
-                    Dagtid
+                    {t.dayband.colDay}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {PRICE_TABLE.map((row, i) => (
+                {t.dayband.rows.map((row, i) => (
                   <tr
                     key={row.name}
                     className={`text-sm ${
-                      i < PRICE_TABLE.length - 1 ? "border-b border-line" : ""
+                      i < t.dayband.rows.length - 1 ? "border-b border-line" : ""
                     }`}
                   >
                     <td className="px-5 py-4 font-semibold text-bone">

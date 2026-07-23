@@ -1,17 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
-const PRIVATE_CARDS = [
-  {
-    title: "Privat",
-    desc: "Bröllop, födelsedagar och privata fester. Sommarkänsla mitt i Stockholm, spel om man vill, god mat och er egen del av anläggningen. Vi bygger kvällen helt efter er.",
-  },
-  {
-    title: "Skräddarsytt & större",
-    desc: "Större företagsevent, eventbyråer och specialupplägg — upp till 900 gäster, scen, full bar och kökskapacitet. Egen kontaktperson från idé till genomförande, även säkerhetsklassat.",
-  },
-];
-
-export default function PrivateSection() {
+export default function PrivateSection({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   return (
     <section
       id="privat"
@@ -38,22 +30,21 @@ export default function PrivateSection() {
         {/* Header */}
         <Reveal className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between lg:mb-14 lg:pb-14">
           <div>
-            <p className="eyebrow mb-4">Privat &amp; skräddarsytt</p>
+            <p className="eyebrow mb-4">{t.privat.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              När det ska vara
+              {t.privat.titleTop}
               <br />
-              <span className="italic-accent">på riktigt</span>
+              <span className="italic-accent">{t.privat.titleAccent}</span>
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-bone/40 sm:text-right">
-            Två olika upplägg — privat fest eller fullskaligt skräddarsytt
-            event. Båda offertbaserade.
+            {t.privat.lead}
           </p>
         </Reveal>
 
         {/* Cards */}
         <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
-          {PRIVATE_CARDS.map((card, i) => (
+          {t.privat.cards.map((card, i) => (
             <Reveal
               key={card.title}
               delay={i * 0.08}
@@ -67,10 +58,10 @@ export default function PrivateSection() {
               </p>
               {/* CTA — min 44px tap height per WCAG 2.5.8 */}
               <a
-                href="#forfragan"
+                href={`#${t.cta.sectionId}`}
                 className="mt-8 inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
               >
-                Be om offert →
+                {t.privat.cta}
               </a>
             </Reveal>
           ))}

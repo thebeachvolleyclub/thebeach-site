@@ -1,35 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
-const KIDS_CARDS = [
-  {
-    tag: "6–11 år",
-    name: "Barnkalas",
-    price: "från 350 kr",
-    unit: "/barn",
-    desc: "Ett aktivt kalas där barnen leker, spelar och rör på sig — avslutas med mat och firande i loungen.",
-    features: [
-      "2 timmar: aktivitet på bana + tid i loungen",
-      "Halv pizza & läsk per barn",
-      "450 kr/barn med instruktör · 350 kr utan",
-      "Helger — i mån av plats på söndagar",
-    ],
-  },
-  {
-    tag: "Ungdomslag",
-    name: "Teneriffa",
-    price: "495 kr",
-    unit: "/person",
-    desc: "Prisvärt koncept exklusivt för ungdomslag — perfekt för säsongsstart, säsongsavslut eller lagaktivitet med föreningen.",
-    features: [
-      "1,5 h turnering med instruktör",
-      "Pizza & läsk + King & Queen-pris",
-      "10–250 personer",
-      "Söndagar i mån av plats",
-    ],
-  },
-];
-
-export default function KidsSection() {
+export default function KidsSection({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   return (
     <section
       id="barn"
@@ -40,21 +14,20 @@ export default function KidsSection() {
         <div>
           {/* eyebrow override: .eyebrow hard-codes lime which fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Barn &amp; ungdom
+            {t.kids.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            För de yngre
+            {t.kids.title}
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-          Två färdiga koncept — ett aktivt barnkalas och ett prisvärt upplägg
-          för ungdomslag.
+          {t.kids.lead}
         </p>
       </Reveal>
 
       {/* Cards */}
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
-        {KIDS_CARDS.map((card, i) => (
+        {t.kids.cards.map((card, i) => (
           <Reveal
             key={card.name}
             delay={i * 0.08}
@@ -91,10 +64,10 @@ export default function KidsSection() {
             </ul>
             {/* CTA — min 44px tap height per WCAG 2.5.8 */}
             <a
-              href="#forfragan"
+              href={`#${t.cta.sectionId}`}
               className="mt-6 inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
             >
-              Skicka förfrågan →
+              {t.kids.cta}
             </a>
           </Reveal>
         ))}

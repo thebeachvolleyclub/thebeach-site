@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { EVENT_PACKAGES } from "@/lib/packages";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 import { postForm } from "@/lib/postForm";
 
 // Inputs retreated for lime background: dark-on-light tokens
@@ -10,35 +11,38 @@ const inputCls =
 const labelCls =
   "text-[10px] font-bold uppercase tracking-[0.15em] text-black/70";
 
-// Slug (?paket=) → exakt paketsträng i EVENT_PACKAGES.
-// Landningssidorna skickar sin slug så rätt ruta bockas i här.
-const PAKET_MAP: Record<string, string> = {
-  laspalmas: "Las Palmas — 745 kr/person",
-  algarve: "Algarve — 945 kr/person",
-  miami: "Miami — 1 195 kr/person",
-  konferens: "+ Konferens i sanden (+395 kr/person)",
-  barnkalas: "Barnkalas",
-  teneriffa: "Teneriffa (ungdomslag)",
-  privat: "Privat fest (bröllop / födelsedag)",
-  skraddarsytt: "Skräddarsytt & större event",
-  julbord: "Julbord (säsong)",
+// Slug (?paket=) → index i paketlistan (samma ordning som EVENT_PACKAGES i
+// packages.ts på båda språken). Landningssidorna skickar sin slug så rätt
+// ruta bockas i här.
+const PAKET_INDEX: Record<string, number> = {
+  laspalmas: 0,
+  algarve: 1,
+  miami: 2,
+  konferens: 3,
+  barnkalas: 4,
+  teneriffa: 5,
+  privat: 6,
+  skraddarsytt: 7,
+  julbord: 8,
 };
 
 // Default = Algarve (mest bokad) om ingen giltig slug finns.
-const DEFAULT_PAKET = EVENT_PACKAGES[1];
+const DEFAULT_INDEX = 1;
 
-export default function EventRequestFormClient() {
+export default function EventRequestFormClient({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [checked, setChecked] = useState<string[]>([DEFAULT_PAKET]);
+  const [checked, setChecked] = useState<string[]>([t.form.paket[DEFAULT_INDEX]]);
 
   // Läs ?paket= efter mount (undviker dynamisk rendering av /events).
   useEffect(() => {
     const slug = new URLSearchParams(window.location.search).get("paket");
-    const paket = slug ? PAKET_MAP[slug.toLowerCase()] : undefined;
+    const idx = slug ? PAKET_INDEX[slug.toLowerCase()] : undefined;
+    const paket = idx !== undefined ? t.form.paket[idx] : undefined;
     if (paket) setChecked([paket]);
-  }, []);
+  }, [t.form.paket]);
 
   const toggle = (p: string) =>
     setChecked((prev) =>
@@ -48,9 +52,9 @@ export default function EventRequestFormClient() {
   if (sent) {
     return (
       <div className="border border-black/20 bg-black/[0.06] p-8 text-center">
-        <p className="font-display text-2xl uppercase text-black">Tack!</p>
+        <p className="font-display text-2xl uppercase text-black">{t.form.tack}</p>
         <p className="mt-2 text-sm text-black/60">
-          Vi hör av oss inom 24 timmar.
+          {t.form.tackText}
         </p>
       </div>
     );
@@ -61,7 +65,8 @@ export default function EventRequestFormClient() {
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true); setErr(false);
-        const ok = await postForm(e.currentTarget, "event-sida");
+        // Form-id: "event-sida" (sv) resp. "event-en" (en) — styr GTM/GA4-spårning.
+        const ok = await postForm(e.currentTarget, t.form.formId);
         setBusy(false);
         if (ok) setSent(true); else setErr(true);
       }}
@@ -70,45 +75,45 @@ export default function EventRequestFormClient() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="ev-name" className={labelCls}>
-            Namn
+            {t.form.namn}
           </label>
           <input
             id="ev-name"
             name="namn"
             className={inputCls}
             type="text"
-            placeholder="Ditt namn"
+            placeholder={t.form.namnPh}
             required
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="ev-email" className={labelCls}>
-            E-post
+            {t.form.epost}
           </label>
           <input
             id="ev-email"
             name="epost"
             className={inputCls}
             type="email"
-            placeholder="din@epost.se"
+            placeholder={t.form.epostPh}
             required
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="ev-tel" className={labelCls}>
-            Telefon
+            {t.form.telefon}
           </label>
           <input
             id="ev-tel"
             name="telefon"
             className={inputCls}
             type="tel"
-            placeholder="070-000 00 00"
+            placeholder={t.form.telefonPh}
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="ev-date" className={labelCls}>
-            Önskat datum
+            {t.form.datum}
           </label>
           <input
             id="ev-date"
@@ -119,25 +124,23 @@ export default function EventRequestFormClient() {
         </div>
         <div className="flex flex-col gap-1.5 sm:col-span-2">
           <label htmlFor="ev-size" className={labelCls}>
-            Antal personer (ungefär)
+            {t.form.antal}
           </label>
           <select id="ev-size" name="antal" className={inputCls} defaultValue="">
             <option value="" disabled>
-              Välj storleksgrupp
+              {t.form.antalPh}
             </option>
-            <option>10–25 personer</option>
-            <option>25–50 personer</option>
-            <option>50–100 personer</option>
-            <option>100–250 personer</option>
-            <option>250+ personer</option>
+            {t.form.sizes.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
         </div>
       </div>
 
       <fieldset className="flex flex-col gap-2.5">
-        <legend className={labelCls}>Jag är intresserad av</legend>
+        <legend className={labelCls}>{t.form.intresse}</legend>
         <div className="mt-1 flex flex-col gap-2.5">
-          {EVENT_PACKAGES.map((p) => (
+          {t.form.paket.map((p) => (
             <label
               key={p}
               className="flex cursor-pointer items-center gap-3 text-sm text-black/70"
@@ -158,12 +161,12 @@ export default function EventRequestFormClient() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="ev-msg" className={labelCls}>
-          Övrig info (frivilligt)
+          {t.form.meddelande}
         </label>
         <textarea
           id="ev-msg" name="meddelande"
           className={`${inputCls} min-h-[100px] resize-y`}
-          placeholder="Berätta mer om eventet, önskemål, tidsbegränsningar, om ni vill köra kväll eller dagtid etc."
+          placeholder={t.form.meddelandePh}
         />
       </div>
 
@@ -172,20 +175,20 @@ export default function EventRequestFormClient() {
         className="mt-2 w-full cursor-pointer bg-black py-4 text-[13px] font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-panel"
         disabled={busy}
       >
-        {busy ? "Skickar…" : "Skicka förfrågan →"}
+        {busy ? t.form.skickar : t.form.skicka}
       </button>
       {err ? (
         <p className="text-center text-xs text-orange">
-          Något gick fel — försök igen eller mejla boka@thebeach.one
+          {t.form.fel}
         </p>
       ) : null}
       <p className="mt-1 text-xs leading-relaxed text-black/40">
-        Vi svarar inom 24 timmar. Skickar du hellre mail? Kontakta oss på{" "}
+        {t.form.fotnot}{" "}
         <a
           href="mailto:boka@thebeach.one"
           className="underline hover:text-black/70"
         >
-          boka@thebeach.one
+          {t.form.fotnotMail}
         </a>
       </p>
     </form>

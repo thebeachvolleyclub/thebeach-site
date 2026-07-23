@@ -19,6 +19,8 @@ import {
   useAnimationFrame,
   useReducedMotion,
 } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
 const DIR = "/media/event-snurra/";
 const BIANCA = "caia3_bianca.webp";
@@ -75,7 +77,7 @@ const wrap = (min: number, max: number, v: number) => {
 
 const BASE_VELOCITY = 1.1;
 
-function Track({ photos }: { photos: string[] }) {
+function Track({ photos, alt }: { photos: string[]; alt: string }) {
   const baseX = useMotionValue(0);
   const x = useTransform(baseX, (v) => `${wrap(-50, 0, v)}%`);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -111,7 +113,7 @@ function Track({ photos }: { photos: string[] }) {
         <img
           key={`${key}-${p}-${i}`}
           src={DIR + p}
-          alt={hidden ? "" : "Event på The Beach"}
+          alt={hidden ? "" : alt}
           loading="lazy"
           draggable={false}
           className="mr-1 h-[240px] w-auto select-none object-cover lg:mr-1.5 lg:h-[320px]"
@@ -138,26 +140,27 @@ function Track({ photos }: { photos: string[] }) {
   );
 }
 
-export default function EventPhotoMarquee() {
+export default function EventPhotoMarquee({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   const reduce = useReducedMotion();
   const [photos, setPhotos] = useState<string[]>(() => compose(false));
   useEffect(() => { setPhotos(compose(true)); }, []);
 
   return (
     <section
-      aria-label="Bilder från event på The Beach"
+      aria-label={t.marquee.ariaLabel}
       className="overflow-hidden bg-black py-10 lg:py-14"
     >
       {reduce ? (
         <div className="no-scrollbar flex overflow-x-auto">
           {photos.map((p) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={p} src={DIR + p} alt="Event på The Beach" loading="lazy"
+            <img key={p} src={DIR + p} alt={t.marquee.alt} loading="lazy"
               className="mr-1 h-[240px] w-auto object-cover lg:h-[320px]" />
           ))}
         </div>
       ) : (
-        <Track photos={photos} />
+        <Track photos={photos} alt={t.marquee.alt} />
       )}
     </section>
   );

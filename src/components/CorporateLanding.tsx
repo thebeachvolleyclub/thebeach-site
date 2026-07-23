@@ -57,7 +57,7 @@ export default function CorporateLanding({
       <Navbar />
       <main className="flex-1">
         <PageHero eyebrow={eyebrow} title={title} intro={intro} minH="min-h-[52svh]" cta={cta} />
-        <EventPhotoMarquee />
+        <EventPhotoMarquee locale="sv" />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl">

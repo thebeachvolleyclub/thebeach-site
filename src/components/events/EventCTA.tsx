@@ -1,38 +1,40 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 import EventRequestFormClient from "./EventRequestFormClient";
 
-export default function EventCTA() {
+export default function EventCTA({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   return (
     <section
-      id="forfragan"
+      id={t.cta.sectionId}
       className="bg-lime px-5 py-16 sm:px-8 lg:px-14 lg:py-28"
     >
       <div className="mx-auto max-w-2xl">
         <Reveal>
           {/* eyebrow override: .eyebrow hard-codes lime which fails contrast on lime bg */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Osäker på vad som passar?
+            {t.cta.eyebrow}
           </p>
           <h2 className="mb-6 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Skicka en
+            {t.cta.titleTop}
             <br />
-            <span className="italic-accent !text-black/70">förfrågan</span>
+            <span className="italic-accent !text-black/70">{t.cta.titleAccent}</span>
           </h2>
           <p className="mb-9 max-w-md text-sm leading-relaxed text-black/60">
-            Berätta vilka ni är, ungefär hur många och om ni vill köra kväll
-            eller dagtid — så hittar vi rätt upplägg och håller datumet åt er.
-            Vi hör av oss inom 24 timmar.
+            {t.cta.lead}
           </p>
           <p className="-mt-5 mb-9 text-sm font-semibold text-black">
-            Vill ni hellre bygga eventet själva?{" "}
+            {t.cta.plannerLead}{" "}
+            {/* Planeraren: samma svenska URL på båda språken tills en engelsk planerare finns. */}
             <a href="/events/planera" className="underline underline-offset-4 hover:opacity-70">
-              Planera ert event steg för steg →
+              {t.cta.plannerLink}
             </a>
           </p>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <EventRequestFormClient />
+          <EventRequestFormClient locale={locale} />
         </Reveal>
       </div>
     </section>

@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict } from "@/lib/i18n/events";
 
-export default function EventHero() {
+export default function EventHero({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   const reduce = useReducedMotion();
 
   const stagger = {
@@ -60,7 +63,7 @@ export default function EventHero() {
       >
         {/* Eyebrow */}
         <motion.p variants={item} className="eyebrow mb-5">
-          Event &amp; konferens
+          {t.hero.eyebrow}
         </motion.p>
 
         {/* Giant headline */}
@@ -68,10 +71,10 @@ export default function EventHero() {
           variants={item}
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
-          Boka ett event
+          {t.hero.titleTop}
           <br />
-          som{" "}
-          <span className="italic-accent">sticker ut</span>
+          {t.hero.titleMid}{" "}
+          <span className="italic-accent">{t.hero.titleAccent}</span>
         </motion.h1>
 
         {/* Sub-copy + daytag */}
@@ -81,8 +84,7 @@ export default function EventHero() {
         >
           <div>
             <p className="max-w-md text-[0.95rem] leading-relaxed text-bone/55">
-              Sand mellan tårna mitt i Stockholm — året runt. Färdiga koncept
-              där aktivitet, mat och dryck sitter från första bollen.
+              {t.hero.intro}
             </p>
             <p className="mt-3 inline-flex items-center gap-2 rounded-sm bg-lime/10 px-3 py-1.5 text-xs font-semibold text-lime">
               {/* Sun icon (inline SVG, no emoji) */}
@@ -100,7 +102,7 @@ export default function EventHero() {
                 <circle cx="12" cy="12" r="4" />
                 <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4" />
               </svg>
-              Kör ni en vardag dagtid? Då bjuder vi på 10% rabatt.
+              {t.hero.dayDeal}
             </p>
           </div>
 
@@ -110,25 +112,27 @@ export default function EventHero() {
               href="#foretag"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Se koncepten <span aria-hidden="true">→</span>
+              {t.hero.ctaConcepts} <span aria-hidden="true">→</span>
             </a>
+            {/* /lokalen saknar engelsk motsvarighet (routes.ts) — svenska sidan även på en. */}
             <Link
               href="/lokalen"
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
-              Se lokalen — bilder & planlösning
+              {t.hero.linkVenue}
             </Link>
+            {/* Planeraren finns bara på svenska — engelska pekar på samma URL tills en engelsk planerare finns. */}
             <Link
               href="/events/planera"
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
-              Planera ert event — se prisbilden direkt
+              {t.hero.linkPlanner}
             </Link>
             <Link
-              href="#forfragan"
+              href={`#${t.cta.sectionId}`}
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
-              Skicka förfrågan
+              {t.hero.linkRequest}
             </Link>
           </div>
         </motion.div>

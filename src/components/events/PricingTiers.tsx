@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useReducedMotion } from "motion/react";
 import Reveal from "@/components/Reveal";
 import { Sun } from "@/components/icons";
+import type { Locale } from "@/lib/i18n";
+import { eventsDict, type EventsDict } from "@/lib/i18n/events";
 
 // Moon SVG (not in icons.tsx yet — inline here)
 function Moon({ className }: { className?: string }) {
@@ -27,91 +29,17 @@ function Moon({ className }: { className?: string }) {
 
 type Mode = "eve" | "day";
 
-type Tier = {
-  tag: string;
-  name: string;
-  img: string;
-  imgPos?: string;
-  evePrice: string;
-  dayPrice: string;
-  desc: string;
-  features: {
-    text: string;
-    eveVariant?: string;
-    dayVariant?: string;
-  }[];
-  popular?: boolean;
+type Tier = EventsDict["pricing"]["tiers"][number];
+
+// Bild per koncept — konceptnamnen är desamma på båda språken.
+const TIER_IMG: Record<string, { img: string; imgPos?: string }> = {
+  "Las Palmas": { img: "/media/event-laspalmas.webp", imgPos: "center 80%" },
+  Algarve: { img: "/media/event-algarve.webp" },
+  Miami: { img: "/media/event-miami.webp" },
 };
 
-const TIERS: Tier[] = [
-  {
-    tag: "Enkelt & socialt",
-    name: "Las Palmas",
-    img: "/media/event-laspalmas.webp",
-    imgPos: "center 80%",
-    evePrice: "745",
-    dayPrice: "670",
-    desc: "After work, kickoff eller social aktivitet. Det enkla valet som alltid funkar — oavsett om ni är 10 eller 50.",
-    features: [
-      { text: "1,5 h beachvolleyturnering med instruktör" },
-      { text: "Tapas — ost & chark" },
-      {
-        eveVariant: "1 dryckesenhet (öl, vin eller alkoholfritt)",
-        dayVariant: "1 dryckesenhet — alkoholfritt",
-        text: "",
-      },
-      { text: "Pris till King & Queen of The Beach" },
-      { text: "Rekommenderat: 10–50 pers" },
-    ],
-  },
-  {
-    tag: "Mest bokad",
-    name: "Algarve",
-    img: "/media/event-algarve.webp",
-    evePrice: "945",
-    dayPrice: "850",
-    desc: "Vårt mest bokade koncept. Aktivitet + middag — perfekt för företag som vill kombinera sport med ett riktigt socialt häng.",
-    features: [
-      { text: "1,5 h beachvolleyturnering med instruktör" },
-      {
-        eveVariant: "Middagsbuffé i loungen",
-        dayVariant: "Lunchbuffé i loungen",
-        text: "",
-      },
-      {
-        eveVariant: "1 dryckesenhet (öl, vin eller alkoholfritt)",
-        dayVariant: "1 dryckesenhet — alkoholfritt",
-        text: "",
-      },
-      { text: "Pris till King & Queen of The Beach" },
-      { text: "10–250 gäster" },
-    ],
-    popular: true,
-  },
-  {
-    tag: "Helkväll",
-    name: "Miami",
-    img: "/media/event-miami.webp",
-    evePrice: "1 195",
-    dayPrice: "1 075",
-    desc: "När ni vill maxa upplevelsen. Mat, dryck, tempo och stämning — för den grupp som inte nöjer sig med halvmesyrer.",
-    features: [
-      { text: "1,5 h beachvolleyturnering med instruktör" },
-      {
-        eveVariant: "Generös BBQ-buffé",
-        dayVariant: "Generös BBQ-lunch",
-        text: "",
-      },
-      {
-        eveVariant: "2 dryckesenheter",
-        dayVariant: "2 dryckesenheter — alkoholfritt",
-        text: "",
-      },
-      { text: "Pris till King & Queen of The Beach" },
-      { text: "15–250 gäster" },
-    ],
-  },
-];
+// Algarve är "mest bokad" — markeras med lime-badge.
+const POPULAR = "Algarve";
 
 function featureText(
   f: Tier["features"][number],
@@ -128,7 +56,8 @@ function featureKey(f: Tier["features"][number]): string {
   return f.eveVariant ?? f.text;
 }
 
-export default function PricingTiers() {
+export default function PricingTiers({ locale }: { locale: Locale }) {
+  const t = eventsDict[locale];
   const [mode, setMode] = useState<Mode>("eve");
   const reduce = useReducedMotion();
 
@@ -142,19 +71,19 @@ export default function PricingTiers() {
       {/* Header row with toggle */}
       <Reveal className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
         <div>
-          <p className="eyebrow mb-4">Företag &amp; organisation</p>
+          <p className="eyebrow mb-4">{t.pricing.eyebrow}</p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Tre nivåer
+            {t.pricing.title}
           </h2>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-bone/45">
-            Samma spel och instruktör — skillnaden ligger i maten och drycken.
+            {t.pricing.lead}
           </p>
         </div>
 
         {/* Day/Evening toggle — sharp-edged per site convention */}
         <div
           role="group"
-          aria-label="Välj tid på dagen"
+          aria-label={t.pricing.toggleAria}
           className="inline-flex shrink-0 items-center gap-0.5 rounded-sm border border-white/15 bg-black p-1"
         >
           <button
@@ -168,7 +97,7 @@ export default function PricingTiers() {
             }`}
           >
             <Moon />
-            Kväll
+            {t.pricing.eve}
           </button>
           <button
             type="button"
@@ -181,13 +110,13 @@ export default function PricingTiers() {
             }`}
           >
             <Sun className="h-3.5 w-3.5" />
-            Dagtid
+            {t.pricing.day}
             <span
               className={`rounded-sm px-2 py-0.5 text-[10px] font-bold ${
                 isDay ? "bg-black text-lime" : "bg-lime/20 text-lime"
               }`}
             >
-              −10%
+              {t.pricing.dayBadge}
             </span>
           </button>
         </div>
@@ -195,9 +124,11 @@ export default function PricingTiers() {
 
       {/* Tier cards */}
       <div className="grid grid-cols-1 gap-0.5 lg:grid-cols-3">
-        {TIERS.map((tier, i) => {
+        {t.pricing.tiers.map((tier, i) => {
           const price = isDay ? tier.dayPrice : tier.evePrice;
-          const strikePrice = isDay ? `${tier.evePrice} kr` : null;
+          const strikePrice = isDay ? tier.evePrice : null;
+          const popular = tier.name === POPULAR;
+          const media = TIER_IMG[tier.name];
 
           return (
             <Reveal
@@ -208,10 +139,10 @@ export default function PricingTiers() {
               {/* Tier image */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={tier.img}
+                src={media.img}
                 alt={tier.name}
                 loading="lazy"
-                style={{ objectPosition: tier.imgPos ?? "center" }}
+                style={{ objectPosition: media.imgPos ?? "center" }}
                 className="h-36 w-full object-cover lg:h-52"
               />
 
@@ -219,7 +150,7 @@ export default function PricingTiers() {
                 {/* Tag — non-popular gets a readable distinct badge */}
                 <span
                   className={`mb-4 self-start px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] ${
-                    tier.popular
+                    popular
                       ? "bg-lime text-black"
                       : "bg-white/[0.08] text-bone/60"
                   }`}
@@ -234,14 +165,14 @@ export default function PricingTiers() {
 
                 {/* Price row */}
                 <div className="mb-4 flex items-baseline gap-1.5 text-[13px] text-bone/40">
-                  från{" "}
+                  {t.pricing.from}{" "}
                   {strikePrice && (
                     <s className="text-bone/30">{strikePrice}</s>
                   )}
                   <strong className="font-display text-xl text-lime lg:text-2xl">
-                    {price} kr
+                    {price}
                   </strong>{" "}
-                  /person
+                  {t.pricing.perPerson}
                 </div>
 
                 {/* Description */}
@@ -268,11 +199,13 @@ export default function PricingTiers() {
                 </ul>
 
                 {/* CTA — min 44px tap height per WCAG 2.5.8 */}
+                {/* OBS: planeraren finns bara på svenska — engelska sidan pekar på samma
+                    svenska planerar-URL tills en engelsk planerare finns. */}
                 <a
                   href={`/events/planera?koncept=${tier.name === "Las Palmas" ? "lp" : tier.name === "Algarve" ? "alg" : "mia"}`}
                   className="inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
                 >
-                  Planera ert event →
+                  {t.pricing.plannerCta}
                 </a>
               </div>
             </Reveal>
@@ -281,14 +214,14 @@ export default function PricingTiers() {
       </div>
       <div className="mx-auto mt-10 max-w-[1500px] border border-lime/25 bg-lime/[0.06] p-6 text-center lg:p-8">
         <p className="font-display text-xl uppercase text-bone lg:text-2xl">
-          Bygg ert event själva — <span className="text-lime">se prisbilden direkt</span>
+          {t.pricing.builderTitle} <span className="text-lime">{t.pricing.builderTitleAccent}</span>
         </p>
         <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-bone/50">
-          Välj koncept, dryck, mat och underhållning steg för steg. Ni får ett estimat och en
-          exempeltidsplan på en gång — och skickar planen som en förfrågan.
+          {t.pricing.builderLead}
         </p>
+        {/* Planeraren: samma svenska URL på båda språken tills en engelsk planerare finns. */}
         <a href="/events/planera" className="mt-5 inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">
-          Planera ert event <span aria-hidden="true">→</span>
+          {t.pricing.builderCta} <span aria-hidden="true">→</span>
         </a>
       </div>
     </section>
