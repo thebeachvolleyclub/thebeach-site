@@ -6,6 +6,8 @@ import EventPhotoMarquee from "@/components/events/EventPhotoMarquee";
 import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
 import SolarStats from "@/components/SolarStats";
+import type { Locale } from "@/lib/i18n";
+import { corporateUi } from "@/lib/i18n/corporate";
 
 export type Faq = { q: string; a: string };
 
@@ -18,6 +20,7 @@ export default function CorporateLanding({
   why,
   faqs,
   paket,
+  locale = "sv",
 }: {
   eyebrow: string;
   title: React.ReactNode;
@@ -27,7 +30,10 @@ export default function CorporateLanding({
   why: { h: string; p: string }[];
   faqs: Faq[];
   paket?: string;
+  locale?: Locale;
 }) {
+  const ui = corporateUi[locale];
+
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -38,26 +44,30 @@ export default function CorporateLanding({
     })),
   };
 
+  // Förfrågningsformuläret bor på /events (sv) resp. /en/events (en) —
+  // ankaret heter "forfragan" på svenska och "request" på engelska.
+  const eventsBase = locale === "en" ? "/en/events" : "/events";
+  const anchor = locale === "en" ? "request" : "forfragan";
   const forfraganHref = paket
-    ? `/events?paket=${paket}#forfragan`
-    : "/events#forfragan";
+    ? `${eventsBase}?paket=${paket}#${anchor}`
+    : `${eventsBase}#${anchor}`;
 
   const cta = (
     <Link
       href={forfraganHref}
       className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
     >
-      Skicka förfrågan <span aria-hidden="true">→</span>
+      {ui.sendRequest} <span aria-hidden="true">→</span>
     </Link>
   );
 
   return (
     <>
       <JsonLd data={faqLd} />
-      <Navbar />
+      <Navbar locale={locale} />
       <main className="flex-1">
         <PageHero eyebrow={eyebrow} title={title} intro={intro} minH="min-h-[52svh]" cta={cta} />
-        <EventPhotoMarquee locale="sv" />
+        <EventPhotoMarquee locale={locale} />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl">
@@ -65,7 +75,7 @@ export default function CorporateLanding({
               <p className="text-[17px] leading-relaxed text-black/70">{lead}</p>
             </Reveal>
             <Reveal className="mt-10">
-              <h2 className="mb-4 font-display text-2xl uppercase text-black">Det här ingår</h2>
+              <h2 className="mb-4 font-display text-2xl uppercase text-black">{ui.included}</h2>
               <ul className="border-t border-black/10">
                 {included.map((it) => (
                   <li key={it} className="flex items-start gap-3 border-b border-black/10 py-3 text-[15px] leading-snug text-black/65">
@@ -81,7 +91,7 @@ export default function CorporateLanding({
         <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-[1500px]">
             <Reveal className="mb-10">
-              <p className="eyebrow mb-4">Därför The Beach</p>
+              <p className="eyebrow mb-4">{ui.why}</p>
             </Reveal>
             <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-3">
               {why.map((w) => (
@@ -94,12 +104,12 @@ export default function CorporateLanding({
           </div>
         </section>
 
-        <SolarStats />
+        <SolarStats locale={locale} />
 
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
           <div className="mx-auto max-w-3xl">
             <Reveal className="mb-6">
-              <h2 className="font-display text-[clamp(1.75rem,7vw,2.75rem)] leading-[0.95] text-black">Vanliga frågor</h2>
+              <h2 className="font-display text-[clamp(1.75rem,7vw,2.75rem)] leading-[0.95] text-black">{ui.faq}</h2>
             </Reveal>
             {faqs.map((f, i) => (
               <Reveal key={f.q} delay={Math.min(i * 0.03, 0.12)}>
@@ -118,26 +128,26 @@ export default function CorporateLanding({
         <section className="bg-lime px-5 py-14 sm:px-8 lg:px-14 lg:py-20">
           <div className="mx-auto flex max-w-[1500px] flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
             <Reveal>
-              <h2 className="font-display text-[clamp(1.75rem,7vw,2.75rem)] leading-[0.95] text-black">Redo att boka?</h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-black/60">Skicka en förfrågan så återkommer vi inom 24 timmar med ett upplägg.</p>
+              <h2 className="font-display text-[clamp(1.75rem,7vw,2.75rem)] leading-[0.95] text-black">{ui.ready}</h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-black/60">{ui.readyBody}</p>
             </Reveal>
             <Reveal delay={0.06} className="shrink-0">
               <div className="flex flex-wrap items-center gap-3">
-                <Link href="/events/planera" className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
-                  Planera ert event <span aria-hidden="true">→</span>
+                <Link href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
+                  {ui.plan} <span aria-hidden="true">→</span>
                 </Link>
                 <Link href={forfraganHref} className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">
-                  Skicka förfrågan
+                  {ui.sendRequest}
                 </Link>
-                <Link href="/lokalen" className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">
-                  Se lokalen
+                <Link href={locale === "en" ? "/en/venue" : "/lokalen"} className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">
+                  {ui.seeVenue}
                 </Link>
               </div>
             </Reveal>
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer locale={locale} />
     </>
   );
 }

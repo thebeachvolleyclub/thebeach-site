@@ -4,11 +4,11 @@ import { altLang } from "@/lib/i18n";
 import { hallbarhetDict } from "@/lib/i18n/hallbarhet";
 
 export const metadata: Metadata = {
-  alternates: altLang("/hallbarhet", "/en/sustainability", "sv"),
-  title: hallbarhetDict.sv.meta.title,
-  description: hallbarhetDict.sv.meta.description,
+  alternates: altLang("/hallbarhet", "/en/sustainability", "en"),
+  title: hallbarhetDict.en.meta.title,
+  description: hallbarhetDict.en.meta.description,
 };
 
 export default function Page() {
-  return <HallbarhetPage locale="sv" />;
+  return <HallbarhetPage locale="en" />;
 }

@@ -59,8 +59,16 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
   {
     title: "Events",
     links: [
+      { label: "The venue", href: "/en/venue" },
       { label: "Book an event", href: "/en/events" },
-      { label: "Conference", href: "/en/events" },
+      { label: "Plan your event", href: "/en/events/plan" },
+      { label: "Corporate events", href: "/en/corporate-events" },
+      { label: "Conference", href: "/en/conference" },
+      { label: "Kickoff", href: "/en/kickoff" },
+      { label: "Team building", href: "/en/team-building" },
+      { label: "Company party", href: "/en/company-party" },
+      { label: "Kids' party", href: "/en/kids-party" },
+      { label: "Christmas party", href: "/en/christmas-party" },
       { label: "Custom & large groups", href: "/en/events#request" },
     ],
   },
@@ -68,7 +76,7 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
     title: "More",
     links: [
       { label: "About us", href: "/en/about" },
-      { label: "Sustainability", href: "/hallbarhet" },
+      { label: "Sustainability", href: "/en/sustainability" },
       { label: "FAQ", href: "/en/faq" },
       { label: "Contact", href: "/en/about#contact" },
       { label: "BeachTravels", href: "/beachtravels" },

@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
 import { altLang } from "@/lib/i18n";
-import { konferensDict } from "@/lib/i18n/corporate";
+import { kickoffDict } from "@/lib/i18n/corporate";
 
-const t = konferensDict.sv;
+const t = kickoffDict.en;
 
 export const metadata: Metadata = {
-  alternates: altLang("/konferens", "/en/conference", "sv"),
+  alternates: altLang("/kickoff", "/en/kickoff", "en"),
   title: t.meta.title,
   description: t.meta.description,
 };
 
-export default function KonferensPage() {
+export default function KickoffEnPage() {
   return (
     <CorporateLanding
-      locale="sv"
+      locale="en"
       eyebrow={t.eyebrow}
-      paket="konferens"
       title={<>{t.titleTop}<br /><span className="italic-accent">{t.titleAccent}</span></>}
       intro={t.intro}
       lead={t.lead}

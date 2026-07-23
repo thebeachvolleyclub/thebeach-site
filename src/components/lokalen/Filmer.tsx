@@ -3,13 +3,17 @@
 /**
  * Filmer — klippen från lokalen. Poster laddas som bild; videon hämtas först
  * när besökaren klickar, så sidan förblir lätt även med många klipp.
+ * Filmtitlarna ägs av datat i src/lib/lokalen.ts och översätts inte.
  */
 
 import { useState } from "react";
 import Image from "next/image";
 import { FILMER } from "@/lib/lokalen";
+import type { Locale } from "@/lib/i18n";
+import { lokalenDict } from "@/lib/i18n/lokalen";
 
-export default function Filmer() {
+export default function Filmer({ locale = "sv" }: { locale?: Locale } = {}) {
+  const t = lokalenDict[locale].filmer;
   const [spelar, setSpelar] = useState<string | null>(null);
 
   if (FILMER.length === 0) return null;
@@ -17,9 +21,9 @@ export default function Filmer() {
   return (
     <section id="film" className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/40">Film</p>
+        <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/40">{t.eyebrow}</p>
         <h2 className="mb-10 font-display text-[clamp(2rem,7vw,3.25rem)] uppercase leading-[0.95] tracking-[-0.02em] text-white">
-          Lokalen i rörelse
+          {t.title}
         </h2>
 
         <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +45,7 @@ export default function Filmer() {
                     <button
                       onClick={() => setSpelar(f.fil)}
                       className="group absolute inset-0 h-full w-full"
-                      aria-label={`Spela upp: ${f.titel}`}
+                      aria-label={`${t.playPrefix}${f.titel}`}
                     >
                       <Image
                         src={f.poster}

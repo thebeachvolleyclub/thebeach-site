@@ -4,13 +4,20 @@
  * Galleri — filtrerbart bildgalleri för /lokalen.
  * Två axlar: yta (kopplad till planlösningen) och eventtyp.
  * Filtren byggs av datat, så nya bilder räcker för att nya filter ska dyka upp.
+ * Alt-texterna ägs av datat i src/lib/lokalen.ts; filteretiketterna kommer ur
+ * ordboken så att /en/venue får engelska knappar.
  */
 
 import { useMemo, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { BILDER, aktivaYtor, aktivaTyper, type YtaKey, type TypKey } from "@/lib/lokalen";
+import type { Locale } from "@/lib/i18n";
+import { lokalenDict } from "@/lib/i18n/lokalen";
 
-export default function Galleri() {
+export default function Galleri({ locale = "sv" }: { locale?: Locale } = {}) {
+  const t = lokalenDict[locale].galleri;
+  const ytaText = lokalenDict[locale].ytor;
+  const typText = lokalenDict[locale].typer;
   const [yta, setYta] = useState<YtaKey | "alla">("alla");
   const [typ, setTyp] = useState<TypKey | "alla">("alla");
   const [oppen, setOppen] = useState<number | null>(null);
@@ -51,36 +58,36 @@ export default function Galleri() {
   return (
     <section id="bilder" className="bg-sand px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">Bilder</p>
+        <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">{t.eyebrow}</p>
         <h2 className="mb-8 font-display text-[clamp(2rem,7vw,3.25rem)] uppercase leading-[0.95] tracking-[-0.02em] text-black">
-          Se hur det kan bli
+          {t.title}
         </h2>
 
         <div className="mb-3 flex flex-wrap gap-2">
           <button className={knapp(typ === "alla")} onClick={() => setTyp("alla")}>
-            Alla tillfällen
+            {t.allaTillfallen}
           </button>
-          {typer.map((t) => (
-            <button key={t.key} className={knapp(typ === t.key)} onClick={() => setTyp(t.key)}>
-              {t.namn}
+          {typer.map((ty) => (
+            <button key={ty.key} className={knapp(typ === ty.key)} onClick={() => setTyp(ty.key)}>
+              {typText[ty.key]}
             </button>
           ))}
         </div>
 
         <div className="mb-8 flex flex-wrap gap-2">
           <button className={knapp(yta === "alla")} onClick={() => setYta("alla")}>
-            Hela lokalen
+            {t.helaLokalen}
           </button>
           {ytor.map((y) => (
-            <button key={y.key} className={knapp(yta === y.key)} onClick={() => setYta(y.key)} title={y.beskrivning}>
-              {y.namn}
+            <button key={y.key} className={knapp(yta === y.key)} onClick={() => setYta(y.key)} title={ytaText[y.key].beskrivning}>
+              {ytaText[y.key].namn}
             </button>
           ))}
         </div>
 
         {bilder.length === 0 ? (
           <p className="py-12 text-center text-sm text-black/50">
-            Inga bilder på den kombinationen än — prova en annan yta eller tillfälle.
+            {t.tomt}
           </p>
         ) : (
           <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 [&>*]:mb-4">
@@ -101,7 +108,7 @@ export default function Galleri() {
                 />
                 {b.koncept ? (
                   <span className="absolute left-3 top-3 rounded-full bg-black/75 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-white">
-                    Konceptbild
+                    {t.konceptbild}
                   </span>
                 ) : null}
               </button>
@@ -110,7 +117,7 @@ export default function Galleri() {
         )}
 
         <p className="mt-6 text-xs text-black/40">
-          {bilder.length} {bilder.length === 1 ? "bild" : "bilder"}
+          {bilder.length} {bilder.length === 1 ? t.bildSingular : t.bildPlural}
         </p>
       </div>
 
@@ -121,13 +128,13 @@ export default function Galleri() {
           role="dialog"
           aria-modal="true"
         >
-          <button className="absolute right-5 top-5 text-3xl text-white/70 hover:text-white" onClick={stang} aria-label="Stäng">
+          <button className="absolute right-5 top-5 text-3xl text-white/70 hover:text-white" onClick={stang} aria-label={t.stang}>
             ×
           </button>
           <button
             className="absolute left-4 text-4xl text-white/60 hover:text-white"
             onClick={(e) => { e.stopPropagation(); stega(-1); }}
-            aria-label="Föregående"
+            aria-label={t.foregaende}
           >
             ‹
           </button>
@@ -143,7 +150,7 @@ export default function Galleri() {
               {bilder[oppen].alt}
               {bilder[oppen].koncept ? (
                 <span className="mt-1 block text-xs text-white/45">
-                  Konceptbild — visualisering av en möjlig uppbyggnad, inte ett foto.
+                  {t.konceptNot}
                 </span>
               ) : null}
             </figcaption>
@@ -151,7 +158,7 @@ export default function Galleri() {
           <button
             className="absolute right-4 text-4xl text-white/60 hover:text-white"
             onClick={(e) => { e.stopPropagation(); stega(1); }}
-            aria-label="Nästa"
+            aria-label={t.nasta}
           >
             ›
           </button>

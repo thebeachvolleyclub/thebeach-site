@@ -6,11 +6,19 @@ export const SV_TO_EN: Record<string, string> = {
   "/": "/en",
   "/events": "/en/events",
   "/events/planera": "/en/events/plan",
-  "/lokalen": "/en",
+  "/lokalen": "/en/venue",
   "/boka": "/en/book",
   "/skola": "/en/school",
   "/om-oss": "/en/about",
   "/faq": "/en/faq",
+  "/julbord": "/en/christmas-party",
+  "/barnkalas": "/en/kids-party",
+  "/hallbarhet": "/en/sustainability",
+  "/konferens": "/en/conference",
+  "/kickoff": "/en/kickoff",
+  "/teambuilding": "/en/team-building",
+  "/foretagsevent": "/en/corporate-events",
+  "/firmafest": "/en/company-party",
 };
 
 export const EN_TO_SV: Record<string, string> = Object.fromEntries(

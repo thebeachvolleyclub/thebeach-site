@@ -1,11 +1,11 @@
 import Reveal from "@/components/Reveal";
 import { getSolarData } from "@/lib/solar";
+import type { Locale } from "@/lib/i18n";
+import { solarDict } from "@/lib/i18n/solar";
 
 // Fasta hårdvarufakta — fysiska, ändras aldrig.
 const SOLAR_KW = "72 kW";
 const BATTERY = "~290 kWh";
-const PEOPLE =
-  "En av Sveriges största beachvolleyklubbar — ~800 spelare i veckan, alla åldrar. Grundarägd sedan 2006 och landslagshem för både dam och herr.";
 
 const fmtInt = (n: number) => n.toLocaleString("sv-SE");
 const fmt1 = (n: number) =>
@@ -41,44 +41,42 @@ function Contribution({ title, body }: { title: string; body: string }) {
 }
 
 /** Grön arena-sektion. Säsongsanpassad: sommar leder med produktion, vinter med batteri/nät. */
-export default async function SolarStats({ compact = false }: { compact?: boolean } = {}) {
+export default async function SolarStats({ compact = false, locale = "sv" }: { compact?: boolean; locale?: Locale } = {}) {
+  const t = solarDict[locale];
   const data = await getSolarData();
 
   // Sommar = april–september. Annars vinterläge.
   const month = new Date().getMonth();
   const isSummer = month >= 3 && month <= 8;
 
-  const co2Line = data ? ` · ${fmt1(data.co2Ton)} ton CO₂ sparat sedan start` : "";
-  const facts = `${SOLAR_KW} solpark · ${BATTERY} batteri${co2Line}`;
+  const co2Line = data ? ` · ${fmt1(data.co2Ton)} ${t.co2FactsSuffix}` : "";
+  const facts = `${SOLAR_KW} ${t.solarParkWord} · ${BATTERY} ${t.batteryWord}${co2Line}`;
 
   let stats: Stat[];
   let lead: string;
 
   if (data && isSummer) {
-    lead =
-      "Solen driver arenan. Rörelsen driver människorna. Dagtid går The Beach i princip helt på egen sol — överskottet går ut till grannarna och batteriet stabiliserar elnätet. Hållbarhet hos oss är inget vi säger, det är något vi mäter och visar.";
+    lead = t.leadSummer;
     stats = [
-      { value: `${fmtInt(data.realTimePowerKw)} kW`, label: "Effekt just nu" },
-      { value: `${fmtInt(data.dailyEnergyKwh)} kWh`, label: "Sol idag" },
-      { value: `${fmt1(data.yearEnergyMwh)} MWh`, label: "Sol i år" },
-      { value: `${fmtInt(data.totalEnergyMwh)} MWh`, label: "Total egen sol" },
+      { value: `${fmtInt(data.realTimePowerKw)} kW`, label: t.labels.effektNu },
+      { value: `${fmtInt(data.dailyEnergyKwh)} kWh`, label: t.labels.solIdag },
+      { value: `${fmt1(data.yearEnergyMwh)} MWh`, label: t.labels.solIAr },
+      { value: `${fmtInt(data.totalEnergyMwh)} MWh`, label: t.labels.totalSol },
     ];
   } else if (data) {
-    lead =
-      "Vår solpark och våra batterier jobbar året runt. Överskottet går ut på nätet till grannarna, och batterierna hjälper till att hålla elnätet i balans — även när solen är låg.";
+    lead = t.leadWinter;
     stats = [
-      { value: `${fmtInt(data.totalEnergyMwh)} MWh`, label: "Total egen sol" },
-      { value: SOLAR_KW, label: "Solpark" },
-      { value: BATTERY, label: "Batteri" },
-      { value: `${fmt1(data.co2Ton)} ton`, label: "CO₂ sparat" },
+      { value: `${fmtInt(data.totalEnergyMwh)} MWh`, label: t.labels.totalSol },
+      { value: SOLAR_KW, label: t.labels.solpark },
+      { value: BATTERY, label: t.labels.batteri },
+      { value: `${fmt1(data.co2Ton)} ${t.tonUnit}`, label: t.labels.co2Sparat },
     ];
   } else {
     // Livedata nere — visa bara de fasta fakta, inga trasiga siffror.
-    lead =
-      "Arenan drivs på egen sol från vårt eget tak. Överskottet går ut på nätet till grannarna, och våra batterier hjälper till att hålla elnätet i balans.";
+    lead = t.leadOffline;
     stats = [
-      { value: SOLAR_KW, label: "Solpark" },
-      { value: BATTERY, label: "Batteri" },
+      { value: SOLAR_KW, label: t.labels.solpark },
+      { value: BATTERY, label: t.labels.batteri },
     ];
   }
 
@@ -86,10 +84,10 @@ export default async function SolarStats({ compact = false }: { compact?: boolea
     <section className="border-y border-line bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-20">
       <div className="mx-auto max-w-[1500px]">
         <div className="mb-7 flex items-center justify-between gap-4">
-          <p className="eyebrow">Grön arena</p>
+          <p className="eyebrow">{t.eyebrow}</p>
           <span className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.18em] text-cream/50">
             <span className="h-2 w-2 rounded-full bg-lime" aria-hidden="true" />
-            Driven av solen
+            {t.badge}
           </span>
         </div>
 
@@ -97,7 +95,7 @@ export default async function SolarStats({ compact = false }: { compact?: boolea
           <>
             <Reveal>
               <h2 className="font-display text-[clamp(1.75rem,6vw,3rem)] leading-[0.95] text-cream">
-                Vi ger <span className="italic-accent">energi</span> — på riktigt
+                {t.titlePre}<span className="italic-accent">{t.titleAccent}</span>{t.titlePost}
               </h2>
             </Reveal>
             <Reveal delay={0.05}>
@@ -109,11 +107,12 @@ export default async function SolarStats({ compact = false }: { compact?: boolea
         <StatGrid stats={stats} />
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Contribution title="Vi delar med oss" body="Överskottet vi inte använder går ut på nätet till grannarna." />
-          <Contribution title="Stabiliserar elnätet" body="Batterierna hjälper till att hålla elnätet i balans." />
+          {t.contributions.map((c) => (
+            <Contribution key={c.title} title={c.title} body={c.body} />
+          ))}
         </div>
 
-        <p className="mt-8 max-w-3xl text-[15px] leading-relaxed text-cream/70">{PEOPLE}</p>
+        <p className="mt-8 max-w-3xl text-[15px] leading-relaxed text-cream/70">{t.people}</p>
         <p className="mt-4 text-[0.7rem] uppercase tracking-[0.18em] text-cream/45">{facts}</p>
       </div>
     </section>
