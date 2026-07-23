@@ -2,6 +2,8 @@ import Link from "next/link";
 import Reveal from "./Reveal";
 import { type Ev } from "@/lib/kalender";
 import { getMergedMonths } from "@/lib/profixio";
+import type { Locale } from "@/lib/i18n";
+import { homeDict } from "@/lib/i18n/home";
 
 
 const BADGE: Record<Ev["type"], string> = {
@@ -17,18 +19,21 @@ const TONE: Record<NonNullable<Ev["badgeTone"]>, string> = {
 };
 
 
-export default async function Calendar() {
+/** Ramtexterna ur ordboken — själva händelserna (Profixio/lib/kalender)
+ *  är svenska i båda språkversionerna. */
+export default async function Calendar({ locale = "sv" }: { locale?: Locale }) {
+  const t = homeDict[locale].calendar;
   const MONTHS = await getMergedMonths();
   return (
     <section id="calendar" className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
       <Reveal>
         <span className="mb-4 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/35">
-          Kalender
+          {t.eyebrow}
         </span>
         <h2 className="mb-8 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-          Vad händer
+          {t.title1}
           <br />
-          på The Beach
+          {t.title2}
         </h2>
       </Reveal>
 
@@ -70,13 +75,13 @@ export default async function Calendar() {
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 bg-white p-5">
           <p className="text-[13px] text-black/50">
-            Missa aldrig ett event — prenumerera på kalendern
+            {t.subscribe}
           </p>
           <Link
-            href="/kalender#kommande"
+            href={t.seeAllHref}
             className="cursor-pointer whitespace-nowrap border-b border-black pb-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black"
           >
-            Se hela kalendern →
+            {t.seeAll}
           </Link>
         </div>
       </Reveal>

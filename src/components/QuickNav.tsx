@@ -1,16 +1,14 @@
-/** Photo quick-nav med Event & konferens som fjärde väg in.
- *  pos = object-position så att ansikten/huvuden alltid är med. */
-const ITEMS = [
-  { n: "01", title: "Spela", href: "/boka", img: "/media/wilson-boll-sand.webp", alt: "Beachvolleyboll i sanden", pos: "object-[50%_65%]" },
-  { n: "02", title: "Träna", href: "/trana", img: "/media/coach.webp", alt: "Coach på The Beach", pos: "object-[50%_12%]" },
-  { n: "03", title: "Tävla", href: "/kalender", img: "/media/vm-silver.webp", alt: "Tävling — VM-silver", pos: "object-[50%_15%]" },
-  { n: "04", title: "Event & konferens", href: "/events", img: "/media/event.webp", alt: "Företagsevent på The Beach", pos: "object-center" },
-];
+import type { Locale } from "@/lib/i18n";
+import { homeDict } from "@/lib/i18n/home";
 
-export default function QuickNav() {
+/** Photo quick-nav med Event & konferens som fjärde väg in.
+ *  Texter/länkar ur startsidans ordbok — pos = object-position så att
+ *  ansikten/huvuden alltid är med. */
+export default function QuickNav({ locale = "sv" }: { locale?: Locale }) {
+  const items = homeDict[locale].quicknav;
   return (
     <div className="grid grid-cols-2 gap-0.5 bg-black sm:grid-cols-4">
-      {ITEMS.map((it) => (
+      {items.map((it) => (
         <a
           key={it.n}
           href={it.href}

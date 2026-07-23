@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { pushEvent } from "@/lib/gtm";
 import Reveal from "./Reveal";
+import type { Locale } from "@/lib/i18n";
 
 // Brevo double-opt-in list "Nyhetsbrev – webb & IG 2026". Posts straight to
 // Brevo (no backend), so the visitor never leaves the page. Confirmation mail
@@ -23,6 +24,51 @@ const COUNTRY_CODES = [
   { code: "+39", label: "🇮🇹 +39" },
 ];
 
+// Delad komponent (startsidan, /trana, /kalender) — inline-ordbok med
+// valfri locale-prop, samma mönster som AppSection/Ticker.
+const COPY: Record<Locale, {
+  eyebrow: string;
+  title: string;
+  lead: string;
+  firstname: string; firstnamePh: string;
+  email: string; emailPh: string;
+  phone: string; phoneOptional: string; phonePh: string;
+  countryAria: string;
+  consent: string;
+  err: string;
+  submit: string; submitting: string;
+  thanks: string; thanksText: string;
+}> = {
+  sv: {
+    eyebrow: "Nyhetsbrev",
+    title: "Var först att veta",
+    lead: "Träningsgrupperna släpps en gång per säsong och går fort. Med nyhetsbrevet får du släpp, event och sista-minuten-tider direkt i inkorgen — före alla andra.",
+    firstname: "Förnamn", firstnamePh: "Ditt förnamn",
+    email: "E-post", emailPh: "din@epost.se",
+    phone: "Mobil / WhatsApp", phoneOptional: "(frivilligt)", phonePh: "70 123 45 67",
+    countryAria: "Landskod",
+    consent: "Ja tack — jag vill få nyheter och erbjudanden från The Beach. Du kan avanmäla dig när som helst.",
+    err: "Något gick fel. Försök igen om en stund.",
+    submit: "Håll mig uppdaterad", submitting: "Skickar…",
+    thanks: "Tack — du är med! ☀️",
+    thanksText: "Du är nu anmäld till nyhetsbrevet — släpp, event och sista-minuten-tider direkt i inkorgen.",
+  },
+  en: {
+    eyebrow: "Newsletter",
+    title: "Be first to know",
+    lead: "Training groups are released once per season and go fast. With the newsletter you get releases, events and last-minute court times straight to your inbox — before everyone else.",
+    firstname: "First name", firstnamePh: "Your first name",
+    email: "Email", emailPh: "you@email.com",
+    phone: "Mobile / WhatsApp", phoneOptional: "(optional)", phonePh: "70 123 45 67",
+    countryAria: "Country code",
+    consent: "Yes please — I'd like news and offers from The Beach. You can unsubscribe at any time.",
+    err: "Something went wrong. Please try again in a moment.",
+    submit: "Keep me updated", submitting: "Sending…",
+    thanks: "Thanks — you're in! ☀️",
+    thanksText: "You're now signed up for the newsletter — releases, events and last-minute court times straight to your inbox.",
+  },
+};
+
 const fieldBase =
   "border border-black/15 bg-white/70 px-4 py-3.5 text-sm text-black outline-none transition-colors placeholder:text-black/40 focus:border-black";
 const inputCls = `w-full ${fieldBase}`;
@@ -34,7 +80,8 @@ const labelCls =
  * timmar — listan är kanalen för att vara först. Dubbel opt-in är på i Brevo.
  * Samlar även in mobil/WhatsApp (frivilligt).
  */
-export default function Newsletter() {
+export default function Newsletter({ locale = "sv" }: { locale?: Locale }) {
+  const t = COPY[locale];
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(false);
@@ -59,7 +106,7 @@ export default function Newsletter() {
       fd.append("FIRSTNAME", val("FIRSTNAME"));
       fd.append("OPT_IN", "1");
       fd.append("email_address_check", "");
-      fd.append("locale", "sv");
+      fd.append("locale", locale);
 
       // Mobil/WhatsApp är frivilligt. Skicka bara om ett nummer angetts.
       // Normalisera: bara siffror, drop ledande 0 (landskoden ersätter den).
@@ -91,15 +138,13 @@ export default function Newsletter() {
       <div className="mx-auto flex max-w-[1500px] flex-col items-start gap-10 lg:flex-row lg:items-center lg:justify-between">
         <Reveal>
           <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/50">
-            Nyhetsbrev
+            {t.eyebrow}
           </p>
           <h2 className="mb-4 font-display text-[clamp(2rem,9vw,3.5rem)] leading-[0.9] text-black">
-            Var först att veta
+            {t.title}
           </h2>
           <p className="max-w-xl text-[15px] leading-relaxed text-black/60">
-            Träningsgrupperna släpps en gång per säsong och går fort. Med
-            nyhetsbrevet får du släpp, event och sista-minuten-tider direkt i
-            inkorgen — före alla andra.
+            {t.lead}
           </p>
         </Reveal>
 
@@ -107,25 +152,24 @@ export default function Newsletter() {
           {sent ? (
             <div className="border border-black/20 bg-white/70 p-8 text-center">
               <p className="font-display text-2xl uppercase text-black">
-                Tack — du är med! ☀️
+                {t.thanks}
               </p>
               <p className="mt-2 text-sm text-black/60">
-                Du är nu anmäld till nyhetsbrevet — släpp, event och
-                sista-minuten-tider direkt i inkorgen.
+                {t.thanksText}
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="nl-firstname" className={labelCls}>
-                  Förnamn
+                  {t.firstname}
                 </label>
                 <input
                   id="nl-firstname"
                   name="FIRSTNAME"
                   className={inputCls}
                   type="text"
-                  placeholder="Ditt förnamn"
+                  placeholder={t.firstnamePh}
                   autoComplete="given-name"
                   required
                 />
@@ -133,14 +177,14 @@ export default function Newsletter() {
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="nl-email" className={labelCls}>
-                  E-post
+                  {t.email}
                 </label>
                 <input
                   id="nl-email"
                   name="EMAIL"
                   className={inputCls}
                   type="email"
-                  placeholder="din@epost.se"
+                  placeholder={t.emailPh}
                   autoComplete="email"
                   required
                 />
@@ -148,13 +192,13 @@ export default function Newsletter() {
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="nl-phone" className={labelCls}>
-                  Mobil / WhatsApp <span className="text-black/40">(frivilligt)</span>
+                  {t.phone} <span className="text-black/40">{t.phoneOptional}</span>
                 </label>
                 <div className="flex gap-2">
                   <select
                     name="WHATSAPP__COUNTRY_CODE"
                     defaultValue="+46"
-                    aria-label="Landskod"
+                    aria-label={t.countryAria}
                     className={`${fieldBase} shrink-0 [color-scheme:light]`}
                   >
                     {COUNTRY_CODES.map((c) => (
@@ -169,7 +213,7 @@ export default function Newsletter() {
                     className={`${fieldBase} min-w-0 flex-1`}
                     type="tel"
                     inputMode="tel"
-                    placeholder="70 123 45 67"
+                    placeholder={t.phonePh}
                     autoComplete="tel-national"
                   />
                 </div>
@@ -193,13 +237,12 @@ export default function Newsletter() {
                   required
                   className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-black"
                 />
-                Ja tack — jag vill få nyheter och erbjudanden från The Beach. Du
-                kan avanmäla dig när som helst.
+                {t.consent}
               </label>
 
               {err && (
                 <p className="text-[13px] font-semibold text-orange">
-                  Något gick fel. Försök igen om en stund.
+                  {t.err}
                 </p>
               )}
 
@@ -208,9 +251,9 @@ export default function Newsletter() {
                 disabled={busy}
                 className="mt-1 inline-flex cursor-pointer items-center justify-center gap-2 bg-black px-10 py-5 text-sm font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {busy ? "Skickar…" : (
+                {busy ? t.submitting : (
                   <>
-                    Håll mig uppdaterad <span aria-hidden="true">→</span>
+                    {t.submit} <span aria-hidden="true">→</span>
                   </>
                 )}
               </button>

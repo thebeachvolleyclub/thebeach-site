@@ -1,17 +1,21 @@
 "use client";
 
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { useIsDesktop } from "./useIsMobile";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { homeDict } from "@/lib/i18n/home";
 
 /**
  * HERO — mirrors the brand sketch.
  * Sunset photo, giant Acorn headline "DÄR DET / ALLTID / ÄR SOMMAR",
  * eyebrow chips, and a bottom info bar with the lime CTA.
+ * Texterna kommer ur startsidans ordbok (src/lib/i18n/home.ts).
  *
  *  Background: public/media/hero-sunset.webp  (swap to hero.mp4 if you want motion)
  */
-export default function Hero() {
+export default function Hero({ locale = "sv" }: { locale?: Locale }) {
+  const t = homeDict[locale].hero;
   const reduce = useReducedMotion();
   const desktop = useIsDesktop();
   const ref = useRef<HTMLElement>(null);
@@ -84,11 +88,12 @@ export default function Hero() {
           variants={item}
           className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-lime"
         >
-          <span>Beachvolley &amp; Event</span>
-          <span className="h-1 w-1 rounded-full bg-white/30" />
-          <span>Novavägen 35 · Huddinge</span>
-          <span className="h-1 w-1 rounded-full bg-white/30" />
-          <span>Sedan 2006</span>
+          {t.chips.map((chip, i) => (
+            <Fragment key={chip}>
+              {i > 0 && <span className="h-1 w-1 rounded-full bg-white/30" />}
+              <span>{chip}</span>
+            </Fragment>
+          ))}
         </motion.div>
 
         {/* giant headline */}
@@ -96,11 +101,11 @@ export default function Hero() {
           variants={item}
           className="font-display text-[clamp(3.5rem,13vw,9.5rem)] leading-[0.88] text-white"
         >
-          Där det
+          {t.titleTop}
           <br />
-          <span className="text-lime">Alltid</span>
+          <span className="text-lime">{t.titleAccent}</span>
           <br />
-          Är sommar
+          {t.titleBottom}
         </motion.h1>
 
         {/* bottom info bar */}
@@ -109,24 +114,21 @@ export default function Hero() {
           className="mt-9 flex flex-col gap-6 border-t border-white/15 pt-7 sm:flex-row sm:items-end sm:justify-between sm:gap-10"
         >
           <p className="max-w-md text-[0.95rem] leading-relaxed text-white/55">
-            <strong className="font-bold text-white/85">
-              En av världens främsta beachvolleyanläggningar.
-            </strong>{" "}
-            17 banor, event för upp till 900 gäster och ett community som ingen
-            annan kan matcha. Alla är välkomna — från nybörjare till världsmästare.
+            <strong className="font-bold text-white/85">{t.leadStrong}</strong>{" "}
+            {t.lead}
           </p>
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a
-              href="#event"
+              href={t.ctaEventHref}
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Boka ett event <span aria-hidden="true">→</span>
+              {t.ctaEvent} <span aria-hidden="true">→</span>
             </a>
             <a
-              href="/boka"
+              href={t.ctaCourtHref}
               className="inline-flex cursor-pointer items-center gap-2 border border-white/40 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-white transition-colors duration-300 hover:bg-white hover:text-black"
             >
-              Boka bana <span aria-hidden="true">→</span>
+              {t.ctaCourt} <span aria-hidden="true">→</span>
             </a>
           </div>
         </motion.div>

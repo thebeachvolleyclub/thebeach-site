@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import type { Locale } from "@/lib/i18n";
+import { homeDict } from "@/lib/i18n/home";
 
 export type EventPkg = {
   img: string;
@@ -14,7 +16,8 @@ export type EventPkg = {
 };
 
 /* ---- shared card (identical style to the desktop grid) -------------- */
-function EventCard({ pkg }: { pkg: EventPkg }) {
+function EventCard({ pkg, locale }: { pkg: EventPkg; locale: Locale }) {
+  const t = homeDict[locale].events;
   return (
     <article
       className={`flex h-full flex-col overflow-hidden ${
@@ -41,11 +44,11 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
           {pkg.name}
         </h3>
         <div className={`mb-3 text-[13px] font-semibold lg:mb-6 ${pkg.featured ? "text-black/45" : "text-black/40"}`}>
-          från{" "}
+          {t.from}{" "}
           <strong className={`font-display text-xl lg:text-2xl ${pkg.featured ? "text-black" : "text-orange"}`}>
             {pkg.price}
           </strong>{" "}
-          /person
+          {t.perPerson}
         </div>
         <p className={`mb-4 flex-1 text-[13px] leading-snug lg:mb-6 lg:text-sm lg:leading-relaxed ${pkg.featured ? "text-black/60" : "text-black/50"}`}>
           {pkg.desc}
@@ -62,10 +65,10 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
           ))}
         </ul>
         <a
-          href="/events#forfragan"
+          href={t.cardCtaHref}
           className="inline-flex cursor-pointer items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-black"
         >
-          Skicka förfrågan →
+          {t.cardCta}
         </a>
       </div>
     </article>
@@ -77,7 +80,7 @@ function EventCard({ pkg }: { pkg: EventPkg }) {
  * inga halvklippta grannkort, funkar utan JavaScript. Dots synkas via
  * onScroll. DESKTOP: oförändrad statisk 3-up-grid.
  * -------------------------------------------------------------------- */
-export default function EventCarousel({ packages }: { packages: EventPkg[] }) {
+export default function EventCarousel({ packages, locale = "sv" }: { packages: EventPkg[]; locale?: Locale }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -111,7 +114,7 @@ export default function EventCarousel({ packages }: { packages: EventPkg[] }) {
               key={pkg.name}
               className="w-[85%] shrink-0 snap-start"
             >
-              <EventCard pkg={pkg} />
+              <EventCard pkg={pkg} locale={locale} />
             </div>
           ))}
           {/* liten svans så sista kortet kan snappa klart */}
@@ -125,7 +128,7 @@ export default function EventCarousel({ packages }: { packages: EventPkg[] }) {
               key={pkg.name}
               type="button"
               onClick={() => goTo(i)}
-              aria-label={`Visa ${pkg.name}`}
+              aria-label={`${homeDict[locale].events.showAria} ${pkg.name}`}
               aria-current={active === i}
               className="flex h-11 w-11 cursor-pointer items-center justify-center"
             >
@@ -142,7 +145,7 @@ export default function EventCarousel({ packages }: { packages: EventPkg[] }) {
       {/* DESKTOP — static 3-up grid */}
       <div className="hidden gap-0.5 lg:grid lg:grid-cols-3">
         {packages.map((pkg) => (
-          <EventCard key={pkg.name} pkg={pkg} />
+          <EventCard key={pkg.name} pkg={pkg} locale={locale} />
         ))}
       </div>
     </>
