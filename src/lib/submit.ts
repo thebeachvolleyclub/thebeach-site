@@ -77,13 +77,13 @@ export async function notifyByEmail(s: Submission): Promise<void> {
   });
 }
 
-/** Kvitto till kunden — just nu bara för eventplaneraren. Kräver BREVO_API_KEY.
+/** Kvitto till kunden — för eventplaneraren och privatplaneraren. Kräver BREVO_API_KEY.
  *  s.sprak === "en" ger engelskt kvitto (från /en/events/plan). Radetiketterna är
  *  då engelska, men VÄRDENA är de svenska strängarna ur submissionen (teamets
  *  interna format) — medvetet val, noterat i i18n etapp 2f. */
 export async function receiptByEmail(s: Submission): Promise<void> {
   const key = process.env.BREVO_API_KEY;
-  if (!key || s.form !== "eventplaneraren" || !s.epost) return;
+  if (!key || !["eventplaneraren", "privatplaneraren"].includes(s.form) || !s.epost) return;
   const en = s.sprak === "en";
   const row = (label: string, v?: string) =>
     v ? `<tr><td style="padding:5px 14px 5px 0;color:#8a8a7a;vertical-align:top;white-space:nowrap">${label}</td><td style="padding:5px 0"><strong>${v}</strong></td></tr>` : "";

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { eventsDict } from "@/lib/i18n/events";
@@ -56,13 +57,24 @@ export default function PrivateSection({ locale }: { locale: Locale }) {
               <p className="flex-1 text-sm leading-relaxed text-bone/50">
                 {card.desc}
               </p>
-              {/* CTA — min 44px tap height per WCAG 2.5.8 */}
-              <a
-                href={`#${t.cta.sectionId}`}
-                className="mt-8 inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
-              >
-                {t.privat.cta}
-              </a>
+              {/* CTA — min 44px tap height per WCAG 2.5.8.
+                  Första kortet (privatfest) länkar till privatplaneraren. */}
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+                {i === 0 && (
+                  <Link
+                    href="/events/privat"
+                    className="inline-flex cursor-pointer items-center gap-2 bg-lime px-6 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:bg-lime-bright"
+                  >
+                    {t.privat.plannerCta}
+                  </Link>
+                )}
+                <a
+                  href={`#${t.cta.sectionId}`}
+                  className="inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
+                >
+                  {t.privat.cta}
+                </a>
+              </div>
             </Reveal>
           ))}
         </div>

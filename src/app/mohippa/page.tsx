@@ -13,6 +13,7 @@ export default function MohippaPage() {
     <CorporateLanding
       eyebrow="Möhippa"
       paket="privat"
+      planeraHref="/events/privat"
       title={<>Möhippan hon minns<br /><span className="italic-accent">för alltid</span></>}
       intro="En strand, hela gänget och 25 grader — oavsett vad vädret tycker. Beachvolley, bubbel och mat i loungen, allt fixat åt er."
       lead="Möhippan ska överraska. En inomhusstrand mitt i Stockholm — samma sand som OS-guldmedaljörerna tränar på — gör precis det. Vi fixar hela dagen: en turnering med gänget (nivå spelar ingen roll, instruktören löser det), bubbel och mat i loungen och tid att bara vara. Välj ett färdigt koncept — Las Palmas, Algarve eller Miami — så sköter vi resten. Femton minuter från Stockholm C, lika magiskt i februari som i juni."

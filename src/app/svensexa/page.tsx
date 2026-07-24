@@ -13,6 +13,7 @@ export default function SvensexaPage() {
     <CorporateLanding
       eyebrow="Svensexa"
       paket="privat"
+      planeraHref="/events/privat"
       title={<>Svensexan med<br /><span className="italic-accent">sand mellan tårna</span></>}
       intro="Samla gänget på en strand — oavsett årstid. Beachvolleyturnering, mat och dryck och en kväll brudgummen aldrig glömmer."
       lead="En svensexa ska vara något han inte väntar sig. En inomhusstrand i 25 grader — där OS-guldmedaljörerna tränar — brukar göra jobbet. Vi fixar hela dagen åt er: turnering med instruktör (ingen behöver ha spelat förut), mat och dryck i loungen och tid att bara hänga. Välj ett färdigt koncept — Las Palmas, Algarve eller Miami — så sköter vi resten. 15 minuter från Stockholm C, lika bra i november som i juni."

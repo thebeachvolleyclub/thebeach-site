@@ -21,6 +21,7 @@ export default function CorporateLanding({
   faqs,
   paket,
   locale = "sv",
+  planeraHref,
 }: {
   eyebrow: string;
   title: React.ReactNode;
@@ -31,6 +32,8 @@ export default function CorporateLanding({
   faqs: Faq[];
   paket?: string;
   locale?: Locale;
+  /** Vart "Planera ert event"-knappen pekar — svensexa/möhippa skickar /events/privat. */
+  planeraHref?: string;
 }) {
   const ui = corporateUi[locale];
 
@@ -133,7 +136,7 @@ export default function CorporateLanding({
             </Reveal>
             <Reveal delay={0.06} className="shrink-0">
               <div className="flex flex-wrap items-center gap-3">
-                <Link href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
+                <Link href={planeraHref ?? (locale === "en" ? "/en/events/plan" : "/events/planera")} className="inline-flex cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
                   {ui.plan} <span aria-hidden="true">→</span>
                 </Link>
                 <Link href={forfraganHref} className="inline-flex cursor-pointer items-center gap-2 border border-black/25 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:border-black">

@@ -83,6 +83,8 @@ export interface EventsDict {
     lead: string;
     cards: { title: string; desc: string }[];
     cta: string;
+    /** CTA till privatplaneraren (/events/privat) — sv-sida även från engelska. */
+    plannerCta: string;
   };
   cta: {
     /** Ankar-id för förfrågningssektionen — "forfragan" (sv) / "request" (en).
@@ -331,6 +333,7 @@ export const eventsDict: Dict<EventsDict> = {
         },
       ],
       cta: "Be om offert →",
+      plannerCta: "Planera er fest →",
     },
     cta: {
       sectionId: "forfragan",
@@ -581,6 +584,7 @@ export const eventsDict: Dict<EventsDict> = {
         },
       ],
       cta: "Request a quote →",
+      plannerCta: "Plan your party →",
     },
     cta: {
       sectionId: "request",
