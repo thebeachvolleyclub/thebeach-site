@@ -18,7 +18,7 @@ export default function Story({ locale = "sv" }: { locale?: Locale }) {
         </span>
         <h2 className="mb-6 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
           {t.title1}
-          <br />
+          {" "}<br />
           {t.title2}
         </h2>
 
@@ -99,9 +99,9 @@ export default function Story({ locale = "sv" }: { locale?: Locale }) {
           </div>
           <div className="absolute -right-3 -top-3 flex h-24 w-24 items-center justify-center bg-black text-center font-display text-[11px] uppercase leading-tight tracking-[0.08em] text-lime">
             {t.cornerBadge[0]}
-            <br />
+            {" "}<br />
             {t.cornerBadge[1]}
-            <br />
+            {" "}<br />
             {t.cornerBadge[2]}
           </div>
         </div>

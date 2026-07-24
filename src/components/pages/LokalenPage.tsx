@@ -46,7 +46,7 @@ export default function LokalenPage({ locale }: { locale: Locale }) {
               <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-lime">{t.hero.eyebrow}</p>
               <h1 className="mb-5 max-w-3xl font-display text-[clamp(2.5rem,11vw,5.5rem)] uppercase leading-[0.88] tracking-[-0.02em] text-white">
                 {t.hero.titleTop}
-                <br />
+                {" "}<br />
                 <span className="italic-accent">{t.hero.titleAccent}</span>
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-white lg:text-[1.0625rem]">

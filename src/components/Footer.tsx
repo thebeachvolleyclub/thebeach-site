@@ -102,11 +102,22 @@ export default function Footer({ locale = "sv" }: { locale?: "sv" | "en" }) {
           </p>
           <p className="mt-4 text-[13px] leading-[1.65] text-white/25">
             Novavägen 35
-            <br />
+            {" "}<br />
             141 44 Huddinge
-            <br />
-            <br />
-            boka@thebeach.one
+            {" "}<br />
+            {" "}<br />
+            <a href="mailto:boka@thebeach.one" className="transition-colors hover:text-lime">boka@thebeach.one</a>
+            {" "}<br />
+            <a href="tel:+46704322028" className="transition-colors hover:text-lime">070-432 20 28</a>
+          </p>
+          <p className="mt-4 text-[13px] leading-[1.65] text-white/25">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/25">
+              {locale === "en" ? "Opening hours" : "Öppettider"}
+            </span>
+            {" "}<br />
+            {locale === "en" ? "Mon–Thu 09–22 · Fri 09–20:30" : "Mån–tors 09–22 · Fre 09–20:30"}
+            {" "}<br />
+            {locale === "en" ? "Sat 09–18 · Sun 09–22" : "Lör 09–18 · Sön 09–22"}
           </p>
         </div>
 

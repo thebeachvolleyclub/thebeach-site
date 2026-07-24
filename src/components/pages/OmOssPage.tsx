@@ -14,7 +14,7 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
       <main className="flex-1">
         <PageHero
           eyebrow={t.hero.eyebrow}
-          title={<>{t.hero.titleTop}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
+          title={<>{t.hero.titleTop}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
           cta={
             <a
@@ -54,7 +54,7 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
           <Reveal className="mb-10 lg:mb-14">
             <p className="eyebrow mb-4">{t.team.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              {t.team.title1}<br />{t.team.title2}
+              {t.team.title1}{" "}<br />{t.team.title2}
             </h2>
           </Reveal>
           <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -86,7 +86,7 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
                 {t.hitta.eyebrow}
               </p>
               <h2 className="mb-5 font-display text-[clamp(2.25rem,9vw,3.5rem)] leading-[0.9] text-black">
-                {t.hitta.title1}<br />{t.hitta.title2}
+                {t.hitta.title1}{" "}<br />{t.hitta.title2}
               </h2>
               <p className="mb-6 max-w-md text-[15px] leading-relaxed text-black/60">
                 {t.hitta.text}

@@ -26,7 +26,7 @@ export default function AvanmalanPage() {
       <main className="flex-1">
         <PageHero
           eyebrow="Träningsgrupper"
-          title={<>Avanmälan<br /><span className="italic-accent">& villkor</span></>}
+          title={<>Avanmälan{" "}<br /><span className="italic-accent">& villkor</span></>}
           intro="Så fungerar betalning och avanmälan för våra träningsgrupper — och varför reglerna ser ut som de gör."
           minH="min-h-[46svh]"
         />

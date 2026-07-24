@@ -16,7 +16,7 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
       <main className="flex-1">
         <PageHero
           eyebrow={t.hero.eyebrow}
-          title={<>{t.hero.title1}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
+          title={<>{t.hero.title1}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
           cta={
             <a href={MATCHI} target="_blank" rel="noopener noreferrer"
@@ -31,7 +31,7 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
             <Reveal>
               <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">{t.medlem.eyebrow}</p>
               <h2 className="mb-5 font-display text-[clamp(2.25rem,9vw,3.5rem)] leading-[0.9] text-black">
-                {t.medlem.title1}<br />{t.medlem.title2}
+                {t.medlem.title1}{" "}<br />{t.medlem.title2}
               </h2>
               <p className="mb-6 max-w-md text-[15px] leading-relaxed text-black/55">{t.medlem.intro}</p>
               <div className="flex flex-wrap gap-3">
@@ -63,7 +63,7 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
           <Reveal className="mb-10 lg:mb-14">
             <p className="eyebrow mb-4">{t.tavla.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              {t.tavla.title1}<br />{t.tavla.title2}
+              {t.tavla.title1}{" "}<br />{t.tavla.title2}
             </h2>
           </Reveal>
 
@@ -107,7 +107,7 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
             <Reveal>
               <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/50">{t.ungdom.eyebrow}</p>
               <h2 className="mb-4 font-display text-[clamp(2rem,8vw,3rem)] leading-[0.9] text-black">
-                {t.ungdom.title1}<br />{t.ungdom.title2}
+                {t.ungdom.title1}{" "}<br />{t.ungdom.title2}
               </h2>
               <p className="mb-5 max-w-md text-[15px] leading-relaxed text-black/60">{t.ungdom.body}</p>
               <a href="https://www.svenskalag.se/thebeach" target="_blank" rel="noopener noreferrer"

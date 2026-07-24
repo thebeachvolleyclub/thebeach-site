@@ -14,7 +14,7 @@ export default function Training({ locale = "sv" }: { locale?: Locale }) {
         </span>
         <h2 className="mb-10 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:mb-16 lg:text-[clamp(3rem,5.5vw,5rem)]">
           {t.title1}
-          <br />
+          {" "}<br />
           {t.title2}
         </h2>
       </Reveal>
@@ -50,7 +50,7 @@ export default function Training({ locale = "sv" }: { locale?: Locale }) {
               </div>
               <div className="mb-5 flex-1 text-[13px] leading-relaxed text-black/45">
                 {c.when}
-                <br />
+                {" "}<br />
                 {c.desc}
               </div>
               <span

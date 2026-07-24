@@ -16,7 +16,7 @@ export default function ForetagseventEnPage() {
     <CorporateLanding
       locale="en"
       eyebrow={t.eyebrow}
-      title={<>{t.titleTop}<br /><span className="italic-accent">{t.titleAccent}</span></>}
+      title={<>{t.titleTop}{" "}<br /><span className="italic-accent">{t.titleAccent}</span></>}
       intro={t.intro}
       lead={t.lead}
       included={t.included}

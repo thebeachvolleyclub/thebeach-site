@@ -18,7 +18,7 @@ export default function TranaCTA({ locale }: { locale: Locale }) {
           </p>
           <h2 className="mb-6 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
             {t.title1}
-            <br />
+            {" "}<br />
             <span className="italic-accent !text-black/70">{t.titleAccent}</span>
           </h2>
           <p className="mb-10 max-w-md text-sm leading-relaxed text-black/60">

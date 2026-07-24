@@ -15,7 +15,7 @@ export default function CTASection() {
               <p className="eyebrow mb-5">Redo för sanden?</p>
               <h2 className="text-4xl text-bone sm:text-6xl">
                 Boka en bana — eller
-                <br />
+                {" "}<br />
                 <span className="italic-accent text-brass">hela stranden.</span>
               </h2>
               <p className="mt-6 text-lg font-light text-bone/70">

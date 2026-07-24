@@ -14,7 +14,7 @@ export default function SkolaPage({ locale }: { locale: Locale }) {
       <main className="flex-1">
         <PageHero
           eyebrow={t.hero.eyebrow}
-          title={<>{t.hero.titleTop}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
+          title={<>{t.hero.titleTop}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
           cta={
             <a
@@ -32,7 +32,7 @@ export default function SkolaPage({ locale }: { locale: Locale }) {
               {t.ingar.eyebrow}
             </p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-              {t.ingar.title1}<br />{t.ingar.title2}
+              {t.ingar.title1}{" "}<br />{t.ingar.title2}
             </h2>
           </Reveal>
           <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -78,7 +78,7 @@ export default function SkolaPage({ locale }: { locale: Locale }) {
                 {t.forfragan.eyebrow}
               </p>
               <h2 className="mb-5 font-display text-[clamp(2.25rem,9vw,3.5rem)] leading-[0.9] text-black lg:text-[clamp(2.75rem,4.5vw,4.5rem)]">
-                {t.forfragan.title1}<br />{t.forfragan.title2}
+                {t.forfragan.title1}{" "}<br />{t.forfragan.title2}
               </h2>
               <p className="max-w-md text-[15px] leading-relaxed text-black/60">{t.forfragan.intro}</p>
             </Reveal>

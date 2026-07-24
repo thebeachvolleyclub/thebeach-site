@@ -9,6 +9,22 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["staging.thebeach.one"],
   // Gamla WordPress-adresser (thebeach.se) 301:as path-bevarande hit av
   // Loopia — mappa dem till rätt nya sidor så länkkraften inte dör i 404.
+  // Säkerhetsheaders (granskningsfynd #19). Full CSP medvetet utelämnad —
+  // GTM/inline-scripts kräver noggrann nonce-setup; tas separat med Henric.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {

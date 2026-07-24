@@ -102,9 +102,9 @@ export default function Hero({ locale = "sv" }: { locale?: Locale }) {
           className="font-display text-[clamp(3.5rem,13vw,9.5rem)] leading-[0.88] text-white"
         >
           {t.titleTop}
-          <br />
+          {" "}<br />
           <span className="text-lime">{t.titleAccent}</span>
-          <br />
+          {" "}<br />
           {t.titleBottom}
         </motion.h1>
 

@@ -125,10 +125,41 @@ export const MONTHS: Month[] = [
   },
 ];
 
+
+/** Svensk månad → index. Används för att filtrera bort passerade händelser. */
+const MONTH_IDX: Record<string, number> = {
+  januari: 0, februari: 1, mars: 2, april: 3, maj: 4, juni: 5,
+  juli: 6, augusti: 7, september: 8, oktober: 9, november: 10, december: 11,
+};
+
+/** Slutdatum för en händelse (sista siffran i day, t.ex. "4–6" → 6). */
+export function evEnd(month: string, ev: Ev): Date | null {
+  const parts = month.trim().toLowerCase().split(/\s+/);
+  const idx = MONTH_IDX[parts[0]];
+  const year = parseInt(parts[1] ?? "", 10);
+  if (idx === undefined || !year) return null;
+  const nums = ev.day.match(/\d+/g);
+  if (!nums) return null;
+  return new Date(year, idx, parseInt(nums[nums.length - 1], 10), 23, 59, 59);
+}
+
+/** Ta bort passerade händelser (och tomma månader). Okänt datum behålls. */
+export function pruneExpired(months: Month[], now: Date = new Date()): Month[] {
+  return months
+    .map((m) => ({
+      ...m,
+      events: m.events.filter((ev) => {
+        const end = evEnd(m.month, ev);
+        return !end || end >= now;
+      }),
+    }))
+    .filter((m) => m.events.length > 0);
+}
+
 /** De N närmaste händelserna, för startsidan. */
 export function upcoming(n: number): { month: string; ev: Ev }[] {
   const out: { month: string; ev: Ev }[] = [];
-  for (const m of MONTHS)
+  for (const m of pruneExpired(MONTHS))
     for (const ev of m.events) {
       if (out.length < n) out.push({ month: m.month, ev });
     }

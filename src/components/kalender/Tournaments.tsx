@@ -40,7 +40,7 @@ export default function Tournaments({ locale }: { locale: Locale }) {
               <p className="eyebrow mb-4">{t.eyebrow}</p>
               <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
                 {t.title1}
-                <br />
+                {" "}<br />
                 <span className="italic-accent">{t.titleAccent}</span>
               </h2>
             </div>

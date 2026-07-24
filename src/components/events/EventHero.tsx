@@ -72,7 +72,7 @@ export default function EventHero({ locale }: { locale: Locale }) {
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
           {t.hero.titleTop}
-          <br />
+          {" "}<br />
           {t.hero.titleMid}{" "}
           <span className="italic-accent">{t.hero.titleAccent}</span>
         </motion.h1>

@@ -14,7 +14,7 @@ export default function BarnkalasPage({ locale }: { locale: Locale }) {
       <main className="flex-1">
         <PageHero
           eyebrow={t.hero.eyebrow}
-          title={<>{t.hero.titleTop}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
+          title={<>{t.hero.titleTop}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
           cta={
             <Link

@@ -268,7 +268,7 @@ export default function PrivatPlanner() {
                             <span className="font-bold text-lime">{fmt(Ti.price)}</span> kr/p ink moms
                           </span>
                           <span className="mt-2 block text-xs leading-relaxed text-white/40">
-                            {TIERMETA[k].meta2}<br />{TIERMETA[k].meta1}
+                            {TIERMETA[k].meta2}{" "}<br />{TIERMETA[k].meta1}
                           </span>
                         </button>
                       );

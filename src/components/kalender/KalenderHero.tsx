@@ -72,7 +72,7 @@ export default function KalenderHero({ locale }: { locale: Locale }) {
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
           {t.title1}
-          <br />
+          {" "}<br />
           {t.title2}<span className="italic-accent">{t.titleAccent}</span>
         </motion.h1>
 

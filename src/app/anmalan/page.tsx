@@ -23,7 +23,7 @@ export default function AnmalanPage() {
       <main className="flex-1">
         <PageHero
           eyebrow="Träningsgrupper"
-          title={<>Anmälan<br /><span className="italic-accent">— träningsgrupper</span></>}
+          title={<>Anmälan{" "}<br /><span className="italic-accent">— träningsgrupper</span></>}
           intro="Välj dina dagar och tider, berätta om dig som spelare och lämna önskemål. Placeringen utgår främst från din nivå."
           minH="min-h-[46svh]"
         />

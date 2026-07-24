@@ -35,7 +35,7 @@ export default function OmBeachvolleyPage() {
         <PageHero
           minH="min-h-[56svh]"
           eyebrow="Om beachvolley"
-          title={<>Sporten där det<br /><span className="italic-accent">alltid är sommar</span></>}
+          title={<>Sporten där det{" "}<br /><span className="italic-accent">alltid är sommar</span></>}
           intro="Olympisk sport sedan 1996, född i Kaliforniens surfkultur och älskad i Sverige — inomhus och utomhus, året runt. Här är historien och vägen in."
           cta={
             <Link
@@ -57,7 +57,7 @@ export default function OmBeachvolleyPage() {
             <Reveal delay={0.08}>
               <p className="eyebrow mb-4">Sporten</p>
               <h2 className="mb-5 font-display text-[clamp(2rem,8vw,3.25rem)] leading-[0.9] text-bone">
-                Två spelare.<br />En boll. Sand.
+                Två spelare.{" "}<br />En boll. Sand.
               </h2>
               <p className="mb-4 max-w-md text-[15px] leading-relaxed text-bone/55">
                 Beachvolley spelas två mot två — varje spelare rör vid bollen,
@@ -79,7 +79,7 @@ export default function OmBeachvolleyPage() {
           <Reveal className="mb-10 lg:mb-14">
             <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">Historien</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-              Från surfstränder<br />till OS-guld
+              Från surfstränder{" "}<br />till OS-guld
             </h2>
           </Reveal>
           <div className="mx-auto max-w-3xl">

@@ -12,6 +12,7 @@ const LINKS_SV = [
   { label: "Boka bana", href: "/boka", ext: false },
   { label: "Boka event", href: "/events", ext: false },
   { label: "Träna", href: "/trana", ext: false },
+  { label: "Skola", href: "/skola", ext: false },
   { label: "Kalender", href: "/kalender", ext: false },
   { label: "Lokalen", href: "/lokalen", ext: false },
   { label: "Om oss", href: "/om-oss", ext: false },

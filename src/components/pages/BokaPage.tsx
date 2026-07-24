@@ -12,7 +12,7 @@ export default function BokaPage({ locale }: { locale: Locale }) {
   return <>
     <Navbar locale={locale} />
     <main className="flex-1">
-      <PageHero minH="min-h-[52svh]" eyebrow={t.hero.eyebrow} title={<>{t.hero.titleTop}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>} intro={t.hero.intro} cta={<a href="#bokning" className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">{t.hero.cta} <span aria-hidden="true">↓</span></a>} />
+      <PageHero minH="min-h-[52svh]" eyebrow={t.hero.eyebrow} title={<>{t.hero.titleTop}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>} intro={t.hero.intro} cta={<a href="#bokning" className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">{t.hero.cta} <span aria-hidden="true">↓</span></a>} />
 
       <section id="bokning" className="scroll-mt-8 bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
         <Reveal className="mb-9 border-b border-black/10 pb-8 text-black lg:mb-12">

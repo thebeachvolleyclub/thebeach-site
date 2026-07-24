@@ -29,7 +29,7 @@ export default function FaqPage({ locale }: { locale: Locale }) {
         <PageHero
           minH="min-h-[46svh]"
           eyebrow={t.hero.eyebrow}
-          title={<>{t.hero.titleTop}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
+          title={<>{t.hero.titleTop}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
         />
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-24">

@@ -85,7 +85,7 @@ export default function Membership({ locale }: { locale: Locale }) {
             </p>
             <h3 className="mb-4 font-display text-3xl uppercase leading-none text-black">
               {t.panel.title1}
-              <br />
+              {" "}<br />
               {t.panel.title2}
             </h3>
             <p className="mb-8 text-sm leading-relaxed text-black/55">

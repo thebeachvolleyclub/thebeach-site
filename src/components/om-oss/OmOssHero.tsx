@@ -69,7 +69,7 @@ export default function OmOssHero() {
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
           EN PLATS DÄR
-          <br />
+          {" "}<br />
           DET ALLTID ÄR{" "}
           <span className="italic-accent">sommar</span>
         </motion.h1>

@@ -20,7 +20,7 @@ export default function BeachTravelsPage() {
         <PageHero
           minH="min-h-[52svh]"
           eyebrow="BeachTravels · dotterbolag"
-          title={<>Träna där andra<br /><span className="italic-accent">semestrar</span></>}
+          title={<>Träna där andra{" "}<br /><span className="italic-accent">semestrar</span></>}
           intro="BeachTravels har arrangerat träningsresor sedan 2011 — läger på världens finaste stränder, ledda av coacher ur svenska landslagsmiljön. Samma filosofi som på The Beach, fast med havet bredvid."
           cta={
             <a

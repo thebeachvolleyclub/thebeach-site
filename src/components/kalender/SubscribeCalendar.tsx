@@ -28,7 +28,7 @@ export default function SubscribeCalendar() {
             <p className="eyebrow mb-4">Missa inget</p>
             <h2 className="mb-5 font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
               Prenumerera på
-              <br />
+              {" "}<br />
               <span className="italic-accent">kalendern</span>
             </h2>
             <p className="mb-7 max-w-md text-[0.95rem] leading-relaxed text-bone/50">

@@ -83,7 +83,7 @@ export default function AppSection({ locale = "sv" }: { locale?: Locale }) {
         </span>
         <h2 className="mb-4 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
           {t.head[0]}
-          <br />
+          {" "}<br />
           {t.head[1]}
         </h2>
         <p className="mb-8 max-w-md text-[15px] leading-[1.7] text-black/60 lg:text-[17px]">

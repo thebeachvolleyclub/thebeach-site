@@ -72,7 +72,7 @@ export default function TranaHero({ locale }: { locale: Locale }) {
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
           {t.title1}
-          <br />
+          {" "}<br />
           <span className="italic-accent">{t.titleAccent}</span>
         </motion.h1>
 

@@ -26,7 +26,7 @@ export default function EventForm({ locale = "sv" }: { locale?: Locale }) {
         </span>
         <h2 className="mb-2 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-white lg:text-[clamp(3rem,5.5vw,5rem)]">
           {t.title1}
-          <br />
+          {" "}<br />
           {t.title2}
         </h2>
         <p className="mb-9 max-w-md text-sm leading-relaxed text-white/40">

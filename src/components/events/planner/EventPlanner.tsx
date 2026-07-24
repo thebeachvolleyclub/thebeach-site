@@ -232,7 +232,7 @@ export default function EventPlanner({ initialTier, locale = "sv" }: { initialTi
                             {s.when === "day" && <s className="mr-1.5 text-white/30">{fmt(Ti.eve)}</s>}
                             <span className="font-bold text-lime">{fmt(price)}</span> {T.step0.perP}
                           </span>
-                          <span className="mt-2 block text-xs leading-relaxed text-white/40">{meta2}<br />{tm.meta1}</span>
+                          <span className="mt-2 block text-xs leading-relaxed text-white/40">{meta2}{" "}<br />{tm.meta1}</span>
                         </button>
                       );
                     })}

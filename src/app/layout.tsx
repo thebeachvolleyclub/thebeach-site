@@ -1,3 +1,4 @@
+import LocaleHtmlLang from "@/components/LocaleHtmlLang";
 import type { Metadata } from "next";
 import { Titillium_Web } from "next/font/google";
 import localFont from "next/font/local";
@@ -108,6 +109,7 @@ try{if(localStorage.getItem('cookie_consent')==='granted'){gtag('consent','updat
         </Script>
       </head>
       <body className="min-h-full flex flex-col bg-black text-bone">
+        <LocaleHtmlLang />
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

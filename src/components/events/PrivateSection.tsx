@@ -34,7 +34,7 @@ export default function PrivateSection({ locale }: { locale: Locale }) {
             <p className="eyebrow mb-4">{t.privat.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
               {t.privat.titleTop}
-              <br />
+              {" "}<br />
               <span className="italic-accent">{t.privat.titleAccent}</span>
             </h2>
           </div>

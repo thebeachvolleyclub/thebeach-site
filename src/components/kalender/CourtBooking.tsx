@@ -25,7 +25,7 @@ export default function CourtBooking({ locale }: { locale: Locale }) {
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
             {t.title1}
-            <br />
+            {" "}<br />
             {t.title2}
           </h2>
         </div>

@@ -18,7 +18,7 @@ export default function AndringsanmalanPage() {
       <main className="flex-1">
         <PageHero
           eyebrow="Träningsgrupper"
-          title={<>Byta grupp<br /><span className="italic-accent">— ändringsanmälan</span></>}
+          title={<>Byta grupp{" "}<br /><span className="italic-accent">— ändringsanmälan</span></>}
           intro="Ändrade förutsättningar, eller känns gruppen fel? Så går du vidare."
           minH="min-h-[46svh]"
         />

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
-import { type Ev } from "@/lib/kalender";
+import { type Ev, pruneExpired } from "@/lib/kalender";
 import { getMergedMonths } from "@/lib/profixio";
 import type { Locale } from "@/lib/i18n";
 import { kalenderDict } from "@/lib/i18n/kalender";
@@ -27,7 +27,7 @@ const TONE: Record<NonNullable<Ev["badgeTone"]>, string> = {
 
 export default async function UpcomingEvents({ locale }: { locale: Locale }) {
   const t = kalenderDict[locale].upcoming;
-  const MONTHS = await getMergedMonths();
+  const MONTHS = pruneExpired(await getMergedMonths());
   return (
     <section
       id="kommande"
@@ -41,7 +41,7 @@ export default async function UpcomingEvents({ locale }: { locale: Locale }) {
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
             {t.title1}
-            <br />
+            {" "}<br />
             {t.title2}
           </h2>
         </div>

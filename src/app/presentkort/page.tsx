@@ -25,7 +25,7 @@ export default function PresentkortPage() {
         <PageHero
           minH="min-h-[52svh]"
           eyebrow="Presentkort"
-          title={<>Ge bort<br /><span className="italic-accent">sommar</span></>}
+          title={<>Ge bort{" "}<br /><span className="italic-accent">sommar</span></>}
           intro="Bästa presenten till någon som gillar beachvolley — eller borde börja. Grundkurs, träning, banhyra eller PT: mottagaren väljer själv. Valfritt belopp från 700 kr."
           cta={
             <a
