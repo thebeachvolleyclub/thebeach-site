@@ -415,7 +415,7 @@ export const plannerDict: Dict<PlannerDict> = {
         noteParty:
           "DJ, eldshow och liveband hör till helkvällsformatet med exklusiv arena (fredag & lördag). När arenan delas lever den runt ert event, och middagen i loungen är en del av charmen. Vill ni ta över hela arenan en vardag? Skriv det i meddelandet så återkommer vi med offert.",
         musicLegend: "Musik & show",
-        dj: { title: "DJ", sub: "Normalt ingår 22–00 eller 22–01", price: "från 5 000 kr" },
+        dj: { title: "DJ", sub: "Normalt ingår 22–00 eller 22–01", price: "från 6 000 kr" },
         eld: { title: "Eldshow", sub: "Efter middagen — bryggan till dansgolvet", price: "från 8 000 kr" },
         band: { title: "Liveband", sub: "Vi bokar rätt band för er kväll", price: "enligt offert" },
         trubadur: {
@@ -732,7 +732,7 @@ export const plannerDict: Dict<PlannerDict> = {
         noteParty:
           "DJ, fire show and live band belong to the full-evening format with exclusive arena (Friday & Saturday). When the arena is shared it's alive around your event, and dinner in the lounge is part of the charm. Want to take over the whole arena on a weekday? Mention it in your message and we'll come back with a quote.",
         musicLegend: "Music & show",
-        dj: { title: "DJ", sub: "Typically included 22–00 or 22–01", price: "from 5 000 kr" },
+        dj: { title: "DJ", sub: "Typically included 22–00 or 22–01", price: "from 6 000 kr" },
         eld: {
           title: "Fire show",
           sub: "After dinner — the bridge to the dance floor",

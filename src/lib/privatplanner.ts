@@ -91,8 +91,8 @@ export const TIERS: Record<TierKey, { name: string; price: number; units: number
 
 export const WELCOME: Record<WelcomeKey, { lbl: string; lblNA?: string; pp: number }> = {
   cava: { lbl: "Cava vid ankomst", lblNA: "Alkoholfritt bubbel vid ankomst", pp: 79 },
-  aperol: { lbl: "Aperol Spritz vid ankomst", pp: 96 },
-  other: { lbl: "Välkomstdrink 4 cl", lblNA: "Välkomstmocktail", pp: 96 },
+  aperol: { lbl: "Aperol Spritz vid ankomst", pp: 120 },
+  other: { lbl: "Välkomstdrink 4 cl", lblNA: "Välkomstmocktail", pp: 120 },
 };
 
 export const NOALC_UNIT_DISCOUNT = 40; // avdrag per dryckesenhet vid alkoholfritt (ink moms)
@@ -106,7 +106,7 @@ export const PRICES = {
   dessert: 75,
   kaffe: 30,
   godis: 45,
-  dj: 5000, // från
+  dj: 6000, // från
   eld: 8000, // från
   scen: 10000, // från
   foto: 10000, // från

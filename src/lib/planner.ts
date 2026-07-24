@@ -106,7 +106,7 @@ export const PRICES = {
   kaffe: 30,
   godis: 45,
   konf: 395,
-  dj: 5000, // från
+  dj: 6000, // från
   eld: 8000, // från
   scen: 10000, // från
   foto: 10000, // från

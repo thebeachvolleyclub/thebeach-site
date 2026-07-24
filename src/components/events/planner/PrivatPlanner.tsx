@@ -326,27 +326,20 @@ export default function PrivatPlanner() {
                           sub="Ett glas bubbel vid ankomst" price="79 kr/p"
                           onClick={() => up({ welcome: s.welcome === "cava" ? null : "cava" })} />
                         <Addon sel={s.welcome === "aperol"} title="Aperol Spritz vid ankomst"
-                          sub="Sommarklassikern — direkt semesterkänsla" price="96 kr/p"
+                          sub="Sommarklassikern — direkt semesterkänsla" price="120 kr/p"
                           onClick={() => up({ welcome: s.welcome === "aperol" ? null : "aperol" })} />
                         <Addon sel={s.welcome === "other"} title="Välkomstdrink 4 cl"
-                          sub="Valfri enkel drink — vi föreslår i offerten" price="96 kr/p"
+                          sub="Valfri enkel drink — vi föreslår i offerten" price="120 kr/p"
                           onClick={() => up({ welcome: s.welcome === "other" ? null : "other" })} />
                       </>
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className={`${labelCls} mb-3`}>Extra dryckesenheter (förköpta)</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Stepper value={s.units} onChange={(units) => up({ units })} min={0} max={6} />
-                    <span className="text-xs text-white/40">à {s.policy === "none" ? "39" : "79"} kr/person ink moms — utöver det som ingår i konceptet</span>
-                  </div>
-                </div>
-                <div>
                   <p className={`${labelCls} mb-3`}>När paketets enheter är slut</p>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {(["guests", "invoice", "card", "pre"] as BarMode[]).map((k) => (
-                      <button key={k} type="button" className={cardCls(s.bar === k)} onClick={() => up({ bar: k })}>
+                      <button key={k} type="button" className={cardCls(s.bar === k)} onClick={() => up({ bar: k, units: k === "invoice" || k === "card" ? 0 : s.units })}>
                         {k === "guests" && <Badge>Standard</Badge>}
                         <span className="block text-sm font-bold text-white">{BARMODES[k].title}</span>
                         <span className="mt-1 block text-xs leading-relaxed text-white/40">{BARMODES[k].desc}</span>
@@ -354,6 +347,15 @@ export default function PrivatPlanner() {
                     ))}
                   </div>
                 </div>
+                {(s.bar === "guests" || s.bar === "pre") && (
+                  <div>
+                    <p className={`${labelCls} mb-3`}>Extra dryckesenheter (förköpta)</p>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <Stepper value={s.units} onChange={(units) => up({ units })} min={0} max={6} />
+                      <span className="text-xs text-white/40">à {s.policy === "none" ? "39" : "79"} kr/person ink moms — utöver det som ingår i konceptet</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -399,7 +401,7 @@ export default function PrivatPlanner() {
                 <div>
                   <p className={`${labelCls} mb-3`}>Musik & show</p>
                   <div className="flex flex-col gap-2.5">
-                    <Addon sel={s.dj} title="DJ" sub="Normalt ingår 22–01" price="från 5 000 kr"
+                    <Addon sel={s.dj} title="DJ" sub="Normalt ingår 22–01" price="från 6 000 kr"
                       onClick={() => up({ dj: !s.dj })} />
                     <Addon sel={s.eld} title="Eldshow" sub="Efter middagen — bryggan till dansgolvet" price="från 8 000 kr"
                       onClick={() => up({ eld: !s.eld })} />

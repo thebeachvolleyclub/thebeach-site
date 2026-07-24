@@ -282,18 +282,10 @@ export default function EventPlanner({ initialTier, locale = "sv" }: { initialTi
                   </div>
                 </div>
                 <div>
-                  <p className={`${labelCls} mb-3`}>{T.step1.unitsLegend}</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Stepper value={s.units} onChange={(units) => up({ units })} min={0} max={6}
-                      dec={T.stepperDec} inc={T.stepperInc} />
-                    <span className="text-xs text-white/40">{T.step1.unitsPre}{s.policy === "none" ? "39" : "79"}{T.step1.unitsPost}</span>
-                  </div>
-                </div>
-                <div>
                   <p className={`${labelCls} mb-3`}>{T.step1.barLegend}</p>
                   <div className="grid gap-3 sm:grid-cols-3">
                     {(["pre", "invoice", "guests"] as BarMode[]).map((k) => (
-                      <button key={k} type="button" className={cardCls(s.bar === k)} onClick={() => up({ bar: k })}>
+                      <button key={k} type="button" className={cardCls(s.bar === k)} onClick={() => up({ bar: k, units: k === "invoice" ? 0 : s.units })}>
                         {k === "invoice" && <Badge>{T.step1.stdBadge}</Badge>}
                         <span className="block text-sm font-bold text-white">{T.step1.barModes[k].title}</span>
                         <span className="mt-1 block text-xs leading-relaxed text-white/40">{T.step1.barModes[k].desc}</span>
@@ -301,6 +293,16 @@ export default function EventPlanner({ initialTier, locale = "sv" }: { initialTi
                     ))}
                   </div>
                 </div>
+                {(s.bar === "guests" || s.bar === "pre") && (
+                  <div>
+                    <p className={`${labelCls} mb-3`}>{T.step1.unitsLegend}</p>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <Stepper value={s.units} onChange={(units) => up({ units })} min={0} max={6}
+                        dec={T.stepperDec} inc={T.stepperInc} />
+                      <span className="text-xs text-white/40">{T.step1.unitsPre}{s.policy === "none" ? "39" : "79"}{T.step1.unitsPost}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
