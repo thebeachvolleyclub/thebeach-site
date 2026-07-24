@@ -27,7 +27,7 @@ const LINKS_EN = [
   { label: "The venue", href: "/en/venue", ext: false },
   { label: "Schools", href: "/en/school", ext: false },
   { label: "About", href: "/en/about", ext: false },
-  { label: "Become a member", href: "/foreningen", ext: false },
+  { label: "Become a member", href: "/en/membership", ext: false },
   { label: "Account", href: "/konto", ext: false },
 ];
 

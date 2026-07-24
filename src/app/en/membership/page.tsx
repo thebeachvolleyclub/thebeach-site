@@ -4,11 +4,11 @@ import { altLang } from "@/lib/i18n";
 import { foreningenDict } from "@/lib/i18n/foreningen";
 
 export const metadata: Metadata = {
-  alternates: altLang("/foreningen", "/en/membership", "sv"),
-  title: foreningenDict.sv.meta.title,
-  description: foreningenDict.sv.meta.description,
+  alternates: altLang("/foreningen", "/en/membership", "en"),
+  title: foreningenDict.en.meta.title,
+  description: foreningenDict.en.meta.description,
 };
 
 export default function Page() {
-  return <ForeningenPage locale="sv" />;
+  return <ForeningenPage locale="en" />;
 }

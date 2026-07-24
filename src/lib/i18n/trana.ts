@@ -522,11 +522,6 @@ export const tranaDict: Dict<TranaDict> = {
       title: "The course ladder",
       lead: "Never played beach volleyball — or want to take your game to the next level? This is your way in.",
       noPriceLabel: "Price given at sign-up",
-      signupNote: {
-        pre: "Good to know: the sign-up flow in MATCHi is in Swedish — email ",
-        email: "boka@thebeach.one",
-        post: " if you need help in English.",
-      },
       items: [
         {
           no: "01",
@@ -708,7 +703,7 @@ export const tranaDict: Dict<TranaDict> = {
       eyebrow: "Next step",
       title1: "Ready to",
       titleAccent: "start?",
-      body: "Sign up directly via MATCHi — courses, training groups and membership in one place. The sign-up flow is in Swedish — email boka@thebeach.one if you need help in English. Questions? Get in touch.",
+      body: "Sign up directly via MATCHi — courses, training groups and membership in one place, available in English. Questions? Get in touch.",
       ctaMatchi: "Sign up via MATCHi",
       ctaContact: "Contact us",
       competePre: "Want to compete? ",

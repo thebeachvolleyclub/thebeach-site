@@ -6,6 +6,7 @@ export const SV_TO_EN: Record<string, string> = {
   "/": "/en",
   "/events": "/en/events",
   "/events/planera": "/en/events/plan",
+  "/foreningen": "/en/membership",
   "/lokalen": "/en/venue",
   "/boka": "/en/book",
   "/trana": "/en/training",
