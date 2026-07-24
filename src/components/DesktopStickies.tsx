@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "./icons";
+import { stickyMode } from "@/lib/stickyMode";
 
 
 /**
@@ -16,6 +17,7 @@ export default function DesktopStickies() {
   const pathname = usePathname() ?? "/";
   const en = pathname === "/en" || pathname.startsWith("/en/");
   const isHome = pathname === "/" || pathname === "/en";
+  const mode = stickyMode(pathname);
 
   const [showBook, setShowBook] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
@@ -74,16 +76,22 @@ export default function DesktopStickies() {
     <>
       {/* Floating "Boka bana" — desktop */}
       <AnimatePresence>
-        {showBook && (
+        {showBook && mode !== "hidden" && (
           <motion.a
-            href={en ? "/en/book" : "/boka"}
+            href={
+              mode === "event"
+                ? en ? "/en/events/plan" : "/events/planera"
+                : en ? "/en/book" : "/boka"
+            }
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 24, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="group fixed bottom-6 right-6 z-40 hidden cursor-pointer items-center gap-2 bg-lime px-6 py-4 text-xs font-bold uppercase tracking-[0.1em] text-black shadow-2xl shadow-black/40 transition-colors hover:bg-lime-bright lg:inline-flex"
           >
-            {en ? "Book a court" : "Boka bana"}
+            {mode === "event"
+              ? en ? "Plan your event" : "Planera ert event"
+              : en ? "Book a court" : "Boka bana"}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </motion.a>
         )}
