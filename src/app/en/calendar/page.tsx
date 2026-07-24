@@ -8,12 +8,12 @@ export const revalidate = 21600;
 
 
 export const metadata: Metadata = {
-  alternates: altLang("/kalender", "/en/calendar", "sv"),
-  title: kalenderDict.sv.meta.title,
-  description: kalenderDict.sv.meta.description,
-  openGraph: { title: kalenderDict.sv.meta.ogTitle, description: kalenderDict.sv.meta.ogDescription, type: "website" },
+  alternates: altLang("/kalender", "/en/calendar", "en"),
+  title: kalenderDict.en.meta.title,
+  description: kalenderDict.en.meta.description,
+  openGraph: { title: kalenderDict.en.meta.ogTitle, description: kalenderDict.en.meta.ogDescription, type: "website" },
 };
 
 export default function Page() {
-  return <KalenderPage locale="sv" />;
+  return <KalenderPage locale="en" />;
 }

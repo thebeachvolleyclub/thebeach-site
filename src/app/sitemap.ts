@@ -15,7 +15,7 @@ const staticPaths = [
   "/events/planera",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
   "/firmafest", "/svensexa", "/mohippa",
-  "/en", "/en/events", "/en/events/plan", "/en/book", "/en/school", "/en/about", "/en/faq",
+  "/en", "/en/events", "/en/events/plan", "/en/book", "/en/training", "/en/calendar", "/en/school", "/en/about", "/en/faq",
   "/en/venue", "/en/christmas-party", "/en/kids-party", "/en/sustainability",
   "/en/conference", "/en/kickoff", "/en/team-building", "/en/corporate-events", "/en/company-party",
 ];

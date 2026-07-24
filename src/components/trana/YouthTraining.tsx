@@ -1,6 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-export default function YouthTraining() {
+export default function YouthTraining({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].youth;
   return (
     <section
       id="ungdom"
@@ -28,18 +31,17 @@ export default function YouthTraining() {
           <div>
             {/* eyebrow override on mint */}
             <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-              3–21 år
+              {t.eyebrow}
             </p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-              Barn &amp;{" "}
+              {t.title1}{" "}
               <span className="text-black/65">
-                ungdom
+                {t.title2}
               </span>
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-black/55 sm:text-right">
-            Framtidens stjärnor organiseras via vår hemmaklubb — ett lågt pris
-            till barn- och ungdomsverksamheten är en del av vår identitet.
+            {t.lead}
           </p>
         </Reveal>
 
@@ -48,43 +50,38 @@ export default function YouthTraining() {
           {/* Quote card */}
           <Reveal className="flex flex-col border border-black/10 bg-white p-7 lg:p-10">
             <blockquote className="flex-1 text-sm leading-relaxed text-black/60">
-              &ldquo;Framtidens stjärnor (3–21 år) organiseras genom vår
-              hemmaklubb. Vi har som ambition att hålla ett lågt pris till barn
-              &amp; ungdomsverksamheten.&rdquo;
+              &ldquo;{t.quote}&rdquo;
             </blockquote>
             <div className="mt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-black/35">
-              The Beach Volley Club
+              {t.attribution}
             </div>
           </Reveal>
 
           {/* Info card */}
           <Reveal delay={0.08} className="flex flex-col border border-black/10 bg-white p-7 lg:p-10">
             <h3 className="mb-4 font-display text-2xl uppercase leading-none text-black">
-              Schema &amp; anmälan
+              {t.infoTitle}
             </h3>
             <p className="mb-5 flex-1 text-sm leading-relaxed text-black/60">
-              Alla scheman och anmälningar sker via Svenska Lag — vår
-              hemmaklubbsplattform. Där hittar du aktuella tider, grupper och
-              kontaktpersoner.
+              {t.infoBody}
             </p>
             <ul className="mb-6 border-t border-black/10">
+              {t.items.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-2 border-b border-black/10 py-2 text-xs leading-snug text-black/55"
+                >
+                  <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">
+                    ↗
+                  </span>
+                  {item}
+                </li>
+              ))}
               <li className="flex items-start gap-2 border-b border-black/10 py-2 text-xs leading-snug text-black/55">
                 <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">
                   ↗
                 </span>
-                Åldrar 3–21 år
-              </li>
-              <li className="flex items-start gap-2 border-b border-black/10 py-2 text-xs leading-snug text-black/55">
-                <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">
-                  ↗
-                </span>
-                Prisvärd — stöds av klubbmedlemmarnas avgifter
-              </li>
-              <li className="flex items-start gap-2 border-b border-black/10 py-2 text-xs leading-snug text-black/55">
-                <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">
-                  ↗
-                </span>
-                Kontakt: Måns Björn —{" "}
+                {t.contactPre}
                 <a
                   href="mailto:mans@thebeach.one"
                   className="underline underline-offset-4 transition-colors hover:text-black/80"
@@ -99,7 +96,7 @@ export default function YouthTraining() {
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
             >
-              Se schema på Svenska Lag <span aria-hidden="true">→</span>
+              {t.cta} <span aria-hidden="true">→</span>
             </a>
           </Reveal>
         </div>

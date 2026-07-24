@@ -1,30 +1,15 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
 /**
  * Seriespel + Turneringar — dark section on bg-black.
  * Evergreen: describes format, not specific dates/prices.
  */
 
-const TOURNAMENT_TYPES = [
-  {
-    tag: "SBT 1-stjärnig",
-    stars: "1",
-    desc: "Nybörjarvänlig rankingklassad tävling i Swedish Beach Tour-systemet. Bra startpunkt för dig som vill prova på tävlingsbeachvolley.",
-  },
-  {
-    tag: "Mixed",
-    stars: null,
-    desc: "Blandat sällskaps- och klubbturnament. Kul format för alla nivåer — du behöver inte vara en rankad spelare.",
-  },
-  {
-    tag: "U19",
-    stars: null,
-    desc: "Juniorturnering för spelare under 19 år. Bra scen att ta sina första tävlingssteg på.",
-  },
-];
-
-export default function Tournaments() {
+export default function Tournaments({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].tournaments;
   return (
     <section
       id="turneringar"
@@ -52,17 +37,15 @@ export default function Tournaments() {
         <Reveal className="mb-10 border-b border-white/10 pb-10 lg:mb-14 lg:pb-14">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="eyebrow mb-4">Tävling</p>
+              <p className="eyebrow mb-4">{t.eyebrow}</p>
               <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-                Seriespel &amp;
+                {t.title1}
                 <br />
-                <span className="italic-accent">turneringar</span>
+                <span className="italic-accent">{t.titleAccent}</span>
               </h2>
             </div>
             <blockquote className="max-w-sm border-l-2 border-lime/40 pl-5 text-sm italic leading-relaxed text-bone/45 sm:border-l-0 sm:border-r-2 sm:pl-0 sm:pr-5 sm:text-right">
-              "Oavsett om det är din första turnering eller om du jagar
-              rankingpoäng till de stora scenerna är vårt mål att du ska få en
-              riktigt bra turneringsupplevelse hos oss."
+              {t.quote}
             </blockquote>
           </div>
         </Reveal>
@@ -72,53 +55,50 @@ export default function Tournaments() {
           <div className="mb-4 border border-line bg-panel p-7 lg:p-9">
             <div className="mb-3 flex items-center gap-3">
               <span className="bg-orange px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white">
-                Seriespel
+                {t.band.badge}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-bone/30">
-                Återkommande
+                {t.band.recurring}
               </span>
             </div>
             <h3 className="mb-3 font-display text-2xl uppercase leading-[0.95] text-bone lg:text-3xl">
-              Sommarsäsong
+              {t.band.title}
             </h3>
             <p className="mb-5 max-w-lg text-[13px] leading-relaxed text-bone/50 lg:text-sm">
-              Seriespelet körs under sommarsäsongen —
-              strukturerade omgångar med garanterat spel varje kväll. Du spelar
-              mot likvärdiga motståndare och följer tabellen från vecka till
-              vecka.
+              {t.band.body}
             </p>
             <a
               href="#kommande"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
             >
-              Se aktuella omgångar →
+              {t.band.cta}
             </a>
           </div>
         </Reveal>
 
         {/* Tournament type cards */}
         <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-3">
-          {TOURNAMENT_TYPES.map((t, i) => (
+          {t.items.map((item, i) => (
             <Reveal
-              key={t.tag}
+              key={item.tag}
               delay={0.1 + i * 0.07}
               className="flex flex-col border border-line bg-panel p-7 lg:p-8"
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <span className="bg-mint px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-black">
-                  {t.tag}
+                  {item.tag}
                 </span>
-                {t.stars && (
+                {item.stars && (
                   <span
                     className="text-lime"
-                    aria-label={`${t.stars} stjärna`}
+                    aria-label={`${item.stars} ${t.starWord}`}
                   >
-                    {"★".repeat(Number(t.stars))}
+                    {"★".repeat(Number(item.stars))}
                   </span>
                 )}
               </div>
               <p className="flex-1 text-[13px] leading-relaxed text-bone/50">
-                {t.desc}
+                {item.desc}
               </p>
             </Reveal>
           ))}
@@ -134,7 +114,7 @@ export default function Tournaments() {
               className="group flex min-h-[44px] flex-1 cursor-pointer items-center justify-between border border-line bg-panel p-5 transition-colors duration-200 hover:bg-panel-2 lg:px-7"
             >
               <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-bone/70">
-                Turneringskalender på Profixio
+                {t.profixioLabel}
               </span>
               <span
                 className="text-bone/40 transition-transform duration-200 group-hover:translate-x-1"
@@ -150,7 +130,7 @@ export default function Tournaments() {
               className="group flex min-h-[44px] flex-1 cursor-pointer items-center justify-between border border-line bg-panel p-5 transition-colors duration-200 hover:bg-panel-2 lg:px-7"
             >
               <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-bone/70">
-                The Beach TV — matcher, resultat &amp; stream
+                {t.tvLabel}
               </span>
               <span
                 className="text-bone/40 transition-transform duration-200 group-hover:translate-x-1"
@@ -160,11 +140,11 @@ export default function Tournaments() {
               </span>
             </a>
             <Link
-              href="/trana"
+              href={t.licenseHref}
               className="group flex min-h-[44px] flex-1 cursor-pointer items-center justify-between border border-line bg-panel p-5 transition-colors duration-200 hover:bg-panel-2 lg:px-7"
             >
               <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-bone/70">
-                Tävlingslicens — så börjar du tävla
+                {t.licenseLabel}
               </span>
               <span
                 className="text-bone/40 transition-transform duration-200 group-hover:translate-x-1"

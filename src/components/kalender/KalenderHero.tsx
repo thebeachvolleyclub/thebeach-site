@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
-export default function KalenderHero() {
+export default function KalenderHero({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].hero;
   const reduce = useReducedMotion();
 
   const stagger = {
@@ -60,7 +63,7 @@ export default function KalenderHero() {
       >
         {/* Eyebrow — override: .eyebrow hard-codes lime, readable on dark bg here */}
         <motion.p variants={item} className="eyebrow mb-5">
-          Kalender
+          {t.eyebrow}
         </motion.p>
 
         {/* Giant headline */}
@@ -68,9 +71,9 @@ export default function KalenderHero() {
           variants={item}
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
-          Vad händer
+          {t.title1}
           <br />
-          på <span className="italic-accent">The Beach</span>
+          {t.title2}<span className="italic-accent">{t.titleAccent}</span>
         </motion.h1>
 
         {/* Sub-copy + CTA */}
@@ -80,8 +83,7 @@ export default function KalenderHero() {
         >
           <div>
             <p className="max-w-md text-[0.95rem] leading-relaxed text-bone/55">
-              Allt som händer på The Beach — träningsgrupper, seriespel,
-              turneringar och event, året runt.
+              {t.intro}
             </p>
           </div>
 
@@ -91,13 +93,13 @@ export default function KalenderHero() {
               href="#kommande"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Se hela kalendern <span aria-hidden="true">→</span>
+              {t.ctaAll} <span aria-hidden="true">→</span>
             </a>
             <Link
-              href="/trana"
+              href={t.ctaTrainHref}
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
-              Träningsgrupper &amp; kurser
+              {t.ctaTrain}
             </Link>
           </div>
         </motion.div>

@@ -1,19 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-const BENEFITS = [
-  "Lägre banavgifter",
-  "Rabatterade träningspriser (junior)",
-  "Tillgång till exklusiva event och erbjudanden",
-  "Tävlingslicens ingår",
-  "Du stödjer ungdomsverksamheten",
-];
-
-const TIERS = [
-  { label: "Vuxen", price: "350 kr", unit: "/ år" },
-  { label: "Junior", price: "190 kr", unit: "/ år" },
-];
-
-export default function Membership() {
+export default function Membership({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].membership;
   return (
     <section
       id="bli-medlem"
@@ -24,32 +14,31 @@ export default function Membership() {
         <div>
           {/* eyebrow override on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Bli del av klubben
+            {t.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Bli{" "}
+            {t.titlePre}{" "}
             <span className="text-black/55">
-              medlem
+              {t.titleAccent}
             </span>
           </h2>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/50">
-            Stöd ungdomsverksamheten och få rabatter — ett enkelt val om du
-            spelar regelbundet på The Beach.
+            {t.lead}
           </p>
         </div>
 
         {/* Price tier badges */}
         <div className="flex shrink-0 gap-3">
-          {TIERS.map((t) => (
+          {t.tiers.map((tier) => (
             <div
-              key={t.label}
+              key={tier.label}
               className="flex flex-col items-center border border-black/10 bg-white px-6 py-5"
             >
               <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-black/40">
-                {t.label}
+                {tier.label}
               </span>
-              <span className="font-display text-2xl text-black">{t.price}</span>
-              <span className="text-[11px] text-black/40">{t.unit}</span>
+              <span className="font-display text-2xl text-black">{tier.price}</span>
+              <span className="text-[11px] text-black/40">{tier.unit}</span>
             </div>
           ))}
         </div>
@@ -60,10 +49,10 @@ export default function Membership() {
         {/* Benefits list */}
         <Reveal className="border border-black/10 bg-white p-7 lg:p-10">
           <h3 className="mb-5 font-display text-2xl uppercase leading-none text-black">
-            Fördelar
+            {t.benefitsTitle}
           </h3>
           <ul className="border-t border-black/10">
-            {BENEFITS.map((b) => (
+            {t.benefits.map((b) => (
               <li
                 key={b}
                 className="flex items-start gap-3 border-b border-black/10 py-3 text-sm leading-snug text-black/60"
@@ -92,16 +81,15 @@ export default function Membership() {
           />
           <div className="relative">
             <p className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-              Redo att bli del av klubben?
+              {t.panel.eyebrow}
             </p>
             <h3 className="mb-4 font-display text-3xl uppercase leading-none text-black">
-              Anmäl dig via
+              {t.panel.title1}
               <br />
-              MATCHi
+              {t.panel.title2}
             </h3>
             <p className="mb-8 text-sm leading-relaxed text-black/55">
-              Snabbt och enkelt — klicka nedan och välj medlemskap på The
-              Beach-sidan i MATCHi.
+              {t.panel.body}
             </p>
             <a
               href="https://www.matchi.se/facilities/thebeach"
@@ -109,7 +97,7 @@ export default function Membership() {
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors duration-300 hover:bg-black/80"
             >
-              Bli medlem via MATCHi <span aria-hidden="true">→</span>
+              {t.panel.cta} <span aria-hidden="true">→</span>
             </a>
           </div>
         </Reveal>

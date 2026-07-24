@@ -2,10 +2,14 @@ import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import { type Ev } from "@/lib/kalender";
 import { getMergedMonths } from "@/lib/profixio";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
 /**
  * Kommande händelser — sajtens egen, kompletta lista.
  * Datakälla: src/lib/kalender.ts (uppdateras där, ingenting annat).
+ * Händelsedatat är svenskt och översätts inte — även /en/calendar visar
+ * det som det är och länkar till de svenska detaljsidorna /kalender/[slug].
  */
 
 const BADGE: Record<Ev["type"], string> = {
@@ -21,7 +25,8 @@ const TONE: Record<NonNullable<Ev["badgeTone"]>, string> = {
 };
 
 
-export default async function UpcomingEvents() {
+export default async function UpcomingEvents({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].upcoming;
   const MONTHS = await getMergedMonths();
   return (
     <section
@@ -32,17 +37,16 @@ export default async function UpcomingEvents() {
       <Reveal className="mb-10 flex flex-col gap-6 border-b border-black/10 pb-10 sm:flex-row sm:items-end sm:justify-between lg:mb-14 lg:pb-14">
         <div>
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Kommande
+            {t.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Vad väntar
+            {t.title1}
             <br />
-            på The Beach
+            {t.title2}
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-          Turneringar, kurser, seriespel och event — hela schemat, alltid
-          uppdaterat. Bana bokar du via MATCHi.
+          {t.lead}
         </p>
       </Reveal>
 

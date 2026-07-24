@@ -1,4 +1,6 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
 /**
  * Boka bana — court booking info with price tiers.
@@ -6,20 +8,9 @@ import Reveal from "@/components/Reveal";
  * Prices sourced from thebeach.se — do not edit without confirmation.
  */
 
-const PRICE_ROWS = [
-  { time: "Dagtid",     note: "Vardag, sluttid senast 16:00", member: "540 kr", nonMember: "600 kr" },
-  { time: "Mellantid",  note: "Vardag 16:00–17:30 & 20:30–22:00", member: "660 kr", nonMember: "720 kr" },
-  { time: "Kvällstopp", note: "Vardag 17:30 & 19:00 samt helger", member: "720 kr", nonMember: "840 kr" },
-];
-
-export default function CourtBooking({
-  bookHref = "/boka",
-  bookLabel = "Boka bana",
-}: {
-  bookHref?: string;
-  bookLabel?: string;
-} = {}) {
-  const bookExt = bookHref.startsWith("http");
+export default function CourtBooking({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].booking;
+  const bookExt = t.bookHref.startsWith("http");
   return (
     <section
       id="boka-bana"
@@ -30,25 +21,24 @@ export default function CourtBooking({
         <div>
           {/* eyebrow override: lime fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Boka bana
+            {t.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Boka via
+            {t.title1}
             <br />
-            MATCHi
+            {t.title2}
           </h2>
         </div>
         <div className="flex flex-col items-start gap-4 sm:items-end">
           <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-            Snabb, enkel bokning — se lediga tider och boka direkt online.
-            Inomhusbana, upp till 8 spelare, 1,5 h per pass.
+            {t.lead}
           </p>
           <a
-            href={bookHref}
+            href={t.bookHref}
             {...(bookExt ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-bone transition-colors duration-200 hover:bg-black/80"
           >
-            {bookLabel} <span aria-hidden="true">→</span>
+            {t.bookLabel} <span aria-hidden="true">→</span>
           </a>
         </div>
       </Reveal>
@@ -58,12 +48,12 @@ export default function CourtBooking({
         <Reveal className="overflow-hidden border border-black/10 bg-white">
           <div className="border-b border-black/10 px-6 py-4 lg:px-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/40">
-              Priser — inomhus (per bana, 1,5 h)
+              {t.tableTitle}
             </p>
           </div>
           <table className="w-full border-collapse">
             <caption className="sr-only">
-              Banavgifter — inomhus per bana 1,5 h
+              {t.tableCaption}
             </caption>
             <thead>
               <tr className="border-b border-black/10 bg-black/[0.03]">
@@ -71,27 +61,27 @@ export default function CourtBooking({
                   scope="col"
                   className="py-3 pl-6 pr-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/40 lg:pl-8"
                 >
-                  Tid
+                  {t.thTime}
                 </th>
                 <th
                   scope="col"
                   className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/40"
                 >
-                  Icke-medlem
+                  {t.thNonMember}
                 </th>
                 <th
                   scope="col"
                   className="py-3 pl-4 pr-6 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-black/70 lg:pr-8"
                 >
-                  Medlem
+                  {t.thMember}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {PRICE_ROWS.map((row, i) => (
+              {t.rows.map((row, i) => (
                 <tr
                   key={row.time}
-                  className={i < PRICE_ROWS.length - 1 ? "border-b border-black/10" : ""}
+                  className={i < t.rows.length - 1 ? "border-b border-black/10" : ""}
                 >
                   <td className="py-4 pl-6 pr-4 text-sm font-semibold text-black lg:pl-8">
                     {row.time}
@@ -116,14 +106,10 @@ export default function CourtBooking({
           {/* Standard booking */}
           <div className="flex-1 border border-black/10 bg-white p-6 lg:p-8">
             <h3 className="mb-3 font-display text-xl uppercase leading-none text-black lg:text-2xl">
-              Vanlig bokning
+              {t.standard.title}
             </h3>
             <ul className="border-t border-black/10">
-              {[
-                "Bokas via MATCHi — max 7 dagar i förväg",
-                "1,5 h per pass, upp till 8 spelare per bana",
-                "Avbokning senast 24 h före start",
-              ].map((item) => (
+              {t.standard.items.map((item) => (
                 <li
                   key={item}
                   className="flex items-start gap-2 border-b border-black/10 py-2.5 text-xs leading-snug text-black/55"
@@ -143,30 +129,27 @@ export default function CourtBooking({
           {/* Pre-booking */}
           <div className="flex-1 border border-black/10 bg-white p-6 lg:p-8">
             <h3 className="mb-3 font-display text-xl uppercase leading-none text-black lg:text-2xl">
-              Förbokning
+              {t.prebook.title}
             </h3>
             <p className="mb-3 text-[13px] leading-snug text-black/50">
-              Behöver du boka bana längre fram än 7 dagar? Mejla{" "}
+              {t.prebook.pre}
               <a
-                href="mailto:boka@thebeach.one"
+                href={`mailto:${t.prebook.email}`}
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
               >
-                boka@thebeach.one
-              </a>{" "}
-              med önskad tid. Förbokning kostar 2 000 kr/bana/pass, är ej av-
-              eller ombokningsbar, och kräver förskottsbetalning — du får en
-              betallänk via MATCHi för att bekräfta.
+                {t.prebook.email}
+              </a>
+              {t.prebook.post}
             </p>
           </div>
 
           {/* Subscription */}
           <div className="flex-1 border border-black/10 bg-white p-6 lg:p-8">
             <h3 className="mb-3 font-display text-xl uppercase leading-none text-black lg:text-2xl">
-              Abonnemang
+              {t.subscription.title}
             </h3>
             <p className="text-[13px] leading-snug text-black/50">
-              Fast veckotid under hela vårterminen (vecka 3–22). Perfekt om du
-              vill ha ett garanterat spelutrymme varje vecka.
+              {t.subscription.body}
             </p>
           </div>
         </Reveal>
@@ -174,18 +157,17 @@ export default function CourtBooking({
 
       <Reveal delay={0.1} className="mt-0.5 grid grid-cols-1 gap-0.5 sm:grid-cols-2">
         <div className="border border-black/10 bg-white p-6 lg:p-8">
-          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">Medlemskap</h3>
+          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">{t.membershipBox.title}</h3>
           <p className="text-[13px] leading-snug text-black/50">
-            Medlem betalar lägre banhyra. 350 kr/år (junior 190 kr) och
-            tävlingslicens ingår.{" "}
-            <a href="/foreningen" className="font-semibold text-black underline underline-offset-2 hover:text-black/60">Läs mer om medlemskap</a>.
+            {t.membershipBox.pre}
+            <a href={t.membershipBox.linkHref} className="font-semibold text-black underline underline-offset-2 hover:text-black/60">{t.membershipBox.linkLabel}</a>{t.membershipBox.post}
           </p>
         </div>
         <div className="border border-black/10 bg-white p-6 lg:p-8">
-          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">Skolklasser</h3>
+          <h3 className="mb-2 font-display text-lg uppercase leading-none text-black">{t.schoolBox.title}</h3>
           <p className="text-[13px] leading-snug text-black/50">
-            Vi tar emot skolklasser på vardagar till specialpris.{" "}
-            <a href="/skola" className="font-semibold text-black underline underline-offset-2 hover:text-black/60">Se Skolor</a>.
+            {t.schoolBox.pre}
+            <a href={t.schoolBox.linkHref} className="font-semibold text-black underline underline-offset-2 hover:text-black/60">{t.schoolBox.linkLabel}</a>{t.schoolBox.post}
           </p>
         </div>
       </Reveal>

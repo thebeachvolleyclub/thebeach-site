@@ -1,14 +1,17 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
 /**
  * Avslutande CTA — lime accent section.
- * Primary: Se hela kalendern → thebeach.se/kalender/
- * Secondary: Boka bana → MATCHi
- * Tertiary: Vill du träna regelbundet? → /trana
+ * Primary: Se hela kalendern → #kommande
+ * Secondary: Boka bana → /boka resp. /en/book
+ * Tertiary: Vill du träna regelbundet? → /trana resp. /en/training
  */
 
-export default function KalenderCTA() {
+export default function KalenderCTA({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].cta;
   return (
     <section
       id="cta"
@@ -18,12 +21,12 @@ export default function KalenderCTA() {
         <Reveal>
           {/* eyebrow override: .eyebrow hard-codes lime color — fails on lime bg */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Kom igång
+            {t.eyebrow}
           </p>
           <h2 className="mb-8 font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] tracking-[-0.02em] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Redo att spela
+            {t.title1}
             <br />
-            <span className="italic-accent !text-black/70">på The Beach?</span>
+            <span className="italic-accent !text-black/70">{t.titleAccent}</span>
           </h2>
 
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
@@ -32,25 +35,25 @@ export default function KalenderCTA() {
               href="#kommande"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors duration-300 hover:bg-black/80"
             >
-              Se hela kalendern <span aria-hidden="true">→</span>
+              {t.ctaAll} <span aria-hidden="true">→</span>
             </a>
 
             {/* Secondary CTA */}
             <a
-              href="/boka"
+              href={t.ctaBookHref}
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-black/10"
             >
-              Boka bana <span aria-hidden="true">→</span>
+              {t.ctaBook} <span aria-hidden="true">→</span>
             </a>
           </div>
 
           {/* Tertiary link */}
           <div className="mt-6">
             <Link
-              href="/trana"
+              href={t.tertiaryHref}
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-black/50 underline-offset-4 transition-colors hover:text-black hover:underline"
             >
-              Vill du träna regelbundet? Läs om träningsgrupperna →
+              {t.tertiary}
             </Link>
           </div>
         </Reveal>

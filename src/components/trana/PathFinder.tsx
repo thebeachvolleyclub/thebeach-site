@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict, type PathRec } from "@/lib/i18n/trana";
 
 /**
  * "Hitta din väg" — hjälper nya besökare direkt till rätt spår.
@@ -11,84 +13,27 @@ import Reveal from "@/components/Reveal";
 type Age = "under21" | "adult";
 type Exp = "never" | "comeback" | "regular";
 
-type Path = {
-  title: string;
-  body: string;
-  ctas: { label: string; href: string; external?: boolean }[];
-  note?: string;
+const PATH_KEY: Record<Age, Record<Exp, keyof typeof tranaDict.sv.pathfinder.paths>> = {
+  under21: { never: "under21Never", comeback: "under21Comeback", regular: "under21Regular" },
+  adult: { never: "adultNever", comeback: "adultComeback", regular: "adultRegular" },
 };
 
-function getPath(age: Age, exp: Exp): Path {
-  if (age === "under21") {
-    if (exp === "regular") {
-      return {
-        title: "Du kan välja båda spåren",
-        body: "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna (anmälan öppnar 1 aug 20:00).",
-        ctas: [
-          { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
-          { label: "Se träningsgrupperna", href: "#traningsgrupper" },
-        ],
-      };
-    }
-    if (exp === "comeback") {
-      return {
-        title: "Du kan välja båda spåren",
-        body: "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Även fortsättningskursen kan vara ett alternativ. Välj det som passar dig bäst.",
-        ctas: [
-          { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
-          { label: "Se kurserna", href: "#kurser" },
-        ],
-      };
-    }
-    return {
-      title: "Du kan välja båda spåren",
-      body: "Under 21? Du har två vägar in — juniorträning via klubben (terminsanmälan, lägre pris, medlemskap i föreningen) eller grundkursen som är öppen för alla åldrar (5 kvällspass på tisdagar eller torsdagar). Välj det som passar dig bäst.",
-      ctas: [
-        { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
-        { label: "Grundkursen", href: "#kurser" },
-      ],
-    };
-  }
-  if (exp === "never") {
-    return {
-      title: "Grundkursen är din väg in",
-      body:
-        "5 pass × 1,5 h där du lär dig teknik, fotarbete, taktik och spel från grunden. Ingen erfarenhet krävs — ta bara med motivation.",
-      ctas: [{ label: "Se grundkursen", href: "#kurser" }],
-    };
-  }
-  if (exp === "comeback") {
-    return {
-      title: "Fortsättningskursen — perfekt för comeback",
-      body:
-        "Spelat förr men det var länge sen? Du behöver inte börja om från noll. Fortsättningskursen fräschar upp grunderna och tar dig vidare i matchtempo — de flesta comeback-spelare landar rätt här.",
-      ctas: [{ label: "Se fortsättningskursen", href: "#kurser" }],
-      note: "Osäker på nivån? Mejla traning@thebeach.one så hjälper vi dig välja.",
-    };
-  }
-  return {
-    title: "Träningsgrupperna är nästa steg",
-    body:
-      "Spelar du regelbundet placeras du i en grupp som matchar din nivå — jämna grupper, 15 pass per säsong. Anmälan öppnar 1 aug kl 20:00.",
-    ctas: [{ label: "Se träningsgrupperna", href: "#traningsgrupper" }],
-  };
-}
-
-const AGE_OPTIONS: { value: Age; label: string }[] = [
-  { value: "under21", label: "Under 21 år" },
-  { value: "adult", label: "21 år eller äldre" },
-];
-
-const EXP_OPTIONS: { value: Exp; label: string }[] = [
-  { value: "never", label: "Aldrig spelat" },
-  { value: "comeback", label: "Spelat förr — men det var ett tag sen" },
-  { value: "regular", label: "Spelar regelbundet" },
-];
-
-export default function PathFinder() {
+export default function PathFinder({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].pathfinder;
   const [age, setAge] = useState<Age | null>(null);
   const [exp, setExp] = useState<Exp | null>(null);
-  const path = age && exp ? getPath(age, exp) : null;
+  const path: PathRec | null = age && exp ? t.paths[PATH_KEY[age][exp]] : null;
+
+  const AGE_OPTIONS: { value: Age; label: string }[] = [
+    { value: "under21", label: t.ageOptions.under21 },
+    { value: "adult", label: t.ageOptions.adult },
+  ];
+
+  const EXP_OPTIONS: { value: Exp; label: string }[] = [
+    { value: "never", label: t.expOptions.never },
+    { value: "comeback", label: t.expOptions.comeback },
+    { value: "regular", label: t.expOptions.regular },
+  ];
 
   const pill = (active: boolean) =>
     `min-h-[44px] cursor-pointer border px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-colors ${
@@ -100,12 +45,12 @@ export default function PathFinder() {
   return (
     <section id="hitta-din-vag" className="bg-panel px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
       <Reveal className="mb-10 lg:mb-12">
-        <p className="eyebrow mb-4">Ny här?</p>
+        <p className="eyebrow mb-4">{t.eyebrow}</p>
         <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] uppercase leading-[0.9] text-white lg:text-[clamp(3rem,5.5vw,5rem)]">
-          Hitta din väg
+          {t.title}
         </h2>
         <p className="mt-4 max-w-md text-sm leading-relaxed text-white/50">
-          Två snabba frågor — så pekar vi direkt på rätt kurs eller grupp för dig.
+          {t.lead}
         </p>
       </Reveal>
 
@@ -113,7 +58,7 @@ export default function PathFinder() {
         <div className="flex flex-col gap-8">
           <Reveal>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-              1. Hur gammal är du?
+              {t.q1}
             </p>
             <div className="flex flex-wrap gap-2">
               {AGE_OPTIONS.map((o) => (
@@ -131,7 +76,7 @@ export default function PathFinder() {
           </Reveal>
           <Reveal delay={0.08}>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-              2. Har du spelat beachvolley?
+              {t.q2}
             </p>
             <div className="flex flex-wrap gap-2">
               {EXP_OPTIONS.map((o) => (
@@ -184,7 +129,7 @@ export default function PathFinder() {
               </>
             ) : (
               <p className="m-auto max-w-[220px] text-center text-sm leading-relaxed text-white/30">
-                Svara på frågorna så visar vi din väg in i sanden.
+                {t.placeholder}
               </p>
             )}
           </div>

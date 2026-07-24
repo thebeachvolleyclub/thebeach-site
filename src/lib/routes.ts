@@ -8,6 +8,8 @@ export const SV_TO_EN: Record<string, string> = {
   "/events/planera": "/en/events/plan",
   "/lokalen": "/en/venue",
   "/boka": "/en/book",
+  "/trana": "/en/training",
+  "/kalender": "/en/calendar",
   "/skola": "/en/school",
   "/om-oss": "/en/about",
   "/faq": "/en/faq",

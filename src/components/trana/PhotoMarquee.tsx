@@ -14,6 +14,8 @@ import {
   useAnimationFrame,
   useReducedMotion,
 } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
 const PHOTOS = [
   { src: "/media/trana/trana-01.webp", alt: "Spelare baggrar i sanden på The Beach" },
@@ -111,12 +113,12 @@ function Track() {
   );
 }
 
-export default function PhotoMarquee() {
+export default function PhotoMarquee({ locale }: { locale: Locale }) {
   const reduce = useReducedMotion();
 
   return (
     <section
-      aria-label="Bilder från träningen"
+      aria-label={tranaDict[locale].marquee.ariaLabel}
       className="overflow-hidden bg-black py-10 lg:py-14"
     >
       {reduce ? (

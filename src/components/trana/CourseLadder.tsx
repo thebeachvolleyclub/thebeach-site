@@ -1,46 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-const COURSES = [
-  {
-    no: "01",
-    tag: "Nybörjare",
-    title: "Grundkurs",
-    price: "795 kr",
-    priceNote: "Under 26 år: effektivt 395 kr (400 kr MATCHi-kredit tillbaka)",
-    details: [
-      "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
-      "Teknik, fotarbete, taktik och spel",
-      "Inomhus",
-      "Start: tisdagar fr.o.m. 1 sep eller torsdagar fr.o.m. 3 sep 2026",
-    ],
-    quote: "Ingen tidigare erfarenhet krävs. Ta bara med motivation och en bra attityd.",
-    ctas: [
-      { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/ktBCZ2GXucftaFS3ZEup" },
-      { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/RX12Z2RxHWrtXCoj7pjf" },
-    ],
-  },
-  {
-    no: "02",
-    tag: "Mellannivå",
-    title: "Fortsättningskurs",
-    price: "3 695 kr",
-    priceNote: "15 pass · Under 26 år: 1 000 kr MATCHi-kredit tillbaka",
-    details: [
-      "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
-      "Rörelse & positionering, bollkontroll, försvar & attack",
-      "Spelförståelse & matchspel i högre tempo",
-      "Start: tisdagar 1 sep eller torsdagar 3 sep 2026",
-    ],
-    quote:
-      "Spelat förr men det var länge sen? Det här är rätt ingång för din comeback — du behöver inte börja om från noll.",
-    ctas: [
-      { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/Z9N6ftKeWIuuyawEomEY" },
-      { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/2Pszaq85oY1vuddVDZWk" },
-    ],
-  },
-];
-
-export default function CourseLadder() {
+export default function CourseLadder({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].courses;
   return (
     <section
       id="kurser"
@@ -51,21 +14,20 @@ export default function CourseLadder() {
         <div>
           {/* eyebrow override: .eyebrow lime fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Börja träna
+            {t.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Kursstegen
+            {t.title}
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-          Har du aldrig spelat beachvolley — eller vill ta ditt spel till nästa
-          nivå? Här är vägen in.
+          {t.lead}
         </p>
       </Reveal>
 
       {/* Course cards */}
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
-        {COURSES.map((c, i) => (
+        {t.items.map((c, i) => (
           <Reveal
             key={c.title}
             delay={i * 0.08}
@@ -95,7 +57,7 @@ export default function CourseLadder() {
               </div>
             ) : (
               <div className="mb-1 text-[13px] text-black/40">
-                Pris anges vid anmälan
+                {t.noPriceLabel}
               </div>
             )}
             {c.priceNote && (
@@ -144,6 +106,22 @@ export default function CourseLadder() {
           </Reveal>
         ))}
       </div>
+
+      {/* Notis (endast en): MATCHi-flödet är på svenska */}
+      {t.signupNote && (
+        <Reveal delay={0.16}>
+          <p className="mt-6 text-[13px] leading-snug text-black/50">
+            {t.signupNote.pre}
+            <a
+              href={`mailto:${t.signupNote.email}`}
+              className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
+            >
+              {t.signupNote.email}
+            </a>
+            {t.signupNote.post}
+          </p>
+        </Reveal>
+      )}
     </section>
   );
 }

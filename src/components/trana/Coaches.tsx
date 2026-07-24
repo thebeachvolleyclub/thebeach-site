@@ -1,6 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-export default function Coaches() {
+export default function Coaches({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].coaches;
   return (
     <section
       id="coacher"
@@ -26,15 +29,14 @@ export default function Coaches() {
         {/* Header */}
         <Reveal className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between lg:mb-14 lg:pb-14">
           <div>
-            <p className="eyebrow mb-4">Världsklass</p>
+            <p className="eyebrow mb-4">{t.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              Våra{" "}
-              <span className="italic-accent">coacher</span>
+              {t.titlePre}{" "}
+              <span className="italic-accent">{t.titleAccent}</span>
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-bone/45 sm:text-right">
-            The Beach grundades av coacher — och leds fortfarande av människor
-            som lever och andas beachvolley på elitnivå.
+            {t.lead}
           </p>
         </Reveal>
 
@@ -44,28 +46,24 @@ export default function Coaches() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/media/coach.webp"
-              alt="Mattias Magnusson med Tina och Sanna Thurin på The Beach"
+              alt={t.imgAlt}
               loading="lazy"
               className="aspect-[4/3] w-full object-cover object-top"
             />
             <p className="mt-3 text-[12px] leading-relaxed text-bone/40">
-              På bilden: Mattias med Tina &amp; Sanna Thurin — sexfaldiga
-              SM-vinnare och tränare hos oss.
+              {t.caption}
             </p>
           </Reveal>
 
           <Reveal delay={0.08} className="border border-line p-7 lg:p-10">
             <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-bone/40">
-              Sportchef &amp; medgrundare
+              {t.role}
             </span>
             <h3 className="mb-4 font-display text-3xl uppercase leading-none text-bone lg:text-4xl">
-              Mattias Magnusson
+              {t.name}
             </h3>
             <p className="text-[15px] leading-relaxed text-bone/60">
-              Förbundskapten för det svenska damlandslaget och utsedd till
-              &ldquo;Coach of the Year&rdquo; av Svenska Volleybollförbundet.
-              Här leder han tränarstaben — spelare och coacher som lever och
-              andas beachvolley på elitnivå.
+              {t.bio}
             </p>
           </Reveal>
         </div>
@@ -77,8 +75,7 @@ export default function Coaches() {
               ↗
             </span>
             <p className="text-sm leading-relaxed text-bone/55">
-              Våra coacher utbildar även andra tränare internt — kompetensen
-              sprids i hela anläggningen.
+              {t.note}
             </p>
           </div>
         </Reveal>

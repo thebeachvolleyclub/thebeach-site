@@ -22,6 +22,8 @@ const LINKS_SV = [
 const LINKS_EN = [
   { label: "Book a court", href: "/en/book", ext: false },
   { label: "Book an event", href: "/en/events", ext: false },
+  { label: "Training", href: "/en/training", ext: false },
+  { label: "Calendar", href: "/en/calendar", ext: false },
   { label: "The venue", href: "/en/venue", ext: false },
   { label: "Schools", href: "/en/school", ext: false },
   { label: "About", href: "/en/about", ext: false },

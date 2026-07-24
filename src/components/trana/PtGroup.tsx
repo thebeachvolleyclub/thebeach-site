@@ -1,6 +1,9 @@
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-export default function PtGroup() {
+export default function PtGroup({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].pt;
   return (
     <section
       id="pt-grupp"
@@ -26,14 +29,13 @@ export default function PtGroup() {
         {/* Header */}
         <Reveal className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between lg:mb-14 lg:pb-14">
           <div>
-            <p className="eyebrow mb-4">Privat gruppträning</p>
+            <p className="eyebrow mb-4">{t.eyebrow}</p>
             <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
-              PT-grupp
+              {t.title}
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-bone/45 sm:text-right">
-            Gå ihop 6–8 spelare som vill träna tillsammans och hyr en egen
-            coach. Räknas som friskvård.
+            {t.lead}
           </p>
         </Reveal>
 
@@ -42,60 +44,53 @@ export default function PtGroup() {
           {/* Pricing breakdown */}
           <Reveal className="flex flex-col border border-white/10 p-7 lg:p-10">
             <h3 className="mb-6 font-display text-2xl uppercase leading-none text-bone">
-              Vad ingår
+              {t.includedTitle}
             </h3>
             <ul className="mb-6 flex-1 border-t border-white/10">
-              <li className="flex items-start justify-between gap-4 border-b border-white/10 py-3 text-sm">
-                <span className="text-bone/60">Coachavgift</span>
-                <span className="shrink-0 font-semibold text-bone">
-                  1 500–1 800 kr / pass
-                </span>
-              </li>
-              <li className="flex items-start justify-between gap-4 border-b border-white/10 py-3 text-sm">
-                <span className="text-bone/60">Banavgift (kvällstid)</span>
-                <span className="shrink-0 font-semibold text-bone">
-                  100 kr / person
-                </span>
-              </li>
-              <li className="flex items-start justify-between gap-4 border-b border-white/10 py-3 text-sm">
-                <span className="text-bone/60">Banavgift (dagtid vardag)</span>
-                <span className="shrink-0 font-semibold text-bone">
-                  50 kr / person
-                </span>
-              </li>
+              {t.rows.map((row) => (
+                <li
+                  key={row.label}
+                  className="flex items-start justify-between gap-4 border-b border-white/10 py-3 text-sm"
+                >
+                  <span className="text-bone/60">{row.label}</span>
+                  <span className="shrink-0 font-semibold text-bone">
+                    {row.value}
+                  </span>
+                </li>
+              ))}
               <li className="flex items-start justify-between gap-4 py-3 text-sm">
-                <span className="text-bone/60">Flexibla tider</span>
+                <span className="text-bone/60">{t.flex.label}</span>
                 <span className="shrink-0 font-semibold text-lime">
-                  Ja
+                  {t.flex.value}
                 </span>
               </li>
             </ul>
             <p className="text-xs text-bone/40">
-              Räknas som friskvård — kolla med din arbetsgivare.
+              {t.note}
             </p>
           </Reveal>
 
           {/* Example calculation */}
           <Reveal delay={0.08} className="flex flex-col bg-panel p-7 lg:p-10">
             <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-bone/40">
-              Räkneexempel
+              {t.exampleEyebrow}
             </p>
             <p className="mb-8 text-sm leading-relaxed text-bone/55">
-              6 personer, coach 1 500 kr/pass:
+              {t.exampleIntro}
             </p>
             <div className="flex-1 space-y-3">
               <div className="flex items-center justify-between border-b border-line pb-3 text-sm">
-                <span className="text-bone/60">Coach (6 pers)</span>
-                <span className="text-bone">250 kr / person</span>
+                <span className="text-bone/60">{t.exCoachLabel}</span>
+                <span className="text-bone">{t.exCoachValue}</span>
               </div>
               <div className="flex items-center justify-between border-b border-line pb-3 text-sm">
-                <span className="text-bone/60">Bana</span>
-                <span className="text-bone">100 kr / person</span>
+                <span className="text-bone/60">{t.exCourtLabel}</span>
+                <span className="text-bone">{t.exCourtValue}</span>
               </div>
               <div className="flex items-center justify-between pt-1 text-sm font-bold">
-                <span className="text-bone">Totalt</span>
+                <span className="text-bone">{t.exTotalLabel}</span>
                 <span className="font-display text-2xl text-lime">
-                  350 kr / person
+                  {t.exTotalValue}
                 </span>
               </div>
             </div>
@@ -103,7 +98,7 @@ export default function PtGroup() {
               href="mailto:david@thebeach.one"
               className="mt-8 inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Kontakta David <span aria-hidden="true">→</span>
+              {t.cta} <span aria-hidden="true">→</span>
             </a>
           </Reveal>
         </div>

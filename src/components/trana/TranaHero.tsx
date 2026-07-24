@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
+import type { Locale } from "@/lib/i18n";
+import { tranaDict } from "@/lib/i18n/trana";
 
-export default function TranaHero() {
+export default function TranaHero({ locale }: { locale: Locale }) {
+  const t = tranaDict[locale].hero;
   const reduce = useReducedMotion();
 
   const stagger = {
@@ -60,7 +63,7 @@ export default function TranaHero() {
       >
         {/* Eyebrow */}
         <motion.p variants={item} className="eyebrow mb-5">
-          Träna
+          {t.eyebrow}
         </motion.p>
 
         {/* Giant headline */}
@@ -68,9 +71,9 @@ export default function TranaHero() {
           variants={item}
           className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
         >
-          Hitta din
+          {t.title1}
           <br />
-          <span className="italic-accent">beachvolley träning</span>
+          <span className="italic-accent">{t.titleAccent}</span>
         </motion.h1>
 
         {/* Sub-copy + CTA */}
@@ -80,9 +83,7 @@ export default function TranaHero() {
         >
           <div>
             <p className="max-w-md text-[0.95rem] leading-relaxed text-bone/55">
-              ~800 spelare tränar varje vecka på The Beach. Kurser och
-              träningsgrupper för alla nivåer — sedan 2006. Ledda av coacher i
-              världsklass på sanden i Huddinge.
+              {t.intro}
             </p>
           </div>
 
@@ -92,13 +93,13 @@ export default function TranaHero() {
               href="#traningsgrupper"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              Se träningsgrupperna <span aria-hidden="true">→</span>
+              {t.ctaGroups} <span aria-hidden="true">→</span>
             </a>
             <Link
-              href="/events"
+              href={t.ctaEventsHref}
               className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
             >
-              Boka event istället
+              {t.ctaEvents}
             </Link>
           </div>
         </motion.div>

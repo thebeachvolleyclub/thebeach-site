@@ -1,29 +1,15 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
+import type { Locale } from "@/lib/i18n";
+import { kalenderDict } from "@/lib/i18n/kalender";
 
 /**
  * Säsongsrytm — evergreen breakdown of training group seasons.
  * Light (cream) section between two dark sections.
  */
 
-const SEASONS = [
-  {
-    tag: "Maj – början av juli",
-    name: "Sommarsäsong",
-    days: "Måndag & onsdag",
-    passes: "7 pass",
-    note: "Perfekt inledning på utomhussäsongen. Spela i det fina vädret och bygg upp formen inför hösten.",
-  },
-  {
-    tag: "Sena aug – december",
-    name: "Höstsäsong",
-    days: "Söndag, måndag & onsdag",
-    passes: "15 pass",
-    note: "Den längre säsongen — god tid att utvecklas, hitta ett stabilt spelpartner och tävla i seriespel.",
-  },
-];
-
-export default function SeasonRhythm() {
+export default function SeasonRhythm({ locale }: { locale: Locale }) {
+  const t = kalenderDict[locale].seasons;
   return (
     <section
       id="sasonger"
@@ -34,24 +20,22 @@ export default function SeasonRhythm() {
         <div>
           {/* eyebrow override: lime fails contrast on cream */}
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
-            Träningsgrupper
+            {t.eyebrow}
           </p>
           <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-black lg:text-[clamp(3rem,5.5vw,5rem)]">
-            Sommar &amp;
+            {t.title1}
             <br />
-            höst
+            {t.title2}
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">
-          Träningsgrupperna löper i två säsonger. Anmälan till höstens grupper
-          öppnar <strong className="font-semibold text-black">1 aug kl 20:00</strong> — platserna
-          brukar gå snabbt.
+          {t.lead1}<strong className="font-semibold text-black">{t.leadStrong}</strong>{t.lead2}
         </p>
       </Reveal>
 
       {/* Season cards */}
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
-        {SEASONS.map((s, i) => (
+        {t.items.map((s, i) => (
           <Reveal
             key={s.name}
             delay={i * 0.08}
@@ -72,14 +56,14 @@ export default function SeasonRhythm() {
               <li className="flex items-start gap-2 border-b border-black/10 py-2.5 text-xs leading-snug text-black/55">
                 <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">↗</span>
                 <span>
-                  <strong className="font-semibold text-black">Dagar:</strong>{" "}
+                  <strong className="font-semibold text-black">{t.daysLabel}</strong>{" "}
                   {s.days}
                 </span>
               </li>
               <li className="flex items-start gap-2 border-b border-black/10 py-2.5 text-xs leading-snug text-black/55">
                 <span className="shrink-0 pt-0.5 text-black/30" aria-hidden="true">↗</span>
                 <span>
-                  <strong className="font-semibold text-black">Antal pass:</strong>{" "}
+                  <strong className="font-semibold text-black">{t.passesLabel}</strong>{" "}
                   {s.passes}
                 </span>
               </li>
@@ -112,7 +96,7 @@ export default function SeasonRhythm() {
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
             <p className="text-[13px] text-black/50">
-              Frågor om träning?{" "}
+              {t.contactPre}
               <a
                 href="mailto:traning@thebeach.one"
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
@@ -122,11 +106,11 @@ export default function SeasonRhythm() {
             </p>
           </div>
           <Link
-            href="/trana"
+            href={t.crossLinkHref}
             className="group flex min-h-[44px] cursor-pointer items-center justify-between border border-black/10 bg-white p-5 transition-colors duration-200 hover:bg-lime/10 lg:px-7"
           >
             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-black">
-              Läs mer om träning &amp; kurser
+              {t.crossLink}
             </span>
             <span
               className="text-black/40 transition-transform duration-200 group-hover:translate-x-1"

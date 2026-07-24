@@ -52,7 +52,8 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
     title: "Play",
     links: [
       { label: "Book a court", href: "/en/book" },
-      { label: "Calendar", href: "/kalender" },
+      { label: "Training", href: "/en/training" },
+      { label: "Calendar", href: "/en/calendar" },
       { label: "Schools", href: "/en/school" },
     ],
   },
