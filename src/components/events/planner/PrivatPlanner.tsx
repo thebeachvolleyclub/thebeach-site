@@ -51,7 +51,19 @@ function Stepper({ value, onChange, min, max, step = 1 }: {
     <div className="inline-flex items-center border border-white/15">
       <button type="button" aria-label="Minska" onClick={() => onChange(Math.max(min, value - step))}
         className="h-11 w-11 cursor-pointer text-lg text-white transition-colors hover:bg-white/10">−</button>
-      <span className="w-16 text-center text-base font-bold text-white">{value}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(e) => {
+          const n = parseInt(e.target.value, 10);
+          if (!Number.isNaN(n)) onChange(Math.min(max, n));
+        }}
+        onBlur={() => onChange(Math.min(max, Math.max(min, value)))}
+        className="w-16 border-0 bg-transparent text-center text-base font-bold text-white outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
       <button type="button" aria-label="Öka" onClick={() => onChange(Math.min(max, value + step))}
         className="h-11 w-11 cursor-pointer text-lg text-white transition-colors hover:bg-white/10">+</button>
     </div>
@@ -246,7 +258,7 @@ export default function PrivatPlanner() {
                 <div>
                   <p className={`${labelCls} mb-3`}>Hur många är ni?</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Stepper value={s.guests} onChange={(guests) => up({ guests })} min={10} max={250} step={5} />
+                    <Stepper value={s.guests} onChange={(guests) => up({ guests })} min={10} max={250} />
                     <span className="text-xs text-white/40">personer — paketen gäller upp till 250, fler? Skräddarsytt.</span>
                   </div>
                 </div>

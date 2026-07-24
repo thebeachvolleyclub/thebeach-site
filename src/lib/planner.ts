@@ -48,7 +48,7 @@ export interface PlannerState {
 }
 
 export const initialState: PlannerState = {
-  when: "fri",
+  when: "weekeve",
   guests: 25,
   tier: "alg",
   start: "17:30",

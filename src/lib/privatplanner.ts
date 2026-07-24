@@ -50,7 +50,7 @@ export interface PrivatState {
 
 export const initialState: PrivatState = {
   party: "bday",
-  guests: 30,
+  guests: 60,
   tier: "alg",
   volley: true,
   start: "18:00",
