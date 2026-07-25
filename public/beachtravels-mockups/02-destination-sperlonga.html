@@ -26,6 +26,7 @@
   nav ul{display:flex;gap:28px;list-style:none;align-items:center}
   nav ul a{color:#fff;font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
   nav .cta{background:var(--sun);color:var(--ink);padding:10px 22px;border-radius:30px;font-weight:800}
+  nav .lang{border:1.5px solid rgba(255,255,255,.65);border-radius:20px;padding:7px 14px;font-size:12.5px}
 
   /* HERO */
   .hero{position:relative;height:86vh;min-height:540px;overflow:hidden;display:flex;align-items:flex-end}
@@ -71,6 +72,20 @@
   .day span{font-size:14px;line-height:1.4}
   .week .also{margin-top:34px;display:flex;flex-wrap:wrap;gap:10px}
   .chip{background:rgba(255,255,255,.12);border-radius:20px;padding:8px 16px;font-size:13.5px}
+
+  /* VARFÖR OSS (kompakt) */
+  .why-strip{background:var(--deep);color:#fff}
+  .why-strip .sec-title{color:#fff}
+  .why-strip .sec-kicker{color:var(--sun)}
+  .why-points{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:30px}
+  .why-points div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:20px}
+  .why-points b{display:block;color:var(--sun);font-size:14px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .why-points span{font-size:14px;line-height:1.55;opacity:.92}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+  .badge{background:rgba(255,255,255,.12);color:#fff;border-radius:24px;padding:9px 16px;font-size:13px;font-weight:700}
+  .badge b{color:var(--sun);margin-right:5px}
+  .why-strip .more{margin-top:26px;font-size:14.5px;opacity:.85}
+  .why-strip .more a{color:var(--sun);font-weight:800;border-bottom:2px solid var(--sun);padding-bottom:1px}
 
   /* INGÅR / PRIS */
   .pricing .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:52px;align-items:start}
@@ -131,8 +146,9 @@
   <a class="nav-logo" href="01-startsida.html"><img src="https://i0.wp.com/beachtravels.se/wp-content/uploads/2019/09/BT-logga-med-vit-kant.png?fit=1024%2C847&ssl=1" alt="BeachTravels"></a>
   <ul>
     <li><a href="01-startsida.html#destinationer">Destinationer</a></li>
-    <li><a href="#">Träningskoncept</a></li>
+    <li><a href="03-swedish-jumpset.html">Swedish Jumpset</a></li>
     <li><a href="#">Om oss</a></li>
+    <li class="keep"><a class="lang" href="#" title="Switch to English">EN</a></li>
     <li class="keep"><a class="cta" href="#boka">Boka</a></li>
   </ul>
 </nav>
@@ -201,6 +217,29 @@
   </div>
 </section>
 
+<!-- VARFÖR BEACHTRAVELS (landningsside-block för annonstrafik) -->
+<section class="why-strip">
+  <div class="wrap">
+    <div class="sec-kicker">Därför BeachTravels</div>
+    <h2 class="sec-title">Träna med dem som leder världens beachvolley</h2>
+    <div class="why-points">
+      <div><b>Hjärnorna bakom Swedish Jumpset</b><span>Vi utvecklade spelsystemet som tog Åhman/Hellvig till OS-guldet i Paris 2024 — och lär dig det i sanden.</span></div>
+      <div><b>Utbildade coacher, en filosofi</b><span>Enda lägret i världen som utbildar sina egna tränare — samma röda tråd från nybörjare till världselit.</span></div>
+      <div><b>Resultaten talar</b><span>Vår träning har producerat mästare på alla nivåer — våra två unga lag är rankade etta och tvåa i världen.</span></div>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>🥇</b>OS-guld Paris 2024</span>
+      <span class="badge"><b>🥇</b>VM-guld</span>
+      <span class="badge"><b>🥈</b>2 VM-silver</span>
+      <span class="badge"><b>🥇</b>2 EM-guld</span>
+      <span class="badge"><b>🏆</b>19 världstoursegrar</span>
+      <span class="badge"><b>🥇</b>5 UEM-guld</span>
+      <span class="badge"><b>#1 & #2</b>i världen — våra unga lag</span>
+    </div>
+    <p class="more">Nyfiken på systemet? <a href="03-swedish-jumpset.html">Läs mer om Swedish Jumpset →</a></p>
+  </div>
+</section>
+
 <!-- INGÅR + PRIS -->
 <section class="pricing" id="priser">
   <div class="wrap">
@@ -209,13 +248,16 @@
       <h2 class="sec-title">Allt du behöver för veckans bästa vecka</h2>
       <ul class="includes">
         <li>1 träning per dag med världsklass-coacher (sön–tors), max 6 spelare per coach</li>
-        <li>Daglig turnering — sex olika format under veckan</li>
+        <li>Sunday Funday — lotturnering</li>
+        <li>King & Queen of the Court</li>
+        <li>Midweek Championship</li>
+        <li>Mixed of the Court</li>
+        <li>Winners Court</li>
+        <li>BeachTravels' Trophy — veckans final</li>
         <li>3 yogaklasser på stranden</li>
         <li>Fri användning av arenan, bollar och Beach Loungen</li>
         <li>Uppvisningsmatcher med våra toppspelare</li>
-        <li>After Beach & sociala aktiviteter</li>
-        <li>Välkomstdrink på Town Square Night</li>
-        <li>Solnedgångshäng vid Sperlonga Tower</li>
+        <li>After Beach varje dag, välkomstdrink på Town Square Night & solnedgångshäng vid Sperlonga Tower</li>
         <li>Avslutningsfest fredag kväll</li>
       </ul>
     </div>
