@@ -2,13 +2,13 @@
 
 /**
  * EventPhotoMarquee — fotoremsa på eventsidan med rotation.
- * Regler (Davids beslut 2026-07-17):
- *  - caia3_bianca är ALLTID bild nummer 2.
- *  - Antingen caia eller caia_4 är ALLTID med.
- *  - Övriga bilder varieras slumpmässigt per sidladdning (blandas vid mount,
- *    innan remsan hunnit synas — SSR-ordningen är deterministisk så hydration
- *    aldrig krockar).
+ * Bilderna varieras slumpmässigt per sidladdning (blandas vid mount, innan
+ * remsan hunnit synas — SSR-ordningen är deterministisk så hydration aldrig
+ * krockar).
  * Interaktion: paus vid hover, dra för att styra riktning (samma som /trana).
+ *
+ * 2026-07-27: Caia-bilderna (caia, caia2, caia3_bianca, caia_4) borttagna
+ * efter kravbrev från Bianca Ingrossos management. Lägg inte tillbaka dem.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -23,10 +23,7 @@ import type { Locale } from "@/lib/i18n";
 import { eventsDict } from "@/lib/i18n/events";
 
 const DIR = "/media/event-snurra/";
-const BIANCA = "caia3_bianca.webp";
-const PAIR = ["caia.webp", "caia_4.webp"]; // exakt en av dessa är alltid med
 const POOL = [
-  "caia2.webp",
   "464906822_18461757397011036_773880143378.webp",
   "464975740_18461757421011036_372323269673.webp",
   "465010864_18461757439011036_396870421886.webp",
@@ -49,7 +46,7 @@ const POOL = [
   "pxl_20260124_194423008mp.webp",
   "avanza-logga_dji_20251128_194332_727.webp",
 ];
-const VISIBLE_FROM_POOL = 9; // totalt 11 bilder i remsan per laddning
+const VISIBLE_FROM_POOL = 11; // antal bilder i remsan per laddning
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -61,13 +58,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function compose(random: boolean): string[] {
-  const pair = random ? PAIR[Math.floor(Math.random() * PAIR.length)] : PAIR[0];
-  const pool = (random ? shuffle(POOL) : POOL).slice(0, VISIBLE_FROM_POOL);
-  // bianca alltid position 2; paret slumpas in bland resten
-  const rest = random
-    ? shuffle([pair, ...pool.slice(1)])
-    : [pair, ...pool.slice(1)];
-  return [pool[0], BIANCA, ...rest];
+  return (random ? shuffle(POOL) : POOL).slice(0, VISIBLE_FROM_POOL);
 }
 
 const wrap = (min: number, max: number, v: number) => {

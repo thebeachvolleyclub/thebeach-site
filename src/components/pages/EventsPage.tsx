@@ -41,7 +41,7 @@ export default function EventsPage({ locale }: { locale: Locale }) {
       <main className="flex-1">
         <EventHero locale={locale} />
         <Ticker locale={locale} />
-        {/* Fotoremsa — roteras per sidladdning, caia3_bianca alltid #2 */}
+        {/* Fotoremsa — roteras per sidladdning */}
         <EventPhotoMarquee locale={locale} />
         <EventPaths locale={locale} />
         <PricingTiers locale={locale} />

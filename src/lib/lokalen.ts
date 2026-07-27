@@ -84,7 +84,6 @@ export const BILDER: Bild[] = [
   { fil: NY + "c-scen-band.webp", alt: "Band på scenen under kvällsevent", yta: ["sandplan-c"], typ: ["fest"], format: "liggande", prio: 1 },
   { fil: NY + "bar-bartender.webp", alt: "Bartender häller upp en drink", yta: ["bar"], typ: ["fest"], format: "liggande", prio: 1 },
   { fil: NY + "b-livemusik.webp", alt: "Liveartister på scenen under ett kvällsevent", yta: ["sandplan-b"], typ: ["fest"], format: "staende", prio: 1 },
-  { fil: SNURRA + "caia3_bianca.webp", alt: "Lanseringsfest i sanden — varumärkesaktivering med influencers", yta: ["sandplan-b"], typ: ["massa","fest"], format: "staende", prio: 2 },
   { fil: NY + "a-konferens-solstolar.webp", alt: "Konferens med biosittning i solstolar och storbildsskärm", yta: ["sandplan-a"], typ: ["konferens", "kickoff"], format: "staende", prio: 4 },
   { fil: NY + "b-brollop-langbord.webp", alt: "Bröllopsdukning med långbord, ljusslingor och grönska i sanden", yta: ["sandplan-b"], typ: ["brollop", "fest"], format: "liggande", prio: 2 },
   { fil: NY + "b-brollop-oversikt.webp", alt: "Dukade långbord sedda över hela sandplanen", yta: ["sandplan-b"], typ: ["brollop", "fest", "julbord"], format: "liggande", prio: 2 },
