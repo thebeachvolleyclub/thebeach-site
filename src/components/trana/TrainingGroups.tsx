@@ -1,3 +1,4 @@
+import { fillYears } from "@/lib/ages";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { tranaDict } from "@/lib/i18n/trana";
@@ -89,7 +90,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
               {t.youth.title}
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
-              {t.youth.body}
+              {fillYears(t.youth.body)}
             </p>
           </div>
           <div className="flex-1">

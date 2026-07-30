@@ -3,6 +3,9 @@ import TranaPage from "@/components/pages/TranaPage";
 import { altLang } from "@/lib/i18n";
 import { tranaDict } from "@/lib/i18n/trana";
 
+// Årtalen i ungdomsrabatterna räknas vid rendering — bygg om regelbundet.
+export const revalidate = 21600;
+
 export const metadata: Metadata = {
   alternates: altLang("/trana", "/en/training", "sv"),
   title: tranaDict.sv.meta.title,

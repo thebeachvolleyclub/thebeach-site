@@ -3,6 +3,9 @@ import ForeningenPage from "@/components/pages/ForeningenPage";
 import { altLang } from "@/lib/i18n";
 import { foreningenDict } from "@/lib/i18n/foreningen";
 
+// Årtalen i ungdomsrabatterna räknas vid rendering — bygg om regelbundet.
+export const revalidate = 21600;
+
 export const metadata: Metadata = {
   alternates: altLang("/foreningen", "/en/membership", "en"),
   title: foreningenDict.en.meta.title,
