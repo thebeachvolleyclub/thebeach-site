@@ -20,6 +20,7 @@ export interface ForeningenDict {
   };
   ungdom: {
     eyebrow: string; title1: string; title2: string; body: string; cta: string;
+    contactPre: string; contactEmail: string;
     histEyebrow: string; histBody: string;
   };
 }
@@ -80,6 +81,8 @@ export const foreningenDict: Dict<ForeningenDict> = {
     ungdom: {
       eyebrow: "Ungdom", title1: "Från första nudden", title2: "till U19",
       body: "Barn- och ungdomsträningen leds av utbildade coacher under Måns Björn. Anmälan och info via Svenskalag.",
+      contactPre: "Frågor om barn och ungdom? Mejla Måns på ",
+      contactEmail: "mans@thebeach.one",
       cta: "Ungdomsträning",
       histEyebrow: "Klubbhistoria",
       histBody: "Grundad 2006 som Beachhallen BVC i Södertälje. 2016 gick vi ihop med spelarna från Bromma BVC och blev 08 Beachvolley Club — och ja, det var vi som var med och byggde banorna med riktig sand på Gärdet. Idag heter vi The Beach Volley Club, med hela verksamheten samlad under ett tak i Huddinge.",
@@ -140,6 +143,8 @@ export const foreningenDict: Dict<ForeningenDict> = {
     ungdom: {
       eyebrow: "Youth", title1: "From first touch", title2: "to U19",
       body: "Kids' and youth training is led by qualified coaches under Måns Björn. Sign-up and info via Svenskalag.",
+      contactPre: "Questions about kids' and youth training? Email Måns at ",
+      contactEmail: "mans@thebeach.one",
       cta: "Youth training",
       histEyebrow: "Club history",
       histBody: "Founded in 2006 as Beachhallen BVC in Södertälje. In 2016 we merged with the players of Bromma BVC and became 08 Beachvolley Club — and yes, we helped build the real-sand courts at Gärdet. Today we are The Beach Volley Club, with everything under one roof in Huddinge.",

@@ -123,7 +123,11 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
               <h2 className="mb-4 font-display text-[clamp(2rem,8vw,3rem)] leading-[0.9] text-black">
                 {t.ungdom.title1}{" "}<br />{t.ungdom.title2}
               </h2>
-              <p className="mb-5 max-w-md text-[15px] leading-relaxed text-black/60">{t.ungdom.body}</p>
+              <p className="mb-3 max-w-md text-[15px] leading-relaxed text-black/60">{t.ungdom.body}</p>
+              <p className="mb-5 max-w-md text-[15px] leading-relaxed text-black/60">
+                {t.ungdom.contactPre}
+                <a href={`mailto:${t.ungdom.contactEmail}`} className="text-black underline underline-offset-4 transition-colors hover:text-black/60">{t.ungdom.contactEmail}</a>
+              </p>
               <a href="https://www.svenskalag.se/thebeach" target="_blank" rel="noopener noreferrer"
                 className="inline-flex cursor-pointer items-center gap-2 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
                 {t.ungdom.cta} <span aria-hidden="true">→</span>
