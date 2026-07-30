@@ -43,8 +43,19 @@ type EmailAddress = { email: string; is_primary: boolean };
 type EmailFeed = { addresses: EmailAddress[] };
 type ActivityEntry = { name: string; date: string | null; groups?: string[] };
 type ActivityFeed = { events: ActivityEntry[]; training_groups: ActivityEntry[] };
+type Membership = {
+  typeName: string;
+  venueName: string | null;
+  validFrom: string | null;
+  validTo: string | null;
+  status: string;
+  paid: boolean;
+  current: boolean;
+  active: boolean;
+};
+type MembershipFeed = { memberships: Membership[]; activeCount: number };
 type AccountTab = "overview" | "training" | "bookings" | "invoices" | "profile";
-type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean };
+type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean };
 type CancellationResult = {
   booking: Booking;
   refundAmountSek?: number | null;
@@ -113,8 +124,9 @@ export default function AccountPortal() {
   const [activeInvoiceCount, setActiveInvoiceCount] = useState(0);
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
+  const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>({ memberships: [], activeCount: 0 });
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false });
+  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   // Signup status shared by the Träningsgrupper tab badge + status card.
   const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
@@ -204,7 +216,8 @@ export default function AccountPortal() {
       api<TrainingLookup>("/api/account/training"),
       api<EmailFeed>("/api/account/profile/emails"),
       api<ActivityFeed>("/api/account/activity"),
-    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult]) => {
+      api<MembershipFeed>("/api/account/membership"),
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -221,11 +234,18 @@ export default function AccountPortal() {
           training_groups: activityResult.value.training_groups ?? [],
         });
       }
+      if (membershipResult.status === "fulfilled") {
+        setMembershipFeed({
+          memberships: membershipResult.value.memberships ?? [],
+          activeCount: membershipResult.value.activeCount ?? 0,
+        });
+      }
       setOverviewAvailability({
         bookings: bookingResult.status === "fulfilled",
         invoices: invoiceResult.status === "fulfilled",
         training: trainingResult.status === "fulfilled",
         activity: activityResult.status === "fulfilled",
+        membership: membershipResult.status === "fulfilled",
       });
       setOverviewLoading(false);
     });
@@ -384,10 +404,11 @@ export default function AccountPortal() {
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
+    setMembershipFeed({ memberships: [], activeCount: 0 });
     setEmailsLoading(true);
     setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
-    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false });
+    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false });
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -425,7 +446,7 @@ export default function AccountPortal() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
       <div className="relative flex min-h-52 items-end gap-5 p-6 sm:p-8">
         <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-lime bg-mint text-4xl">{profile.avatar_thumb_url || profile.avatar_url ? <img src={profile.avatar_thumb_url || profile.avatar_url || ""} alt="" className="h-full w-full object-cover" /> : profile.emoji_icon || "🏐"}</span>
-        <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span></div></div>
+        <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span>{membershipFeed.activeCount > 0 ? <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black">Medlem</span> : null}</div></div>
       </div>
     </div>
     <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
@@ -449,6 +470,7 @@ export default function AccountPortal() {
       previousBookings={previousBookings}
       trainingGroups={trainingGroups}
       activity={activity}
+      membershipFeed={membershipFeed}
       activeInvoiceCount={activeInvoiceCount}
       availability={overviewAvailability}
       onOpenProfile={() => setTab("profile")}
@@ -529,6 +551,7 @@ function AccountOverview({
   previousBookings,
   trainingGroups,
   activity,
+  membershipFeed,
   activeInvoiceCount,
   availability,
   onOpenProfile,
@@ -543,6 +566,7 @@ function AccountOverview({
   previousBookings: Booking[];
   trainingGroups: TrainingGroup[];
   activity: ActivityFeed;
+  membershipFeed: MembershipFeed;
   activeInvoiceCount: number;
   availability: OverviewAvailability;
   onOpenProfile: () => void;
@@ -572,6 +596,12 @@ function AccountOverview({
       <OverviewStat value={loading || !availability.training ? "—" : trainingGroups.length} label="Träningsgrupper" accent="text-black" />
       <OverviewStat value={loading || !availability.invoices ? "—" : activeInvoiceCount} label="Fakturor att hantera" accent={activeInvoiceCount ? "text-orange" : "text-teal"} />
     </div>
+
+    <MembershipStatusCard
+      feed={membershipFeed}
+      loading={loading}
+      available={availability.membership}
+    />
 
     <div className="mt-px">
       <article className="bg-white p-6 sm:p-8">
@@ -615,6 +645,54 @@ function AccountOverview({
       </button>
     </div>
   </section>;
+}
+
+function MembershipStatusCard({
+  feed,
+  loading,
+  available,
+}: {
+  feed: MembershipFeed;
+  loading: boolean;
+  available: boolean;
+}) {
+  const membership = [...feed.memberships].sort((left, right) => {
+    const rank = (item: Membership) => item.active ? 2 : item.current ? 1 : 0;
+    return rank(right) - rank(left)
+      || (right.validTo ?? "").localeCompare(left.validTo ?? "");
+  })[0];
+
+  if (loading) {
+    return <article className="mt-px bg-black p-6 text-cream sm:p-8"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Medlemskap</p><OverviewLoading /></article>;
+  }
+  if (!available) {
+    return <article className="mt-px bg-black p-6 text-cream sm:p-8"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Medlemskap</p><p className="mt-5 border border-white/15 bg-white/5 p-5 text-sm text-white/65">Kunde inte hämta din medlemsstatus just nu.</p></article>;
+  }
+
+  const active = membership?.active ?? false;
+  const currentUnpaid = !!membership?.current && !membership.paid;
+  return <article className={`mt-px border-l-4 p-6 sm:p-8 ${active ? "border-l-lime bg-black text-cream" : currentUnpaid ? "border-l-orange bg-black text-cream" : "border-l-black/20 bg-white text-black"}`}>
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${active ? "text-lime" : currentUnpaid ? "text-orange" : "text-black/45"}`}>Medlemskap</p>
+          <span className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${active ? "bg-lime text-black" : currentUnpaid ? "bg-orange text-white" : "bg-black/10 text-black/55"}`}>
+            {active ? "Aktivt" : currentUnpaid ? "Betalning saknas" : "Inte aktivt"}
+          </span>
+        </div>
+        <h4 className="mt-3 font-display text-3xl">{membership?.typeName ?? "Inget aktivt medlemskap"}</h4>
+        {membership ? <p className={`mt-2 text-sm ${active || currentUnpaid ? "text-cream/65" : "text-black/50"}`}>
+          {membership.validFrom || membership.validTo
+            ? `Gäller ${membership.validFrom ? formatMembershipDate(membership.validFrom) : "tills vidare"}–${membership.validTo ? formatMembershipDate(membership.validTo) : "tills vidare"}`
+            : "Giltighetstid saknas"}
+          {membership.status ? ` · ${membership.status}` : ""}
+        </p> : <p className="mt-2 text-sm text-black/50">Vi hittar inget aktuellt medlemskap på ditt konto.</p>}
+      </div>
+      <Link href="/foreningen" className={`inline-flex min-h-11 shrink-0 items-center justify-center border px-5 text-xs font-bold uppercase tracking-[0.09em] transition-colors ${active || currentUnpaid ? "border-white/30 text-cream hover:border-lime hover:text-lime" : "border-black/20 text-black hover:border-black"}`}>
+        Om medlemskap <span className="ml-3" aria-hidden="true">→</span>
+      </Link>
+    </div>
+  </article>;
 }
 
 // Dedicated Träningsgrupper tab (Henric, 2026-07-18): current groups + signup
@@ -759,6 +837,16 @@ function formatBookingDate(date: string) {
   if (Number.isNaN(value.getTime())) return date;
   const formatted = new Intl.DateTimeFormat("sv-SE", { weekday: "long", day: "numeric", month: "long" }).format(value);
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+function formatMembershipDate(date: string) {
+  const value = new Date(`${date}T12:00:00`);
+  if (Number.isNaN(value.getTime())) return date;
+  return new Intl.DateTimeFormat("sv-SE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(value);
 }
 
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
