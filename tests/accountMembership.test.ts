@@ -13,7 +13,8 @@ const portal = readFileSync(
 
 test("membership route uses the HttpOnly account session and private caching", () => {
   assert.match(route, /accountToken\(\)/);
-  assert.match(route, /if \(!token\) return unauthorized\(\)/);
+  assert.match(route, /if \(!token\)/);
+  assert.match(route, /const response = unauthorized\(\)/);
   assert.match(route, /appApi\("\/booking\/memberships\/mine", undefined, \{ token \}\)/);
   assert.match(route, /"Cache-Control": "private, no-store"/);
   assert.doesNotMatch(route, /searchParams|playerId|email/);

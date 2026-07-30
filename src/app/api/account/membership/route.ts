@@ -5,7 +5,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const token = await accountToken();
-  if (!token) return unauthorized();
+  if (!token) {
+    const response = unauthorized();
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  }
 
   const upstream = await appApi("/booking/memberships/mine", undefined, { token });
   const body = await upstream.text();
