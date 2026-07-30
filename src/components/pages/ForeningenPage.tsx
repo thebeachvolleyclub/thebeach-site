@@ -97,7 +97,12 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
             ))}
           </div>
 
-          <Reveal delay={0.1} className="mt-10 border-t border-white/10 pt-8">
+          <Reveal delay={0.1} className="mt-0.5 border border-lime/30 bg-lime/[0.06] p-7 lg:p-10">
+            <h3 className="mb-3 font-display text-2xl uppercase leading-none text-lime lg:text-3xl">{t.tavla.juniorTitle}</h3>
+            <p className="max-w-3xl text-sm leading-relaxed text-bone/65">{t.tavla.juniorBody}</p>
+          </Reveal>
+
+          <Reveal delay={0.14} className="mt-10 border-t border-white/10 pt-8">
             <p className="max-w-2xl text-sm leading-relaxed text-bone/45">{t.tavla.footer}</p>
           </Reveal>
         </section>

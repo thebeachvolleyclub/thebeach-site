@@ -299,7 +299,7 @@ export const tranaDict: Dict<TranaDict> = {
       fakta: [
         { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
         { v: "23 aug", d: "grupperna publiceras senast" },
-        { v: "−20 %", d: "för dig under 26 år" },
+        { v: "−30 / −20 %", d: "ungdomsrabatt under 20 resp. 26 år" },
       ],
       tableCaption: "Träningsgrupper höstsäsong 2026 — dag, tid och pris",
       thDay: "Dag",
@@ -316,7 +316,7 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       youth: {
         title: "Ungdomsrabatt",
-        body: "20% rabatt för spelare födda 2001 eller senare.",
+        body: "30 % rabatt för dig under 20 år och 20 % under 26 (födda 2007 respektive 2001 eller senare). Rabatten kräver medlemskap i The Beach Volley Club Huddinge. Du behöver ingen aktiv tävlingslicens — men licensierar du dig för tävling ska det vara för oss.",
       },
       signup: {
         title: "Anmälan",
@@ -569,7 +569,7 @@ export const tranaDict: Dict<TranaDict> = {
       fakta: [
         { v: "15 sessions", d: "including one Gameday · last session 9 Dec" },
         { v: "23 Aug", d: "groups published at the latest" },
-        { v: "−20 %", d: "for players under 26" },
+        { v: "−30 / −20 %", d: "youth discount, under 20 and under 26" },
       ],
       tableCaption: "Training groups autumn season 2026 — day, time and price",
       thDay: "Day",
@@ -586,7 +586,7 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       youth: {
         title: "Youth discount",
-        body: "20% off for players born 2001 or later.",
+        body: "30% off if you are under 20 and 20% if you are under 26 (born 2007 and 2001 or later respectively). The discount requires membership of The Beach Volley Club Huddinge. No active competition licence is needed — but if you do take out a licence, it has to be with us.",
       },
       signup: {
         title: "Sign-up",

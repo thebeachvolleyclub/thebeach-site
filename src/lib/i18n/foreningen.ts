@@ -13,6 +13,8 @@ export interface ForeningenDict {
     c1title: string; c1body1: string; c1email: string; c1body2: string; c1fine: string;
     c2title: string; c2body: string; c2link: string; c2href: string;
     sbt: { n: string; d: string }[];
+    juniorTitle: string;
+    juniorBody: string;
     footer: string;
   };
   ungdom: {
@@ -42,7 +44,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
       fine2: ". Klubben hette tidigare 08 Beachvolley Club — namnbytet till The Beach Volley Club är registrerat hos Svenska Volleybollförbundet och Riksidrottsförbundet.",
       formaner: [
         "Billigare banhyra — perfekt om du vill spela mer",
-        "Rabatterade priser på aktiviteter och träning (idag junior & ungdom)",
+        "Ungdomsrabatt på träningsgrupperna — 30 % under 20 år, 20 % under 26",
         "Medlemsexklusiva event, aktiviteter och erbjudanden",
         "Gratis registrering av tävlingslicens — och plats i vårt tävlingsgäng",
         "Du stöttar prisvärd ungdomsträning och bättre villkor för alla spelare",
@@ -64,6 +66,9 @@ export const foreningenDict: Dict<ForeningenDict> = {
         { n: "SBT 4–5★", d: "Sveriges absoluta toppspelare." },
         { n: "Mixed & U19", d: "Avslappnad stämning respektive åldersbaserat — båda arrangeras på The Beach." },
       ],
+      juniorTitle: "100 kr rabatt när en junior spelar",
+      juniorBody:
+        "I turneringar vi arrangerar får laget 100 kr rabatt på anmälningsavgiften om en junior spelar — förutsatt att båda i laget tillhör The Beach Volley Club Huddinge. En ungdomsturnering med 300 kr per lag kostar då 200 kr. Samma sak gäller när en junior spelar en seniorturnering, till exempel SBT 1★ eller 2★, tillsammans med en partner från klubben — oavsett partnerns ålder.",
       footer: "The Beach är en stolt och aktiv del av svensk volleyboll — både damlandslagets förbundskapten Mattias Magnusson och herrarnas Rasmus Jonsson utgår från vår anläggning. Bor du någon annanstans? Vi hjälper dig gärna hitta en klubb nära dig.",
     },
     ungdom: {
@@ -94,7 +99,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
       fine2: ". The club was previously named 08 Beachvolley Club — the name change to The Beach Volley Club is registered with the Swedish Volleyball Federation and the Swedish Sports Confederation.",
       formaner: [
         "Cheaper court hire — perfect if you want to play more",
-        "Discounted prices on activities and training (currently juniors & youth)",
+        "Youth discount on the training groups — 30% under 20, 20% under 26",
         "Member-exclusive events, activities and offers",
         "Free competition licence registration — and a place in our competing crew",
         "You support affordable youth training and better conditions for all players",
@@ -116,6 +121,9 @@ export const foreningenDict: Dict<ForeningenDict> = {
         { n: "SBT 4–5★", d: "Sweden's very best players." },
         { n: "Mixed & U19", d: "Relaxed vibes and age-based play respectively — both held at The Beach." },
       ],
+      juniorTitle: "SEK 100 off when a junior plays",
+      juniorBody:
+        "In tournaments we host, the team gets SEK 100 off the entry fee when a junior plays — provided both players represent The Beach Volley Club Huddinge. A youth tournament at SEK 300 per team then costs SEK 200. The same applies when a junior plays a senior tournament, for example SBT 1★ or 2★, with a partner from the club — whatever the partner's age.",
       footer: "The Beach is a proud and active part of Swedish volleyball — both the women's national team head coach Mattias Magnusson and the men's Rasmus Jonsson are based at our facility. Live somewhere else? We're happy to help you find a club near you.",
     },
     ungdom: {
