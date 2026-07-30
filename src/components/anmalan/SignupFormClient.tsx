@@ -35,6 +35,13 @@ type Slot = {
   note_en?: string;
 };
 
+type JuniorPricing = {
+  birth_year_from: number;
+  discount_pct: number;
+  membership_required: boolean;
+  membership_fee_sek: number;
+};
+
 type Config = {
   config_version?: number;
   season_id: number;
@@ -51,6 +58,7 @@ type Config = {
   before_open: boolean;
   max_sessions_per_week: number;
   slots: Slot[];
+  junior_pricing?: JuniorPricing;
   config: Record<string, unknown> & {
     title_en?: string; intro_en?: string;
     multi_session_note?: string; multi_session_note_en?: string;
@@ -102,6 +110,7 @@ type WishRow = {
 };
 
 type SearchResult = { id: number; name: string; age?: number | null };
+type MembershipFeed = { activeCount?: number; memberships?: { active?: boolean }[] };
 
 let wishSeq = 0;
 const newWishId = () => `w${++wishSeq}`;
@@ -176,6 +185,9 @@ const STR = {
     pilotDown: "Behöver förbättras",
     pilotComment: "Berätta kort varför",
     pilotCommentPlaceholder: "Vad fungerade bra eller vad kan vi förbättra?",
+    juniorMembershipTitle: "Ungdomsrabatt – inget aktivt medlemskap hittades",
+    juniorMembershipBody: (discount: number, fee: number) =>
+      `Du får ${discount} % rabatt på träningsavgiften. För rabatten behöver du vara medlem i The Beach Volley Club Huddinge. Vi hittar inget aktivt medlemskap just nu. Om medlemskapet fortfarande saknas när fakturan skickas lägger vi till junioravgiften ${fee} kr – du betalar fortfarande mindre totalt.`,
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
     cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
@@ -283,6 +295,9 @@ const STR = {
     pilotDown: "Needs improvement",
     pilotComment: "Tell us briefly why",
     pilotCommentPlaceholder: "What worked well, or what could we improve?",
+    juniorMembershipTitle: "Youth discount – no active membership found",
+    juniorMembershipBody: (discount: number, fee: number) =>
+      `You receive ${discount}% off the training fee. The discount requires membership of The Beach Volley Club Huddinge. We cannot find an active membership right now. If it is still missing when the invoice is sent, the SEK ${fee} junior membership fee will be added – your total will still be lower.`,
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
     cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
@@ -346,6 +361,26 @@ function fmtDate(iso: string | null | undefined) {
   return iso ? iso.slice(0, 10) : null;
 }
 
+const DEFAULT_JUNIOR_PRICING: JuniorPricing = {
+  birth_year_from: 2007,
+  discount_pct: 30,
+  membership_required: true,
+  membership_fee_sek: 190,
+};
+
+function juniorDiscountApplies(birthdate: string, pricing: JuniorPricing) {
+  const normalized = birthdate.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return false;
+  const birthYear = Number(normalized.slice(0, 4));
+  return Number.isInteger(birthYear) && birthYear >= pricing.birth_year_from;
+}
+
+function discountedPriceSek(priceSek: number, discountPct: number) {
+  const safePrice = Math.max(0, Number(priceSek) || 0);
+  const safeDiscount = Math.min(100, Math.max(0, Number(discountPct) || 0));
+  return Math.round(safePrice * (100 - safeDiscount) / 100);
+}
+
 function fmtOpens(iso: string, lang: Lang) {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
@@ -365,6 +400,7 @@ export default function SignupFormClient() {
   const [accountName, setAccountName] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
   const [viewerIsTester, setViewerIsTester] = useState(false);
+  const [membershipConfirmed, setMembershipConfirmed] = useState<boolean | null>(null);
 
   const [busy, setBusy] = useState(false);
   // Read-only-first (Henric, 2026-07-18): an existing registration OPENS as a
@@ -429,10 +465,12 @@ export default function SignupFormClient() {
         setAuthed(true);
         setAccountName(session.profile?.name ?? null);
         setViewerIsTester(!!session.profile?.is_app_tester);
-        const [pf, mineState] = await Promise.all([
+        const [pf, mineState, membershipFeed] = await Promise.all([
           api<Prefill>("/api/signup/prefill").catch(() => null),
           api<MineState>("/api/signup/mine").catch(() => null),
+          api<MembershipFeed>("/api/account/membership").catch(() => null),
         ]);
+        setMembershipConfirmed((membershipFeed?.activeCount ?? 0) > 0);
         if (pf) {
           setPrefill(pf);
           setFirstName(pf.first_name ?? "");
@@ -483,6 +521,12 @@ export default function SignupFormClient() {
   const multiNote = (lang === "en" && config?.config?.multi_session_note_en) || config?.config?.multi_session_note || "";
   const maxWishes = Number(config?.config?.max_wishes ?? 5);
   const maxDemands = Number(config?.config?.max_demands ?? 5);
+  const juniorPricing = config?.junior_pricing ?? DEFAULT_JUNIOR_PRICING;
+  const hasJuniorDiscount = juniorDiscountApplies(birthdate, juniorPricing);
+  const juniorDiscountPct = hasJuniorDiscount ? juniorPricing.discount_pct : 0;
+  const showJuniorMembershipNotice = hasJuniorDiscount
+    && juniorPricing.membership_required
+    && membershipConfirmed !== true;
   const wishCount = wishes.filter((w) => w.kind === "wish").length;
   const demandCount = wishes.filter((w) => w.kind === "demand").length;
 
@@ -1002,6 +1046,7 @@ export default function SignupFormClient() {
             isSelected={(s) => primarySlots.includes(s.key)}
             isDisabled={() => anySlot}
             isStruck={() => anySlot}
+            discountPct={juniorDiscountPct}
             onToggle={togglePrimary}
           />
 
@@ -1020,6 +1065,7 @@ export default function SignupFormClient() {
                 isSelected={(s) => secondarySlots.includes(s.key)}
                 isDisabled={() => anySlot}
                 isStruck={(s) => anySlot || primarySlots.includes(s.key)}
+                discountPct={juniorDiscountPct}
                 onToggle={toggleSecondary}
               />
             </>
@@ -1126,6 +1172,20 @@ export default function SignupFormClient() {
           </section>
         ) : null}
 
+        {showJuniorMembershipNotice ? (
+          <aside className="border border-orange/40 bg-orange/10 p-5 text-black" aria-live="polite">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-orange">
+              {t.juniorMembershipTitle}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-black/70">
+              {t.juniorMembershipBody(
+                juniorPricing.discount_pct,
+                juniorPricing.membership_fee_sek,
+              )}
+            </p>
+          </aside>
+        ) : null}
+
         {error ? (
           <p role="alert" className="border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">{error}</p>
         ) : null}
@@ -1182,10 +1242,12 @@ function CheckRow({ checked, onToggle, label }: { checked: boolean; onToggle: ()
   );
 }
 
-function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isDisabled, isStruck, onToggle }: {
+function SlotPicker({
+  slotsByDay, dayOrder, t, lang, isSelected, isDisabled, isStruck, discountPct, onToggle,
+}: {
   slotsByDay: Record<number, Slot[]>; dayOrder: number[]; t: Strings; lang: Lang;
   isSelected: (s: Slot) => boolean; isDisabled: (s: Slot) => boolean;
-  isStruck: (s: Slot) => boolean; onToggle: (key: string) => void;
+  isStruck: (s: Slot) => boolean; discountPct?: number; onToggle: (key: string) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -1200,6 +1262,9 @@ function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isDisabled, isS
               const struck = isStruck(s);
               const disabled = isDisabled(s) || struck;
               const note = (lang === "en" && s.note_en) || s.note;
+              const discountedPrice = discountPct
+                ? discountedPriceSek(s.price_sek, discountPct)
+                : null;
               return (
                 <button
                   key={s.key}
@@ -1224,8 +1289,21 @@ function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isDisabled, isS
                     <span className="block font-semibold">{s.time_label ?? s.start_time}</span>
                     {note ? <span className={`mt-0.5 block text-[11px] ${on ? "text-cream/70" : "text-black/45"}`}>{note}</span> : null}
                   </span>
-                  <span className={`shrink-0 text-[13px] ${struck ? "line-through" : ""} ${on ? "text-cream/80" : "text-black/50"}`}>
-                    {s.price_sek} kr
+                  <span className="shrink-0 text-right text-[13px]">
+                    {discountedPrice !== null ? (
+                      <>
+                        <span className={`block text-[11px] line-through ${on ? "text-cream/55" : "text-black/40"}`}>
+                          {s.price_sek} kr
+                        </span>
+                        <span className={`block font-bold ${struck ? "line-through" : ""} ${on ? "text-lime" : "text-orange"}`}>
+                          {discountedPrice} kr
+                        </span>
+                      </>
+                    ) : (
+                      <span className={`${struck ? "line-through" : ""} ${on ? "text-cream/80" : "text-black/50"}`}>
+                        {s.price_sek} kr
+                      </span>
+                    )}
                   </span>
                 </button>
               );

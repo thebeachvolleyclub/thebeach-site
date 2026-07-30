@@ -29,3 +29,16 @@ test("any-day availability disables individual choices and clears stale selectio
   assert.match(source, /isStruck=\{\(\) => anySlot\}/);
   assert.match(source, /const slotPrefs = anySlot \? \[\] : \[/);
 });
+
+test("junior signup pricing and the private membership reminder share the app contract", () => {
+  assert.match(source, /junior_pricing\?: JuniorPricing/);
+  assert.match(source, /birth_year_from: 2007/);
+  assert.match(source, /discount_pct: 30/);
+  assert.match(source, /membership_fee_sek: 190/);
+  assert.match(source, /api<MembershipFeed>\("\/api\/account\/membership"\)/);
+  assert.match(source, /juniorDiscountApplies\(birthdate, juniorPricing\)/);
+  assert.match(source, /discountPct=\{juniorDiscountPct\}/);
+  assert.match(source, /discountedPriceSek\(s\.price_sek, discountPct\)/);
+  assert.match(source, /showJuniorMembershipNotice \? \(/);
+  assert.match(source, /junioravgiften \$\{fee\} kr/);
+});
