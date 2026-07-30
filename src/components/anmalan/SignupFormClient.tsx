@@ -13,13 +13,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Lang = "sv" | "en";
 type WishKind = "wish" | "demand";
+type PilotFeedbackRating = "up" | "down";
 type WishType =
   | "same_group" | "not_same_group" | "same_time" | "not_same_time"
   | "language_swedish" | "language_english" | "free_text";
 
 const WISH_ORDER: WishType[] = [
   "same_group", "not_same_group", "same_time", "not_same_time",
-  "language_swedish", "language_english", "free_text",
+  "free_text",
 ];
 const PLAYER_TYPES: WishType[] = ["same_group", "not_same_group", "same_time", "not_same_time"];
 
@@ -41,6 +42,7 @@ type Config = {
   intro_md: string | null;
   is_open: boolean;
   preview_open: boolean;
+  pilot_feedback_required: boolean;
   testers_only: boolean;
   edits_locked: boolean;
   contact_email: string;
@@ -76,6 +78,9 @@ type Submission = {
   sessions_per_week: number; any_slot: boolean;
   newsletter_opt_in: boolean; commitment_ack: boolean; payment_ack: boolean;
   cancellation_ack: boolean;
+  pilot_feedback_rating: PilotFeedbackRating | null;
+  pilot_feedback_comment: string | null;
+  pilot_feedback_at: string | null;
   created_at: string | null; changed_at: string | null; cancelled_at: string | null;
   is_changed: boolean; is_cancelled: boolean;
   slot_prefs: { priority: number; slot_key: string }[];
@@ -140,27 +145,37 @@ const STR = {
     sessionsTitle: "Hur ofta vill du träna?",
     sessionUnit: (n: number) => `${n} gång${n > 1 ? "er" : ""}/vecka`,
     timesTitle: "Tider",
-    timesHint: "Markera de tider du helst vill ha (en eller flera). Du kan även kryssa i att vilken dag/tid som helst funkar.",
-    anySlotLabel: "Jag kan och vill träna i bästa möjliga grupp – vilken dag/tid som helst.",
+    timesHint: "Markera alla tider som fungerar för dig.",
+    anySlotTitle: "Vilken dag/tid som helst",
+    anySlotDescription: "Välj detta om du är helt flexibel och prioriterar gruppens nivå framför dag och tid.",
+    anySlotLabel: "Placera mig i bästa möjliga grupp – vilken dag/tid som helst.",
     firstChoice: "Förstahandsval", secondChoice: "Andrahandsval",
-    anyChosenHelp: "Du har valt vilken dag/tid som helst. Du kan ändå markera tider du föredrar.",
-    primaryHelp: (c: number, n: number) => `Välj förstahandstider på minst ${n} ${n === 1 ? "dag" : "olika dagar"} (${c}/${n} ${c === 1 ? "dag" : "dagar"} valda). Du kan välja flera tider per dag.`,
-    secondaryHelp: "Tider du också skulle kunna tänka dig om vi inte kan ge dig ditt förstahandsval (valfritt).",
+    anyChosenHelp: "Du har valt vilken dag/tid som helst. Första- och andrahandsval behövs därför inte.",
+    primaryStatus: (c: number) => `Valda dagar: ${c}`,
+    primaryHelp: "Välj gärna så många förstahandstider som möjligt. Ju fler tider du väljer, desto större chans har vi att placera dig i en träningsgrupp på så hög nivå som möjligt.",
+    secondaryHelp: "Välj alla övriga tider som också fungerar. Ju fler andrahandsval du gör, desto större är chansen att vi kan erbjuda dig en plats i en träningsgrupp.",
     secondaryLocked: 'Välj ett förstahandsval först (eller "vilken dag/tid som helst").',
     wishesTitle: "Önskemål",
-    wishesHint: (m: number) => `Saker du gärna vill, men som inte är krav. Max ${m}.`,
-    wishesDisc: "Vi försöker tillgodose önskemål i mån av möjlighet, men kan inte garantera dem. Placering sker främst utifrån nivå.",
+    wishesBadge: "INTE ETT KRAV",
+    wishesHint: (m: number) => `Sådant du gärna vill, men som vi inte måste kunna uppfylla. Max ${m}.`,
+    wishesDisc: "Lägg bara till önskemål som är viktiga för dig. Fler önskemål begränsar våra möjligheter att placera dig och kan innebära att du erbjuds en träningsgrupp på lägre nivå.",
     addWish: "+ Lägg till önskemål",
     demandsTitle: "Krav",
-    demandsHint: (m: number) => `Måste uppfyllas för att din anmälan ska gälla. Max ${m}.`,
-    demandsDisc: "Observera: krav kan innebära att vi inte kan erbjuda dig en plats om vi inte kan uppfylla dem. Använd krav sparsamt – ju fler krav, desto svårare att placera dig.",
+    demandsBadge: "MÅSTE UPPFYLLAS",
+    demandsHint: (m: number) => `Endast helt nödvändiga villkor. De måste kunna uppfyllas för att anmälan ska gälla. Max ${m}.`,
+    demandsDisc: "Lägg bara till krav som är helt nödvändiga. Varje krav begränsar våra möjligheter och kan innebära att vi inte kan erbjuda dig någon träningsgrupp alls.",
     addDemand: "+ Lägg till krav",
     selectWishType: "Välj typ av önskemål…", selectDemandType: "Välj typ av krav…",
     confirmTitle: "Bekräftelse",
-    ackCommitment: "Jag förbinder mig att delta i träningarna jag placeras i.",
     ackPayment: "Jag förbinder mig att betala avgiften för min plats.",
     ackCancellation: "Jag har läst och förstått reglerna för avbokning.",
     optNewsletter: "Jag vill ta emot nyhetsbrev från The Beach.",
+    pilotTitle: "Snabb feedback på anmälan",
+    pilotHint: "Hur upplevde du anmälningsflödet? Din feedback hjälper oss att göra det ännu bättre.",
+    pilotUp: "Bra",
+    pilotDown: "Behöver förbättras",
+    pilotComment: "Berätta kort varför",
+    pilotCommentPlaceholder: "Vad fungerade bra eller vad kan vi förbättra?",
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
     cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
@@ -172,6 +187,7 @@ const STR = {
     errIdentity: "Fyll i namn, e-post, födelsedatum (ÅÅÅÅ-MM-DD) och kön.",
     errSlots: (n: number) => `Välj förstahandstider på minst ${n} olika ${n === 1 ? "dag" : "dagar"} – eller kryssa i "vilken dag/tid som helst".`,
     errAcks: "Du måste godkänna bekräftelserna för att skicka in.",
+    errPilotFeedback: "Välj tumme upp eller tumme ner och skriv en kort kommentar.",
     genericError: "Något gick fel. Försök igen om en stund.",
     searchPh: "Sök spelare i registret…", searching: "Söker…", change: "Ändra",
     otherPlayer: "Annan spelare", otherPlayerNote: "Annan spelare",
@@ -236,27 +252,37 @@ const STR = {
     sessionsTitle: "How often do you want to train?",
     sessionUnit: (n: number) => `${n} session${n > 1 ? "s" : ""}/week`,
     timesTitle: "Times",
-    timesHint: "Mark the times you'd most like (one or more). You can also tick that any day/time works.",
-    anySlotLabel: "I can and want to train in the best possible group — any day/any time.",
+    timesHint: "Select every time that works for you.",
+    anySlotTitle: "Any day, any time",
+    anySlotDescription: "Select this if you are completely flexible and prioritize the group level over the day and time.",
+    anySlotLabel: "Place me in the best possible group — any day, any time.",
     firstChoice: "First choice", secondChoice: "Second choice",
-    anyChosenHelp: "You've chosen any day/time. You can still mark times you prefer.",
-    primaryHelp: (c: number, n: number) => `Choose first-choice times on at least ${n} ${n === 1 ? "day" : "separate days"} (${c}/${n} ${c === 1 ? "day" : "days"} selected). You can pick several times per day.`,
-    secondaryHelp: "Times you'd also consider if we can't give you your first choice (optional).",
+    anyChosenHelp: "You've selected any day/any time, so first and second choices aren't needed.",
+    primaryStatus: (c: number) => `Days selected: ${c}`,
+    primaryHelp: "Select as many first-choice times as possible. The more times you select, the better our chance of placing you in a training group at the highest possible level.",
+    secondaryHelp: "Select every other time that also works. The more second choices you select, the better the chance that we can offer you a place in a training group.",
     secondaryLocked: 'Choose a first choice first (or "any day/any time").',
     wishesTitle: "Wishes",
-    wishesHint: (m: number) => `Things you'd like, but that aren't requirements. Max ${m}.`,
-    wishesDisc: "We try to accommodate wishes when possible, but can't guarantee them. Placement is primarily based on skill level.",
+    wishesBadge: "NOT A REQUIREMENT",
+    wishesHint: (m: number) => `Something you'd like, but that we do not have to be able to meet. Max ${m}.`,
+    wishesDisc: "Only add wishes that are important to you. More wishes limit our placement options and may mean that you are offered a lower-level training group.",
     addWish: "+ Add wish",
     demandsTitle: "Requirements",
-    demandsHint: (m: number) => `Must be met for your registration to be valid. Max ${m}.`,
-    demandsDisc: "Note: requirements may mean we can't offer you a spot if we're unable to meet them. Use requirements sparingly — the more requirements, the harder you are to place.",
+    demandsBadge: "MUST BE MET",
+    demandsHint: (m: number) => `Only essential conditions. They must be met for your registration to be valid. Max ${m}.`,
+    demandsDisc: "Only add requirements that are absolutely necessary. Every requirement limits our options and may mean that we cannot offer you a training group at all.",
     addDemand: "+ Add requirement",
     selectWishType: "Select type of wish…", selectDemandType: "Select type of requirement…",
     confirmTitle: "Confirmation",
-    ackCommitment: "I commit to attending the sessions I'm placed in.",
     ackPayment: "I commit to paying the fee for my spot.",
     ackCancellation: "I have read and understood the cancellation rules.",
     optNewsletter: "I'd like to receive newsletters from The Beach.",
+    pilotTitle: "Quick registration feedback",
+    pilotHint: "How did you find the registration flow? Your feedback helps us make it even better.",
+    pilotUp: "Good",
+    pilotDown: "Needs improvement",
+    pilotComment: "Tell us briefly why",
+    pilotCommentPlaceholder: "What worked well, or what could we improve?",
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
     cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
@@ -268,6 +294,7 @@ const STR = {
     errIdentity: "Fill in name, email, date of birth (YYYY-MM-DD) and gender.",
     errSlots: (n: number) => `Choose first-choice times on at least ${n} separate ${n === 1 ? "day" : "days"} — or tick "any day/any time".`,
     errAcks: "You must accept the confirmations to submit.",
+    errPilotFeedback: "Choose thumbs up or thumbs down and write a short comment.",
     genericError: "Something went wrong. Please try again shortly.",
     searchPh: "Search players in the registry…", searching: "Searching…", change: "Change",
     otherPlayer: "Other player", otherPlayerNote: "Other player",
@@ -353,19 +380,17 @@ export default function SignupFormClient() {
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState<"M" | "W" | null>(null);
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [postcode, setPostcode] = useState("");
-  const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
   const [sessions, setSessions] = useState(1);
   const [anySlot, setAnySlot] = useState(false);
   const [primarySlots, setPrimarySlots] = useState<string[]>([]);
   const [secondarySlots, setSecondarySlots] = useState<string[]>([]);
   const [wishes, setWishes] = useState<WishRow[]>([]);
-  const [commitmentAck, setCommitmentAck] = useState(false);
   const [paymentAck, setPaymentAck] = useState(false);
   const [cancellationAck, setCancellationAck] = useState(false);
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [pilotFeedbackRating, setPilotFeedbackRating] = useState<PilotFeedbackRating | null>(null);
+  const [pilotFeedbackComment, setPilotFeedbackComment] = useState("");
 
   const applySubmission = useCallback((sub: Submission) => {
     setFirstName(sub.first_name ?? "");
@@ -374,23 +399,21 @@ export default function SignupFormClient() {
     setBirthdate(sub.birthdate ?? "");
     setGender(sub.gender ?? null);
     setPhone(sub.phone ?? "");
-    setAddress(sub.address ?? "");
-    setPostcode(sub.postcode ?? "");
-    setCity(sub.city ?? "");
     setDescription(sub.player_description ?? "");
     setSessions(sub.sessions_per_week);
     setAnySlot(sub.any_slot);
     setPrimarySlots(sub.slot_prefs.filter((p) => p.priority === 1).map((p) => p.slot_key));
     setSecondarySlots(sub.slot_prefs.filter((p) => p.priority === 2).map((p) => p.slot_key));
-    setWishes(sub.wishes.map((w) => ({
+    setWishes(sub.wishes.filter((w) => WISH_ORDER.includes(w.wish_type)).map((w) => ({
       id: newWishId(), kind: w.kind, wishType: w.wish_type,
       targetPlayerId: w.target_player_id, targetName: w.target_name,
       freeText: w.free_text ?? "",
     })));
-    setCommitmentAck(sub.commitment_ack);
     setPaymentAck(sub.payment_ack);
     setCancellationAck(sub.cancellation_ack);
     setNewsletterOptIn(sub.newsletter_opt_in);
+    setPilotFeedbackRating(sub.pilot_feedback_rating);
+    setPilotFeedbackComment(sub.pilot_feedback_comment ?? "");
   }, []);
 
   const load = useCallback(async () => {
@@ -447,9 +470,9 @@ export default function SignupFormClient() {
 
   const existing = mine?.submission ?? null;
   const readOnly = !!existing && mine?.can_edit === false;
-  // Fail CLOSED against a legacy/partial API: only trust the open/preview
-  // flags when the server advertises the testers-gate contract (v2+).
-  const SIGNUP_CONFIG_VERSION = 2;
+  // Fail CLOSED against a legacy/partial API: v3 also carries the
+  // server-authoritative pilot-feedback requirement.
+  const SIGNUP_CONFIG_VERSION = 3;
   const gateAware = (config?.config_version ?? 0) >= SIGNUP_CONFIG_VERSION;
   // Who may sign up: publicly open (everyone), or an app-tester during the
   // pre-launch preview. The API enforces this too — this only governs the UI.
@@ -477,20 +500,34 @@ export default function SignupFormClient() {
     () => new Set(primarySlots.map((k) => slotDay[k])).size,
     [primarySlots, slotDay],
   );
-  const secondaryEnabled = anySlot || primarySlots.length >= 1;
+  const secondaryEnabled = !anySlot && primarySlots.length >= 1;
   const slotsOk = anySlot || primaryDayCount >= sessions;
   const birthdateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim());
   const identityOk = !!(firstName.trim() && lastName.trim() && email.trim() && birthdateValid && gender);
-  const acksOk = commitmentAck && paymentAck && cancellationAck;
+  const acksOk = paymentAck && cancellationAck;
   const descriptionOk = !!description.trim();
-  const canSubmit = identityOk && descriptionOk && acksOk && slotsOk;
+  const pilotFeedbackOk = !config?.pilot_feedback_required
+    || (!!pilotFeedbackRating && pilotFeedbackComment.trim().length > 0);
+  const canSubmit = identityOk && descriptionOk && acksOk && slotsOk && pilotFeedbackOk;
 
   const togglePrimary = useCallback((key: string) => {
     setPrimarySlots((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
     setSecondarySlots((prev) => prev.filter((k) => k !== key));
   }, []);
   const toggleSecondary = useCallback((key: string) => {
+    if (primarySlots.includes(key)) return;
     setSecondarySlots((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  }, [primarySlots]);
+
+  const toggleAnySlot = useCallback(() => {
+    setAnySlot((current) => {
+      const next = !current;
+      if (next) {
+        setPrimarySlots([]);
+        setSecondarySlots([]);
+      }
+      return next;
+    });
   }, []);
 
   const addWishRow = useCallback((kind: WishKind) => {
@@ -521,9 +558,11 @@ export default function SignupFormClient() {
     if (!descriptionOk) { setError(t.errDescription); return; }
     if (!acksOk) { setError(t.errAcks); return; }
     if (!slotsOk) { setError(t.errSlots(sessions)); return; }
+    if (!pilotFeedbackOk) { setError(t.errPilotFeedback); return; }
 
     const cleanWishes = wishes
       .filter((w) => !!w.wishType)
+      .filter((w) => WISH_ORDER.includes(w.wishType as WishType))
       .filter((w) => w.wishType !== "free_text" || w.freeText.trim())
       .filter((w) => !PLAYER_TYPES.includes(w.wishType as WishType)
         || w.targetPlayerId || (w.targetName ?? "").trim())
@@ -532,7 +571,7 @@ export default function SignupFormClient() {
         target_player_id: w.targetPlayerId, target_name: w.targetName,
         free_text: w.freeText.trim() || null,
       }));
-    const slotPrefs = [
+    const slotPrefs = anySlot ? [] : [
       ...primarySlots.map((k) => ({ priority: 1, slot_key: k })),
       ...secondarySlots.filter((k) => !primarySlots.includes(k)).map((k) => ({ priority: 2, slot_key: k })),
     ];
@@ -554,8 +593,10 @@ export default function SignupFormClient() {
           phone: phone.trim() || null,
           player_description: description.trim() || null,
           sessions_per_week: sessions, any_slot: anySlot, language_pref: null,
-          newsletter_opt_in: newsletterOptIn, commitment_ack: commitmentAck,
+          newsletter_opt_in: newsletterOptIn,
           payment_ack: paymentAck, cancellation_ack: cancellationAck,
+          pilot_feedback_rating: config?.pilot_feedback_required ? pilotFeedbackRating : null,
+          pilot_feedback_comment: config?.pilot_feedback_required ? pilotFeedbackComment.trim() : null,
           slot_prefs: slotPrefs, wishes: cleanWishes,
           prefill_corrections: corrections,
         }),
@@ -567,10 +608,10 @@ export default function SignupFormClient() {
     } finally {
       setBusy(false);
     }
-  }, [identityOk, descriptionOk, acksOk, slotsOk, t, sessions, wishes, primarySlots, secondarySlots,
-    existing, config, firstName, lastName, email, birthdate, gender, phone, address,
-    postcode, city, description, anySlot, newsletterOptIn, commitmentAck, paymentAck,
-    cancellationAck, corrections]);
+  }, [identityOk, descriptionOk, acksOk, slotsOk, pilotFeedbackOk, t, sessions, wishes, primarySlots, secondarySlots,
+    existing, config, firstName, lastName, email, birthdate, gender, phone,
+    description, anySlot, newsletterOptIn, paymentAck,
+    cancellationAck, pilotFeedbackRating, pilotFeedbackComment, corrections]);
 
   const cancelSignup = useCallback(async () => {
     if (!window.confirm(t.cancelConfirm)) return;
@@ -939,27 +980,46 @@ export default function SignupFormClient() {
         <section className={cardCls}>
           <h3 className={headingCls}>{t.timesTitle}</h3>
           <p className={`${hintCls} mb-5`}>{t.timesHint}</p>
-          <CheckRow checked={anySlot} onToggle={() => setAnySlot((v) => !v)} label={t.anySlotLabel} />
+          <h4 className="text-[15px] font-bold text-black">{t.anySlotTitle}</h4>
+          <p className="mb-3 mt-1 text-[13px] leading-relaxed text-black/55">{t.anySlotDescription}</p>
+          <CheckRow checked={anySlot} onToggle={toggleAnySlot} label={t.anySlotLabel} />
 
-          <p className={`${labelCls} mt-6`}>{t.firstChoice}</p>
+          <div className="my-6 border-t border-black/15" />
+
+          <div className="flex items-start justify-between gap-3">
+            <h4 className={`text-[15px] font-bold ${anySlot ? "text-black/35" : "text-black"}`}>{t.firstChoice}</h4>
+            {!anySlot ? (
+              <span className="shrink-0 bg-mint px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-teal">
+                {t.primaryStatus(primaryDayCount)}
+              </span>
+            ) : null}
+          </div>
           <p className="mb-3 text-[13px] leading-relaxed text-black/50">
-            {anySlot ? t.anyChosenHelp : t.primaryHelp(primaryDayCount, sessions)}
+            {anySlot ? t.anyChosenHelp : t.primaryHelp}
           </p>
           <SlotPicker
             slotsByDay={slotsByDay} dayOrder={dayOrder} t={t} lang={lang}
             isSelected={(s) => primarySlots.includes(s.key)}
-            isStruck={() => false}
+            isDisabled={() => anySlot}
+            isStruck={() => anySlot}
             onToggle={togglePrimary}
           />
 
-          <p className={`${labelCls} mt-6 ${!secondaryEnabled ? "text-black/30" : ""}`}>{t.secondChoice}</p>
-          {secondaryEnabled ? (
+          <div className="my-6 border-t border-black/15" />
+
+          <h4 className={`text-[15px] font-bold ${(anySlot || !secondaryEnabled) ? "text-black/35" : "text-black"}`}>
+            {t.secondChoice}
+          </h4>
+          <p className={`mb-3 mt-1 text-[13px] leading-relaxed ${anySlot ? "text-black/30" : "text-black/50"}`}>
+            {t.secondaryHelp}
+          </p>
+          {(secondaryEnabled || anySlot) ? (
             <>
-              <p className="mb-3 text-[13px] leading-relaxed text-black/50">{t.secondaryHelp}</p>
               <SlotPicker
                 slotsByDay={slotsByDay} dayOrder={dayOrder} t={t} lang={lang}
                 isSelected={(s) => secondarySlots.includes(s.key)}
-                isStruck={(s) => primarySlots.includes(s.key)}
+                isDisabled={() => anySlot}
+                isStruck={(s) => anySlot || primarySlots.includes(s.key)}
                 onToggle={toggleSecondary}
               />
             </>
@@ -970,7 +1030,12 @@ export default function SignupFormClient() {
 
         {/* Wishes */}
         <section className={cardCls}>
-          <h3 className={headingCls}>{t.wishesTitle}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className={headingCls}>{t.wishesTitle}</h3>
+            <span className="bg-mint px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-teal">
+              {t.wishesBadge}
+            </span>
+          </div>
           <p className={`${hintCls} mb-4`}>{t.wishesHint(maxWishes)}</p>
           <div className="mb-4 border border-teal/20 bg-mint p-4 text-[13px] leading-relaxed text-teal">{t.wishesDisc}</div>
           <div className="space-y-3">
@@ -988,7 +1053,12 @@ export default function SignupFormClient() {
 
         {/* Demands */}
         <section className={cardCls}>
-          <h3 className={headingCls}>{t.demandsTitle}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className={headingCls}>{t.demandsTitle}</h3>
+            <span className="bg-orange/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-orange">
+              {t.demandsBadge}
+            </span>
+          </div>
           <p className={`${hintCls} mb-4`}>{t.demandsHint(maxDemands)}</p>
           <div className="mb-4 border-l-4 border-orange bg-orange/10 p-4 text-[13px] leading-relaxed text-black/70">{t.demandsDisc}</div>
           <div className="space-y-3">
@@ -1008,12 +1078,53 @@ export default function SignupFormClient() {
         <section className={cardCls}>
           <h3 className={`${headingCls} mb-4`}>{t.confirmTitle}</h3>
           <div className="space-y-3">
-            <CheckRow checked={commitmentAck} onToggle={() => setCommitmentAck((v) => !v)} label={t.ackCommitment} />
             <CheckRow checked={paymentAck} onToggle={() => setPaymentAck((v) => !v)} label={t.ackPayment} />
             <CheckRow checked={cancellationAck} onToggle={() => setCancellationAck((v) => !v)} label={t.ackCancellation} />
             <CheckRow checked={newsletterOptIn} onToggle={() => setNewsletterOptIn((v) => !v)} label={t.optNewsletter} />
           </div>
         </section>
+
+        {config.pilot_feedback_required ? (
+          <section className={cardCls}>
+            <h3 className={headingCls}>{t.pilotTitle}</h3>
+            <p className={`${hintCls} mb-5`}>{t.pilotHint}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                ["up", "👍", t.pilotUp],
+                ["down", "👎", t.pilotDown],
+              ] as const).map(([value, icon, label]) => {
+                const selected = pilotFeedbackRating === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setPilotFeedbackRating(value)}
+                    className={`min-h-14 cursor-pointer border px-3 text-sm font-semibold transition-colors ${
+                      selected
+                        ? "border-black bg-black text-lime"
+                        : "border-black/15 bg-white text-black hover:border-black"
+                    }`}
+                  >
+                    <span aria-hidden="true" className="mr-2">{icon}</span>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <label htmlFor="su-pilot-comment" className={`${labelCls} mt-5`}>
+              {t.pilotComment} *
+            </label>
+            <textarea
+              id="su-pilot-comment"
+              className={`${inputCls} min-h-[110px] resize-y`}
+              value={pilotFeedbackComment}
+              maxLength={2000}
+              onChange={(event) => setPilotFeedbackComment(event.target.value)}
+              placeholder={t.pilotCommentPlaceholder}
+            />
+          </section>
+        ) : null}
 
         {error ? (
           <p role="alert" className="border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">{error}</p>
@@ -1030,7 +1141,15 @@ export default function SignupFormClient() {
           </button>
           {!canSubmit && (
             <p className="text-center text-[13px] text-black/45">
-              {!identityOk ? t.errIdentity : !descriptionOk ? t.errDescription : !slotsOk ? t.errSlots(sessions) : t.errAcks}
+              {!identityOk
+                ? t.errIdentity
+                : !descriptionOk
+                  ? t.errDescription
+                  : !slotsOk
+                    ? t.errSlots(sessions)
+                    : !acksOk
+                      ? t.errAcks
+                      : t.errPilotFeedback}
             </p>
           )}
           {existing ? (
@@ -1063,9 +1182,10 @@ function CheckRow({ checked, onToggle, label }: { checked: boolean; onToggle: ()
   );
 }
 
-function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isStruck, onToggle }: {
+function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isDisabled, isStruck, onToggle }: {
   slotsByDay: Record<number, Slot[]>; dayOrder: number[]; t: Strings; lang: Lang;
-  isSelected: (s: Slot) => boolean; isStruck: (s: Slot) => boolean; onToggle: (key: string) => void;
+  isSelected: (s: Slot) => boolean; isDisabled: (s: Slot) => boolean;
+  isStruck: (s: Slot) => boolean; onToggle: (key: string) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -1078,17 +1198,18 @@ function SlotPicker({ slotsByDay, dayOrder, t, lang, isSelected, isStruck, onTog
             {(slotsByDay[day] ?? []).map((s) => {
               const on = isSelected(s);
               const struck = isStruck(s);
+              const disabled = isDisabled(s) || struck;
               const note = (lang === "en" && s.note_en) || s.note;
               return (
                 <button
                   key={s.key}
                   type="button"
-                  disabled={struck}
+                  disabled={disabled}
                   onClick={() => onToggle(s.key)}
-                  className={`flex w-full cursor-pointer items-center gap-3 border px-4 py-3.5 text-left text-sm transition-colors ${
+                  className={`flex w-full items-center gap-3 border px-4 py-3.5 text-left text-sm transition-colors ${
                     on ? "border-black bg-black text-cream"
-                      : struck ? "cursor-not-allowed border-black/10 bg-black/[0.03] text-black/35"
-                      : "border-black/15 bg-white text-black hover:border-black"
+                      : disabled ? "cursor-not-allowed border-black/10 bg-black/[0.03] text-black/35"
+                      : "cursor-pointer border-black/15 bg-white text-black hover:border-black"
                   }`}
                 >
                   <span
