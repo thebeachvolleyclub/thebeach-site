@@ -101,6 +101,14 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
           <Reveal delay={0.1} className="mt-0.5 border border-lime/30 bg-lime/[0.06] p-7 lg:p-10">
             <h3 className="mb-3 font-display text-2xl uppercase leading-none text-lime lg:text-3xl">{t.tavla.juniorTitle}</h3>
             <p className="max-w-3xl text-sm leading-relaxed text-bone/65">{fillYears(t.tavla.juniorBody)}</p>
+            <div className="mt-6 grid grid-cols-1 gap-0.5 sm:grid-cols-3">
+              {t.tavla.juniorPrices.map((p) => (
+                <div key={p.n} className="border border-lime/20 bg-black/30 px-5 py-4">
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-lime">{p.n}</p>
+                  <p className="font-display text-xl uppercase leading-none text-bone">{p.d}</p>
+                </div>
+              ))}
+            </div>
           </Reveal>
 
           <Reveal delay={0.14} className="mt-10 border-t border-white/10 pt-8">

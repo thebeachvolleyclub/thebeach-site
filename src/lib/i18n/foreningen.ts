@@ -15,6 +15,7 @@ export interface ForeningenDict {
     sbt: { n: string; d: string }[];
     juniorTitle: string;
     juniorBody: string;
+    juniorPrices: { n: string; d: string }[];
     footer: string;
   };
   ungdom: {
@@ -68,7 +69,12 @@ export const foreningenDict: Dict<ForeningenDict> = {
       ],
       juniorTitle: "100 kr rabatt när en junior spelar",
       juniorBody:
-        "Junior {year} = född {y20} eller senare. I turneringar vi arrangerar får laget 100 kr rabatt på anmälningsavgiften om en junior spelar, förutsatt att båda i laget tillhör The Beach Volley Club Huddinge. En ungdomsturnering med 300 kr per lag kostar då 200 kr. Samma sak gäller när en junior spelar en seniorturnering, till exempel SBT 1★ eller 2★, tillsammans med en partner från klubben — oavsett partnerns ålder.",
+        "Junior {year} = född {y20} eller senare. I turneringar vi arrangerar får laget 100 kr rabatt på anmälningsavgiften när en junior spelar, förutsatt att båda i laget tillhör The Beach Volley Club Huddinge. Det gäller även när junioren spelar en seniorturnering tillsammans med en partner från klubben — oavsett partnerns ålder.",
+      juniorPrices: [
+        { n: "Ungdomsturnering", d: "300 → 200 kr per lag" },
+        { n: "SBT 1★ & 2★", d: "500 → 400 kr per lag" },
+        { n: "SBT 3★", d: "600 → 500 kr per lag" },
+      ],
       footer: "The Beach är en stolt och aktiv del av svensk volleyboll — både damlandslagets förbundskapten Mattias Magnusson och herrarnas Rasmus Jonsson utgår från vår anläggning. Bor du någon annanstans? Vi hjälper dig gärna hitta en klubb nära dig.",
     },
     ungdom: {
@@ -123,7 +129,12 @@ export const foreningenDict: Dict<ForeningenDict> = {
       ],
       juniorTitle: "SEK 100 off when a junior plays",
       juniorBody:
-        "Junior in {year} = born {y20} or later. In tournaments we host, the team gets SEK 100 off the entry fee when a junior plays, provided both players represent The Beach Volley Club Huddinge. A youth tournament at SEK 300 per team then costs SEK 200. The same applies when a junior plays a senior tournament, for example SBT 1★ or 2★, with a partner from the club — whatever the partner's age.",
+        "Junior in {year} = born {y20} or later. In tournaments we host, the team gets SEK 100 off the entry fee when a junior plays, provided both players represent The Beach Volley Club Huddinge. It also applies when the junior plays a senior tournament with a partner from the club — whatever the partner's age.",
+      juniorPrices: [
+        { n: "Youth tournament", d: "SEK 300 → 200 per team" },
+        { n: "SBT 1★ & 2★", d: "SEK 500 → 400 per team" },
+        { n: "SBT 3★", d: "SEK 600 → 500 per team" },
+      ],
       footer: "The Beach is a proud and active part of Swedish volleyball — both the women's national team head coach Mattias Magnusson and the men's Rasmus Jonsson are based at our facility. Live somewhere else? We're happy to help you find a club near you.",
     },
     ungdom: {
