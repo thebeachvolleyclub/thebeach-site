@@ -36,6 +36,8 @@ test("junior signup pricing and the private membership reminder share the app co
   assert.match(source, /discount_pct: 30/);
   assert.match(source, /membership_fee_sek: 190/);
   assert.match(source, /api<MembershipFeed>\("\/api\/account\/membership"\)/);
+  assert.match(source, /Har du tävlingslicens ska den vara hos oss/);
+  assert.match(source, /If you have a competition licence, it must be with us/);
   assert.match(source, /juniorDiscountApplies\(birthdate, juniorPricing\)/);
   assert.match(source, /discountPct=\{juniorDiscountPct\}/);
   assert.match(source, /discountedPriceSek\(s\.price_sek, discountPct\)/);

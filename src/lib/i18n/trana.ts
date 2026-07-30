@@ -316,7 +316,7 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       youth: {
         title: "Ungdomsrabatt",
-        body: "30 % rabatt för dig under 20 år och 20 % under 26 (födda {y20} respektive {y26} eller senare). Rabatten kräver medlemskap i The Beach Volley Club Huddinge. Du behöver ingen aktiv tävlingslicens — men licensierar du dig för tävling ska det vara för oss.",
+        body: "30 % rabatt för dig under 20 år och 20 % under 26 (födda {y20} respektive {y26} eller senare). Rabatten kräver medlemskap i The Beach Volley Club Huddinge. Du behöver ingen aktiv tävlingslicens — men har du en ska den vara hos oss.",
       },
       signup: {
         title: "Anmälan",
@@ -586,7 +586,7 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       youth: {
         title: "Youth discount",
-        body: "30% off if you are under 20 and 20% if you are under 26 (born {y20} and {y26} or later respectively). The discount requires membership of The Beach Volley Club Huddinge. No active competition licence is needed — but if you do take out a licence, it has to be with us.",
+        body: "30% off if you are under 20 and 20% if you are under 26 (born {y20} and {y26} or later respectively). The discount requires membership of The Beach Volley Club Huddinge. You do not need an active competition licence — but if you have one, it must be with us.",
       },
       signup: {
         title: "Sign-up",

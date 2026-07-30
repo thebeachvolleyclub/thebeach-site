@@ -185,9 +185,9 @@ const STR = {
     pilotDown: "Behöver förbättras",
     pilotComment: "Berätta kort varför",
     pilotCommentPlaceholder: "Vad fungerade bra eller vad kan vi förbättra?",
-    juniorMembershipTitle: "Ungdomsrabatt – inget aktivt medlemskap hittades",
+    juniorMembershipTitle: "Ungdomsrabatt – medlemskap saknas",
     juniorMembershipBody: (discount: number, fee: number) =>
-      `Du får ${discount} % rabatt på träningsavgiften. För rabatten behöver du vara medlem i The Beach Volley Club Huddinge. Vi hittar inget aktivt medlemskap just nu. Om medlemskapet fortfarande saknas när fakturan skickas lägger vi till junioravgiften ${fee} kr – du betalar fortfarande mindre totalt.`,
+      `Du får ${discount} % rabatt som medlem i The Beach Volley Club Huddinge. Har du tävlingslicens ska den vara hos oss. Vi hittar inget aktivt medlemskap, så om det fortfarande saknas vid fakturering lägger vi till junioravgiften ${fee} kr.`,
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
     cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
@@ -295,9 +295,9 @@ const STR = {
     pilotDown: "Needs improvement",
     pilotComment: "Tell us briefly why",
     pilotCommentPlaceholder: "What worked well, or what could we improve?",
-    juniorMembershipTitle: "Youth discount – no active membership found",
+    juniorMembershipTitle: "Youth discount – membership not found",
     juniorMembershipBody: (discount: number, fee: number) =>
-      `You receive ${discount}% off the training fee. The discount requires membership of The Beach Volley Club Huddinge. We cannot find an active membership right now. If it is still missing when the invoice is sent, the SEK ${fee} junior membership fee will be added – your total will still be lower.`,
+      `You receive ${discount}% off as a member of The Beach Volley Club Huddinge. If you have a competition licence, it must be with us. We cannot find an active membership, so if it is still missing when invoiced, the SEK ${fee} junior membership fee will be added.`,
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
     cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
