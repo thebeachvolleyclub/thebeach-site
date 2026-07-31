@@ -46,3 +46,17 @@ test("junior signup pricing and the private membership reminder share the app co
   assert.match(source, /showJuniorMembershipNotice \? \(/);
   assert.match(source, /junioravgiften \$\{fee\} kr/);
 });
+
+test("registration withdrawal uses explicit copy and a destructive confirmation dialog", () => {
+  assert.match(source, /cancelBtn: "Dra tillbaka anmälan"/);
+  assert.match(source, /cancelConfirmTitle: "Dra tillbaka anmälan\?"/);
+  assert.match(source, /cancelConfirmYes: "Ja, dra tillbaka"/);
+  assert.match(source, /cancelledBanner:[\s\S]*Din anmälan har dragits tillbaka/);
+  assert.doesNotMatch(source, /Avbryt min anmälan|Avbryta anmälan\?/);
+  assert.doesNotMatch(source, /window\.confirm/);
+  assert.match(source, /setCancelConfirmOpen\(true\)/);
+  assert.match(source, /role="dialog"/);
+  assert.match(source, /aria-modal="true"/);
+  assert.match(source, /onClick=\{onConfirm\}/);
+  assert.match(source, /await api\("\/api\/signup\/cancel", \{ method: "POST" \}\)/);
+});

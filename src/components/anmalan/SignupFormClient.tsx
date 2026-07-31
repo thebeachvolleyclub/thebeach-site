@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
  * Season-signup form — the web port of the app's SeasonSignupScreen.
  * Talks to the same season-signup API through the /api/signup/* proxy
  * routes (identical semantics regardless of frontend): signed-in visitors
- * get a prefilled form and can open, change and cancel their registration
+ * get a prefilled form and can open, change and withdraw their registration
  * until the admin locks edits; signed-out visitors can register anonymously.
  */
 
@@ -128,7 +128,7 @@ const STR = {
     loginNudge: "Logga in så fyller vi i dina uppgifter — och du kan öppna och ändra din anmälan senare.",
     loginCta: "Logga in på Mitt konto",
     profileFirstTitle: "Skapa din Beach-profil först",
-    profileFirstIntro: "Anmälan görs med din Beach-profil — så hämtas dina uppgifter automatiskt, och du kan öppna, ändra och avbryta din anmälan när du vill.",
+    profileFirstIntro: "Anmälan görs med din Beach-profil — så hämtas dina uppgifter automatiskt, och du kan öppna, ändra och dra tillbaka din anmälan när du vill.",
     profileFirstStep1: "Logga in med din e-post — eller skapa en profil om du inte har någon (tar en minut).",
     profileFirstStep2: "Kom tillbaka hit och anmäl dig till träningsgrupperna.",
     profileFirstCta: "Logga in eller skapa profil",
@@ -137,11 +137,11 @@ const STR = {
     nameMissingTitle: "Din profil saknar namn",
     nameMissingBody: "Fyll i ditt namn i din profil, så kan du anmäla dig direkt efteråt.",
     loggedInAs: (n: string) => `Inloggad som ${n}`,
-    editBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}. Du kan ändra den nedan och spara igen, eller avbryta den.`,
+    editBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}. Du kan ändra den nedan och spara igen, eller dra tillbaka den.`,
     changedNote: (d: string) => `Senast ändrad ${d}.`,
-    cancelledBanner: (d: string | null, open: boolean) => `Din anmälan är avbruten${d ? ` (${d})` : ""}.${open ? " Du kan göra en ny anmälan nedan." : ""}`,
+    cancelledBanner: (d: string | null, open: boolean) => `Din anmälan har dragits tillbaka${d ? ` (${d})` : ""}.${open ? " Du kan göra en ny anmälan nedan." : ""}`,
     lockedTitle: "Ändringsfönstret har stängt",
-    lockedBody: (email: string) => `Din anmälan är låst och kan inte längre ändras här. Behöver du ändra eller avbryta något? Mejla ${email} så hjälper vi dig.`,
+    lockedBody: (email: string) => `Din anmälan är låst och kan inte längre ändras här. Behöver du ändra eller dra tillbaka anmälan? Mejla ${email} så hjälper vi dig.`,
     detailsTitle: "Dina uppgifter",
     detailsHint: "Vi behöver dessa för att kontakta dig och placera dig rätt.",
     firstName: "Förnamn", lastName: "Efternamn", email: "E-post",
@@ -189,13 +189,16 @@ const STR = {
     juniorMembershipBody: (discount: number, fee: number) =>
       `Du får ${discount} % rabatt som medlem i The Beach Volley Club Huddinge. Har du tävlingslicens ska den vara hos oss. Vi hittar inget aktivt medlemskap, så om det fortfarande saknas vid fakturering lägger vi till junioravgiften ${fee} kr. Om du istället vill betala fullt pris, skriv det som ett övrigt önskemål ovan.`,
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
-    cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
+    cancelBtn: "Dra tillbaka anmälan", cancelling: "Drar tillbaka…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
     editBtn: "Ändra min anmälan",
     backToView: "← Tillbaka utan att spara",
     errDescription: "Beskriv dig själv som spelare.",
     phonePh: "+46 70 123 45 67",
-    cancelConfirm: "Avbryta anmälan? Din anmälan tas bort ur säsongens gruppbygge. Du kan anmäla dig igen så länge anmälan är öppen.",
+    cancelConfirmTitle: "Dra tillbaka anmälan?",
+    cancelConfirmBody: "Om du fortsätter tas din anmälan bort ur säsongens gruppplanering. Du kan anmäla dig på nytt så länge anmälan är öppen.",
+    cancelConfirmYes: "Ja, dra tillbaka",
+    cancelConfirmNo: "Nej, behåll anmälan",
     errIdentity: "Fyll i namn, e-post, födelsedatum (ÅÅÅÅ-MM-DD) och kön.",
     errSlots: (n: number) => `Välj förstahandstider på minst ${n} olika ${n === 1 ? "dag" : "dagar"} – eller kryssa i "vilken dag/tid som helst".`,
     errAcks: "Du måste godkänna bekräftelserna för att skicka in.",
@@ -208,7 +211,7 @@ const STR = {
     freeTextPh: "Skriv ditt önskemål…",
     thanksTitle: "Tack för din anmälan! 🏐",
     thanksBody: "Vi hör av oss med gruppplacering inför säsongen.",
-    thanksEditNote: "Vill du kunna ändra eller avbryta din anmälan senare? Logga in på Mitt konto med samma e-postadress.",
+    thanksEditNote: "Vill du kunna ändra eller dra tillbaka din anmälan senare? Logga in på Mitt konto med samma e-postadress.",
     updatedTitle: "Dina ändringar är sparade!",
     updatedBody: "Vi använder din senaste version när vi bygger grupperna.",
     backToForm: "Öppna anmälan igen",
@@ -238,7 +241,7 @@ const STR = {
     loginNudge: "Sign in and we prefill your details — and you can open and change your registration later.",
     loginCta: "Sign in to My account",
     profileFirstTitle: "Create your Beach profile first",
-    profileFirstIntro: "Registration uses your Beach profile — your details are filled in automatically, and you can open, change and cancel your registration whenever you like.",
+    profileFirstIntro: "Registration uses your Beach profile — your details are filled in automatically, and you can open, change and withdraw your registration whenever you like.",
     profileFirstStep1: "Sign in with your email — or create a profile if you don't have one (takes a minute).",
     profileFirstStep2: "Come back here and sign up for the training groups.",
     profileFirstCta: "Sign in or create a profile",
@@ -247,11 +250,11 @@ const STR = {
     nameMissingTitle: "Your profile has no name yet",
     nameMissingBody: "Add your name to your profile, then sign up right after.",
     loggedInAs: (n: string) => `Signed in as ${n}`,
-    editBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}. You can change it below and save again, or cancel it.`,
+    editBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}. You can change it below and save again, or withdraw it.`,
     changedNote: (d: string) => `Last changed ${d}.`,
-    cancelledBanner: (d: string | null, open: boolean) => `Your registration is cancelled${d ? ` (${d})` : ""}.${open ? " You can register again below." : ""}`,
+    cancelledBanner: (d: string | null, open: boolean) => `Your registration has been withdrawn${d ? ` (${d})` : ""}.${open ? " You can register again below." : ""}`,
     lockedTitle: "The change window has closed",
-    lockedBody: (email: string) => `Your registration is locked and can no longer be changed here. Need to change or cancel something? Email ${email} and we'll help you.`,
+    lockedBody: (email: string) => `Your registration is locked and can no longer be changed here. Need to change or withdraw it? Email ${email} and we'll help you.`,
     detailsTitle: "Your details",
     detailsHint: "We need these to contact you and place you correctly.",
     firstName: "First name", lastName: "Last name", email: "Email",
@@ -299,13 +302,16 @@ const STR = {
     juniorMembershipBody: (discount: number, fee: number) =>
       `You receive ${discount}% off as a member of The Beach Volley Club Huddinge. If you have a competition licence, it must be with us. We cannot find an active membership, so if it is still missing when invoiced, the SEK ${fee} junior membership fee will be added. If you would rather pay full price, add this under other requests above.`,
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
-    cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
+    cancelBtn: "Withdraw registration", cancelling: "Withdrawing…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
     editBtn: "Change my registration",
     backToView: "← Back without saving",
     errDescription: "Describe yourself as a player.",
     phonePh: "+46 70 123 45 67",
-    cancelConfirm: "Cancel your registration? It is removed from the season group planning. You can register again while registration is open.",
+    cancelConfirmTitle: "Withdraw registration?",
+    cancelConfirmBody: "If you continue, your registration will be removed from the season group planning. You can register again while registration is open.",
+    cancelConfirmYes: "Yes, withdraw it",
+    cancelConfirmNo: "No, keep registration",
     errIdentity: "Fill in name, email, date of birth (YYYY-MM-DD) and gender.",
     errSlots: (n: number) => `Choose first-choice times on at least ${n} separate ${n === 1 ? "day" : "days"} — or tick "any day/any time".`,
     errAcks: "You must accept the confirmations to submit.",
@@ -318,7 +324,7 @@ const STR = {
     freeTextPh: "Write your wish…",
     thanksTitle: "Thank you for your registration! 🏐",
     thanksBody: "We'll be in touch with your group placement before the season.",
-    thanksEditNote: "Want to change or cancel your registration later? Sign in to My account with the same email address.",
+    thanksEditNote: "Want to change or withdraw your registration later? Sign in to My account with the same email address.",
     updatedTitle: "Your changes are saved!",
     updatedBody: "We use your latest version when we build the groups.",
     backToForm: "Open the registration again",
@@ -407,6 +413,7 @@ export default function SignupFormClient() {
   // read-only view; editing is an explicit separate step into the form.
   const [editing, setEditing] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<"created" | "updated" | null>(null);
 
@@ -657,14 +664,19 @@ export default function SignupFormClient() {
     description, anySlot, newsletterOptIn, paymentAck,
     cancellationAck, pilotFeedbackRating, pilotFeedbackComment, corrections]);
 
+  const requestCancelSignup = useCallback(() => {
+    setError("");
+    setCancelConfirmOpen(true);
+  }, []);
+
   const cancelSignup = useCallback(async () => {
-    if (!window.confirm(t.cancelConfirm)) return;
     setCancelBusy(true);
     setError("");
     try {
       await api("/api/signup/cancel", { method: "POST" });
       const mineState = await api<MineState>("/api/signup/mine").catch(() => null);
       setMine(mineState);
+      setCancelConfirmOpen(false);
       window.scrollTo({ top: 0 });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t.genericError);
@@ -672,6 +684,24 @@ export default function SignupFormClient() {
       setCancelBusy(false);
     }
   }, [t]);
+
+  const cancelDialog = (
+    <WithdrawalDialog
+      open={cancelConfirmOpen}
+      title={t.cancelConfirmTitle}
+      message={t.cancelConfirmBody}
+      confirmLabel={t.cancelConfirmYes}
+      cancelLabel={t.cancelConfirmNo}
+      busy={cancelBusy}
+      error={cancelConfirmOpen ? error : ""}
+      onConfirm={cancelSignup}
+      onCancel={() => {
+        if (cancelBusy) return;
+        setError("");
+        setCancelConfirmOpen(false);
+      }}
+    />
+  );
 
   const langRow = (
     <div className="mb-6 flex gap-2">
@@ -861,13 +891,14 @@ export default function SignupFormClient() {
           </button>
           <button
             type="button"
-            onClick={cancelSignup}
+            onClick={requestCancelSignup}
             disabled={cancelBusy}
             className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center border border-orange px-6 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50"
           >
             {cancelBusy ? t.cancelling : t.cancelBtn}
           </button>
         </div>
+        {cancelDialog}
       </div>
     );
   }
@@ -1215,13 +1246,90 @@ export default function SignupFormClient() {
           {existing ? (
             <button
               type="button"
-              onClick={cancelSignup}
+              onClick={requestCancelSignup}
               disabled={cancelBusy}
               className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center border border-orange px-6 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50"
             >
               {cancelBusy ? t.cancelling : t.cancelBtn}
             </button>
           ) : null}
+        </div>
+      </div>
+      {cancelDialog}
+    </div>
+  );
+}
+
+function WithdrawalDialog({
+  open,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  busy,
+  error,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  busy: boolean;
+  error: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-5"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target && !busy) onCancel();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="withdraw-signup-title"
+        aria-describedby="withdraw-signup-message"
+        className="w-full max-w-md bg-white p-6 shadow-2xl sm:p-8"
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && !busy) onCancel();
+        }}
+      >
+        <h3 id="withdraw-signup-title" className="font-display text-3xl uppercase text-black">
+          {title}
+        </h3>
+        <p id="withdraw-signup-message" className="mt-3 text-sm leading-relaxed text-black/65">
+          {message}
+        </p>
+        {error ? (
+          <p role="alert" className="mt-4 border border-orange/30 bg-orange/10 p-3 text-sm font-semibold text-orange">
+            {error}
+          </p>
+        ) : null}
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+          <button
+            type="button"
+            autoFocus
+            onClick={onCancel}
+            disabled={busy}
+            className="inline-flex min-h-12 flex-1 cursor-pointer items-center justify-center border border-black/20 px-4 text-xs font-bold uppercase tracking-[0.08em] text-black hover:bg-black/5 disabled:cursor-wait disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="inline-flex min-h-12 flex-1 cursor-pointer items-center justify-center bg-orange px-4 text-xs font-bold uppercase tracking-[0.08em] text-white hover:bg-orange/85 disabled:cursor-wait disabled:opacity-60"
+          >
+            {busy ? "…" : confirmLabel}
+          </button>
         </div>
       </div>
     </div>
