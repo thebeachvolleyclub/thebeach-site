@@ -62,6 +62,11 @@ type CancellationResult = {
   bookingFeeSek?: number | null;
   refundPolicy?: string | null;
 };
+type RatingMatchResult = {
+  status: string;
+  rating_method?: string | null;
+  profile?: Profile;
+};
 
 const EMOJIS = ["🏐", "🌴", "☀️", "🌊", "🦩", "🦀", "🐚", "🥥", "😎", "🔥", "⚡", "💪"];
 
@@ -282,6 +287,10 @@ export default function AccountPortal() {
   };
 
   const saveProfile = async (confirmNewIdentity = false) => {
+    if (!profile?.canonical_player_id && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim())) {
+      setError("Födelsedatum krävs när vi skapar en ny spelarprofil.");
+      return;
+    }
     setBusy(true); setError(""); setMessage("");
     try {
       const next = await api<Profile>("/api/account/profile", {
@@ -295,12 +304,21 @@ export default function AccountPortal() {
           confirm_new_identity: confirmNewIdentity || undefined,
         }),
       });
-      applyProfile(next);
       if (next.duplicate_match) {
+        applyProfile(next);
         setDupAlert(next.duplicate_match);
       } else {
+        // Profile save gives the lookup enough identity data. Run the same
+        // Master/group/TrueSkill resolution as native onboarding before a
+        // ?next= hand-back is allowed to leave this page.
+        const ratingMatch = await api<RatingMatchResult>("/api/account/profile/match-rating", {
+          method: "POST",
+        });
+        applyProfile(ratingMatch.profile ?? next);
         setDupAlert(null);
-        setMessage("Profilen är sparad och uppdaterad i appen.");
+        setMessage(ratingMatch.status === "found"
+          ? "Profilen är sparad och din spelhistorik har kopplats."
+          : "Profilen är sparad och uppdaterad i appen.");
       }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte spara profilen"); }
     finally { setBusy(false); }
@@ -315,7 +333,9 @@ export default function AccountPortal() {
         { method: "POST", body: JSON.stringify({ player_id: dupAlert.player_id }) },
       );
       setMergeMessage(result.message || "Begäran är registrerad. Fortsätt att skapa din profil — vi kontaktar dig när vi hanterat sammanslagningen.");
-      setDupAlert(null);
+      // Keep the duplicate alert active until confirm_new_identity has saved
+      // and completed matching; otherwise ?next= can redirect mid-flow.
+      await saveProfile(true);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte skicka begäran"); }
     finally { setBusy(false); }
   };
@@ -517,11 +537,11 @@ export default function AccountPortal() {
     <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
       <section className="bg-white p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Uppgifter</p><div className="space-y-4">
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Namn *</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs — för- och efternamn.</span></label>
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum</span><input value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Frivilligt — men hjälper oss koppla din spelhistorik och undvika dubbletter.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum{profile.canonical_player_id ? "" : " *"}</span><input value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">{profile.canonical_player_id ? "Hjälper oss koppla din spelhistorik och undvika dubbletter." : "Krävs för att hitta rätt spelarprofil och matchhistorik."}</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
-        <button type="button" onClick={() => saveProfile()} disabled={busy || name.trim().length < 2} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+        <button type="button" onClick={() => saveProfile()} disabled={busy || name.trim().length < 2 || (!profile.canonical_player_id && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim()))} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
       </div></section>
       <section className="bg-cream p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Avatar och bilder</p><strong className="mb-2 block text-sm">Emoji-avatar</strong><div className="mb-6 flex flex-wrap gap-2">{EMOJIS.map((item) => <button key={item} type="button" onClick={() => setEmoji(item)} className={`grid h-11 w-11 cursor-pointer place-items-center border text-xl ${emoji === item ? "border-black bg-black" : "border-black/15 bg-white"}`}>{item}</button>)}</div>
         <div className="space-y-3"><label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj profilfoto</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("avatar", e.target.files?.[0])} /><span>Välj →</span></label>{profile.avatar_url ? <button type="button" onClick={() => removeImage("avatar")} className="text-xs font-bold uppercase text-orange">Ta bort profilfoto</button> : null}<label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj omslagsbild</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("banner", e.target.files?.[0])} /><span>Välj →</span></label><button type="button" onClick={() => removeImage("banner")} className="text-xs font-bold uppercase text-orange">Återställ omslagsbild</button></div>
