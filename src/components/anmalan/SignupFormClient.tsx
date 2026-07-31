@@ -187,7 +187,7 @@ const STR = {
     pilotCommentPlaceholder: "Vad fungerade bra eller vad kan vi förbättra?",
     juniorMembershipTitle: "Ungdomsrabatt – medlemskap saknas",
     juniorMembershipBody: (discount: number, fee: number) =>
-      `Du får ${discount} % rabatt som medlem i The Beach Volley Club Huddinge. Har du tävlingslicens ska den vara hos oss. Vi hittar inget aktivt medlemskap, så om det fortfarande saknas vid fakturering lägger vi till junioravgiften ${fee} kr.`,
+      `Du får ${discount} % rabatt som medlem i The Beach Volley Club Huddinge. Har du tävlingslicens ska den vara hos oss. Vi hittar inget aktivt medlemskap, så om det fortfarande saknas vid fakturering lägger vi till junioravgiften ${fee} kr. Om du istället vill betala fullt pris, skriv det som ett övrigt önskemål ovan.`,
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
     cancelBtn: "Avbryt min anmälan", cancelling: "Avbryter…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
@@ -297,7 +297,7 @@ const STR = {
     pilotCommentPlaceholder: "What worked well, or what could we improve?",
     juniorMembershipTitle: "Youth discount – membership not found",
     juniorMembershipBody: (discount: number, fee: number) =>
-      `You receive ${discount}% off as a member of The Beach Volley Club Huddinge. If you have a competition licence, it must be with us. We cannot find an active membership, so if it is still missing when invoiced, the SEK ${fee} junior membership fee will be added.`,
+      `You receive ${discount}% off as a member of The Beach Volley Club Huddinge. If you have a competition licence, it must be with us. We cannot find an active membership, so if it is still missing when invoiced, the SEK ${fee} junior membership fee will be added. If you would rather pay full price, add this under other requests above.`,
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
     cancelBtn: "Cancel my registration", cancelling: "Cancelling…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
