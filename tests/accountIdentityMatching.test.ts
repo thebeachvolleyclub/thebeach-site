@@ -6,8 +6,9 @@ const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
 const profileRoute = readFileSync("src/app/api/account/profile/route.ts", "utf8");
 const matchingRoute = readFileSync("src/app/api/account/profile/match-rating/route.ts", "utf8");
 
-test("new web identities require birthdate and opt into the Master duplicate guard", () => {
-  assert.match(portal, /Födelsedatum krävs när vi skapar en ny spelarprofil/);
+test("all web account profiles require birthdate and opt into the Master duplicate guard", () => {
+  assert.match(portal, /Födelsedatum krävs för alla BeachID-konton/);
+  assert.doesNotMatch(portal, /!profile\?\.canonical_player_id && !/);
   assert.match(portal, /check_duplicates: true/);
   assert.match(portal, /confirm_new_identity: confirmNewIdentity/);
   assert.match(profileRoute, /"check_duplicates", "confirm_new_identity"/);
