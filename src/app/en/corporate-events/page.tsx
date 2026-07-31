@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
 import { altLang } from "@/lib/i18n";
 import { foretagseventDict } from "@/lib/i18n/corporate";
+import { og } from "@/lib/seo";
 
 const t = foretagseventDict.en;
 
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   alternates: altLang("/foretagsevent", "/en/corporate-events", "en"),
   title: t.meta.title,
   description: t.meta.description,
+  openGraph: og("/en/corporate-events", `${t.titleTop} ${t.titleAccent}`, t.intro),
 };
 
 export default function ForetagseventEnPage() {

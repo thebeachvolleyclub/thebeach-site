@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Svensexa i Stockholm — The Beach | Beachvolley, mat och fest inomhus",
   description:
     "Svensexan på stranden — beachvolleyturnering, mat och dryck och 25 grader mitt i Stockholm, året runt. Färdiga koncept från 745 kr/person i Huddinge. Skicka förfrågan.",
   alternates: { canonical: "/svensexa" },
+  openGraph: og(
+    "/svensexa",
+    "Svensexa på stranden — mitt i Stockholm",
+    "Turnering i sanden, mat och bar i 25 grader året runt. Färdiga koncept från 745 kr/person i Huddinge.",
+  ),
 };
 
 export default function SvensexaPage() {

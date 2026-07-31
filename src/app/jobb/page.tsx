@@ -5,6 +5,7 @@ import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
 import Link from "next/link";
+import { og } from "@/lib/seo";
 
 const TITLE = "Köksansvarig till The Beach";
 const DESC =
@@ -14,20 +15,13 @@ export const metadata: Metadata = {
   title: `${TITLE} — Jobba hos oss | The Beach`,
   description: DESC,
   alternates: { canonical: "/jobb" },
-  openGraph: {
-    title: `${TITLE} — The Beach`,
-    description: DESC,
-    url: "/jobb",
-    type: "website",
-    images: [
-      {
-        url: "/media/lokalen/bar-plockmat.webp",
-        width: 1205,
-        height: 1600,
-        alt: "Plockmat i baren på The Beach",
-      },
-    ],
-  },
+  openGraph: og("/jobb", TITLE, DESC, {
+    image: "/media/lokalen/bar-plockmat.webp",
+    imageWidth: 1205,
+    imageHeight: 1600,
+    imageAlt: "Plockmat i baren på The Beach",
+  }),
+
 };
 
 const ANSVAR = [

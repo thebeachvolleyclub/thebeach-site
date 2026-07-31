@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
 import { altLang } from "@/lib/i18n";
 import { konferensDict } from "@/lib/i18n/corporate";
+import { og } from "@/lib/seo";
 
 const t = konferensDict.en;
 
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   alternates: altLang("/konferens", "/en/conference", "en"),
   title: t.meta.title,
   description: t.meta.description,
+  openGraph: og("/en/conference", `${t.titleTop} ${t.titleAccent}`, t.intro),
 };
 
 export default function KonferensEnPage() {

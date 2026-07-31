@@ -3,16 +3,13 @@ import PlannerPage from "@/components/pages/PlannerPage";
 import { altLang } from "@/lib/i18n";
 import { plannerDict } from "@/lib/i18n/planner";
 import type { TierKey } from "@/lib/planner";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   alternates: altLang("/events/planera", "/en/events/plan", "en"),
   title: plannerDict.en.meta.title,
   description: plannerDict.en.meta.description,
-  openGraph: {
-    title: plannerDict.en.meta.ogTitle,
-    description: plannerDict.en.meta.ogDescription,
-    type: "website",
-  },
+  openGraph: og("/en/events/plan", plannerDict.en.meta.ogTitle, plannerDict.en.meta.ogDescription),
 };
 
 export default async function PlanEventPage({

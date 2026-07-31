@@ -3,12 +3,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Presentkort — The Beach | Ge bort sommar",
   robots: { index: false, follow: false },
   description:
     "Presentkort på The Beach — grundkurs, träning, banhyra eller PT. Mottagaren väljer själv. Valfritt belopp från 700 kr, giltigt i två år.",
+  openGraph: og(
+    "/presentkort",
+    "Presentkort — ge bort sommar",
+    "Grundkurs, träning, banhyra eller PT — mottagaren väljer själv. Valfritt belopp från 700 kr, giltigt i två år.",
+  ),
 };
 
 const STEG = [

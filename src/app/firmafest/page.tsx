@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
 import { altLang } from "@/lib/i18n";
 import { firmafestDict } from "@/lib/i18n/corporate";
+import { og } from "@/lib/seo";
 
 const t = firmafestDict.sv;
 
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   alternates: altLang("/firmafest", "/en/company-party", "sv"),
   title: t.meta.title,
   description: t.meta.description,
+  openGraph: og("/firmafest", `${t.titleTop} ${t.titleAccent}`, t.intro),
 };
 
 export default function FirmafestPage() {

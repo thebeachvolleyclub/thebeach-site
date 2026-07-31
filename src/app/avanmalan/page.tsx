@@ -4,11 +4,13 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import TrainingFormClient from "@/components/trana/TrainingFormClient";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Avanmälan & villkor — träningsgrupper | The Beach",
   description:
     "Så fungerar betalning och avanmälan för träningsgrupper på The Beach: betalningsvillkor, avanmälningsregler, läkarintyg och varför reglerna finns.",
+  openGraph: og("/avanmalan", "Avanmälan & villkor — träningsgrupper | The Beach", "Så fungerar betalning och avanmälan för träningsgrupper på The Beach: betalningsvillkor, avanmälningsregler, läkarintyg och varför reglerna finns."),
 };
 
 const VILLKOR: { when: string; cost: string }[] = [

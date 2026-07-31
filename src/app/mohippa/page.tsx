@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import CorporateLanding from "@/components/CorporateLanding";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Möhippa i Stockholm — The Beach | Strandfest, mat och bubbel inomhus",
   description:
     "Möhippan på stranden mitt i Stockholm — beachvolleyturnering, bubbel och mat i loungen, 25 grader året runt. Färdiga koncept från 745 kr/person i Huddinge. Skicka förfrågan.",
   alternates: { canonical: "/mohippa" },
+  openGraph: og(
+    "/mohippa",
+    "Möhippa på stranden — mitt i Stockholm",
+    "Beachvolleyturnering, bubbel och mat i loungen. 25 grader året runt, färdiga koncept från 745 kr/person.",
+  ),
 };
 
 export default function MohippaPage() {

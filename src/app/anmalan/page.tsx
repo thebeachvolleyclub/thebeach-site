@@ -3,17 +3,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import SignupFormClient from "@/components/anmalan/SignupFormClient";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Anmälan träningsgrupper — The Beach",
   description:
     "Anmäl dig till träningsgrupperna på The Beach. Välj dagar och tider, berätta om dig som spelare och lämna önskemål — placeringen utgår från din nivå.",
-  openGraph: {
-    title: "Anmälan träningsgrupper — The Beach",
-    description:
-      "Anmäl dig till träningsgrupperna på The Beach i Huddinge. Höstsäsong 2026.",
-    type: "website",
-  },
+  openGraph: og("/anmalan", "Anmälan träningsgrupper — The Beach", "Anmäl dig till träningsgrupperna på The Beach i Huddinge. Höstsäsong 2026."),
 };
 
 export default function AnmalanPage() {

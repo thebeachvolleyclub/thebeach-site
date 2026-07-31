@@ -4,11 +4,13 @@ import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import TrainingFormClient from "@/components/trana/TrainingFormClient";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Byta träningsgrupp — ändringsanmälan | The Beach",
   description:
     "Ändrade förutsättningar eller känns gruppen fel? Så gör du en ändringsanmälan till träningsgrupperna på The Beach.",
+  openGraph: og("/andringsanmalan", "Byta träningsgrupp — ändringsanmälan | The Beach", "Ändrade förutsättningar eller känns gruppen fel? Så gör du en ändringsanmälan till träningsgrupperna på The Beach."),
 };
 
 export default function AndringsanmalanPage() {

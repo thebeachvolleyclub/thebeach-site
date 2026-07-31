@@ -8,6 +8,7 @@ import { allEvents } from "@/lib/kalender";
 import { mergedBySlug } from "@/lib/profixio";
 import RichText from "@/components/RichText";
 import JsonLd from "@/components/JsonLd";
+import { og } from "@/lib/seo";
 
 // Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
 export const revalidate = 21600;
@@ -23,9 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const hit = await mergedBySlug(slug);
   if (!hit) return {};
+  const title = `${hit.ev.title} — ${hit.month} | The Beach`;
+  const description = hit.ev.beskrivning ?? hit.ev.meta;
   return {
-    title: `${hit.ev.title} — ${hit.month} | The Beach`,
-    description: hit.ev.beskrivning ?? hit.ev.meta,
+    title,
+    description,
+    alternates: { canonical: `/kalender/${slug}` },
+    openGraph: og(`/kalender/${slug}`, `${hit.ev.title} · ${hit.month}`, description, { type: "article" }),
   };
 }
 

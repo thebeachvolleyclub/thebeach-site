@@ -4,11 +4,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Om beachvolley — historia, regler & vägen in i sporten | The Beach",
   description:
     "Beachvolley: olympisk sport sedan 1996, född på Kaliforniens stränder. Historien, tävlingsstrukturen i Sverige och hur du kommer igång — förklarat av Stockholms beachvolleycenter.",
+  openGraph: og(
+    "/om-beachvolley",
+    "Om beachvolley — sporten, historien och vägen in",
+    "Olympisk sport sedan 1996, född på Kaliforniens stränder. Regler, tävlingsstruktur i Sverige och hur du kommer igång.",
+  ),
 };
 
 const ERA = [

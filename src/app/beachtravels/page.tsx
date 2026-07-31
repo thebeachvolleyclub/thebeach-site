@@ -3,11 +3,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import { og } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "BeachTravels — träningsresor till världens finaste stränder",
   description:
     "Vårt dotterbolag BeachTravels arrangerar träningsresor och läger: Sperlonga, Praia da Rocha, Teneriffa, Gran Canaria och Tylösand. Sedan 2011.",
+  openGraph: og(
+    "/beachtravels",
+    "BeachTravels — träningsresor i solen",
+    "Läger och träningsresor sedan 2011: Sperlonga, Praia da Rocha, Teneriffa, Gran Canaria och Tylösand.",
+  ),
 };
 
 const RESMAL = ["Sperlonga, Italien", "Praia da Rocha, Portugal", "Teneriffa", "Gran Canaria", "Tylösand, Sverige"];
