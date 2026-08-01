@@ -22,6 +22,12 @@ const WISH_ORDER: WishType[] = [
   "same_group", "not_same_group", "same_time", "not_same_time",
   "free_text",
 ];
+// Choices players may add now. Keep not_same_group in WISH_ORDER/PLAYER_TYPES
+// only so an older saved registration remains visible and is not discarded
+// when the player edits something else.
+const SELECTABLE_WISH_ORDER: WishType[] = [
+  "same_group", "same_time", "not_same_time", "free_text",
+];
 const PLAYER_TYPES: WishType[] = ["same_group", "not_same_group", "same_time", "not_same_time"];
 
 type Slot = {
@@ -1450,7 +1456,10 @@ function WishEditor({ wish, t, onChange, onRemove }: {
         <option value="" disabled>
           {wish.kind === "demand" ? t.selectDemandType : t.selectWishType}
         </option>
-        {WISH_ORDER.map((wt) => (
+        {wish.wishType && !SELECTABLE_WISH_ORDER.includes(wish.wishType as WishType) ? (
+          <option value={wish.wishType} disabled>{t.wishTypes[wish.wishType as WishType]}</option>
+        ) : null}
+        {SELECTABLE_WISH_ORDER.map((wt) => (
           <option key={wt} value={wt}>{t.wishTypes[wt]}</option>
         ))}
       </select>

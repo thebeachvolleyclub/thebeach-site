@@ -22,6 +22,15 @@ test("retired language choices and participation acknowledgement are not selecta
   assert.match(source, /const acksOk = paymentAck && cancellationAck/);
 });
 
+test("same-group exclusion is hidden without discarding historical values", () => {
+  const selectableOrder = source.match(/const SELECTABLE_WISH_ORDER:[^=]+=[\s\S]*?\];/)?.[0] ?? "";
+  const compatibilityOrder = source.match(/const WISH_ORDER:[^=]+=[\s\S]*?\];/)?.[0] ?? "";
+  assert.doesNotMatch(selectableOrder, /not_same_group/);
+  assert.match(compatibilityOrder, /not_same_group/);
+  assert.match(source, /SELECTABLE_WISH_ORDER\.map\(\(wt\) =>/);
+  assert.match(source, /!SELECTABLE_WISH_ORDER\.includes\(wish\.wishType as WishType\)/);
+});
+
 test("any-day availability disables individual choices and clears stale selections", () => {
   assert.match(source, /const toggleAnySlot = useCallback\([\s\S]*setPrimarySlots\(\[\]\);[\s\S]*setSecondarySlots\(\[\]\)/);
   assert.match(source, /checked=\{anySlot\} onToggle=\{toggleAnySlot\}/);
