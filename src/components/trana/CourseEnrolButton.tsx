@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
 import { kurserDict } from "@/lib/i18n/kurser";
+import {
+  clearCourseAttempt,
+  courseAttemptKey,
+  courseInvoiceId,
+  pendingCourseInvoice,
+  pollCoursePayment,
+  remainingCoursePaymentTimeout,
+  rememberCourseInvoice,
+} from "@/lib/coursePayment.core";
 
 type Props = {
   locale: Locale;
@@ -15,7 +25,30 @@ type Props = {
   loggedIn: boolean;
 };
 
-type Result = { ok: true; waitlisted: boolean } | { ok: false; message: string };
+type Result =
+  | { ok: true; kind: "paid" | "waitlisted" }
+  | { ok: false; message: string; profileRequired?: boolean };
+
+type Phase = "idle" | "checkingProfile" | "enrolling" | "startingSwish" | "waitingForSwish";
+
+async function json(response: Response): Promise<Record<string, unknown>> {
+  return response.json().catch(() => ({})) as Promise<Record<string, unknown>>;
+}
+
+class PaymentStatusError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+function randomAttemptKey() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 32)
+    : `k${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+}
 
 /**
  * Anmälan sker mot /api/courses/[id]/enrol som håller kontotoken serverside.
@@ -32,18 +65,18 @@ export default function CourseEnrolButton({
 }: Props) {
   const t = kurserDict[locale];
   const [accepted, setAccepted] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Result | null>(null);
-  const [idempotencyKey] = useState(() =>
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID().replace(/-/g, "").slice(0, 32)
-      : `k${Date.now()}${Math.floor(Math.random() * 1e6)}`,
-  );
+  const inFlight = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+  const fallbackAttemptKey = useRef(randomAttemptKey());
 
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
   const accountHref = `/konto?next=${encodeURIComponent(
     locale === "en" ? "/en/training#kurser" : "/trana#kurser",
   )}`;
+
+  useEffect(() => () => activeRequest.current?.abort(), []);
 
   if (!loggedIn) {
     return (
@@ -60,20 +93,21 @@ export default function CourseEnrolButton({
   }
 
   if (result?.ok) {
+    const waitlisted = result.kind === "waitlisted";
     return (
       <div className="mt-auto border-t border-black/10 pt-5">
         <p className="mb-1 font-display text-xl uppercase leading-none text-black">
-          {result.waitlisted ? t.waitlistSuccessTitle : t.successTitle}
+          {waitlisted ? t.waitlistSuccessTitle : t.successTitle}
         </p>
         <p className="mb-4 text-[13px] leading-snug text-black/55">
-          {result.waitlisted ? t.waitlistSuccessBody : t.successBody}
+          {waitlisted ? t.waitlistSuccessBody : t.successBody}
         </p>
-        {!result.waitlisted && (
+        {!waitlisted && (
           <a
-            href="/konto#fakturor"
+            href="/konto#traningsgrupper"
             className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
           >
-            {t.invoiceCta} <span aria-hidden="true">→</span>
+            {t.myCoursesCta} <span aria-hidden="true">→</span>
           </a>
         )}
       </div>
@@ -81,33 +115,157 @@ export default function CourseEnrolButton({
   }
 
   async function submit() {
-    setBusy(true);
+    if (inFlight.current) return;
+    inFlight.current = true;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
     setResult(null);
     try {
+      if (!waitlist) {
+        setPhase("checkingProfile");
+        const profileResponse = await fetch("/api/account/session", { signal: controller.signal });
+        const account = await json(profileResponse);
+        const profile = account.profile as Record<string, unknown> | undefined;
+        if (!profileResponse.ok || account.authenticated !== true) {
+          setResult({ ok: false, message: t.loginPrompt });
+          return;
+        }
+        if (typeof profile?.swish_phone !== "string" || !profile.swish_phone.trim()) {
+          setResult({ ok: false, message: t.missingSwish, profileRequired: true });
+          return;
+        }
+      }
+
+      const storage = window.sessionStorage;
+      const savedInvoice = pendingCourseInvoice(courseId, storage);
+      if (savedInvoice) {
+        setPhase("waitingForSwish");
+        await finishPayment(savedInvoice.invoiceId, controller, storage, savedInvoice.createdAt);
+        return;
+      }
+
+      setPhase("enrolling");
+      const idempotencyKey = courseAttemptKey(
+        courseId,
+        storage,
+        () => fallbackAttemptKey.current,
+      );
       const response = await fetch(`/api/courses/${courseId}/enrol`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ termsVersion, idempotencyKey }),
+        signal: controller.signal,
       });
-      const data = (await response.json().catch(() => ({}))) as {
-        status?: string;
-        detail?: string;
-      };
+      const data = await json(response);
       if (!response.ok) {
-        setResult({ ok: false, message: data.detail || t.errorGeneric });
+        setResult({
+          ok: false,
+          message: typeof data.detail === "string" ? data.detail : t.errorGeneric,
+        });
         return;
       }
-      setResult({ ok: true, waitlisted: data.status === "waitlisted" });
-    } catch {
-      setResult({ ok: false, message: t.errorGeneric });
+
+      if (data.status === "waitlisted") {
+        clearCourseAttempt(courseId, storage);
+        setResult({ ok: true, kind: "waitlisted" });
+        return;
+      }
+
+      const invoiceId = courseInvoiceId(data);
+      if (!invoiceId) {
+        setResult({ ok: false, message: t.missingInvoice });
+        return;
+      }
+      const invoiceCreatedAt = Date.now();
+      rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt);
+
+      setPhase("startingSwish");
+      const chargeResponse = await fetch(
+        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish`,
+        { method: "POST", signal: controller.signal },
+      );
+      const charge = await json(chargeResponse);
+      if (!chargeResponse.ok) {
+        const detail = typeof charge.detail === "string" ? charge.detail : t.paymentFailed;
+        if (![408, 429].includes(chargeResponse.status) && chargeResponse.status < 500) {
+          setResult({ ok: false, message: detail });
+          return;
+        }
+        // The upstream may have created the charge before the response was
+        // lost. Reconcile the existing invoice instead of issuing a blind retry.
+        setPhase("waitingForSwish");
+        await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
+        return;
+      }
+
+      setPhase("waitingForSwish");
+      await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
+    } catch (cause) {
+      if (cause instanceof DOMException && cause.name === "AbortError") return;
+      setResult({
+        ok: false,
+        message: cause instanceof PaymentStatusError ? cause.message : t.errorGeneric,
+      });
     } finally {
-      setBusy(false);
+      inFlight.current = false;
+      if (activeRequest.current === controller) activeRequest.current = null;
+      setPhase("idle");
+    }
+
+    async function finishPayment(
+      invoiceId: string,
+      requestController: AbortController,
+      storage: Storage,
+      invoiceCreatedAt: number,
+    ) {
+      const payment = await pollCoursePayment(
+        async () => {
+          const statusResponse = await fetch(
+            `/api/courses/invoices/${encodeURIComponent(invoiceId)}/status`,
+            { signal: requestController.signal },
+          );
+          const status = await json(statusResponse);
+          if (!statusResponse.ok) {
+            throw new PaymentStatusError(
+              statusResponse.status,
+              typeof status.detail === "string" ? status.detail : t.paymentUnavailable,
+            );
+          }
+          return status;
+        },
+        {
+          signal: requestController.signal,
+          timeoutMs: remainingCoursePaymentTimeout(invoiceCreatedAt),
+          shouldRetry: (cause) =>
+            !(cause instanceof PaymentStatusError) || ![401, 403, 404].includes(cause.status),
+        },
+      );
+      if (payment.state === "paid") {
+        clearCourseAttempt(courseId, storage);
+        setResult({ ok: true, kind: "paid" });
+      } else if (payment.state === "failed") {
+        clearCourseAttempt(courseId, storage);
+        setResult({ ok: false, message: t.paymentFailed });
+      } else {
+        setResult({ ok: false, message: t.paymentTimeout });
+      }
     }
   }
 
+  const busy = phase !== "idle";
+  const busyLabel =
+    phase === "checkingProfile"
+      ? t.checkingProfile
+      : phase === "startingSwish"
+        ? t.startingSwish
+        : phase === "waitingForSwish"
+          ? t.waitingForSwish
+          : t.submitting;
+
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
-      <p className="mb-3 text-[12px] leading-snug text-black/45">{t.invoiceNote}</p>
+      <p className="mb-3 text-[12px] leading-snug text-black/45">{t.paymentNote}</p>
 
       {termsMarkdown && (
         <details className="mb-3 border border-black/10 bg-cream/60">
@@ -138,13 +296,26 @@ export default function CourseEnrolButton({
         onClick={submit}
         className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
       >
-        {busy ? t.submitting : waitlist ? t.waitlistCta : t.signupCta}
+        {busy ? busyLabel : waitlist ? t.waitlistCta : t.signupCta}
         {!busy && <span aria-hidden="true">→</span>}
       </button>
-      {result && !result.ok && (
-        <p role="alert" className="mt-3 text-[13px] leading-snug text-orange">
-          {result.message}
+      {busy && (
+        <p role="status" aria-live="polite" className="sr-only">
+          {busyLabel}
         </p>
+      )}
+      {result && !result.ok && (
+        <div role="alert" className="mt-3 text-[13px] leading-snug text-orange">
+          <p>{result.message}</p>
+          {result.profileRequired && (
+            <Link
+              href="/konto#profil"
+              className="mt-2 inline-flex font-bold uppercase tracking-[0.06em] underline underline-offset-4"
+            >
+              {t.profileCta}
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );
