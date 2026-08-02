@@ -115,6 +115,9 @@ export default function CourseEnrolButton({
             {t.termsOpen} <span aria-hidden="true">↓</span>
           </summary>
           <div className="border-t border-black/10 px-4 py-3 text-[12px] leading-relaxed text-black/60">
+            {t.termsLanguageNote && (
+              <p className="mb-3 font-semibold text-black/45">{t.termsLanguageNote}</p>
+            )}
             <TermsBody markdown={termsMarkdown} />
           </div>
         </details>

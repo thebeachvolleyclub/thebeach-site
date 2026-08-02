@@ -22,6 +22,8 @@ export type KurserDict = {
   coachLabel: string;
   terms: string;
   termsOpen: string;
+  /** Endast engelska: villkoren finns bara på svenska. Tom sträng döljer raden. */
+  termsLanguageNote: string;
   termsAccept: string;
   invoiceNote: string;
   loginPrompt: string;
@@ -57,6 +59,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     coachLabel: "Tränare",
     terms: "Kursvillkor",
     termsOpen: "Läs kursvillkoren",
+    termsLanguageNote: "",
     termsAccept: "Jag har läst och godkänner kursvillkoren.",
     invoiceNote: "Du får en faktura som du hittar under Mitt konto → Fakturor.",
     loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
@@ -87,6 +90,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     coachLabel: "Coach",
     terms: "Course terms",
     termsOpen: "Read the course terms",
+    termsLanguageNote: "The course terms are in Swedish. Email us and we\u2019ll walk you through them.",
     termsAccept: "I have read and accept the course terms.",
     invoiceNote: "You'll get an invoice, which you'll find under My account → Invoices.",
     loginPrompt: "Log in with your The Beach account to sign up.",
