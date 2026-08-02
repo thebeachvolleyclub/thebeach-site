@@ -69,7 +69,7 @@ export default function TranaHero({ locale }: { locale: Locale }) {
         {/* Giant headline */}
         <motion.h1
           variants={item}
-          className="font-display text-[clamp(2.75rem,11vw,7rem)] leading-[0.9] text-bone"
+          className="break-words font-display text-[clamp(2.25rem,11vw,7rem)] leading-[0.9] text-bone"
         >
           {t.title1}
           {" "}<br />
