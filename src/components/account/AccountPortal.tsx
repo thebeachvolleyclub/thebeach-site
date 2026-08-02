@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  accountReturnNeedsSwish,
+  canReturnFromAccount,
+  safeAccountNext,
+} from "@/lib/accountReturn.core";
 
 type Profile = {
   id: string;
@@ -181,19 +186,21 @@ export default function AccountPortal() {
   const [nextPath, setNextPath] = useState<string | null>(null);
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get("next");
-    if (raw && /^\/[a-zA-Z0-9\-_/]*$/.test(raw) && !raw.startsWith("//")) setNextPath(raw);
+    setNextPath(safeAccountNext(raw));
   }, []);
   useEffect(() => {
     // Hold the hand-back while the duplicate alert is open — the user must
     // pick a path (old login / merge / new player) before continuing.
-    if (nextPath && profile?.name?.trim() && !dupAlert) window.location.assign(nextPath);
-  }, [nextPath, profile?.name, dupAlert]);
+    if (canReturnFromAccount(nextPath, profile) && !dupAlert) window.location.assign(nextPath as string);
+  }, [nextPath, profile?.name, profile?.swish_phone, dupAlert]);
 
   // A fresh account has no name yet — profile completion IS the next step,
   // so land new registrants straight on the profile tab.
   useEffect(() => {
-    if (profile && !profile.name?.trim()) setTab("profile");
-  }, [profile]);
+    if (profile && (!profile.name?.trim() || (accountReturnNeedsSwish(nextPath) && !profile.swish_phone?.trim()))) {
+      setTab("profile");
+    }
+  }, [nextPath, profile?.name, profile?.swish_phone]);
 
 
   const loadSession = useCallback(async () => {

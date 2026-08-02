@@ -58,7 +58,7 @@ export default async function UpcomingEvents({ locale }: { locale: Locale }) {
               {m.month}
             </div>
             {m.events.map((e, i) => {
-              const rowCls = `flex items-start gap-4 border-b border-black/[0.07] py-4 ${e.slug ? "cursor-pointer transition-colors hover:bg-black/[0.02]" : ""}`;
+              const rowCls = `flex items-start gap-2 border-b border-black/[0.07] py-4 sm:gap-4 ${e.slug ? "cursor-pointer transition-colors hover:bg-black/[0.02]" : ""}`;
               const inner = (
                 <>
                 <div className="w-12 shrink-0 text-center">
@@ -69,18 +69,18 @@ export default async function UpcomingEvents({ locale }: { locale: Locale }) {
                     {e.wd}
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="mb-1 font-display text-lg uppercase leading-tight tracking-[-0.01em] text-black">
                     {e.title}
                   </div>
                   <div className="text-xs leading-relaxed text-black/45">{e.meta}</div>
                 </div>
                 <span
-                  className={`mt-1 shrink-0 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${e.badgeTone ? TONE[e.badgeTone] : BADGE[e.type]}`}
+                  className={`mt-1 max-w-[5.5rem] shrink-0 px-2.5 py-1 text-center text-[9px] font-bold uppercase leading-tight tracking-[0.1em] sm:max-w-none ${e.badgeTone ? TONE[e.badgeTone] : BADGE[e.type]}`}
                 >
                   {e.badge}
                 </span>
-                {e.slug ? <span aria-hidden="true" className="mt-1.5 text-black/25">→</span> : null}
+                {e.slug ? <span aria-hidden="true" className="mt-1.5 hidden text-black/25 sm:inline">→</span> : null}
                 </>
               );
               return e.slug ? (
