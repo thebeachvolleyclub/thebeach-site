@@ -21,7 +21,9 @@ export type KurserDict = {
   closedCta: string;
   coachLabel: string;
   terms: string;
+  termsOpen: string;
   termsAccept: string;
+  invoiceNote: string;
   loginPrompt: string;
   loginCta: string;
   submitting: string;
@@ -31,6 +33,7 @@ export type KurserDict = {
   waitlistSuccessBody: string;
   errorGeneric: string;
   myCoursesCta: string;
+  invoiceCta: string;
   weekdays: string[];
 };
 
@@ -53,16 +56,19 @@ export const kurserDict: Record<Locale, KurserDict> = {
     closedCta: "Anmälan stängd",
     coachLabel: "Tränare",
     terms: "Kursvillkor",
-    termsAccept: "Jag har läst och godkänner kursvillkoren. Anmälan är bindande.",
+    termsOpen: "Läs kursvillkoren",
+    termsAccept: "Jag har läst och godkänner kursvillkoren.",
+    invoiceNote: "Du får en faktura som du hittar under Mitt konto → Fakturor.",
     loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
     loginCta: "Logga in",
     submitting: "Skickar…",
     successTitle: "Du är anmäld",
-    successBody: "Fakturan är på väg till din e-post. Platsen är din när betalningen är registrerad.",
+    successBody: "Fakturan ligger under Mitt konto → Fakturor. Platsen är din när betalningen är registrerad.",
     waitlistSuccessTitle: "Du står i kö",
     waitlistSuccessBody: "Vi hör av oss så fort en plats blir ledig.",
     errorGeneric: "Något gick fel. Försök igen, eller mejla oss så löser vi det.",
     myCoursesCta: "Mina kurser",
+    invoiceCta: "Till mina fakturor",
     weekdays: svWeekdays,
   },
   en: {
@@ -80,16 +86,19 @@ export const kurserDict: Record<Locale, KurserDict> = {
     closedCta: "Registration closed",
     coachLabel: "Coach",
     terms: "Course terms",
-    termsAccept: "I have read and accept the course terms. Registration is binding.",
+    termsOpen: "Read the course terms",
+    termsAccept: "I have read and accept the course terms.",
+    invoiceNote: "You'll get an invoice, which you'll find under My account → Invoices.",
     loginPrompt: "Log in with your The Beach account to sign up.",
     loginCta: "Log in",
     submitting: "Sending…",
     successTitle: "You're signed up",
-    successBody: "The invoice is on its way to your inbox. Your place is confirmed once payment is registered.",
+    successBody: "Your invoice is under My account → Invoices. Your place is confirmed once payment is registered.",
     waitlistSuccessTitle: "You're on the waitlist",
     waitlistSuccessBody: "We'll be in touch as soon as a place opens up.",
     errorGeneric: "Something went wrong. Try again, or email us and we'll sort it.",
     myCoursesCta: "My courses",
+    invoiceCta: "Go to my invoices",
     weekdays: enWeekdays,
   },
 };

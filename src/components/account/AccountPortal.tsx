@@ -56,6 +56,27 @@ type Membership = {
 };
 type MembershipFeed = { memberships: Membership[]; activeCount: number };
 type AccountTab = "overview" | "training" | "bookings" | "invoices" | "profile";
+
+/**
+ * Djuplänkar öppnar rätt flik direkt: /konto#fakturor från kursanmälan,
+ * /konto#traningsgrupper från träningssidan. Läses vid montering — hashen
+ * finns redan då, så ingen extra render behövs.
+ */
+const HASH_TABS: Record<string, AccountTab> = {
+  "#fakturor": "invoices",
+  "#invoices": "invoices",
+  "#traningsgrupper": "training",
+  "#training": "training",
+  "#bokningar": "bookings",
+  "#bookings": "bookings",
+  "#profil": "profile",
+  "#profile": "profile",
+};
+
+function tabFromHash(): AccountTab {
+  if (typeof window === "undefined") return "overview";
+  return HASH_TABS[window.location.hash.toLowerCase()] ?? "overview";
+}
 type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean };
 type CancellationResult = {
   booking: Booking;
@@ -105,7 +126,7 @@ function cancellationMessage(result: CancellationResult) {
 export default function AccountPortal() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tab, setTab] = useState<AccountTab>("overview");
+  const [tab, setTab] = useState<AccountTab>(tabFromHash);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -173,6 +194,7 @@ export default function AccountPortal() {
   useEffect(() => {
     if (profile && !profile.name?.trim()) setTab("profile");
   }, [profile]);
+
 
   const loadSession = useCallback(async () => {
     setLoading(true);

@@ -65,9 +65,17 @@ export default function CourseEnrolButton({
         <p className="mb-1 font-display text-xl uppercase leading-none text-black">
           {result.waitlisted ? t.waitlistSuccessTitle : t.successTitle}
         </p>
-        <p className="text-[13px] leading-snug text-black/55">
+        <p className="mb-4 text-[13px] leading-snug text-black/55">
           {result.waitlisted ? t.waitlistSuccessBody : t.successBody}
         </p>
+        {!result.waitlisted && (
+          <a
+            href="/konto#fakturor"
+            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
+          >
+            {t.invoiceCta} <span aria-hidden="true">→</span>
+          </a>
+        )}
       </div>
     );
   }
@@ -99,9 +107,19 @@ export default function CourseEnrolButton({
 
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
+      <p className="mb-3 text-[12px] leading-snug text-black/45">{t.invoiceNote}</p>
+
       {termsMarkdown && (
-        <p className="mb-3 text-[12px] leading-snug text-black/45">{termsMarkdown}</p>
+        <details className="mb-3 border border-black/10 bg-cream/60">
+          <summary className="cursor-pointer list-none px-4 py-3 text-[11px] font-bold uppercase tracking-[0.12em] text-black/60 hover:text-black">
+            {t.termsOpen} <span aria-hidden="true">↓</span>
+          </summary>
+          <div className="border-t border-black/10 px-4 py-3 text-[12px] leading-relaxed text-black/60">
+            <TermsBody markdown={termsMarkdown} />
+          </div>
+        </details>
       )}
+
       <label className="mb-4 flex cursor-pointer items-start gap-2.5 text-[12px] leading-snug text-black/55">
         <input
           type="checkbox"
@@ -126,5 +144,36 @@ export default function CourseEnrolButton({
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Villkorstexten kommer som markdown från plattformen men håller sig till
+ * stycken och punktlistor. Renderas utan markdown-bibliotek för att hålla
+ * kortet lätt — okänd syntax visas som vanlig text.
+ */
+function TermsBody({ markdown }: { markdown: string }) {
+  const blocks = markdown.trim().split(/\n{2,}/);
+  return (
+    <>
+      {blocks.map((block, i) => {
+        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+        const isList = lines.length > 0 && lines.every((l) => /^[-*]\s+/.test(l));
+        if (isList) {
+          return (
+            <ul key={i} className="mb-3 list-disc space-y-1 pl-4 last:mb-0">
+              {lines.map((l, j) => (
+                <li key={j}>{l.replace(/^[-*]\s+/, "")}</li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={i} className="mb-3 last:mb-0">
+            {lines.join(" ")}
+          </p>
+        );
+      })}
+    </>
   );
 }
