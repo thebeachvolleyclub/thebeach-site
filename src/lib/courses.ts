@@ -8,11 +8,18 @@ import { appApi } from "@/lib/appApi";
  * Kurshanteringen ersätter MATCHi. API:t returnerar ENDAST publicerade kurser,
  * så listan är redan kundsäker — utkast och avbrutna kurser kommer aldrig hit.
  *
- * Tränarnamn returneras publikt av API:t men renderas inte förrän The Beach
- * beslutat om tränare ska namnges utåt — se SHOW_COACHES nedan.
+ * Tränarnamn returneras publikt av API:t men ska INTE visas för kund — se
+ * SHOW_COACHES nedan.
  */
 
-/** Tränarnamn på kurskorten. Slå på när beslutet är taget. */
+/**
+ * Tränarnamn på kurskorten.
+ *
+ * BESLUTAT AV MATTIAS 2026-08-02: inga tränare publikt. Kopplingen finns kvar
+ * internt (närvaro och löneunderlag bygger på den) men namnen renderas inte
+ * på sajten. Ändra inte utan att stämma av med Mattias — det låser oss vid
+ * tränarbyten och sjukdom.
+ */
 export const SHOW_COACHES = false;
 
 export type CourseSession = {
