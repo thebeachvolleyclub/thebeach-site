@@ -71,6 +71,11 @@ export function birthdateHint(value: string): string {
   const v = (value ?? "").trim();
   if (!v) return "Fyll i ditt födelsedatum, till exempel 1990-05-12.";
   if (isBirthdateValid(v)) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return "Datumet finns inte. Kontrollera år, månad och dag.";
+  const parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (parsed) {
+    const asDate = new Date(Date.UTC(Number(parsed[1]), Number(parsed[2]) - 1, Number(parsed[3])));
+    if (asDate.getTime() > Date.now()) return "Födelsedatumet kan inte ligga i framtiden.";
+    return "Datumet finns inte. Kontrollera år, månad och dag.";
+  }
   return "Skriv födelsedatum som ÅÅÅÅ-MM-DD, till exempel 1990-05-12.";
 }
