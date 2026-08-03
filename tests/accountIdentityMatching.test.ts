@@ -7,7 +7,11 @@ const profileRoute = readFileSync("src/app/api/account/profile/route.ts", "utf8"
 const matchingRoute = readFileSync("src/app/api/account/profile/match-rating/route.ts", "utf8");
 
 test("all web account profiles require birthdate and opt into the Master duplicate guard", () => {
-  assert.match(portal, /Födelsedatum krävs för alla BeachID-konton/);
+  // Birthdate is still mandatory — the gate just moved from a bare
+  // ÅÅÅÅ-MM-DD regex to the shared validator, so a phone keypad (which has
+  // no hyphen key) can actually satisfy it. See tests/birthdate.test.ts.
+  assert.match(portal, /if \(!isBirthdateValid\(normalizedBirthdate\)\)/);
+  assert.match(portal, /setError\(birthdateHint\(birthdate\)\)/);
   assert.doesNotMatch(portal, /!profile\?\.canonical_player_id && !/);
   assert.match(portal, /check_duplicates: true/);
   assert.match(portal, /confirm_new_identity: confirmNewIdentity/);

@@ -7,6 +7,7 @@ import {
   canReturnFromAccount,
   safeAccountNext,
 } from "@/lib/accountReturn.core";
+import { maskBirthdate, normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 
 type Profile = {
   id: string;
@@ -321,17 +322,19 @@ export default function AccountPortal() {
   };
 
   const saveProfile = async (confirmNewIdentity = false) => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim())) {
-      setError("Födelsedatum krävs för alla BeachID-konton.");
+    const normalizedBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
+    if (!isBirthdateValid(normalizedBirthdate)) {
+      setError(birthdateHint(birthdate));
       return;
     }
+    if (normalizedBirthdate !== birthdate) setBirthdate(normalizedBirthdate);
     setBusy(true); setError(""); setMessage("");
     try {
       const next = await api<Profile>("/api/account/profile", {
         method: "PUT",
         body: JSON.stringify({
           name, swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic,
-          birthdate: birthdate.trim() || undefined,
+          birthdate: normalizedBirthdate || undefined,
           // Duplicate guard: a name/birthdate match in the player registry
           // pauses BeachID creation and raises the alert card instead.
           check_duplicates: true,
@@ -484,8 +487,8 @@ export default function AccountPortal() {
       <h2 className="font-display text-4xl">Logga in eller skapa konto</h2>
       <p className="mt-4 text-sm leading-relaxed text-black/55">Ange din e-post så skickar vi samma sexsiffriga kod som i appen. Om du är ny skapas kontot när adressen är verifierad.</p>
       {family.length ? <div className="mt-7 space-y-2"><strong className="block text-sm">Vem loggar in?</strong>{family.map((item) => <button key={item.id} type="button" disabled={busy} onClick={() => selectFamily(item.id)} className="flex w-full cursor-pointer items-center gap-3 border border-black/15 p-3 text-left hover:border-black"><span className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-mint text-xl">{item.avatar_thumb_url ? <img src={item.avatar_thumb_url} alt="" className="h-full w-full object-cover" /> : item.emoji_icon || "🏐"}</span><span className="font-semibold">{item.name || "Spelare"}</span></button>)}</div> : <div className="mt-7 space-y-4">
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">E-post</span><input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" className="min-h-13 w-full border border-black/20 bg-cream px-4 text-base outline-none focus:border-black" /></label>
-        {codeSent ? <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Sexsiffrig kod</span><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" className="min-h-13 w-full border border-black/20 bg-cream px-4 text-center text-xl tracking-[0.35em] outline-none focus:border-black" /></label> : null}
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">E-post</span><input value={email} onChange={(event) => setEmail(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !busy && email && !codeSent) { event.preventDefault(); void requestCode(); } }} type="email" enterKeyHint="send" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} className="min-h-13 w-full border border-black/20 bg-cream px-4 text-base outline-none focus:border-black" /></label>
+        {codeSent ? <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Sexsiffrig kod</span><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} onKeyDown={(event) => { if (event.key === "Enter" && !busy && code.length === 6) { event.preventDefault(); void verify(); } }} inputMode="numeric" enterKeyHint="go" autoComplete="one-time-code" className="min-h-13 w-full border border-black/20 bg-cream px-4 text-center text-xl tracking-[0.35em] outline-none focus:border-black" /></label> : null}
         <button type="button" disabled={busy || !email || (codeSent && code.length !== 6)} onClick={codeSent ? verify : requestCode} className="min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busy ? "Vänta…" : codeSent ? "Logga in" : "Skicka kod"}</button>
         {codeSent ? <button type="button" onClick={() => { setCodeSent(false); setCode(""); setMessage(""); }} className="w-full cursor-pointer text-xs font-bold uppercase text-black/50 hover:text-black">Byt e-postadress</button> : null}
       </div>}
@@ -571,11 +574,23 @@ export default function AccountPortal() {
     <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
       <section className="bg-white p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Uppgifter</p><div className="space-y-4">
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Namn *</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs — för- och efternamn.</span></label>
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input value={birthdate} onChange={(e) => setBirthdate(maskBirthdate(e.target.value))} onBlur={(e) => { const fixed = normalizeBirthdate(e.target.value); if (fixed) setBirthdate(fixed); }} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter. Skriv bara siffrorna — bindestrecken fylls i automatiskt.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
-        <button type="button" onClick={() => saveProfile()} disabled={busy || name.trim().length < 2 || !/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim())} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+        {(() => {
+          const cleanedBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
+          const nameOk = name.trim().length >= 2;
+          const bdOk = isBirthdateValid(cleanedBirthdate);
+          // Never leave the user with a dead grey button and no reason: on a
+          // phone the old numeric keypad had no hyphen key, so this state was
+          // unreachable-by-typing and completely unexplained.
+          const blocker = !nameOk ? "Fyll i för- och efternamn." : !bdOk ? birthdateHint(birthdate) : "";
+          return <>
+            <button type="button" onClick={() => saveProfile()} disabled={busy || !nameOk || !bdOk} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+            {blocker ? <p className="mt-2 text-xs font-semibold text-orange">{blocker}</p> : null}
+          </>;
+        })()}
       </div></section>
       <section className="bg-cream p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Avatar och bilder</p><strong className="mb-2 block text-sm">Emoji-avatar</strong><div className="mb-6 flex flex-wrap gap-2">{EMOJIS.map((item) => <button key={item} type="button" onClick={() => setEmoji(item)} className={`grid h-11 w-11 cursor-pointer place-items-center border text-xl ${emoji === item ? "border-black bg-black" : "border-black/15 bg-white"}`}>{item}</button>)}</div>
         <div className="space-y-3"><label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj profilfoto</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("avatar", e.target.files?.[0])} /><span>Välj →</span></label>{profile.avatar_url ? <button type="button" onClick={() => removeImage("avatar")} className="text-xs font-bold uppercase text-orange">Ta bort profilfoto</button> : null}<label className="flex cursor-pointer items-center justify-between border border-black/15 bg-white p-4 text-sm font-semibold"><span>Välj omslagsbild</span><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => upload("banner", e.target.files?.[0])} /><span>Välj →</span></label><button type="button" onClick={() => removeImage("banner")} className="text-xs font-bold uppercase text-orange">Återställ omslagsbild</button></div>

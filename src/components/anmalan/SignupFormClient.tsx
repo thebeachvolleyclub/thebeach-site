@@ -8,6 +8,7 @@ import {
   signupDiscountPct,
   type JuniorPricing,
 } from "@/lib/signupPricing";
+import { maskBirthdate, normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 
 /**
  * Season-signup form — the web port of the app's SeasonSignupScreen.
@@ -538,7 +539,7 @@ export default function SignupFormClient() {
   );
   const secondaryEnabled = !anySlot && primarySlots.length >= 1;
   const slotsOk = anySlot || primaryDayCount >= sessions;
-  const birthdateValid = /^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim());
+  const birthdateValid = isBirthdateValid(normalizeBirthdate(birthdate) || birthdate.trim());
   const identityOk = !!(firstName.trim() && lastName.trim() && email.trim() && birthdateValid && gender);
   const acksOk = paymentAck && cancellationAck;
   const descriptionOk = !!description.trim();
@@ -958,7 +959,8 @@ export default function SignupFormClient() {
             ) : (
               <div>
                 <label htmlFor="su-birth" className={labelCls}>{t.birthdate} (ÅÅÅÅ-MM-DD) *</label>
-                <input id="su-birth" className={inputCls} value={birthdate} onChange={(e) => setBirthdate(e.target.value)} placeholder="1990-05-15" inputMode="numeric" />
+                <input id="su-birth" className={inputCls} value={birthdate} onChange={(e) => setBirthdate(maskBirthdate(e.target.value))} onBlur={(e) => { const fixed = normalizeBirthdate(e.target.value); if (fixed) setBirthdate(fixed); }} placeholder="1990-05-15" inputMode="numeric" autoComplete="bday" />
+                {birthdate.trim() && !birthdateValid ? <p className="mt-1 text-xs font-semibold text-orange">{birthdateHint(birthdate)}</p> : null}
               </div>
             )}
           </div>
