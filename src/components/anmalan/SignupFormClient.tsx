@@ -41,9 +41,15 @@ type Slot = {
   note_en?: string;
 };
 
+type JuniorPricingTier = {
+  birth_year_from: number;
+  discount_pct: number;
+};
+
 type JuniorPricing = {
   birth_year_from: number;
   discount_pct: number;
+  tiers?: JuniorPricingTier[];
   membership_required: boolean;
   membership_fee_sek: number;
 };
@@ -376,15 +382,26 @@ function fmtDate(iso: string | null | undefined) {
 const DEFAULT_JUNIOR_PRICING: JuniorPricing = {
   birth_year_from: 2007,
   discount_pct: 30,
+  tiers: [
+    { birth_year_from: 2007, discount_pct: 30 },
+    { birth_year_from: 2001, discount_pct: 20 },
+  ],
   membership_required: true,
   membership_fee_sek: 190,
 };
 
-function juniorDiscountApplies(birthdate: string, pricing: JuniorPricing) {
+function juniorDiscountPct(birthdate: string, pricing: JuniorPricing) {
   const normalized = birthdate.trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return 0;
   const birthYear = Number(normalized.slice(0, 4));
-  return Number.isInteger(birthYear) && birthYear >= pricing.birth_year_from;
+  if (!Number.isInteger(birthYear)) return 0;
+  const tiers = pricing.tiers?.length
+    ? pricing.tiers
+    : [{ birth_year_from: pricing.birth_year_from, discount_pct: pricing.discount_pct }];
+  const tier = [...tiers]
+    .sort((a, b) => b.birth_year_from - a.birth_year_from)
+    .find((candidate) => birthYear >= candidate.birth_year_from);
+  return tier?.discount_pct ?? 0;
 }
 
 function discountedPriceSek(priceSek: number, discountPct: number) {
@@ -535,8 +552,8 @@ export default function SignupFormClient() {
   const maxWishes = Number(config?.config?.max_wishes ?? 5);
   const maxDemands = Number(config?.config?.max_demands ?? 5);
   const juniorPricing = config?.junior_pricing ?? DEFAULT_JUNIOR_PRICING;
-  const hasJuniorDiscount = juniorDiscountApplies(birthdate, juniorPricing);
-  const juniorDiscountPct = hasJuniorDiscount ? juniorPricing.discount_pct : 0;
+  const effectiveJuniorDiscountPct = juniorDiscountPct(birthdate, juniorPricing);
+  const hasJuniorDiscount = effectiveJuniorDiscountPct > 0;
   const showJuniorMembershipNotice = hasJuniorDiscount
     && juniorPricing.membership_required
     && membershipConfirmed !== true;
@@ -1083,7 +1100,7 @@ export default function SignupFormClient() {
             isSelected={(s) => primarySlots.includes(s.key)}
             isDisabled={() => anySlot}
             isStruck={() => anySlot}
-            discountPct={juniorDiscountPct}
+            discountPct={effectiveJuniorDiscountPct}
             onToggle={togglePrimary}
           />
 
@@ -1102,7 +1119,7 @@ export default function SignupFormClient() {
                 isSelected={(s) => secondarySlots.includes(s.key)}
                 isDisabled={() => anySlot}
                 isStruck={(s) => anySlot || primarySlots.includes(s.key)}
-                discountPct={juniorDiscountPct}
+                discountPct={effectiveJuniorDiscountPct}
                 onToggle={toggleSecondary}
               />
             </>
@@ -1216,7 +1233,7 @@ export default function SignupFormClient() {
             </p>
             <p className="mt-2 text-sm leading-relaxed text-black/70">
               {t.juniorMembershipBody(
-                juniorPricing.discount_pct,
+                effectiveJuniorDiscountPct,
                 juniorPricing.membership_fee_sek,
               )}
             </p>

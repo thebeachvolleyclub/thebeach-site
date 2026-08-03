@@ -43,16 +43,19 @@ test("junior signup pricing and the private membership reminder share the app co
   assert.match(source, /junior_pricing\?: JuniorPricing/);
   assert.match(source, /birth_year_from: 2007/);
   assert.match(source, /discount_pct: 30/);
+  assert.match(source, /birth_year_from: 2001, discount_pct: 20/);
+  assert.match(source, /tiers\?: JuniorPricingTier\[\]/);
   assert.match(source, /membership_fee_sek: 190/);
   assert.match(source, /api<MembershipFeed>\("\/api\/account\/membership"\)/);
   assert.match(source, /Har du tävlingslicens ska den vara hos oss/);
   assert.match(source, /If you have a competition licence, it must be with us/);
   assert.match(source, /Om du istället vill betala fullt pris, skriv det som ett övrigt önskemål ovan/);
   assert.match(source, /If you would rather pay full price, add this under other requests above/);
-  assert.match(source, /juniorDiscountApplies\(birthdate, juniorPricing\)/);
-  assert.match(source, /discountPct=\{juniorDiscountPct\}/);
+  assert.match(source, /juniorDiscountPct\(birthdate, juniorPricing\)/);
+  assert.match(source, /discountPct=\{effectiveJuniorDiscountPct\}/);
   assert.match(source, /discountedPriceSek\(s\.price_sek, discountPct\)/);
   assert.match(source, /showJuniorMembershipNotice \? \(/);
+  assert.match(source, /juniorMembershipBody\([\s\S]*effectiveJuniorDiscountPct/);
   assert.match(source, /junioravgiften \$\{fee\} kr/);
 });
 
