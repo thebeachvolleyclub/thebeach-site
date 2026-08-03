@@ -93,7 +93,7 @@ export const bokaDict: Dict<BokaDict> = {
     direct: {
       eyebrow: "Direktbokning",
       title: "Hitta din tid",
-      lead: "Vi börjar med ett urval banor och tider. Övriga banor ligger kvar i MATCHi under pilotperioden, så systemen konkurrerar aldrig om samma tid.",
+      lead: "Välj dag och tid så ser du vilka banor som är lediga och vad de kostar just då. Vi öppnar fler banor och tider löpande.",
     },
     steps: {
       eyebrow: "Så funkar det",
@@ -134,10 +134,10 @@ export const bokaDict: Dict<BokaDict> = {
       cancelError: "Kunde inte avboka",
       loadingWidget: "Hämtar bokningen…",
       pilot: {
-        tag: "Pilot",
-        title: "Snart bokar du direkt här",
-        body: "Vi öppnar en första grupp banor i vårt nya bokningssystem. Fram till dess ligger de bokningsbara tiderna kvar i MATCHi.",
-        matchiCta: "Boka i MATCHi →",
+        tag: "Bokning",
+        title: "Direktbokningen är tillfälligt stängd",
+        body: "Vi har tillfälligt stängt bokningen här på sidan. Ring eller mejla oss så fixar vi din tid.",
+        matchiCta: "Ring 070-432 20 28 →",
       },
       confirmedPanel: {
         tag: "Bokning klar",
@@ -165,7 +165,7 @@ export const bokaDict: Dict<BokaDict> = {
       tomorrow: "Imorgon",
       stepTime: "2. Välj tid",
       loadingSlots: "Hämtar lediga tider…",
-      noSlots: "Inga lediga pilottider den här dagen.",
+      noSlots: "Inga lediga tider den här dagen.",
       stepCourt: "3. Välj bana",
       indoor: "Inne",
       outdoor: "Ute",
@@ -210,7 +210,7 @@ export const bokaDict: Dict<BokaDict> = {
     direct: {
       eyebrow: "Direct booking",
       title: "Find your time",
-      lead: "We are starting with a selection of courts and times. The remaining courts stay in MATCHi during the pilot period, so the two systems never compete for the same slot.",
+      lead: "Pick a day and a time to see which courts are free and what they cost right then. We keep opening more courts and times.",
     },
     steps: {
       eyebrow: "How it works",
@@ -251,10 +251,10 @@ export const bokaDict: Dict<BokaDict> = {
       cancelError: "Could not cancel",
       loadingWidget: "Loading the booking…",
       pilot: {
-        tag: "Pilot",
-        title: "Soon you can book directly here",
-        body: "We are opening a first group of courts in our new booking system. Until then, the bookable times remain in MATCHi.",
-        matchiCta: "Book on MATCHi →",
+        tag: "Booking",
+        title: "Online booking is temporarily closed",
+        body: "Online booking is temporarily closed on this page. Call or email us and we will sort out your time.",
+        matchiCta: "Call +46 70 432 20 28 →",
       },
       confirmedPanel: {
         tag: "Booking complete",
@@ -282,7 +282,7 @@ export const bokaDict: Dict<BokaDict> = {
       tomorrow: "Tomorrow",
       stepTime: "2. Pick a time",
       loadingSlots: "Fetching available times…",
-      noSlots: "No available pilot times on this day.",
+      noSlots: "No available times on this day.",
       stepCourt: "3. Pick a court",
       indoor: "Indoor",
       outdoor: "Outdoor",
