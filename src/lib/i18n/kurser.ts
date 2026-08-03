@@ -31,6 +31,11 @@ export type KurserDict = {
   submitting: string;
   startingSwish: string;
   waitingForSwish: string;
+  desktopSwishTitle: string;
+  desktopSwishBody: string;
+  swishQrAlt: string;
+  openSwishCta: string;
+  paymentQrUnavailable: string;
   successTitle: string;
   successBody: string;
   waitlistSuccessTitle: string;
@@ -70,12 +75,17 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsOpen: "Läs kursvillkoren",
     termsLanguageNote: "",
     termsAccept: "Jag har läst och godkänner kursvillkoren.",
-    paymentNote: "Efter anmälan öppnas Swish så att du kan godkänna betalningen. Platsen bekräftas först när betalningen är klar.",
+    paymentNote: "Efter anmälan betalar du med Swish i mobilen. Platsen bekräftas först när betalningen är klar.",
     loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
     loginCta: "Logga in",
     submitting: "Skickar…",
     startingSwish: "Startar Swish…",
     waitingForSwish: "Väntar på Swish…",
+    desktopSwishTitle: "Betala med mobilen",
+    desktopSwishBody: "Öppna Swish i mobilen, tryck på Skanna och rikta kameran mot QR-koden. Sidan bekräftar anmälan automatiskt.",
+    swishQrAlt: "Swish QR-kod för kursbetalning",
+    openSwishCta: "Öppna Swish på den här enheten",
+    paymentQrUnavailable: "QR-koden kunde inte visas. Öppna Swish på den här enheten eller kontrollera Mitt konto innan du försöker igen.",
     successTitle: "Betalt och klart",
     successBody: "Betalningen är registrerad. Öppna Mina kurser för att se aktuell platsstatus.",
     waitlistSuccessTitle: "Du står i kö",
@@ -112,12 +122,17 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsOpen: "Read the course terms",
     termsLanguageNote: "The course terms are in Swedish. Email us and we\u2019ll walk you through them.",
     termsAccept: "I have read and accept the course terms.",
-    paymentNote: "After registration, Swish opens so you can approve the payment. Your place is confirmed only after payment.",
+    paymentNote: "After registration, pay with Swish on your phone. Your place is confirmed only after payment.",
     loginPrompt: "Log in with your The Beach account to sign up.",
     loginCta: "Log in",
     submitting: "Sending…",
     startingSwish: "Starting Swish…",
     waitingForSwish: "Waiting for Swish…",
+    desktopSwishTitle: "Pay with your phone",
+    desktopSwishBody: "Open Swish on your phone, tap Scan, and point the camera at the QR code. This page confirms your registration automatically.",
+    swishQrAlt: "Swish QR code for the course payment",
+    openSwishCta: "Open Swish on this device",
+    paymentQrUnavailable: "The QR code could not be displayed. Open Swish on this device or check My account before trying again.",
     successTitle: "Payment complete",
     successBody: "Your payment is registered. Open My courses to see the current place status.",
     waitlistSuccessTitle: "You're on the waitlist",

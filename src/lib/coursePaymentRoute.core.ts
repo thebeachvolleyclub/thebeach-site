@@ -14,6 +14,7 @@ type CommonDependencies = AccountDependencies & {
 
 type ChargeDependencies = CommonDependencies & {
   sameOrigin: (request: Request) => boolean;
+  swishQrCode: (paymentRequestToken: string) => Promise<string | null>;
 };
 
 type RouteContext = { params: Promise<{ invoiceId: string }> };
@@ -90,8 +91,13 @@ export function createCourseSwishPost(dependencies: ChargeDependencies) {
       );
     }
 
+    const paymentRequestToken = new URL(deepLinkUrl).searchParams.get("token");
+    const qrCodeDataUrl = paymentRequestToken
+      ? await dependencies.swishQrCode(paymentRequestToken)
+      : null;
+
     return Response.json(
-      { deepLinkUrl },
+      { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}) },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   };

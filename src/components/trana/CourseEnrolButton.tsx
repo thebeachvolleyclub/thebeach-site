@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
@@ -9,6 +10,8 @@ import {
   courseAttemptKey,
   courseInvoiceId,
   courseSwishLaunchUrl,
+  courseSwishMobileDevice,
+  courseSwishQrCode,
   pendingCourseInvoice,
   pollCoursePayment,
   remainingCoursePaymentTimeout,
@@ -30,6 +33,11 @@ type Result =
   | { ok: false; message: string };
 
 type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
+
+type SwishHandoff = {
+  deepLinkUrl: string;
+  qrCodeDataUrl: string | null;
+};
 
 async function json(response: Response): Promise<Record<string, unknown>> {
   return response.json().catch(() => ({})) as Promise<Record<string, unknown>>;
@@ -67,6 +75,8 @@ export default function CourseEnrolButton({
   const [accepted, setAccepted] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Result | null>(null);
+  const [swishHandoff, setSwishHandoff] = useState<SwishHandoff | null>(null);
+  const [showDesktopSwish, setShowDesktopSwish] = useState(false);
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
@@ -89,6 +99,16 @@ export default function CourseEnrolButton({
       const storage = window.sessionStorage;
       const savedInvoice = pendingCourseInvoice(courseId, storage);
       if (savedInvoice) {
+        if (savedInvoice.deepLinkUrl) {
+          setSwishHandoff({
+            deepLinkUrl: savedInvoice.deepLinkUrl,
+            qrCodeDataUrl: savedInvoice.qrCodeDataUrl ?? null,
+          });
+          setShowDesktopSwish(!courseSwishMobileDevice(
+            window.navigator.userAgent,
+            window.navigator.maxTouchPoints,
+          ));
+        }
         setPhase("waitingForSwish");
         await finishPayment(savedInvoice.invoiceId, controller, storage, savedInvoice.createdAt);
         return;
@@ -145,9 +165,23 @@ export default function CourseEnrolButton({
         setResult({ ok: false, message: t.paymentFailed });
         return;
       }
+      const qrCodeDataUrl = courseSwishQrCode(charge);
+      const mobileDevice = courseSwishMobileDevice(
+        window.navigator.userAgent,
+        window.navigator.maxTouchPoints,
+      );
+      setSwishHandoff({ deepLinkUrl, qrCodeDataUrl });
+      setShowDesktopSwish(!mobileDevice);
+      rememberCourseInvoice(
+        courseId,
+        invoiceId,
+        storage,
+        invoiceCreatedAt,
+        { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}) },
+      );
 
       setPhase("waitingForSwish");
-      window.location.assign(deepLinkUrl);
+      if (mobileDevice) window.location.assign(deepLinkUrl);
       await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -191,11 +225,17 @@ export default function CourseEnrolButton({
       );
       if (payment.state === "paid") {
         clearCourseAttempt(courseId, storage);
+        setSwishHandoff(null);
+        setShowDesktopSwish(false);
         setResult({ ok: true, kind: "paid" });
       } else if (payment.state === "failed") {
         clearCourseAttempt(courseId, storage);
+        setSwishHandoff(null);
+        setShowDesktopSwish(false);
         setResult({ ok: false, message: t.paymentFailed });
       } else {
+        setSwishHandoff(null);
+        setShowDesktopSwish(false);
         setResult({ ok: false, message: t.paymentTimeout });
       }
     }
@@ -248,6 +288,41 @@ export default function CourseEnrolButton({
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
       <p className="mb-3 text-[12px] leading-snug text-black/45">{t.paymentNote}</p>
+
+      {showDesktopSwish && swishHandoff && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-4 border border-black/15 bg-white p-4 text-center"
+        >
+          <p className="font-display text-xl uppercase leading-none text-black">
+            {t.desktopSwishTitle}
+          </p>
+          <p className="mx-auto mt-2 max-w-xs text-[12px] leading-snug text-black/55">
+            {t.desktopSwishBody}
+          </p>
+          {swishHandoff.qrCodeDataUrl ? (
+            <Image
+              src={swishHandoff.qrCodeDataUrl}
+              alt={t.swishQrAlt}
+              width={300}
+              height={300}
+              unoptimized
+              className="mx-auto mt-4 size-[220px] border border-black/10 bg-white p-2"
+            />
+          ) : (
+            <p role="alert" className="mt-4 text-[13px] leading-snug text-orange">
+              {t.paymentQrUnavailable}
+            </p>
+          )}
+          <a
+            href={swishHandoff.deepLinkUrl}
+            className="mt-3 inline-flex min-h-[44px] items-center text-[11px] font-bold uppercase tracking-[0.08em] text-black underline underline-offset-4"
+          >
+            {t.openSwishCta}
+          </a>
+        </div>
+      )}
 
       {termsMarkdown && (
         <details className="mb-3 border border-black/10 bg-cream/60">

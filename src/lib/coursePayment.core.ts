@@ -19,6 +19,8 @@ type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export type PendingCourseInvoice = {
   invoiceId: string;
   createdAt: number;
+  deepLinkUrl?: string;
+  qrCodeDataUrl?: string;
 };
 
 export type PaidCourseEnrolment = {
@@ -132,7 +134,14 @@ export function pendingCourseInvoice(
       typeof saved.createdAt === "number" &&
       now - saved.createdAt < ATTEMPT_TTL_MS
     ) {
-      return { invoiceId: saved.invoiceId, createdAt: saved.createdAt };
+      const deepLinkUrl = courseSwishLaunchUrl(saved);
+      const qrCodeDataUrl = courseSwishQrCode(saved);
+      return {
+        invoiceId: saved.invoiceId,
+        createdAt: saved.createdAt,
+        ...(deepLinkUrl ? { deepLinkUrl } : {}),
+        ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}),
+      };
     }
   } catch {
     return null;
@@ -145,10 +154,18 @@ export function rememberCourseInvoice(
   invoiceId: string,
   storage: StorageLike,
   now = Date.now(),
+  handoff?: { deepLinkUrl: string; qrCodeDataUrl?: string },
 ) {
   if (!validInvoiceId(invoiceId)) return;
   try {
-    storage.setItem(invoiceStorageKey(courseId), JSON.stringify({ invoiceId, createdAt: now }));
+    const deepLinkUrl = handoff ? courseSwishLaunchUrl(handoff) : null;
+    const qrCodeDataUrl = handoff ? courseSwishQrCode(handoff) : null;
+    storage.setItem(invoiceStorageKey(courseId), JSON.stringify({
+      invoiceId,
+      createdAt: now,
+      ...(deepLinkUrl ? { deepLinkUrl } : {}),
+      ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}),
+    }));
   } catch {
     // The active render still keeps the invoice id even if storage is denied.
   }
@@ -202,6 +219,26 @@ export function courseSwishLaunchUrl(payload: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+/** Accept only the PNG data URL emitted by our authenticated Swish BFF. */
+export function courseSwishQrCode(payload: unknown): string | null {
+  const root = record(payload);
+  const raw = root ? stringValue(root.qrCodeDataUrl) : null;
+  if (
+    !raw ||
+    raw.length > 200_000 ||
+    !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(raw)
+  ) {
+    return null;
+  }
+  return raw;
+}
+
+/** A protocol handoff should happen automatically only on phones/tablets. */
+export function courseSwishMobileDevice(userAgent: string, maxTouchPoints = 0): boolean {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent) ||
+    (/Macintosh/i.test(userAgent) && maxTouchPoints > 1);
 }
 
 export function courseSwishReturnInvoice(search: string): string | null {

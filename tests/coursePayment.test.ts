@@ -9,6 +9,8 @@ import {
   courseAttemptKey,
   courseInvoiceId,
   courseSwishLaunchUrl,
+  courseSwishMobileDevice,
+  courseSwishQrCode,
   courseSwishReturnInvoice,
   pendingCourseInvoice,
   pollCoursePayment,
@@ -25,6 +27,8 @@ import {
 } from "../src/lib/coursePaymentRoute.core.ts";
 
 const invoiceId = "2adb3894-2460-4a88-98c0-e4440b31d3ae";
+const qrCodeDataUrl = "data:image/png;base64,c3dpc2gtcXItY29kZQ==";
+const swishQrCode = async () => qrCodeDataUrl;
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -58,6 +62,21 @@ test("accepts only a tokenized Swish payment handoff in the browser", () => {
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "swish://paymentrequest?callbackurl=https://site.test" }), null);
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "https://evil.test/paymentrequest?token=x" }), null);
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "not-a-url" }), null);
+});
+
+test("accepts only a bounded PNG QR image from the course payment BFF", () => {
+  assert.equal(courseSwishQrCode({ qrCodeDataUrl }), qrCodeDataUrl);
+  assert.equal(courseSwishQrCode({ qrCodeDataUrl: "data:image/svg+xml;base64,PHN2Zz4=" }), null);
+  assert.equal(courseSwishQrCode({ qrCodeDataUrl: "https://evil.test/qr.png" }), null);
+  assert.equal(courseSwishQrCode({ qrCodeDataUrl: "data:image/png;base64,not valid" }), null);
+});
+
+test("opens Swish automatically only on phones and tablets", () => {
+  assert.equal(courseSwishMobileDevice("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0)"), true);
+  assert.equal(courseSwishMobileDevice("Mozilla/5.0 (Linux; Android 15; Pixel 9)"), true);
+  assert.equal(courseSwishMobileDevice("Mozilla/5.0 (Macintosh; Intel Mac OS X)", 5), true);
+  assert.equal(courseSwishMobileDevice("Mozilla/5.0 (Macintosh; Intel Mac OS X)", 0), false);
+  assert.equal(courseSwishMobileDevice("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"), false);
 });
 
 test("recovers only a validated invoice from a course Swish browser return", () => {
@@ -203,6 +222,17 @@ test("persists one enrollment attempt and invoice across reloads during the hold
     createdAt: 3_000,
   });
 
+  rememberCourseInvoice(156, invoiceId, storage, 3_000, {
+    deepLinkUrl: "swish://paymentrequest?token=provider-token",
+    qrCodeDataUrl,
+  });
+  assert.deepEqual(pendingCourseInvoice(156, storage, 4_000), {
+    invoiceId,
+    createdAt: 3_000,
+    deepLinkUrl: "swish://paymentrequest?token=provider-token",
+    qrCodeDataUrl,
+  });
+
   clearCourseAttempt(156, storage);
   assert.equal(pendingCourseInvoice(156, storage, 4_000), null);
   assert.notEqual(courseAttemptKey(156, storage, create, 4_000), first);
@@ -237,6 +267,7 @@ test("charge handler rejects cross origin, missing session, and invalid invoice 
     appApi,
     courseInvoiceStatus: () => "",
     sameOrigin: () => false,
+    swishQrCode,
     unauthorized,
     validInvoiceId,
   });
@@ -250,6 +281,7 @@ test("charge handler rejects cross origin, missing session, and invalid invoice 
     appApi,
     courseInvoiceStatus: () => "",
     sameOrigin: () => true,
+    swishQrCode,
     unauthorized,
     validInvoiceId,
   });
@@ -263,6 +295,7 @@ test("charge handler rejects cross origin, missing session, and invalid invoice 
     appApi,
     courseInvoiceStatus: () => "",
     sameOrigin: () => true,
+    swishQrCode,
     unauthorized,
     validInvoiceId,
   });
@@ -273,12 +306,17 @@ test("charge handler rejects cross origin, missing session, and invalid invoice 
   assert.equal(upstreamCalls, 0);
 });
 
-test("charge handler returns only a validated mobile handoff with a same-site web return", async () => {
+test("charge handler returns validated mobile and desktop handoffs with a same-site web return", async () => {
   const calls: Array<{ path: string; method?: string; token?: string }> = [];
+  const qrTokens: string[] = [];
   const handler = createCourseSwishPost({
     accountToken: async () => "account-token",
     courseInvoiceStatus: () => "",
     sameOrigin: () => true,
+    swishQrCode: async (token) => {
+      qrTokens.push(token);
+      return qrCodeDataUrl;
+    },
     unauthorized: () => Response.json({}, { status: 401 }),
     validInvoiceId,
     appApi: async (path, init, options) => {
@@ -298,8 +336,9 @@ test("charge handler returns only a validated mobile handoff with a same-site we
     { params: Promise.resolve({ invoiceId }) },
   );
   assert.equal(response.status, 200);
-  const result = await response.json() as { deepLinkUrl: string };
-  assert.deepEqual(Object.keys(result), ["deepLinkUrl"]);
+  const result = await response.json() as { deepLinkUrl: string; qrCodeDataUrl: string };
+  assert.deepEqual(Object.keys(result), ["deepLinkUrl", "qrCodeDataUrl"]);
+  assert.equal(result.qrCodeDataUrl, qrCodeDataUrl);
   const handoff = new URL(result.deepLinkUrl);
   assert.equal(handoff.protocol, "swish:");
   assert.equal(handoff.hostname, "paymentrequest");
@@ -313,11 +352,13 @@ test("charge handler returns only a validated mobile handoff with a same-site we
     method: "POST",
     token: "account-token",
   }]);
+  assert.deepEqual(qrTokens, ["provider-token"]);
 
   const failing = createCourseSwishPost({
     accountToken: async () => "account-token",
     courseInvoiceStatus: () => "",
     sameOrigin: () => true,
+    swishQrCode,
     unauthorized: () => Response.json({}, { status: 401 }),
     validInvoiceId,
     appApi: async () => Response.json({ internal: "do-not-leak" }, { status: 502 }),
@@ -336,6 +377,7 @@ test("charge handler returns only a validated mobile handoff with a same-site we
     accountToken: async () => "account-token",
     courseInvoiceStatus: () => "",
     sameOrigin: () => true,
+    swishQrCode,
     unauthorized: () => Response.json({}, { status: 401 }),
     validInvoiceId,
     appApi: async () => Response.json({ deep_link_url: "https://evil.test/payment?token=x" }),
@@ -422,6 +464,7 @@ test("course payment routes keep credentials and invoice details on the server",
   const mine = readFileSync("src/app/api/courses/mine/route.ts", "utf8");
 
   assert.match(charge, /createCourseSwishPost\(\{/);
+  assert.match(charge, /QRCode\.toDataURL\(`D\$\{paymentRequestToken\}`/);
   assert.doesNotMatch(charge, /X-API-Key|Authorization/);
 
   assert.match(status, /createCourseInvoiceStatusGet\(\{/);
@@ -431,7 +474,10 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.doesNotMatch(component, /profile\?\.swish_phone/);
   assert.match(component, /courseInvoiceId\(data\)/);
   assert.match(component, /courseSwishLaunchUrl\(charge\)/);
-  assert.match(component, /window\.location\.assign\(deepLinkUrl\)/);
+  assert.match(component, /courseSwishQrCode\(charge\)/);
+  assert.match(component, /courseSwishMobileDevice/);
+  assert.match(component, /if \(mobileDevice\) window\.location\.assign\(deepLinkUrl\)/);
+  assert.match(component, /swishHandoff\.qrCodeDataUrl/);
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);
   assert.match(component, /pendingCourseInvoice\(courseId, storage\)/);
