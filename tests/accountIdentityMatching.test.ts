@@ -19,7 +19,7 @@ test("web profile matching completes before the signup hand-back", () => {
   const saveEnd = portal.indexOf("const requestMerge", saveStart);
   const saveFlow = portal.slice(saveStart, saveEnd);
   assert.ok(saveFlow.indexOf("/api/account/profile/match-rating") < saveFlow.indexOf("applyProfile(ratingMatch.profile ?? next)"));
-  assert.match(portal, /if \(nextPath && profile\?\.name\?\.trim\(\) && !dupAlert\)/);
+  assert.match(portal, /if \(canReturnFromAccount\(nextPath, profile\) && !dupAlert\)/);
 });
 
 test("server-side web matching uses trusted lookup then persists found data", () => {

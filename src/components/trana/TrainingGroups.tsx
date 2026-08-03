@@ -25,7 +25,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
           {t.fakta.map((f) => (
             <div key={f.v} className="flex items-center gap-3">
               <span className="font-display text-xl text-lime">{f.v}</span>
-              <span className="text-sm text-bone/50">{f.d}</span>
+              <span className="text-sm text-bone/50">{fillYears(f.d)}</span>
             </div>
           ))}
         </div>

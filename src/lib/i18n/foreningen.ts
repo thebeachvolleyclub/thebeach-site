@@ -46,7 +46,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
       fine2: ". Klubben hette tidigare 08 Beachvolley Club — namnbytet till The Beach Volley Club är registrerat hos Svenska Volleybollförbundet och Riksidrottsförbundet.",
       formaner: [
         "Billigare banhyra — perfekt om du vill spela mer",
-        "Ungdomsrabatt på träningsgrupperna — 30 % under 20 år, 20 % under 26",
+        "Ungdomsrabatt på träningsgrupperna — 30 % för födda {y20} eller senare, 20 % för födda {y26} eller senare",
         "Medlemsexklusiva event, aktiviteter och erbjudanden",
         "Gratis registrering av tävlingslicens — och plats i vårt tävlingsgäng",
         "Du stöttar prisvärd ungdomsträning och bättre villkor för alla spelare",
@@ -108,7 +108,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
       fine2: ". The club was previously named 08 Beachvolley Club — the name change to The Beach Volley Club is registered with the Swedish Volleyball Federation and the Swedish Sports Confederation.",
       formaner: [
         "Cheaper court hire — perfect if you want to play more",
-        "Youth discount on the training groups — 30% under 20, 20% under 26",
+        "Youth discount on the training groups — 30% for those born {y20} or later, 20% born {y26} or later",
         "Member-exclusive events, activities and offers",
         "Free competition licence registration — and a place in our competing crew",
         "You support affordable youth training and better conditions for all players",

@@ -1,3 +1,4 @@
+import { fillYears } from "@/lib/ages";
 import Reveal from "@/components/Reveal";
 
 /**
@@ -67,7 +68,7 @@ export default function CourseLadderStatic({ locale }: { locale: Locale }) {
             )}
             {c.priceNote && (
               <p className="mb-4 text-[12px] leading-snug text-black/45">
-                {c.priceNote}
+                {fillYears(c.priceNote)}
               </p>
             )}
             {!c.priceNote && <div className="mb-4" />}

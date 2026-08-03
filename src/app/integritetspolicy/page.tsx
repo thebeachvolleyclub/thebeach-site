@@ -15,7 +15,7 @@ export default function IntegritetsPage() {
       <Navbar />
       <main className="flex-1 bg-cream px-5 pb-24 pt-36 sm:px-8 lg:px-14">
         <Reveal className="mx-auto max-w-3xl">
-          <h1 className="mb-8 font-display text-[clamp(2.25rem,8vw,3.5rem)] leading-[0.9] text-black">
+          <h1 className="mb-8 break-words font-display text-[clamp(1.9rem,8vw,3.5rem)] leading-[0.9] text-black">
             Integritetspolicy
           </h1>
           <div className="space-y-6 text-[15px] leading-relaxed text-black/65">

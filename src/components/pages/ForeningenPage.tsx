@@ -52,7 +52,7 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
                 {t.medlem.formaner.map((f) => (
                   <li key={f} className="flex items-start gap-3 p-5 text-[15px] leading-snug text-black/70">
                     <span className="shrink-0 pt-0.5 text-lime [text-shadow:0_0_1px_rgba(0,0,0,0.35)]" aria-hidden="true">↗</span>
-                    {f}
+                    {fillYears(f)}
                   </li>
                 ))}
               </ul>
