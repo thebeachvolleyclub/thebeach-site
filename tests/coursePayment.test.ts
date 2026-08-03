@@ -8,6 +8,7 @@ import {
   clearCourseAttempt,
   courseAttemptKey,
   courseInvoiceId,
+  courseSwishLaunchUrl,
   pendingCourseInvoice,
   pollCoursePayment,
   remainingCoursePaymentTimeout,
@@ -46,6 +47,14 @@ test("accepts the supported enrollment invoice shapes and rejects unsafe identif
   assert.equal(courseInvoiceId({ invoice_id: "../../admin" }), null);
   assert.equal(validInvoiceId(invoiceId), true);
   assert.equal(validInvoiceId("not-an-invoice"), false);
+});
+
+test("accepts only a tokenized Swish payment handoff in the browser", () => {
+  const handoff = "swish://paymentrequest?token=provider-token&callbackurl=https%3A%2F%2Fsite.test%2Ftrana";
+  assert.equal(courseSwishLaunchUrl({ deepLinkUrl: handoff }), handoff);
+  assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "swish://paymentrequest?callbackurl=https://site.test" }), null);
+  assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "https://evil.test/paymentrequest?token=x" }), null);
+  assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "not-a-url" }), null);
 });
 
 test("classifies callback driven payment states without trusting letter case", () => {
@@ -205,7 +214,7 @@ test("charge handler rejects cross origin, missing session, and invalid invoice 
   assert.equal(upstreamCalls, 0);
 });
 
-test("charge handler minimizes success and sanitizes unknown upstream errors", async () => {
+test("charge handler returns only a validated mobile handoff with a same-site web return", async () => {
   const calls: Array<{ path: string; method?: string; token?: string }> = [];
   const handler = createCourseSwishPost({
     accountToken: async () => "account-token",
@@ -215,15 +224,31 @@ test("charge handler minimizes success and sanitizes unknown upstream errors", a
     validInvoiceId,
     appApi: async (path, init, options) => {
       calls.push({ path, method: init?.method, token: options?.token });
-      return Response.json({ paymentReference: "private", signedToken: "private" });
+      return Response.json({
+        paymentReference: "private",
+        signedToken: "private",
+        deep_link_url: "swish://paymentrequest?token=provider-token&callbackurl=thebeach%3A%2F%2Fswish-return",
+      });
     },
   });
   const response = await handler(
-    new Request("https://site.test/api", { method: "POST" }),
+    new Request("https://site.test/api?locale=en", {
+      method: "POST",
+      headers: { Origin: "https://site.test" },
+    }),
     { params: Promise.resolve({ invoiceId }) },
   );
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { started: true });
+  const result = await response.json() as { deepLinkUrl: string };
+  assert.deepEqual(Object.keys(result), ["deepLinkUrl"]);
+  const handoff = new URL(result.deepLinkUrl);
+  assert.equal(handoff.protocol, "swish:");
+  assert.equal(handoff.hostname, "paymentrequest");
+  assert.equal(handoff.searchParams.get("token"), "provider-token");
+  assert.equal(
+    handoff.searchParams.get("callbackurl"),
+    "https://site.test/en/training?swish-return=course#kurser",
+  );
   assert.deepEqual(calls, [{
     path: `/training/invoices/${invoiceId}/swish/charge`,
     method: "POST",
@@ -239,11 +264,32 @@ test("charge handler minimizes success and sanitizes unknown upstream errors", a
     appApi: async () => Response.json({ internal: "do-not-leak" }, { status: 502 }),
   });
   const failure = await failing(
-    new Request("https://site.test/api", { method: "POST" }),
+    new Request("https://site.test/api", {
+      method: "POST",
+      headers: { Origin: "https://site.test" },
+    }),
     { params: Promise.resolve({ invoiceId }) },
   );
   assert.equal(failure.status, 502);
   assert.deepEqual(await failure.json(), { detail: "Kunde inte starta Swish" });
+
+  const invalidHandoff = createCourseSwishPost({
+    accountToken: async () => "account-token",
+    courseInvoiceStatus: () => "",
+    sameOrigin: () => true,
+    unauthorized: () => Response.json({}, { status: 401 }),
+    validInvoiceId,
+    appApi: async () => Response.json({ deep_link_url: "https://evil.test/payment?token=x" }),
+  });
+  const invalidResponse = await invalidHandoff(
+    new Request("https://site.test/api", {
+      method: "POST",
+      headers: { Origin: "https://site.test" },
+    }),
+    { params: Promise.resolve({ invoiceId }) },
+  );
+  assert.equal(invalidResponse.status, 502);
+  assert.deepEqual(await invalidResponse.json(), { detail: "Swish kunde inte öppnas" });
 });
 
 test("status handler returns only normalized status", async () => {
@@ -288,15 +334,22 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.doesNotMatch(status, /proxyAppJson|pay-status|\bexp\b/);
   assert.doesNotMatch(status, /Response\.json\([^)]*token/);
 
-  assert.match(component, /\/api\/account\/session/);
-  assert.match(component, /profile\?\.swish_phone/);
+  assert.doesNotMatch(component, /profile\?\.swish_phone/);
   assert.match(component, /courseInvoiceId\(data\)/);
+  assert.match(component, /courseSwishLaunchUrl\(charge\)/);
+  assert.match(component, /window\.location\.assign\(deepLinkUrl\)/);
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);
   assert.match(component, /pendingCourseInvoice\(courseId, storage\)/);
+  assert.match(component, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(component, /void submitRef\.current\(\)/);
   assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt\)/);
   assert.match(component, /await finishPayment\(invoiceId, controller, storage, invoiceCreatedAt\)/);
   assert.match(component, /aria-live="polite"/);
+  const chargeFailureBranch = component.split("if (!chargeResponse.ok) {", 2)[1]
+    ?.split("const deepLinkUrl", 1)[0] ?? "";
+  assert.match(chargeFailureBranch, /setResult\(\{ ok: false, message: detail \}\)/);
+  assert.doesNotMatch(chargeFailureBranch, /finishPayment/);
 
   const copy = readFileSync("src/lib/i18n/kurser.ts", "utf8");
   assert.doesNotMatch(copy, /kursplats är bekräftad|course place is confirmed/i);

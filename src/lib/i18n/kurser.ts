@@ -29,7 +29,6 @@ export type KurserDict = {
   loginPrompt: string;
   loginCta: string;
   submitting: string;
-  checkingProfile: string;
   startingSwish: string;
   waitingForSwish: string;
   successTitle: string;
@@ -37,12 +36,10 @@ export type KurserDict = {
   waitlistSuccessTitle: string;
   waitlistSuccessBody: string;
   errorGeneric: string;
-  missingSwish: string;
   missingInvoice: string;
   paymentFailed: string;
   paymentTimeout: string;
   paymentUnavailable: string;
-  profileCta: string;
   myCoursesCta: string;
   weekdays: string[];
 };
@@ -69,11 +66,10 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsOpen: "Läs kursvillkoren",
     termsLanguageNote: "",
     termsAccept: "Jag har läst och godkänner kursvillkoren.",
-    paymentNote: "Efter anmälan skickas en Swish-förfrågan till numret i din profil. Platsen bekräftas först när betalningen är klar.",
+    paymentNote: "Efter anmälan öppnas Swish så att du kan godkänna betalningen. Platsen bekräftas först när betalningen är klar.",
     loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
     loginCta: "Logga in",
     submitting: "Skickar…",
-    checkingProfile: "Kontrollerar Swish…",
     startingSwish: "Startar Swish…",
     waitingForSwish: "Väntar på Swish…",
     successTitle: "Betalt och klart",
@@ -81,12 +77,10 @@ export const kurserDict: Record<Locale, KurserDict> = {
     waitlistSuccessTitle: "Du står i kö",
     waitlistSuccessBody: "Vi hör av oss så fort en plats blir ledig.",
     errorGeneric: "Något gick fel. Försök igen, eller mejla oss så löser vi det.",
-    missingSwish: "Lägg till ditt Swish-nummer i profilen innan du anmäler dig.",
     missingInvoice: "Anmälan skapades men betalningen kunde inte startas. Öppna Mitt konto eller kontakta oss innan du försöker igen.",
     paymentFailed: "Swish-betalningen slutfördes inte. Din plats är inte bekräftad.",
     paymentTimeout: "Vi har ännu inte fått betalningsbeskedet. Kontrollera Mitt konto innan du försöker igen.",
     paymentUnavailable: "Betalningsstatusen kan inte läsas. Logga in igen eller kontrollera Mitt konto.",
-    profileCta: "Öppna profilen",
     myCoursesCta: "Mina kurser",
     weekdays: svWeekdays,
   },
@@ -108,11 +102,10 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsOpen: "Read the course terms",
     termsLanguageNote: "The course terms are in Swedish. Email us and we\u2019ll walk you through them.",
     termsAccept: "I have read and accept the course terms.",
-    paymentNote: "After registration, a Swish request is sent to the number in your profile. Your place is confirmed only after payment.",
+    paymentNote: "After registration, Swish opens so you can approve the payment. Your place is confirmed only after payment.",
     loginPrompt: "Log in with your The Beach account to sign up.",
     loginCta: "Log in",
     submitting: "Sending…",
-    checkingProfile: "Checking Swish…",
     startingSwish: "Starting Swish…",
     waitingForSwish: "Waiting for Swish…",
     successTitle: "Payment complete",
@@ -120,12 +113,10 @@ export const kurserDict: Record<Locale, KurserDict> = {
     waitlistSuccessTitle: "You're on the waitlist",
     waitlistSuccessBody: "We'll be in touch as soon as a place opens up.",
     errorGeneric: "Something went wrong. Try again, or email us and we'll sort it.",
-    missingSwish: "Add your Swish number to your profile before signing up.",
     missingInvoice: "Registration was created but payment could not start. Check My account or contact us before trying again.",
     paymentFailed: "The Swish payment was not completed. Your place is not confirmed.",
     paymentTimeout: "We have not received the payment result yet. Check My account before trying again.",
     paymentUnavailable: "Payment status is unavailable. Log in again or check My account.",
-    profileCta: "Open profile",
     myCoursesCta: "My courses",
     weekdays: enWeekdays,
   },

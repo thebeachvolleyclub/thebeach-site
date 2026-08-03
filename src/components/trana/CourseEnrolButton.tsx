@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
@@ -9,6 +8,7 @@ import {
   clearCourseAttempt,
   courseAttemptKey,
   courseInvoiceId,
+  courseSwishLaunchUrl,
   pendingCourseInvoice,
   pollCoursePayment,
   remainingCoursePaymentTimeout,
@@ -27,9 +27,9 @@ type Props = {
 
 type Result =
   | { ok: true; kind: "paid" | "waitlisted" }
-  | { ok: false; message: string; profileRequired?: boolean };
+  | { ok: false; message: string };
 
-type Phase = "idle" | "checkingProfile" | "enrolling" | "startingSwish" | "waitingForSwish";
+type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
 
 async function json(response: Response): Promise<Record<string, unknown>> {
   return response.json().catch(() => ({})) as Promise<Record<string, unknown>>;
@@ -70,6 +70,8 @@ export default function CourseEnrolButton({
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
+  const submitRef = useRef<() => Promise<void>>(async () => undefined);
+  const resumedInvoice = useRef<string | null>(null);
 
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
   const accountHref = `/konto?next=${encodeURIComponent(
@@ -77,42 +79,6 @@ export default function CourseEnrolButton({
   )}`;
 
   useEffect(() => () => activeRequest.current?.abort(), []);
-
-  if (!loggedIn) {
-    return (
-      <div className="mt-auto border-t border-black/10 pt-5">
-        <p className="mb-3 text-[13px] leading-snug text-black/50">{t.loginPrompt}</p>
-        <a
-          href={accountHref}
-          className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80"
-        >
-          {t.loginCta} <span aria-hidden="true">→</span>
-        </a>
-      </div>
-    );
-  }
-
-  if (result?.ok) {
-    const waitlisted = result.kind === "waitlisted";
-    return (
-      <div className="mt-auto border-t border-black/10 pt-5">
-        <p className="mb-1 font-display text-xl uppercase leading-none text-black">
-          {waitlisted ? t.waitlistSuccessTitle : t.successTitle}
-        </p>
-        <p className="mb-4 text-[13px] leading-snug text-black/55">
-          {waitlisted ? t.waitlistSuccessBody : t.successBody}
-        </p>
-        {!waitlisted && (
-          <a
-            href="/konto#traningsgrupper"
-            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
-          >
-            {t.myCoursesCta} <span aria-hidden="true">→</span>
-          </a>
-        )}
-      </div>
-    );
-  }
 
   async function submit() {
     if (inFlight.current) return;
@@ -122,21 +88,6 @@ export default function CourseEnrolButton({
     activeRequest.current = controller;
     setResult(null);
     try {
-      if (!waitlist) {
-        setPhase("checkingProfile");
-        const profileResponse = await fetch("/api/account/session", { signal: controller.signal });
-        const account = await json(profileResponse);
-        const profile = account.profile as Record<string, unknown> | undefined;
-        if (!profileResponse.ok || account.authenticated !== true) {
-          setResult({ ok: false, message: t.loginPrompt });
-          return;
-        }
-        if (typeof profile?.swish_phone !== "string" || !profile.swish_phone.trim()) {
-          setResult({ ok: false, message: t.missingSwish, profileRequired: true });
-          return;
-        }
-      }
-
       const storage = window.sessionStorage;
       const savedInvoice = pendingCourseInvoice(courseId, storage);
       if (savedInvoice) {
@@ -182,24 +133,23 @@ export default function CourseEnrolButton({
 
       setPhase("startingSwish");
       const chargeResponse = await fetch(
-        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish`,
+        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish?locale=${locale}`,
         { method: "POST", signal: controller.signal },
       );
       const charge = await json(chargeResponse);
       if (!chargeResponse.ok) {
         const detail = typeof charge.detail === "string" ? charge.detail : t.paymentFailed;
-        if (![408, 429].includes(chargeResponse.status) && chargeResponse.status < 500) {
-          setResult({ ok: false, message: detail });
-          return;
-        }
-        // The upstream may have created the charge before the response was
-        // lost. Reconcile the existing invoice instead of issuing a blind retry.
-        setPhase("waitingForSwish");
-        await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
+        setResult({ ok: false, message: detail });
+        return;
+      }
+      const deepLinkUrl = courseSwishLaunchUrl(charge);
+      if (!deepLinkUrl) {
+        setResult({ ok: false, message: t.paymentFailed });
         return;
       }
 
       setPhase("waitingForSwish");
+      window.location.assign(deepLinkUrl);
       await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -253,15 +203,63 @@ export default function CourseEnrolButton({
     }
   }
 
+  useEffect(() => {
+    submitRef.current = submit;
+  });
+
+  useEffect(() => {
+    if (!loggedIn || waitlist) return;
+    const isSwishReturn = new URLSearchParams(window.location.search).get("swish-return") === "course";
+    if (!isSwishReturn) return;
+    const pending = pendingCourseInvoice(courseId, window.sessionStorage);
+    if (!pending || resumedInvoice.current === pending.invoiceId) return;
+    resumedInvoice.current = pending.invoiceId;
+    void submitRef.current();
+  }, [courseId, loggedIn, waitlist]);
+
+  if (!loggedIn) {
+    return (
+      <div className="mt-auto border-t border-black/10 pt-5">
+        <p className="mb-3 text-[13px] leading-snug text-black/50">{t.loginPrompt}</p>
+        <a
+          href={accountHref}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80"
+        >
+          {t.loginCta} <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    );
+  }
+
+  if (result?.ok) {
+    const waitlisted = result.kind === "waitlisted";
+    return (
+      <div className="mt-auto border-t border-black/10 pt-5">
+        <p className="mb-1 font-display text-xl uppercase leading-none text-black">
+          {waitlisted ? t.waitlistSuccessTitle : t.successTitle}
+        </p>
+        <p className="mb-4 text-[13px] leading-snug text-black/55">
+          {waitlisted ? t.waitlistSuccessBody : t.successBody}
+        </p>
+        {!waitlisted && (
+          <a
+            href="/konto#traningsgrupper"
+            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
+          >
+            {t.myCoursesCta} <span aria-hidden="true">→</span>
+          </a>
+        )}
+      </div>
+    );
+  }
+
   const busy = phase !== "idle";
   const busyLabel =
-    phase === "checkingProfile"
-      ? t.checkingProfile
-      : phase === "startingSwish"
-        ? t.startingSwish
-        : phase === "waitingForSwish"
-          ? t.waitingForSwish
-          : t.submitting;
+    phase === "startingSwish"
+      ? t.startingSwish
+      : phase === "waitingForSwish"
+        ? t.waitingForSwish
+        : t.submitting;
 
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
@@ -307,14 +305,6 @@ export default function CourseEnrolButton({
       {result && !result.ok && (
         <div role="alert" className="mt-3 text-[13px] leading-snug text-orange">
           <p>{result.message}</p>
-          {result.profileRequired && (
-            <Link
-              href="/konto#profil"
-              className="mt-2 inline-flex font-bold uppercase tracking-[0.06em] underline underline-offset-4"
-            >
-              {t.profileCta}
-            </Link>
-          )}
         </div>
       )}
     </div>

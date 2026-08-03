@@ -184,6 +184,19 @@ export function courseInvoiceId(payload: unknown): string | null {
   return candidates.find(validInvoiceId) ?? null;
 }
 
+export function courseSwishLaunchUrl(payload: unknown): string | null {
+  const root = record(payload);
+  const raw = root ? stringValue(root.deepLinkUrl) : null;
+  if (!raw) return null;
+  try {
+    const target = new URL(raw);
+    if (target.protocol !== "swish:" || target.hostname !== "paymentrequest") return null;
+    return target.searchParams.get("token") ? target.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function courseInvoiceStatus(payload: unknown): string {
   const root = record(payload);
   if (!root) return "";

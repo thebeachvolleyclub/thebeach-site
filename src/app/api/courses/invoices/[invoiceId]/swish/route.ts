@@ -5,7 +5,8 @@ import { createCourseSwishPost } from "@/lib/coursePaymentRoute.core";
 
 export const dynamic = "force-dynamic";
 
-// Payment identifiers and upstream implementation details stay server side.
+// Only the validated Swish handoff reaches the browser; API credentials and
+// the rest of the upstream payment response stay server side.
 export const POST = createCourseSwishPost({
   accountToken,
   appApi,
