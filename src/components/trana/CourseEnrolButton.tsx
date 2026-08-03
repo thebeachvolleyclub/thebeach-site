@@ -70,8 +70,6 @@ export default function CourseEnrolButton({
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
-  const submitRef = useRef<() => Promise<void>>(async () => undefined);
-  const resumedInvoice = useRef<string | null>(null);
 
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
   const accountHref = `/konto?next=${encodeURIComponent(
@@ -202,20 +200,6 @@ export default function CourseEnrolButton({
       }
     }
   }
-
-  useEffect(() => {
-    submitRef.current = submit;
-  });
-
-  useEffect(() => {
-    if (!loggedIn || waitlist) return;
-    const isSwishReturn = new URLSearchParams(window.location.search).get("swish-return") === "course";
-    if (!isSwishReturn) return;
-    const pending = pendingCourseInvoice(courseId, window.sessionStorage);
-    if (!pending || resumedInvoice.current === pending.invoiceId) return;
-    resumedInvoice.current = pending.invoiceId;
-    void submitRef.current();
-  }, [courseId, loggedIn, waitlist]);
 
   if (!loggedIn) {
     return (

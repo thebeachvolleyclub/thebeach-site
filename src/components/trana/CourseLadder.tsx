@@ -1,6 +1,7 @@
 import Reveal from "@/components/Reveal";
 import CourseEnrolButton from "@/components/trana/CourseEnrolButton";
 import CourseLadderStatic from "@/components/trana/CourseLadderStatic";
+import CoursePaymentReturn from "@/components/trana/CoursePaymentReturn";
 import { accountToken } from "@/lib/accountSession";
 import {
   courseState,
@@ -40,6 +41,8 @@ export default async function CourseLadder({ locale }: { locale: Locale }) {
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-black/50 sm:text-right">{t.lead}</p>
       </Reveal>
+
+      <CoursePaymentReturn locale={locale} courseIds={courses.map((course) => course.id)} />
 
       <div className="grid grid-cols-1 gap-0.5 sm:grid-cols-2">
         {courses.map((course, i) => (

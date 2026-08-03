@@ -1,11 +1,14 @@
 type AccountOptions = { token?: string };
 type AppApi = (path: string, init?: RequestInit, options?: AccountOptions) => Promise<Response>;
 
-type CommonDependencies = {
+type AccountDependencies = {
   accountToken: () => Promise<string | null>;
   appApi: AppApi;
-  courseInvoiceStatus: (payload: unknown) => string;
   unauthorized: () => Response;
+};
+
+type CommonDependencies = AccountDependencies & {
+  courseInvoiceStatus: (payload: unknown) => string;
   validInvoiceId: (value: unknown) => value is string;
 };
 
@@ -19,13 +22,20 @@ function upstreamDetail(payload: Record<string, unknown>, fallback: string) {
   return typeof payload.detail === "string" ? payload.detail : fallback;
 }
 
-function courseSwishReturnUrl(request: Request): string | null {
+function record(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function courseSwishReturnUrl(request: Request, invoiceId: string): string | null {
   const origin = request.headers.get("origin");
   if (!origin) return null;
   const locale = new URL(request.url).searchParams.get("locale");
   const target = new URL(locale === "en" ? "/en/training" : "/trana", origin);
   target.searchParams.set("swish-return", "course");
-  target.hash = "kurser";
+  target.searchParams.set("invoice", invoiceId);
+  target.hash = "kursbetalning";
   return target.toString();
 }
 
@@ -55,7 +65,7 @@ export function createCourseSwishPost(dependencies: ChargeDependencies) {
     if (!dependencies.validInvoiceId(invoiceId)) {
       return Response.json({ detail: "Okänd faktura" }, { status: 400 });
     }
-    const returnUrl = courseSwishReturnUrl(request);
+    const returnUrl = courseSwishReturnUrl(request, invoiceId);
     if (!returnUrl) {
       return Response.json({ detail: "Ogiltig returadress" }, { status: 400 });
     }
@@ -82,6 +92,45 @@ export function createCourseSwishPost(dependencies: ChargeDependencies) {
 
     return Response.json(
       { deepLinkUrl },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
+  };
+}
+
+export function createMyCourseEnrolmentsGet(dependencies: AccountDependencies) {
+  return async function GET() {
+    const token = await dependencies.accountToken();
+    if (!token) return dependencies.unauthorized();
+
+    const upstream = await dependencies.appApi(
+      "/training/courses/mine",
+      undefined,
+      { token },
+    );
+    const payload = (await upstream.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!upstream.ok) {
+      return Response.json(
+        { detail: upstreamDetail(payload, "Kunde inte läsa kursanmälan") },
+        { status: upstream.status },
+      );
+    }
+
+    const enrolments = Array.isArray(payload.enrolments) ? payload.enrolments : [];
+    return Response.json(
+      {
+        enrolments: enrolments.flatMap((value) => {
+          const item = record(value);
+          if (!item || typeof item.courseId !== "number") return [];
+          return [{
+            courseId: item.courseId,
+            courseName: typeof item.courseName === "string" ? item.courseName : null,
+            invoiceId: typeof item.invoiceId === "string" ? item.invoiceId : null,
+            status: typeof item.status === "string" ? item.status : "",
+            paymentStatus: typeof item.paymentStatus === "string" ? item.paymentStatus : "",
+            createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
+          }];
+        }),
+      },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   };

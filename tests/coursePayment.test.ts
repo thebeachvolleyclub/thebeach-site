@@ -9,8 +9,10 @@ import {
   courseAttemptKey,
   courseInvoiceId,
   courseSwishLaunchUrl,
+  courseSwishReturnInvoice,
   pendingCourseInvoice,
   pollCoursePayment,
+  recentPaidCourseEnrolment,
   remainingCoursePaymentTimeout,
   rememberCourseInvoice,
   validInvoiceId,
@@ -19,6 +21,7 @@ import {
 import {
   createCourseInvoiceStatusGet,
   createCourseSwishPost,
+  createMyCourseEnrolmentsGet,
 } from "../src/lib/coursePaymentRoute.core.ts";
 
 const invoiceId = "2adb3894-2460-4a88-98c0-e4440b31d3ae";
@@ -55,6 +58,62 @@ test("accepts only a tokenized Swish payment handoff in the browser", () => {
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "swish://paymentrequest?callbackurl=https://site.test" }), null);
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "https://evil.test/paymentrequest?token=x" }), null);
   assert.equal(courseSwishLaunchUrl({ deepLinkUrl: "not-a-url" }), null);
+});
+
+test("recovers only a validated invoice from a course Swish browser return", () => {
+  assert.equal(
+    courseSwishReturnInvoice(`?swish-return=course&invoice=${invoiceId}`),
+    invoiceId,
+  );
+  assert.equal(courseSwishReturnInvoice(`?swish-return=other&invoice=${invoiceId}`), null);
+  assert.equal(courseSwishReturnInvoice("?swish-return=course&invoice=../../admin"), null);
+  assert.equal(courseSwishReturnInvoice("?swish-return=course"), null);
+});
+
+test("finds only a recent confirmed paid course receipt", () => {
+  const now = Date.parse("2026-08-03T15:00:00Z");
+  const newerInvoice = "d2fdd014-e004-4de6-833f-26026fb3e6f3";
+  const payload = {
+    enrolments: [
+      {
+        courseId: 160,
+        courseName: "Swish test",
+        invoiceId,
+        status: "CONFIRMED",
+        paymentStatus: "PAID",
+        createdAt: "2026-08-03T14:50:01Z",
+        privateField: "do-not-use",
+      },
+      {
+        courseId: 159,
+        courseName: "Newer payment",
+        invoiceId: newerInvoice,
+        status: "confirmed",
+        paymentStatus: "paid",
+        createdAt: "2026-08-03T14:55:00Z",
+      },
+      {
+        courseId: 158,
+        invoiceId: "b62d2a0a-3eb1-4bbc-940d-237175dcc93b",
+        status: "held",
+        paymentStatus: "sent",
+        createdAt: "2026-08-03T14:59:00Z",
+      },
+    ],
+  };
+  assert.deepEqual(recentPaidCourseEnrolment(payload, now), {
+    courseId: 159,
+    courseName: "Newer payment",
+    invoiceId: newerInvoice,
+    createdAt: "2026-08-03T14:55:00Z",
+  });
+  assert.deepEqual(recentPaidCourseEnrolment(payload, now, 2 * 60 * 60_000, invoiceId), {
+    courseId: 160,
+    courseName: "Swish test",
+    invoiceId,
+    createdAt: "2026-08-03T14:50:01Z",
+  });
+  assert.equal(recentPaidCourseEnrolment(payload, now + 3 * 60 * 60_000), null);
 });
 
 test("classifies callback driven payment states without trusting letter case", () => {
@@ -247,7 +306,7 @@ test("charge handler returns only a validated mobile handoff with a same-site we
   assert.equal(handoff.searchParams.get("token"), "provider-token");
   assert.equal(
     handoff.searchParams.get("callbackurl"),
-    "https://site.test/en/training?swish-return=course#kurser",
+    `https://site.test/en/training?swish-return=course&invoice=${invoiceId}#kursbetalning`,
   );
   assert.deepEqual(calls, [{
     path: `/training/invoices/${invoiceId}/swish/charge`,
@@ -316,6 +375,38 @@ test("status handler returns only normalized status", async () => {
   assert.deepEqual(await response.json(), { status: "paid" });
 });
 
+test("my course handler returns only fields needed for payment return recovery", async () => {
+  const handler = createMyCourseEnrolmentsGet({
+    accountToken: async () => "account-token",
+    unauthorized: () => Response.json({}, { status: 401 }),
+    appApi: async () => Response.json({
+      enrolments: [{
+        courseId: 160,
+        courseName: "Swish test",
+        invoiceId,
+        status: "confirmed",
+        paymentStatus: "paid",
+        createdAt: "2026-08-03T14:50:01Z",
+        userId: "private",
+        grossAmountSek: 1,
+      }],
+    }),
+  });
+  const response = await handler();
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    enrolments: [{
+      courseId: 160,
+      courseName: "Swish test",
+      invoiceId,
+      status: "confirmed",
+      paymentStatus: "paid",
+      createdAt: "2026-08-03T14:50:01Z",
+    }],
+  });
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+});
+
 test("course payment routes keep credentials and invoice details on the server", () => {
   const charge = readFileSync(
     "src/app/api/courses/invoices/[invoiceId]/swish/route.ts",
@@ -326,6 +417,9 @@ test("course payment routes keep credentials and invoice details on the server",
     "utf8",
   );
   const component = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
+  const paymentReturn = readFileSync("src/components/trana/CoursePaymentReturn.tsx", "utf8");
+  const ladder = readFileSync("src/components/trana/CourseLadder.tsx", "utf8");
+  const mine = readFileSync("src/app/api/courses/mine/route.ts", "utf8");
 
   assert.match(charge, /createCourseSwishPost\(\{/);
   assert.doesNotMatch(charge, /X-API-Key|Authorization/);
@@ -341,8 +435,6 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);
   assert.match(component, /pendingCourseInvoice\(courseId, storage\)/);
-  assert.match(component, /new URLSearchParams\(window\.location\.search\)/);
-  assert.match(component, /void submitRef\.current\(\)/);
   assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt\)/);
   assert.match(component, /await finishPayment\(invoiceId, controller, storage, invoiceCreatedAt\)/);
   assert.match(component, /aria-live="polite"/);
@@ -350,6 +442,14 @@ test("course payment routes keep credentials and invoice details on the server",
     ?.split("const deepLinkUrl", 1)[0] ?? "";
   assert.match(chargeFailureBranch, /setResult\(\{ ok: false, message: detail \}\)/);
   assert.doesNotMatch(chargeFailureBranch, /finishPayment/);
+
+  assert.match(ladder, /<CoursePaymentReturn/);
+  assert.match(paymentReturn, /id="kursbetalning"/);
+  assert.match(paymentReturn, /courseSwishReturnInvoice\(window\.location\.search\)/);
+  assert.match(paymentReturn, /\/api\/courses\/mine/);
+  assert.match(paymentReturn, /role=\{state\.kind === "error" \? "alert" : "status"\}/);
+  assert.match(mine, /createMyCourseEnrolmentsGet/);
+  assert.doesNotMatch(mine, /proxyAppJson|X-API-Key|Authorization/);
 
   const copy = readFileSync("src/lib/i18n/kurser.ts", "utf8");
   assert.doesNotMatch(copy, /kursplats är bekräftad|course place is confirmed/i);

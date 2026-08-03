@@ -21,6 +21,13 @@ export type PendingCourseInvoice = {
   createdAt: number;
 };
 
+export type PaidCourseEnrolment = {
+  courseId: number;
+  courseName: string | null;
+  invoiceId: string;
+  createdAt: string;
+};
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PAID = new Set(["paid"]);
 const FAILED = new Set([
@@ -195,6 +202,65 @@ export function courseSwishLaunchUrl(payload: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+export function courseSwishReturnInvoice(search: string): string | null {
+  const params = new URLSearchParams(search);
+  if (params.get("swish-return") !== "course") return null;
+  const invoiceId = params.get("invoice");
+  return validInvoiceId(invoiceId) ? invoiceId : null;
+}
+
+export function recentPaidCourseEnrolment(
+  payload: unknown,
+  now = Date.now(),
+  maxAgeMs = 2 * 60 * 60_000,
+  expectedInvoiceId?: string,
+): PaidCourseEnrolment | null {
+  const root = record(payload);
+  const enrolments = root && Array.isArray(root.enrolments) ? root.enrolments : [];
+  const paid = enrolments.flatMap((value) => {
+    const item = record(value);
+    if (!item) return [];
+    const courseId = item.courseId;
+    const status = stringValue(item.status)?.toLowerCase();
+    const paymentStatus = stringValue(item.paymentStatus)?.toLowerCase();
+    const invoiceId = stringValue(item.invoiceId);
+    const createdAt = stringValue(item.createdAt);
+    const created = createdAt ? Date.parse(createdAt) : Number.NaN;
+    if (
+      typeof courseId !== "number" ||
+      !Number.isSafeInteger(courseId) ||
+      courseId <= 0 ||
+      status !== "confirmed" ||
+      paymentStatus !== "paid" ||
+      !validInvoiceId(invoiceId) ||
+      (expectedInvoiceId !== undefined && invoiceId !== expectedInvoiceId) ||
+      !createdAt ||
+      !Number.isFinite(created) ||
+      created > now + 5 * 60_000 ||
+      now - created > maxAgeMs
+    ) {
+      return [];
+    }
+    return [{
+      courseId,
+      courseName: stringValue(item.courseName),
+      invoiceId,
+      createdAt,
+      created,
+    }];
+  });
+  paid.sort((a, b) => b.created - a.created);
+  const latest = paid[0];
+  return latest
+    ? {
+        courseId: latest.courseId,
+        courseName: latest.courseName,
+        invoiceId: latest.invoiceId,
+        createdAt: latest.createdAt,
+      }
+    : null;
 }
 
 export function courseInvoiceStatus(payload: unknown): string {

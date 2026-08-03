@@ -40,6 +40,10 @@ export type KurserDict = {
   paymentFailed: string;
   paymentTimeout: string;
   paymentUnavailable: string;
+  paymentReturnCheckingTitle: string;
+  paymentReturnCheckingBody: string;
+  paymentReturnSuccessBody: (courseName: string | null) => string;
+  paymentReturnError: string;
   myCoursesCta: string;
   weekdays: string[];
 };
@@ -81,6 +85,12 @@ export const kurserDict: Record<Locale, KurserDict> = {
     paymentFailed: "Swish-betalningen slutfördes inte. Din plats är inte bekräftad.",
     paymentTimeout: "Vi har ännu inte fått betalningsbeskedet. Kontrollera Mitt konto innan du försöker igen.",
     paymentUnavailable: "Betalningsstatusen kan inte läsas. Logga in igen eller kontrollera Mitt konto.",
+    paymentReturnCheckingTitle: "Kontrollerar betalningen",
+    paymentReturnCheckingBody: "Vänta kvar – vi hämtar betalningsbekräftelsen från Swish.",
+    paymentReturnSuccessBody: (courseName) => courseName
+      ? `Din betalning är mottagen och anmälan till ${courseName} är klar.`
+      : "Din betalning är mottagen och kursanmälan är klar.",
+    paymentReturnError: "Vi kunde inte visa betalningsbekräftelsen här. Kontrollera Mina kurser innan du försöker igen.",
     myCoursesCta: "Mina kurser",
     weekdays: svWeekdays,
   },
@@ -117,6 +127,12 @@ export const kurserDict: Record<Locale, KurserDict> = {
     paymentFailed: "The Swish payment was not completed. Your place is not confirmed.",
     paymentTimeout: "We have not received the payment result yet. Check My account before trying again.",
     paymentUnavailable: "Payment status is unavailable. Log in again or check My account.",
+    paymentReturnCheckingTitle: "Checking your payment",
+    paymentReturnCheckingBody: "Please wait – we are retrieving the payment confirmation from Swish.",
+    paymentReturnSuccessBody: (courseName) => courseName
+      ? `Your payment was received and your registration for ${courseName} is complete.`
+      : "Your payment was received and your course registration is complete.",
+    paymentReturnError: "We could not display the payment confirmation here. Check My courses before trying again.",
     myCoursesCta: "My courses",
     weekdays: enWeekdays,
   },
