@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const source = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
+const pricingSource = readFileSync("src/lib/signupPricing.ts", "utf8");
 
 test("pilot feedback is server-gated, editable, prefilled, and submitted", () => {
   assert.match(source, /pilot_feedback_required: boolean/);
@@ -41,19 +42,19 @@ test("any-day availability disables individual choices and clears stale selectio
 
 test("junior signup pricing and the private membership reminder share the app contract", () => {
   assert.match(source, /junior_pricing\?: JuniorPricing/);
-  assert.match(source, /birth_year_from: 2007/);
-  assert.match(source, /discount_pct: 30/);
-  assert.match(source, /birth_year_from: 2001, discount_pct: 20/);
-  assert.match(source, /tiers\?: JuniorPricingTier\[\]/);
-  assert.match(source, /membership_fee_sek: 190/);
+  assert.match(pricingSource, /birth_year_from: 2007/);
+  assert.match(pricingSource, /discount_pct: 30/);
+  assert.match(pricingSource, /birth_year_from: 2001, discount_pct: 20/);
+  assert.match(pricingSource, /tiers\?: JuniorPricingTier\[\]/);
+  assert.match(pricingSource, /membership_fee_sek: 190/);
   assert.match(source, /api<MembershipFeed>\("\/api\/account\/membership"\)/);
   assert.match(source, /Har du tävlingslicens ska den vara hos oss/);
   assert.match(source, /If you have a competition licence, it must be with us/);
   assert.match(source, /Om du istället vill betala fullt pris, skriv det som ett övrigt önskemål ovan/);
   assert.match(source, /If you would rather pay full price, add this under other requests above/);
-  assert.match(source, /juniorDiscountPct\(birthdate, juniorPricing\)/);
+  assert.match(source, /signupDiscountPct\(birthdate, juniorPricing\)/);
   assert.match(source, /discountPct=\{effectiveJuniorDiscountPct\}/);
-  assert.match(source, /discountedPriceSek\(s\.price_sek, discountPct\)/);
+  assert.match(source, /discountedSignupPriceSek\(s\.price_sek, discountPct\)/);
   assert.match(source, /showJuniorMembershipNotice \? \(/);
   assert.match(source, /juniorMembershipBody\([\s\S]*effectiveJuniorDiscountPct/);
   assert.match(source, /junioravgiften \$\{fee\} kr/);

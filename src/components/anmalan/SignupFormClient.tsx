@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DEFAULT_JUNIOR_PRICING,
+  discountedSignupPriceSek,
+  signupDiscountPct,
+  type JuniorPricing,
+} from "@/lib/signupPricing";
 
 /**
  * Season-signup form — the web port of the app's SeasonSignupScreen.
@@ -39,19 +45,6 @@ type Slot = {
   price_sek: number;
   note?: string;
   note_en?: string;
-};
-
-type JuniorPricingTier = {
-  birth_year_from: number;
-  discount_pct: number;
-};
-
-type JuniorPricing = {
-  birth_year_from: number;
-  discount_pct: number;
-  tiers?: JuniorPricingTier[];
-  membership_required: boolean;
-  membership_fee_sek: number;
 };
 
 type Config = {
@@ -379,37 +372,6 @@ function fmtDate(iso: string | null | undefined) {
   return iso ? iso.slice(0, 10) : null;
 }
 
-const DEFAULT_JUNIOR_PRICING: JuniorPricing = {
-  birth_year_from: 2007,
-  discount_pct: 30,
-  tiers: [
-    { birth_year_from: 2007, discount_pct: 30 },
-    { birth_year_from: 2001, discount_pct: 20 },
-  ],
-  membership_required: true,
-  membership_fee_sek: 190,
-};
-
-function juniorDiscountPct(birthdate: string, pricing: JuniorPricing) {
-  const normalized = birthdate.trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return 0;
-  const birthYear = Number(normalized.slice(0, 4));
-  if (!Number.isInteger(birthYear)) return 0;
-  const tiers = pricing.tiers?.length
-    ? pricing.tiers
-    : [{ birth_year_from: pricing.birth_year_from, discount_pct: pricing.discount_pct }];
-  const tier = [...tiers]
-    .sort((a, b) => b.birth_year_from - a.birth_year_from)
-    .find((candidate) => birthYear >= candidate.birth_year_from);
-  return tier?.discount_pct ?? 0;
-}
-
-function discountedPriceSek(priceSek: number, discountPct: number) {
-  const safePrice = Math.max(0, Number(priceSek) || 0);
-  const safeDiscount = Math.min(100, Math.max(0, Number(discountPct) || 0));
-  return Math.round(safePrice * (100 - safeDiscount) / 100);
-}
-
 function fmtOpens(iso: string, lang: Lang) {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
@@ -552,7 +514,7 @@ export default function SignupFormClient() {
   const maxWishes = Number(config?.config?.max_wishes ?? 5);
   const maxDemands = Number(config?.config?.max_demands ?? 5);
   const juniorPricing = config?.junior_pricing ?? DEFAULT_JUNIOR_PRICING;
-  const effectiveJuniorDiscountPct = juniorDiscountPct(birthdate, juniorPricing);
+  const effectiveJuniorDiscountPct = signupDiscountPct(birthdate, juniorPricing);
   const hasJuniorDiscount = effectiveJuniorDiscountPct > 0;
   const showJuniorMembershipNotice = hasJuniorDiscount
     && juniorPricing.membership_required
@@ -1394,7 +1356,7 @@ function SlotPicker({
               const disabled = isDisabled(s) || struck;
               const note = (lang === "en" && s.note_en) || s.note;
               const discountedPrice = discountPct
-                ? discountedPriceSek(s.price_sek, discountPct)
+                ? discountedSignupPriceSek(s.price_sek, discountPct)
                 : null;
               return (
                 <button
