@@ -258,7 +258,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Nybörjare",
           title: "Grundkurs",
           price: "795 kr",
-          priceNote: "Under 26 år: effektivt 395 kr (400 kr MATCHi-kredit tillbaka)",
+          priceNote: "Född {y26} eller senare: effektivt 395 kr (400 kr MATCHi-kredit tillbaka)",
           details: [
             "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Teknik, fotarbete, taktik och spel",
@@ -276,7 +276,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Mellannivå",
           title: "Fortsättningskurs",
           price: "3 695 kr",
-          priceNote: "15 pass · Under 26 år: 1 000 kr MATCHi-kredit tillbaka",
+          priceNote: "15 pass · född {y26} eller senare: 1 000 kr MATCHi-kredit tillbaka",
           details: [
             "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Rörelse & positionering, bollkontroll, försvar & attack",
@@ -299,7 +299,7 @@ export const tranaDict: Dict<TranaDict> = {
       fakta: [
         { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
         { v: "23 aug", d: "grupperna publiceras senast" },
-        { v: "−30 / −20 %", d: "ungdomsrabatt under 20 resp. 26 år" },
+        { v: "−30 / −20 %", d: "ungdomsrabatt för födda {y20} resp. {y26} eller senare" },
       ],
       tableCaption: "Träningsgrupper höstsäsong 2026 — dag, tid och pris",
       thDay: "Dag",
@@ -528,7 +528,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Beginner",
           title: "Beginner course",
           price: "795 kr",
-          priceNote: "Under 26: effectively 395 kr (400 kr MATCHi credit back)",
+          priceNote: "Born {y26} or later: effectively 395 kr (400 kr MATCHi credit back)",
           details: [
             "5 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Technique, footwork, tactics and game play",
@@ -546,7 +546,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Intermediate",
           title: "Continuation course",
           price: "3 695 kr",
-          priceNote: "15 sessions · Under 26: 1 000 kr MATCHi credit back",
+          priceNote: "15 sessions · born {y26} or later: 1 000 kr MATCHi credit back",
           details: [
             "15 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Movement & positioning, ball control, defence & attack",
@@ -569,7 +569,7 @@ export const tranaDict: Dict<TranaDict> = {
       fakta: [
         { v: "15 sessions", d: "including one Gameday · last session 9 Dec" },
         { v: "23 Aug", d: "groups published at the latest" },
-        { v: "−30 / −20 %", d: "youth discount, under 20 and under 26" },
+        { v: "−30 / −20 %", d: "youth discount for those born {y20} and {y26} or later" },
       ],
       tableCaption: "Training groups autumn season 2026 — day, time and price",
       thDay: "Day",
