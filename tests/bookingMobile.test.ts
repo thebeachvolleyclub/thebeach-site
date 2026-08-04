@@ -5,6 +5,7 @@ import test from "node:test";
 const widget = readFileSync("src/components/booking/BookingWidget.tsx", "utf8");
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
 const availabilityRoute = readFileSync("src/app/api/booking/availability/route.ts", "utf8");
+const configRoute = readFileSync("src/app/api/booking/config/route.ts", "utf8");
 
 test("booking login and incomplete profile actions return to the booking page", () => {
   assert.match(widget, /const bookingPath = locale === "en" \? "\/en\/book" : "\/boka"/);
@@ -35,6 +36,11 @@ test("booking price UI accepts server-authored personal pricing metadata", () =>
   assert.match(widget, /quoteExpiresAt\?:/);
   assert.match(widget, /errorCode\(cause\) === "PRICE_CHANGED"/);
   assert.doesNotMatch(widget, /body: JSON\.stringify\([^)]*priceSek/);
+});
+
+test("booking configuration never invents a static base price", () => {
+  assert.match(configRoute, /pricingMode: "SERVER_AUTHORITATIVE"/);
+  assert.doesNotMatch(configRoute, /priceSek|slotLengthMinutes|\b400\b/);
 });
 
 test("account training renders purchased courses and invoice hand-off", () => {

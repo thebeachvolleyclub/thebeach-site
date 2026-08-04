@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   return NextResponse.json(
-    { enabled: bookingPublicEnabled, priceSek: 400, slotLengthMinutes: 90 },
+    { enabled: bookingPublicEnabled, pricingMode: "SERVER_AUTHORITATIVE" },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
