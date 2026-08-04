@@ -56,6 +56,11 @@ export interface BokaWidgetDict {
     edit: string;
     streamTitle: string;
     streamBody: string;
+    personalPriceFallback: string;
+    ordinaryPrice: string;
+    discount: string;
+    quoteUntil: string;
+    priceChanged: string;
     checkSwish: string;
     submitting: string;
     submitPrefix: string;
@@ -184,6 +189,11 @@ export const bokaDict: Dict<BokaDict> = {
         edit: "Ändra",
         streamTitle: "Beställ BeachTV-stream",
         streamBody: "Tillgänglig eftersom banan har kamera.",
+        personalPriceFallback: "Ditt personliga pris",
+        ordinaryPrice: "Ordinarie pris",
+        discount: "Du sparar",
+        quoteUntil: "Priset gäller till",
+        priceChanged: "Priset har uppdaterats. Välj tiden igen för att se och godkänna det nya priset.",
         checkSwish: "Kontrollera Swish-numret →",
         submitting: "Godkänn betalningen i Swish…",
         submitPrefix: "Boka och betala ",
@@ -301,6 +311,11 @@ export const bokaDict: Dict<BokaDict> = {
         edit: "Edit",
         streamTitle: "Order a BeachTV stream",
         streamBody: "Available because this court has a camera.",
+        personalPriceFallback: "Your personal price",
+        ordinaryPrice: "Standard price",
+        discount: "You save",
+        quoteUntil: "Price valid until",
+        priceChanged: "The price has changed. Select the slot again to see and approve the new price.",
         checkSwish: "Check the Swish number →",
         submitting: "Approve the payment in Swish…",
         submitPrefix: "Book and pay ",

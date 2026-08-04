@@ -61,6 +61,22 @@ type Membership = {
   active: boolean;
 };
 type MembershipFeed = { memberships: Membership[]; activeCount: number };
+type CourseEnrolment = {
+  courseId: number;
+  courseName: string | null;
+  invoiceId: string | null;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string | null;
+  grossAmountSek: number | null;
+  discountAmountSek: number | null;
+  netAmountSek: number | null;
+  waitlistPosition: number | null;
+  confirmedAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+};
+type CourseFeed = { enrolments: CourseEnrolment[] };
 type AccountTab = "overview" | "training" | "bookings" | "invoices" | "profile";
 
 /**
@@ -73,6 +89,8 @@ const HASH_TABS: Record<string, AccountTab> = {
   "#invoices": "invoices",
   "#traningsgrupper": "training",
   "#training": "training",
+  "#kurser": "training",
+  "#courses": "training",
   "#bokningar": "bookings",
   "#bookings": "bookings",
   "#profil": "profile",
@@ -81,9 +99,11 @@ const HASH_TABS: Record<string, AccountTab> = {
 
 function tabFromHash(): AccountTab {
   if (typeof window === "undefined") return "overview";
-  return HASH_TABS[window.location.hash.toLowerCase()] ?? "overview";
+  const hash = window.location.hash.toLowerCase();
+  if (hash.startsWith("#faktura-") || hash.startsWith("#invoice-")) return "invoices";
+  return HASH_TABS[hash] ?? "overview";
 }
-type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean };
+type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean; courses: boolean };
 type CancellationResult = {
   booking: Booking;
   refundAmountSek?: number | null;
@@ -110,6 +130,31 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 function statusText(status: string) {
   return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på Swish", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
+}
+
+function courseStatusText(enrolment: CourseEnrolment) {
+  const status = enrolment.status.toLowerCase();
+  if (status === "confirmed") return "Plats bekräftad";
+  if (status === "waitlisted") return enrolment.waitlistPosition
+    ? `Reservplats ${enrolment.waitlistPosition}`
+    : "Reservlista";
+  if (status === "held") return "Väntar på betalning";
+  if (status === "payment_review") return "Betalningen kontrolleras";
+  if (status === "refund_pending") return "Återbetalning pågår";
+  if (status === "refunded") return "Återbetald";
+  if (status === "cancelled") return "Avbruten";
+  return status || "Registrerad";
+}
+
+function coursePaymentText(status: string) {
+  const normalized = status.toLowerCase();
+  return ({
+    paid: "Betald",
+    sent: "Att betala",
+    pending: "Väntar på betalning",
+    refunded: "Återbetald",
+    cancelled: "Avbruten",
+  } as Record<string, string>)[normalized] ?? (normalized ? statusText(normalized) : "Betalningsstatus saknas");
 }
 
 function bookingPriceText(booking: Booking) {
@@ -162,12 +207,19 @@ export default function AccountPortal() {
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>({ memberships: [], activeCount: 0 });
+  const [courseEnrolments, setCourseEnrolments] = useState<CourseEnrolment[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false });
+  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   // Signup status shared by the Träningsgrupper tab badge + status card.
   const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
   const [signupLoaded, setSignupLoaded] = useState(false);
+
+  useEffect(() => {
+    const syncTabToHash = () => setTab(tabFromHash());
+    window.addEventListener("hashchange", syncTabToHash);
+    return () => window.removeEventListener("hashchange", syncTabToHash);
+  }, []);
 
   const applyProfile = useCallback((next: Profile) => {
     setProfile(next);
@@ -257,7 +309,8 @@ export default function AccountPortal() {
       api<EmailFeed>("/api/account/profile/emails"),
       api<ActivityFeed>("/api/account/activity"),
       api<MembershipFeed>("/api/account/membership"),
-    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult]) => {
+      api<CourseFeed>("/api/courses/mine"),
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -280,12 +333,16 @@ export default function AccountPortal() {
           activeCount: membershipResult.value.activeCount ?? 0,
         });
       }
+      if (courseResult.status === "fulfilled") {
+        setCourseEnrolments(courseResult.value.enrolments ?? []);
+      }
       setOverviewAvailability({
         bookings: bookingResult.status === "fulfilled",
         invoices: invoiceResult.status === "fulfilled",
         training: trainingResult.status === "fulfilled",
         activity: activityResult.status === "fulfilled",
         membership: membershipResult.status === "fulfilled",
+        courses: courseResult.status === "fulfilled",
       });
       setOverviewLoading(false);
     });
@@ -462,10 +519,11 @@ export default function AccountPortal() {
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed({ memberships: [], activeCount: 0 });
+    setCourseEnrolments([]);
     setEmailsLoading(true);
     setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
-    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false });
+    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false });
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -542,6 +600,7 @@ export default function AccountPortal() {
       availability={overviewAvailability}
       signupMine={signupMine}
       signupLoaded={signupLoaded}
+      courseEnrolments={courseEnrolments}
     /> : null}
 
     {tab === "profile" ? <>
@@ -773,21 +832,29 @@ function AccountTraining({
   availability,
   signupMine,
   signupLoaded,
+  courseEnrolments,
 }: {
   loading: boolean;
   trainingGroups: TrainingGroup[];
   availability: OverviewAvailability;
   signupMine: SignupMine | null;
   signupLoaded: boolean;
+  courseEnrolments: CourseEnrolment[];
 }) {
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Träning</p>
-      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träningsgrupper</h3>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella grupper och din anmälan.</p>
+      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träning och kurser</h3>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina köpta kurser, aktuella grupper och din anmälan.</p>
     </div>
 
     <SignupStatusCard mine={signupMine} loaded={signupLoaded} />
+
+    <CourseEnrolmentsCard
+      enrolments={courseEnrolments}
+      loading={loading}
+      available={availability.courses}
+    />
 
     <div className="mt-px">
       <article className="bg-black p-6 text-cream sm:p-8">
@@ -816,6 +883,68 @@ function AccountTraining({
       </article>
     </div>
   </section>;
+}
+
+function CourseEnrolmentsCard({
+  enrolments,
+  loading,
+  available,
+}: {
+  enrolments: CourseEnrolment[];
+  loading: boolean;
+  available: boolean;
+}) {
+  // Expired holds and unpaid cancellations were never purchases. Keep them out
+  // of the customer history in the same way failed court-booking attempts are
+  // hidden elsewhere in the account.
+  const visible = enrolments.filter((item) => {
+    const status = item.status.toLowerCase();
+    const payment = item.paymentStatus.toLowerCase();
+    if (status === "expired") return false;
+    if (status === "cancelled" && !["paid", "refunded"].includes(payment)) return false;
+    return true;
+  });
+
+  return <div id="kurser" className="mt-px scroll-mt-24">
+    <article className="bg-white p-6 sm:p-8">
+      <div className="flex flex-col gap-4 border-b border-black/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Kursbokningar</p>
+          <h4 className="mt-2 font-display text-3xl">Mina kurser</h4>
+        </div>
+        <Link href="/trana#kurser" className="text-xs font-bold uppercase tracking-[0.1em] text-teal underline underline-offset-4">Hitta fler kurser →</Link>
+      </div>
+      {loading ? <OverviewLoading /> : !available ? (
+        <p className="mt-7 border border-black/10 bg-cream p-5 text-sm text-black/50">Kunde inte hämta dina kurser just nu.</p>
+      ) : visible.length === 0 ? (
+        <p className="mt-7 border border-dashed border-black/20 bg-cream p-5 text-sm text-black/50">Du har inga köpta eller aktuella kurser ännu.</p>
+      ) : (
+        <div className="mt-7 space-y-3">
+          {visible.map((enrolment) => {
+            const amount = enrolment.netAmountSek ?? enrolment.grossAmountSek;
+            const hasInvoice = Boolean(enrolment.invoiceId)
+              && ["sent", "paid", "refunded"].includes(enrolment.paymentStatus.toLowerCase());
+            return <article key={`${enrolment.courseId}-${enrolment.invoiceId ?? enrolment.createdAt}`} className="border border-black/10 bg-cream p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <span className="inline-flex rounded-full bg-black px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-lime">{courseStatusText(enrolment)}</span>
+                  <strong className="mt-3 block text-lg">{enrolment.courseName || `Kurs ${enrolment.courseId}`}</strong>
+                  {enrolment.createdAt ? <span className="mt-1 block text-xs text-black/40">Bokad {formatAccountDate(enrolment.createdAt)}</span> : null}
+                </div>
+                <div className="shrink-0 text-left sm:text-right">
+                  {amount !== null ? <strong className="block text-xl">{amount} kr</strong> : null}
+                  <span className="block text-xs font-bold uppercase tracking-wide text-teal">{coursePaymentText(enrolment.paymentStatus)}</span>
+                  {enrolment.paymentMethod ? <span className="mt-1 block text-xs text-black/40">{enrolment.paymentMethod}</span> : null}
+                </div>
+              </div>
+              {enrolment.discountAmountSek !== null && enrolment.discountAmountSek > 0 ? <p className="mt-3 text-xs font-semibold text-teal">Rabatt {enrolment.discountAmountSek} kr</p> : null}
+              {hasInvoice ? <a href="#fakturor" className="mt-4 inline-flex min-h-10 items-center text-xs font-bold uppercase tracking-[0.09em] text-teal underline underline-offset-4">Visa faktura →</a> : null}
+            </article>;
+          })}
+        </div>
+      )}
+    </article>
+  </div>;
 }
 
 type SignupMine = {
@@ -916,6 +1045,16 @@ function formatMembershipDate(date: string) {
     month: "short",
     year: "numeric",
   }).format(value);
+}
+
+function formatAccountDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+  return new Intl.DateTimeFormat("sv-SE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {

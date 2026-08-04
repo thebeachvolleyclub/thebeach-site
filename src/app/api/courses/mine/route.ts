@@ -4,7 +4,8 @@ import { createMyCourseEnrolmentsGet } from "@/lib/coursePaymentRoute.core";
 
 export const dynamic = "force-dynamic";
 
-// Return only the fields needed to reconcile a Swish browser return.
+// Return a small, customer-safe view used both to reconcile a Swish return and
+// to render Mina kurser. Identity and internal pricing/audit data stay in App API.
 export const GET = createMyCourseEnrolmentsGet({
   accountToken,
   appApi,

@@ -417,7 +417,7 @@ test("status handler returns only normalized status", async () => {
   assert.deepEqual(await response.json(), { status: "paid" });
 });
 
-test("my course handler returns only fields needed for payment return recovery", async () => {
+test("my course handler returns only customer-safe receipt and profile fields", async () => {
   const handler = createMyCourseEnrolmentsGet({
     accountToken: async () => "account-token",
     unauthorized: () => Response.json({}, { status: 401 }),
@@ -428,9 +428,15 @@ test("my course handler returns only fields needed for payment return recovery",
         invoiceId,
         status: "confirmed",
         paymentStatus: "paid",
+        paymentMethod: "Swish",
         createdAt: "2026-08-03T14:50:01Z",
         userId: "private",
         grossAmountSek: 1,
+        discountAmountSek: 1,
+        netAmountSek: 0,
+        waitlistPosition: 2,
+        confirmedAt: "2026-08-03T14:51:01Z",
+        cancelledAt: null,
       }],
     }),
   });
@@ -443,6 +449,13 @@ test("my course handler returns only fields needed for payment return recovery",
       invoiceId,
       status: "confirmed",
       paymentStatus: "paid",
+      paymentMethod: "Swish",
+      grossAmountSek: 1,
+      discountAmountSek: 1,
+      netAmountSek: 0,
+      waitlistPosition: 2,
+      confirmedAt: "2026-08-03T14:51:01Z",
+      cancelledAt: null,
       createdAt: "2026-08-03T14:50:01Z",
     }],
   });

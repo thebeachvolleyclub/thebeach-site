@@ -133,6 +133,13 @@ export function createMyCourseEnrolmentsGet(dependencies: AccountDependencies) {
             invoiceId: typeof item.invoiceId === "string" ? item.invoiceId : null,
             status: typeof item.status === "string" ? item.status : "",
             paymentStatus: typeof item.paymentStatus === "string" ? item.paymentStatus : "",
+            paymentMethod: typeof item.paymentMethod === "string" ? item.paymentMethod : null,
+            grossAmountSek: typeof item.grossAmountSek === "number" ? item.grossAmountSek : null,
+            discountAmountSek: typeof item.discountAmountSek === "number" ? item.discountAmountSek : null,
+            netAmountSek: typeof item.netAmountSek === "number" ? item.netAmountSek : null,
+            waitlistPosition: typeof item.waitlistPosition === "number" ? item.waitlistPosition : null,
+            confirmedAt: typeof item.confirmedAt === "string" ? item.confirmedAt : null,
+            cancelledAt: typeof item.cancelledAt === "string" ? item.cancelledAt : null,
             createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
           }];
         }),

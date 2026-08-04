@@ -4,6 +4,7 @@ import test from "node:test";
 
 const widget = readFileSync("src/components/booking/BookingWidget.tsx", "utf8");
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
+const availabilityRoute = readFileSync("src/app/api/booking/availability/route.ts", "utf8");
 
 test("booking login and incomplete profile actions return to the booking page", () => {
   assert.match(widget, /const bookingPath = locale === "en" \? "\/en\/book" : "\/boka"/);
@@ -18,4 +19,28 @@ test("court selection reveals the payment panel on phone sized screens", () => {
   assert.match(widget, /max-width: 1023px/);
   assert.match(widget, /prefers-reduced-motion: reduce/);
   assert.match(widget, /ref=\{paymentPanel\}/);
+});
+
+test("logged-in availability resolves personal pricing through App API", () => {
+  assert.match(availabilityRoute, /const token = await accountToken\(\)/);
+  assert.match(availabilityRoute, /appApi\(`\/booking\/availability\?/);
+  assert.match(availabilityRoute, /\{ token \}/);
+  assert.match(availabilityRoute, /bookingApi\(`\/availability\?/);
+  assert.doesNotMatch(availabilityRoute, /customerScopes|priceSek.*searchParams/);
+});
+
+test("booking price UI accepts server-authored personal pricing metadata", () => {
+  assert.match(widget, /ordinaryPriceSek\?:/);
+  assert.match(widget, /priceLabel\?:/);
+  assert.match(widget, /quoteExpiresAt\?:/);
+  assert.match(widget, /errorCode\(cause\) === "PRICE_CHANGED"/);
+  assert.doesNotMatch(widget, /body: JSON\.stringify\([^)]*priceSek/);
+});
+
+test("account training renders purchased courses and invoice hand-off", () => {
+  assert.match(portal, /api<CourseFeed>\("\/api\/courses\/mine"\)/);
+  assert.match(portal, /id="kurser"/);
+  assert.match(portal, /Mina kurser/);
+  assert.match(portal, /href="#fakturor"/);
+  assert.match(portal, /status === "expired"/);
 });

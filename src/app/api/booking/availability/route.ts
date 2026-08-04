@@ -1,3 +1,5 @@
+import { accountToken } from "@/lib/accountSession";
+import { appApi } from "@/lib/appApi";
 import { bookingApi, bookingPublicEnabled, proxyJson } from "@/lib/bookingApi";
 
 export const dynamic = "force-dynamic";
@@ -13,5 +15,14 @@ export async function GET(request: Request) {
     return Response.json({ detail: "Ogiltigt datum eller anläggning" }, { status: 400 });
   }
   const query = new URLSearchParams({ venueId, date });
-  return proxyJson(await bookingApi(`/availability?${query.toString()}`));
+  const token = await accountToken();
+
+  // The account cookie is HttpOnly. Logged-in visitors therefore resolve
+  // identity and pricing through App API, exactly like checkout and the app.
+  // Signed-out visitors keep using Booking's public availability contract and
+  // only see the ordinary price. The browser never supplies pricing scopes.
+  const upstream = token
+    ? await appApi(`/booking/availability?${query.toString()}`, undefined, { token })
+    : await bookingApi(`/availability?${query.toString()}`);
+  return proxyJson(upstream);
 }

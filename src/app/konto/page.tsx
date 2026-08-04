@@ -6,7 +6,7 @@ import AccountPortal from "@/components/account/AccountPortal";
 
 export const metadata: Metadata = {
   title: "Mitt konto — The Beach",
-  description: "Se dina bokningar, träningsgrupper, fakturor och profil hos The Beach.",
+  description: "Se dina kurser, bokningar, träningsgrupper, fakturor och profil hos The Beach.",
   robots: { index: false, follow: false },
 };
 

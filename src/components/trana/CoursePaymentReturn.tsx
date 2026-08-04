@@ -160,9 +160,9 @@ export default function CoursePaymentReturn({
                 ? t.paymentReturnSuccessBody(state.courseName)
                 : t.paymentReturnError}
           </p>
-          {state.kind === "error" && (
+          {state.kind !== "checking" && (
             <a
-              href="/konto#traningsgrupper"
+              href="/konto#kurser"
               className="mt-4 inline-flex min-h-[44px] items-center border border-black px-5 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black"
             >
               {t.myCoursesCta} <span aria-hidden="true">→</span>
