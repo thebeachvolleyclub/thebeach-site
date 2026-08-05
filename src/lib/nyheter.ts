@@ -278,11 +278,11 @@ export function parseResultArticle(value: unknown): Article | null {
   };
 }
 
-async function resultArticles(): Promise<Article[]> {
+async function resultArticles(fresh = false): Promise<Article[]> {
   try {
     const response = await fetch(RESULT_ARTICLES_URL, {
       headers: { Accept: "application/json" },
-      next: { revalidate: 300 },
+      ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 300 } }),
     });
     if (!response.ok) return [];
     const payload = (await response.json()) as { articles?: unknown[] };
@@ -304,7 +304,12 @@ export async function allArticles(): Promise<Article[]> {
 }
 
 export async function articleBySlug(slug: string): Promise<Article | undefined> {
-  return (await allArticles()).find((a) => a.slug === slug);
+  // Local editorial work always wins a collision. Remote-only slugs must use a
+  // fresh lookup: caching an empty build-time response would otherwise turn a
+  // newly published Resultat article into a persistent 404.
+  const local = ARTICLES.find((article) => article.slug === slug);
+  if (local) return local;
+  return (await resultArticles(true)).find((article) => article.slug === slug);
 }
 
 const MONTHS_SV = ["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"];

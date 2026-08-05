@@ -9,11 +9,10 @@ import ArticleBody from "@/components/nyheter/ArticleBody";
 import { allArticles, articleBySlug, formatDatum } from "@/lib/nyheter";
 import { og } from "@/lib/seo";
 
-export const revalidate = 300;
-
-export async function generateStaticParams() {
-  return (await allArticles()).map((a) => ({ slug: a.slug }));
-}
+// Resultat articles are published independently of website deployments. Resolve
+// every article request at runtime so a newly published slug can never inherit a
+// build-time 404. The article lookup itself bypasses the remote-list cache.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

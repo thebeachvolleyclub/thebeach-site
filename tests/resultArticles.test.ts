@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseResultArticle } from "../src/lib/nyheter.ts";
+import { articleBySlug, parseResultArticle } from "../src/lib/nyheter.ts";
 
 test("accepts the Resultat editor website contract", () => {
   assert.deepEqual(
@@ -61,4 +61,30 @@ test("drops structurally invalid and unsafe AI blocks", () => {
   });
 
   assert.deepEqual(parsed?.body, [{ t: "p", text: "Säker text." }]);
+});
+
+test("resolves a newly published remote slug without the build-time cache", async () => {
+  const originalFetch = globalThis.fetch;
+  let observedCache: RequestCache | undefined;
+  globalThis.fetch = (async (_input: string | URL | Request, init?: RequestInit) => {
+    observedCache = init?.cache;
+    return new Response(JSON.stringify({
+      articles: [{
+        slug: "sbt-resultat-2026-w99",
+        datum: "2026-12-31",
+        kicker: "Swedish Beach Tour",
+        title: "Ny utgåva",
+        ingress: "Publicerad efter webbbygget.",
+        body: [{ t: "p", text: "Verifierad text." }],
+      }],
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }) as typeof fetch;
+
+  try {
+    const article = await articleBySlug("sbt-resultat-2026-w99");
+    assert.equal(article?.title, "Ny utgåva");
+    assert.equal(observedCache, "no-store");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
