@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import CourseDetail from "@/components/kurser/CourseDetail";
-import { allCourseSlugs, courseBySlug, viewerIsLoggedIn } from "@/lib/coursePageData";
+import { accountToken } from "@/lib/accountSession";
+import { allCourseSlugs, courseBySlug } from "@/lib/coursePageData";
 import { courseSummary } from "@/lib/courseMeta";
 import { og } from "@/lib/seo";
 
@@ -35,13 +36,14 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const course = await courseBySlug(slug);
+  const token = await accountToken();
+  const course = await courseBySlug(slug, token);
   if (!course) notFound();
   return (
     <CourseDetail
       course={course}
       locale="sv"
-      loggedIn={await viewerIsLoggedIn()}
+      loggedIn={Boolean(token)}
       path={`/kurser/${slug}`}
     />
   );

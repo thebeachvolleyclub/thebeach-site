@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
+import type { CoursePersonalPriceStatus } from "@/lib/coursePricing";
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
 import { pushEvent } from "@/lib/gtm";
@@ -26,6 +27,7 @@ type Props = {
   /** Visas i betalrutan så kunden ser vad hen betalar för — och hur mycket. */
   courseName: string;
   priceSek: number;
+  priceStatus: CoursePersonalPriceStatus;
   termsVersion: string;
   termsMarkdown: string | null;
   /** true när kursen är full — anmälan blir en köplats i stället. */
@@ -79,6 +81,7 @@ export default function CourseEnrolButton({
   courseId,
   courseName,
   priceSek,
+  priceStatus,
   termsVersion,
   termsMarkdown,
   waitlist,
@@ -304,6 +307,10 @@ export default function CourseEnrolButton({
       </div>
     );
   }
+
+  // The surrounding course card/detail places the profile error directly by
+  // the price. Do not render terms or an enrol button until that price exists.
+  if (priceStatus !== "resolved") return null;
 
   if (result?.ok) {
     const waitlisted = result.kind === "waitlisted";

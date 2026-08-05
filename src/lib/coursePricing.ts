@@ -3,10 +3,17 @@ export type CoursePriceTier = {
   priceSek: number;
 };
 
+export type CoursePersonalPriceStatus =
+  | "resolved"
+  | "birthdate_required"
+  | "sign_in_required";
+
 type PricedCourse = {
   priceSek: number;
   fromPriceSek?: number;
   priceTiers?: CoursePriceTier[];
+  personalPriceSek?: number | null;
+  personalPriceStatus?: CoursePersonalPriceStatus;
 };
 
 function money(value: number, locale: "sv" | "en"): string {
@@ -14,31 +21,32 @@ function money(value: number, locale: "sv" | "en"): string {
 }
 
 export function coursePriceHeadline(course: PricedCourse, locale: "sv" | "en"): string {
-  const tiers = course.priceTiers ?? [];
-  const lowest = course.fromPriceSek ?? Math.min(course.priceSek, ...tiers.map((tier) => tier.priceSek));
-  if (!tiers.length || lowest === course.priceSek) return money(course.priceSek, locale);
-  return `${locale === "sv" ? "Från" : "From"} ${money(lowest, locale)}`;
+  const status = coursePersonalPriceStatus(course);
+  if (status === "birthdate_required") {
+    return locale === "sv" ? "Födelsedatum saknas" : "Date of birth required";
+  }
+  if (status === "sign_in_required") {
+    return locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price";
+  }
+  return money(course.personalPriceSek ?? course.priceSek, locale);
 }
 
-export function coursePriceLines(course: PricedCourse, locale: "sv" | "en"): string[] {
-  const tiers = [...(course.priceTiers ?? [])].sort(
-    (a, b) => b.birthYearFrom - a.birthYearFrom,
-  );
-  if (!tiers.length) return [];
+export function coursePersonalPriceStatus(course: PricedCourse): CoursePersonalPriceStatus {
+  if (course.personalPriceStatus) return course.personalPriceStatus;
+  if (Number.isSafeInteger(course.personalPriceSek) && Number(course.personalPriceSek) >= 0) {
+    return "resolved";
+  }
+  // Compatibility with the brief legacy API window that exposed tier ladders.
+  return course.priceTiers?.length ? "sign_in_required" : "resolved";
+}
 
-  const lines = tiers.map((tier, index) => {
-    const upper = index === 0 ? null : tiers[index - 1].birthYearFrom - 1;
-    const years = upper === null
-      ? locale === "sv"
-        ? `Född ${tier.birthYearFrom} eller senare`
-        : `Born ${tier.birthYearFrom} or later`
-      : locale === "sv"
-        ? `Född ${tier.birthYearFrom}–${upper}`
-        : `Born ${tier.birthYearFrom}–${upper}`;
-    return `${years}: ${money(tier.priceSek, locale)}`;
-  });
-  lines.push(
-    `${locale === "sv" ? "Ordinarie pris" : "Standard price"}: ${money(course.priceSek, locale)}`,
-  );
-  return lines;
+export function coursePriceNeedsBirthdate(course: PricedCourse): boolean {
+  return coursePersonalPriceStatus(course) === "birthdate_required";
+}
+
+export function coursePriceResolved(course: PricedCourse): boolean {
+  if (course.personalPriceStatus === "resolved") {
+    return Number.isSafeInteger(course.personalPriceSek) && Number(course.personalPriceSek) >= 0;
+  }
+  return !course.personalPriceStatus && !course.priceTiers?.length;
 }

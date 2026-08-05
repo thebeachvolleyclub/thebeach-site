@@ -16,7 +16,11 @@ import {
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
 import { coursePath, courseSlugs } from "@/lib/courseSlug";
-import { coursePriceHeadline, coursePriceLines } from "@/lib/coursePricing";
+import {
+  coursePriceHeadline,
+  coursePriceNeedsBirthdate,
+  coursePersonalPriceStatus,
+} from "@/lib/coursePricing";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
 import { kursSidaDict } from "@/lib/i18n/kursSida";
 import { tranaDict } from "@/lib/i18n/trana";
@@ -27,11 +31,12 @@ import { tranaDict } from "@/lib/i18n/trana";
  * tillbaka på den redaktionella reservversionen — sidan ska aldrig stå tom.
  */
 export default async function CourseLadder({ locale }: { locale: Locale }) {
-  const courses = await fetchCourses();
+  const token = await accountToken();
+  const courses = await fetchCourses(token);
   if (courses.length === 0) return <CourseLadderStatic locale={locale} />;
 
   const t = tranaDict[locale].courses;
-  const loggedIn = Boolean(await accountToken());
+  const loggedIn = Boolean(token);
   const slugs = courseSlugs(courses);
 
   return (
@@ -82,7 +87,6 @@ function CourseCard({
   const k = kurserDict[locale];
   const state = courseState(course);
   const priceLabel = coursePriceHeadline(course, locale);
-  const priceLines = coursePriceLines(course, locale);
   const sessions = liveSessions(course);
   const start = firstSessionDate(course);
   const end = lastSessionDate(course);
@@ -131,12 +135,19 @@ function CourseCard({
       )}
 
       <div className="mb-1 flex items-baseline gap-1.5 text-[13px] text-black/40">
-        <strong className="font-display text-xl text-black lg:text-2xl">{priceLabel}</strong>
+        <strong className={`font-display text-xl lg:text-2xl ${coursePriceNeedsBirthdate(course) ? "text-orange" : "text-black"}`}>
+          {priceLabel}
+        </strong>
       </div>
-      {priceLines.length > 0 && (
-        <ul className="mb-4 space-y-0.5 text-[11px] leading-snug text-black/55">
-          {priceLines.map((line) => <li key={line}>{line}</li>)}
-        </ul>
+      {coursePriceNeedsBirthdate(course) && (
+        <div role="alert" className="mb-4 text-[12px] leading-snug text-orange">
+          <p>{locale === "sv"
+            ? "Lägg till ditt födelsedatum i profilen för att se rätt pris."
+            : "Add your date of birth to your profile to see the correct price."}</p>
+          <Link href="/konto#profil" className="mt-1 inline-flex font-bold text-black underline underline-offset-4">
+            {locale === "sv" ? "Öppna profil" : "Open profile"}
+          </Link>
+        </div>
       )}
 
       <p className="mb-4 text-[12px] font-semibold leading-snug">
@@ -175,7 +186,8 @@ function CourseCard({
           locale={locale}
           courseId={course.id}
           courseName={subtitle ? `${title} · ${subtitle}` : title}
-          priceSek={course.priceSek}
+          priceSek={course.personalPriceSek ?? course.priceSek}
+          priceStatus={coursePersonalPriceStatus(course)}
           termsVersion={course.termsVersion}
           termsMarkdown={course.termsMarkdown}
           waitlist={state === "waitlist"}

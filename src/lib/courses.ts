@@ -1,7 +1,7 @@
 import "server-only";
 
 import { appApi } from "@/lib/appApi";
-import type { CoursePriceTier } from "@/lib/coursePricing";
+import type { CoursePersonalPriceStatus, CoursePriceTier } from "@/lib/coursePricing";
 
 /**
  * Kurser från plattformens publika API (`/training/courses` på app-backend).
@@ -47,6 +47,8 @@ export type Course = {
   priceSek: number;
   fromPriceSek?: number;
   priceTiers?: CoursePriceTier[];
+  personalPriceSek?: number | null;
+  personalPriceStatus?: CoursePersonalPriceStatus;
   membershipRequired?: false;
   registrationOpensAt: string | null;
   registrationClosesAt: string | null;
@@ -97,9 +99,13 @@ function sortCourses(courses: Course[]): Course[] {
  * Hämtar publicerade kurser. Returnerar tom lista när API:t är nere så att
  * sidan faller tillbaka på den redaktionella texten i stället för att krascha.
  */
-export async function fetchCourses(): Promise<Course[]> {
+export async function fetchCourses(token?: string | null): Promise<Course[]> {
   try {
-    const response = await appApi("/training/courses");
+    const response = await appApi(
+      "/training/courses",
+      undefined,
+      token ? { token } : undefined,
+    );
     if (!response.ok) return [];
     const data = (await response.json()) as { courses?: Course[] };
     return sortCourses(data.courses ?? []);
