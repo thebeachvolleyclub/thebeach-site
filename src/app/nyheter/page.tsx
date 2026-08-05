@@ -76,7 +76,7 @@ export default async function Page() {
                       />
                     )}
                     <div>
-                      <p className="eyebrow mb-3 text-black/40">
+                      <p className="eyebrow eyebrow-ink mb-3">
                         {lead.kicker} · {formatDatum(lead.datum)}
                       </p>
                       <h2 className="font-display text-[clamp(1.8rem,5vw,2.8rem)] uppercase leading-[0.95] text-black transition-colors group-hover:text-black/60">
@@ -106,7 +106,7 @@ export default async function Page() {
                           className="mb-5 aspect-[3/2] h-auto w-full rounded-lg object-cover"
                         />
                       )}
-                      <p className="eyebrow mb-2 text-black/40">{formatDatum(a.datum)}</p>
+                      <p className="eyebrow eyebrow-ink mb-2">{formatDatum(a.datum)}</p>
                       <h3 className="font-display text-[1.35rem] uppercase leading-[1.05] text-black transition-colors group-hover:text-black/60">
                         {a.title}
                       </h3>

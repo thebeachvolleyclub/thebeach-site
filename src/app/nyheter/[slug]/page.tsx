@@ -138,7 +138,7 @@ export default async function ArtikelPage({ params }: { params: Promise<{ slug: 
                     {o.hero && (
                       <img src={o.hero.src} alt={o.hero.alt} className="mb-4 aspect-[3/2] h-auto w-full rounded-lg object-cover" />
                     )}
-                    <p className="eyebrow mb-2 text-black/40">{formatDatum(o.datum)}</p>
+                    <p className="eyebrow eyebrow-ink mb-2">{formatDatum(o.datum)}</p>
                     <h3 className="font-display text-[1.25rem] uppercase leading-[1.05] text-black transition-colors group-hover:text-black/60">
                       {o.title}
                     </h3>

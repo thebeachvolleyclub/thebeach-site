@@ -98,6 +98,12 @@ h4,
   color: var(--color-lime);
 }
 
+/* Eyebrow på ljus bakgrund. Egen klass i stället för en Tailwind-override,
+   eftersom .eyebrow ligger oskiktad och därmed vinner över utilities. */
+.eyebrow-ink {
+  color: rgb(0 0 0 / 0.55);
+}
+
 .text-balance {
   text-wrap: balance;
 }
