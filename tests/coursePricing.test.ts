@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { coursePriceHeadline, coursePriceLines } from "../src/lib/coursePricing.ts";
+import { tranaDict } from "../src/lib/i18n/trana.ts";
 
 test("shows the explicit beginner youth price before login", () => {
   const course = {
@@ -38,4 +39,16 @@ test("renders every continuation tier as an unambiguous birth-year range", () =>
 test("keeps the simple price when a course has no tiers", () => {
   assert.equal(coursePriceHeadline({ priceSek: 1200 }, "sv"), "1 200 kr");
   assert.deepEqual(coursePriceLines({ priceSek: 1200 }, "sv"), []);
+});
+
+test("fallback course cards use direct youth prices rather than store credit", () => {
+  const notes = [
+    ...tranaDict.sv.courses.items.map((course) => course.priceNote ?? ""),
+    ...tranaDict.en.courses.items.map((course) => course.priceNote ?? ""),
+  ].join(" ");
+
+  assert.doesNotMatch(notes, /tillgodo|back as credit/i);
+  assert.match(notes, /395 kr/);
+  assert.match(notes, /2 585 kr/);
+  assert.match(notes, /2 955 kr/);
 });

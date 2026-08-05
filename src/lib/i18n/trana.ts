@@ -4,7 +4,7 @@ import type { Dict } from "@/lib/i18n";
  * Ordbok för träningssidan (/trana resp. /en/training).
  * Svenska texterna är källan och bevaras exakt; engelskan speglar strukturen.
  *
- * OBS: priserna (795 kr, 3 695 kr / 15 pass, U26-tillgodo 1 000 kr osv.)
+ * OBS: priserna (795 kr, 3 695 kr / 15 pass samt explicita ungdomspriser)
  * är låsta — härifrån styrs ENDAST text.
  * Under 21-copyn i PathFinder är Davids egen och ändras inte på svenska;
  * engelskan är en trogen översättning.
@@ -263,7 +263,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Nybörjare",
           title: "Grundkurs",
           price: "795 kr",
-          priceNote: "Född {y26} eller senare: effektivt 395 kr (400 kr tillbaka som tillgodo)",
+          priceNote: "Född {y26} eller senare: 395 kr",
           details: [
             "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Teknik, fotarbete, taktik och spel",
@@ -278,7 +278,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Mellannivå",
           title: "Fortsättningskurs",
           price: "3 695 kr",
-          priceNote: "15 pass · född {y26} eller senare: 1 000 kr tillbaka som tillgodo",
+          priceNote: "15 pass · född {y20} eller senare: 2 585 kr · övriga födda {y26} eller senare: 2 955 kr",
           details: [
             "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Rörelse & positionering, bollkontroll, försvar & attack",
@@ -527,7 +527,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Beginner",
           title: "Beginner course",
           price: "795 kr",
-          priceNote: "Born {y26} or later: effectively 395 kr (400 kr back as credit)",
+          priceNote: "Born {y26} or later: 395 kr",
           details: [
             "5 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Technique, footwork, tactics and game play",
@@ -542,7 +542,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Intermediate",
           title: "Continuation course",
           price: "3 695 kr",
-          priceNote: "15 sessions · born {y26} or later: 1 000 kr back as credit",
+          priceNote: "15 sessions · born {y20} or later: 2,585 kr · other customers born {y26} or later: 2,955 kr",
           details: [
             "15 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Movement & positioning, ball control, defence & attack",
