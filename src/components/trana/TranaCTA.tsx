@@ -29,12 +29,10 @@ export default function TranaCTA({ locale }: { locale: Locale }) {
         <Reveal delay={0.1}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#kurser"
               className="inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors duration-300 hover:bg-black/80"
             >
-              {t.ctaMatchi} <span aria-hidden="true">→</span>
+              {t.ctaCourses} <span aria-hidden="true">→</span>
             </a>
             <a
               href="mailto:boka@thebeach.one"

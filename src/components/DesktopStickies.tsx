@@ -4,20 +4,21 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "./icons";
-import { stickyMode } from "@/lib/stickyMode";
+import { newsletterNudgeAllowed, stickyMode } from "@/lib/stickyMode";
 
 
 /**
  * Desktop-only stickies (mobil har MobileBookingBar):
  *  - flytande "Boka bana"-knapp nere till höger (efter hero)
- *  - stängbar nyhetsbrevs-nudge nere till vänster (ej på startsidan som redan
- *    har nyhetsbrevssektionen). Kom-ihåg via sessionStorage.
+ *  - stängbar nyhetsbrevs-nudge nere till vänster. Vilka sidor den får synas
+ *    på styrs av newsletterNudgeAllowed (inte startsidan, inga funnelsidor,
+ *    inte kurssidorna). Kom-ihåg via sessionStorage.
  */
 export default function DesktopStickies() {
   const pathname = usePathname() ?? "/";
   const en = pathname === "/en" || pathname.startsWith("/en/");
-  const isHome = pathname === "/" || pathname === "/en";
   const mode = stickyMode(pathname);
+  const nudgeAllowed = newsletterNudgeAllowed(pathname);
 
   const [showBook, setShowBook] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
@@ -99,7 +100,7 @@ export default function DesktopStickies() {
 
       {/* Newsletter nudge — desktop, not on home */}
       <AnimatePresence>
-        {showNudge && !dismissed && !isHome && (
+        {showNudge && !dismissed && nudgeAllowed && (
           <motion.div
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

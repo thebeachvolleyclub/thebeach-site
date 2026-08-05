@@ -44,13 +44,32 @@ const EVENT_PAGES = new Set([
   "/venue",
 ]);
 
-export function stickyMode(pathname: string): StickyMode {
+/** Sidor med en egen kassa/anmälan i sidan — nudgen får inte ligga i vägen. */
+const NUDGE_BLOCKED = new Set(["/", "/trana", "/training", "/kurser"]);
+
+function normalise(pathname: string) {
   // Normalisera bort /en-prefixet så sv/en delar samma regler.
-  const p = (pathname.replace(/^\/en(?=\/|$)/, "") || "/").replace(/\/+$/, "") || "/";
+  return (pathname.replace(/^\/en(?=\/|$)/, "") || "/").replace(/\/+$/, "") || "/";
+}
+
+export function stickyMode(pathname: string): StickyMode {
+  const p = normalise(pathname);
 
   if (HIDDEN_EXACT.has(p) || HIDDEN_PREFIX.some((h) => p === h || p.startsWith(h + "/"))) {
     return "hidden";
   }
   if (EVENT_PAGES.has(p)) return "event";
   return "default";
+}
+
+/**
+ * Nyhetsbrevs-nudgen är en avbrytare. Den låg tidigare ovanpå kryssrutan och
+ * Anmäl dig-knappen på första kurskortet på /trana och kostade oss anmälningar.
+ * Regeln: aldrig på startsidan (som redan har nyhetsbrevssektionen), aldrig på
+ * en sida med en pågående funnel, och aldrig på kurssidorna.
+ */
+export function newsletterNudgeAllowed(pathname: string): boolean {
+  const p = normalise(pathname);
+  if (NUDGE_BLOCKED.has(p) || p.startsWith("/kurser/")) return false;
+  return stickyMode(pathname) !== "hidden";
 }

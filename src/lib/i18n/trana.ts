@@ -4,11 +4,16 @@ import type { Dict } from "@/lib/i18n";
  * Ordbok för träningssidan (/trana resp. /en/training).
  * Svenska texterna är källan och bevaras exakt; engelskan speglar strukturen.
  *
- * OBS: MATCHi-djuplänkarna och priserna (795 kr, 3 695 kr / 15 pass,
- * U26-kickback 1 000 kr osv.) är låsta — härifrån styrs ENDAST text.
+ * OBS: priserna (795 kr, 3 695 kr / 15 pass, U26-tillgodo 1 000 kr osv.)
+ * är låsta — härifrån styrs ENDAST text.
  * Under 21-copyn i PathFinder är Davids egen och ändras inte på svenska;
- * engelskan är en trogen översättning. Kursanmälan sker i MATCHi (svenska)
- * — engelska sidan har en ärlig notis om det (signupNote, endast en).
+ * engelskan är en trogen översättning.
+ *
+ * Kursanmälan sker sedan augusti 2026 i VÅR EGEN kassa (CourseLadder +
+ * CourseEnrolButton, Swish). Kurserna ligger kvar på MATCHi för Davids egen
+ * manuella bemanningskoll — men vi länkar ALDRIG dit från kurs-CTA:erna.
+ * items[].ctas nedan används bara av den statiska reservstegen när kurs-API:t
+ * är nere; den pekar på boka@thebeach.one, inte på MATCHi.
  */
 
 export type PathCta = { label: string; href: string; external?: boolean };
@@ -49,7 +54,7 @@ export interface TranaDict {
     title: string;
     lead: string;
     noPriceLabel: string;
-    /** Endast en: ärlig notis om att MATCHi-flödet är på svenska. */
+    /** Endast en: notis i den statiska reservstegen. */
     signupNote?: { pre: string; email: string; post: string };
     items: {
       no: string;
@@ -162,7 +167,7 @@ export interface TranaDict {
     title1: string;
     titleAccent: string;
     body: string;
-    ctaMatchi: string;
+    ctaCourses: string;
     ctaContact: string;
     competePre: string;
     competeLabel: string;
@@ -258,7 +263,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Nybörjare",
           title: "Grundkurs",
           price: "795 kr",
-          priceNote: "Född {y26} eller senare: effektivt 395 kr (400 kr MATCHi-kredit tillbaka)",
+          priceNote: "Född {y26} eller senare: effektivt 395 kr (400 kr tillbaka som tillgodo)",
           details: [
             "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Teknik, fotarbete, taktik och spel",
@@ -266,17 +271,14 @@ export const tranaDict: Dict<TranaDict> = {
             "Start: tisdagar fr.o.m. 1 sep eller torsdagar fr.o.m. 3 sep 2026",
           ],
           quote: "Ingen tidigare erfarenhet krävs. Ta bara med motivation och en bra attityd.",
-          ctas: [
-            { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/ktBCZ2GXucftaFS3ZEup" },
-            { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/RX12Z2RxHWrtXCoj7pjf" },
-          ],
+          ctas: [{ label: "Mejla oss för anmälan", href: "mailto:boka@thebeach.one" }],
         },
         {
           no: "02",
           tag: "Mellannivå",
           title: "Fortsättningskurs",
           price: "3 695 kr",
-          priceNote: "15 pass · född {y26} eller senare: 1 000 kr MATCHi-kredit tillbaka",
+          priceNote: "15 pass · född {y26} eller senare: 1 000 kr tillbaka som tillgodo",
           details: [
             "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Rörelse & positionering, bollkontroll, försvar & attack",
@@ -285,10 +287,7 @@ export const tranaDict: Dict<TranaDict> = {
           ],
           quote:
             "Spelat förr men det var länge sen? Det här är rätt ingång för din comeback — du behöver inte börja om från noll.",
-          ctas: [
-            { label: "Boka tisdagar 19:00", href: "https://www.matchi.se/forms/Z9N6ftKeWIuuyawEomEY" },
-            { label: "Boka torsdagar 20:30", href: "https://www.matchi.se/forms/2Pszaq85oY1vuddVDZWk" },
-          ],
+          ctas: [{ label: "Mejla oss för anmälan", href: "mailto:boka@thebeach.one" }],
         },
       ],
     },
@@ -433,8 +432,8 @@ export const tranaDict: Dict<TranaDict> = {
       eyebrow: "Nästa steg",
       title1: "Redo att",
       titleAccent: "börja?",
-      body: "Anmäl dig direkt via MATCHi — där hittar du kurser, träningsgrupper och medlemskap på ett ställe. Frågor? Hör av dig till oss.",
-      ctaMatchi: "Anmäl dig via MATCHi",
+      body: "Grund- och fortsättningskurserna anmäler du dig till direkt här på sajten. Du betalar med Swish och platsen är din så fort betalningen gått igenom. Frågor? Hör av dig.",
+      ctaCourses: "Se kurserna",
       ctaContact: "Kontakta oss",
       competePre: "Vill du tävla? ",
       competeLabel: "Se kalendern →",
@@ -528,7 +527,7 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Beginner",
           title: "Beginner course",
           price: "795 kr",
-          priceNote: "Born {y26} or later: effectively 395 kr (400 kr MATCHi credit back)",
+          priceNote: "Born {y26} or later: effectively 395 kr (400 kr back as credit)",
           details: [
             "5 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Technique, footwork, tactics and game play",
@@ -536,17 +535,14 @@ export const tranaDict: Dict<TranaDict> = {
             "Starts: Tuesdays from 1 Sep or Thursdays from 3 Sep 2026",
           ],
           quote: "No previous experience required. Just bring motivation and a good attitude.",
-          ctas: [
-            { label: "Book Tuesdays 19:00", href: "https://www.matchi.se/forms/ktBCZ2GXucftaFS3ZEup" },
-            { label: "Book Thursdays 20:30", href: "https://www.matchi.se/forms/RX12Z2RxHWrtXCoj7pjf" },
-          ],
+          ctas: [{ label: "Email us to sign up", href: "mailto:boka@thebeach.one" }],
         },
         {
           no: "02",
           tag: "Intermediate",
           title: "Continuation course",
           price: "3 695 kr",
-          priceNote: "15 sessions · born {y26} or later: 1 000 kr MATCHi credit back",
+          priceNote: "15 sessions · born {y26} or later: 1 000 kr back as credit",
           details: [
             "15 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Movement & positioning, ball control, defence & attack",
@@ -555,10 +551,7 @@ export const tranaDict: Dict<TranaDict> = {
           ],
           quote:
             "Played before, but it was a long time ago? This is the right way back in for your comeback — you don't need to start over from zero.",
-          ctas: [
-            { label: "Book Tuesdays 19:00", href: "https://www.matchi.se/forms/Z9N6ftKeWIuuyawEomEY" },
-            { label: "Book Thursdays 20:30", href: "https://www.matchi.se/forms/2Pszaq85oY1vuddVDZWk" },
-          ],
+          ctas: [{ label: "Email us to sign up", href: "mailto:boka@thebeach.one" }],
         },
       ],
     },
@@ -703,8 +696,8 @@ export const tranaDict: Dict<TranaDict> = {
       eyebrow: "Next step",
       title1: "Ready to",
       titleAccent: "start?",
-      body: "Sign up directly via MATCHi — courses, training groups and membership in one place, available in English. Questions? Get in touch.",
-      ctaMatchi: "Sign up via MATCHi",
+      body: "Sign up for the beginner and intermediate courses right here on the site. You pay with Swish and your place is confirmed the moment the payment clears. Questions? Get in touch.",
+      ctaCourses: "See the courses",
       ctaContact: "Contact us",
       competePre: "Want to compete? ",
       competeLabel: "See the calendar →",

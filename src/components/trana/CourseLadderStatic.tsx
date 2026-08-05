@@ -2,8 +2,10 @@ import { fillYears } from "@/lib/ages";
 import Reveal from "@/components/Reveal";
 
 /**
- * Redaktionell reservversion av kursstegen med MATCHi-länkar. Renderas bara
- * när kurs-API:t inte svarar — normalfallet är CourseLadder med livedata.
+ * Redaktionell reservversion av kursstegen. Renderas bara när kurs-API:t inte
+ * svarar — normalfallet är CourseLadder med livedata och egen Swish-kassa.
+ * Reserven kan inte ta emot anmälningar, så den hänvisar till boka@thebeach.one.
+ * Den ska ALDRIG länka till MATCHi.
  */
 import type { Locale } from "@/lib/i18n";
 import { tranaDict } from "@/lib/i18n/trana";
@@ -95,14 +97,12 @@ export default function CourseLadderStatic({ locale }: { locale: Locale }) {
               </blockquote>
             )}
 
-            {/* CTAs — deep links to each MATCHi course form */}
+            {/* CTA — reserven tar inte emot anmälningar, den hänvisar till mejl */}
             <div className="flex flex-col gap-1 sm:flex-row sm:gap-6">
               {c.ctas.map((cta) => (
                 <a
                   key={cta.href}
                   href={cta.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
                 >
                   {cta.label} <span aria-hidden="true">→</span>
@@ -113,7 +113,7 @@ export default function CourseLadderStatic({ locale }: { locale: Locale }) {
         ))}
       </div>
 
-      {/* Notis (endast en): MATCHi-flödet är på svenska */}
+      {/* Notis (endast en) */}
       {t.signupNote && (
         <Reveal delay={0.16}>
           <p className="mt-6 text-[13px] leading-snug text-black/50">
