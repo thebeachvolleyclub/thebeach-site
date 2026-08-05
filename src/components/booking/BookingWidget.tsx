@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/i18n";
 import { bokaDict, type BokaWidgetDict } from "@/lib/i18n/boka";
 
 type Slot = {
+  productId?: string | null;
   courtId: string;
   courtName: string;
   environment: "INDOOR" | "OUTDOOR";
@@ -250,13 +251,26 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     if (!profile.name || !profile.swish_phone) { setError(t.completeProfileError); return; }
     setSubmitting(true); setError("");
     try {
-      const result = await api<{ bookingId: string }>("/api/booking/checkout", { method: "POST", body: JSON.stringify({ venueId, courtId: selected.courtId, date, startTime: selected.startTime, streamRequested, clientReference: `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` }) }, t.genericError);
+      // Freeze the authenticated customer's winning rule and all concurrent
+      // entitlements immediately before Swish is started.
+      const quote = await api<{ quoteId: string }>("/api/booking/quotes", {
+        method: "POST",
+        body: JSON.stringify({
+          venueId,
+          courtId: selected.courtId,
+          date,
+          startTime: selected.startTime,
+          ...(selected.productId ? { productId: selected.productId } : {}),
+        }),
+      }, t.genericError);
+      const result = await api<{ bookingId: string }>("/api/booking/checkout", { method: "POST", body: JSON.stringify({ venueId, courtId: selected.courtId, date, startTime: selected.startTime, productId: selected.productId, quoteId: quote.quoteId, streamRequested, clientReference: `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` }) }, t.genericError);
       setBookingId(result.bookingId);
     } catch (cause) {
       setSubmitting(false);
-      if (cause instanceof BookingApiError && errorCode(cause) === "PRICE_CHANGED") {
+      const code = cause instanceof BookingApiError ? errorCode(cause) : "";
+      if (["PRICE_CHANGED", "QUOTE_EXPIRED", "SLOT_TAKEN"].includes(code)) {
         await loadSlots(venueId, date);
-        setError(t.pay.priceChanged);
+        setError(code === "SLOT_TAKEN" ? t.pay.slotTaken : code === "QUOTE_EXPIRED" ? t.pay.quoteExpired : t.pay.priceChanged);
       } else {
         setError(cause instanceof Error ? cause.message : t.swishStartError);
       }

@@ -61,6 +61,8 @@ export interface BokaWidgetDict {
     discount: string;
     quoteUntil: string;
     priceChanged: string;
+    quoteExpired: string;
+    slotTaken: string;
     checkSwish: string;
     submitting: string;
     submitPrefix: string;
@@ -194,6 +196,8 @@ export const bokaDict: Dict<BokaDict> = {
         discount: "Du sparar",
         quoteUntil: "Priset gäller till",
         priceChanged: "Priset har uppdaterats. Välj tiden igen för att se och godkänna det nya priset.",
+        quoteExpired: "Prisuppgiften hann gå ut. Tider och priser har uppdaterats; välj igen för att fortsätta.",
+        slotTaken: "Tiden hann bokas. Vi har uppdaterat de lediga alternativen.",
         checkSwish: "Kontrollera Swish-numret →",
         submitting: "Godkänn betalningen i Swish…",
         submitPrefix: "Boka och betala ",
@@ -316,6 +320,8 @@ export const bokaDict: Dict<BokaDict> = {
         discount: "You save",
         quoteUntil: "Price valid until",
         priceChanged: "The price has changed. Select the slot again to see and approve the new price.",
+        quoteExpired: "The price quote expired. Times and prices have been refreshed; select again to continue.",
+        slotTaken: "The slot was just booked. We have refreshed the available options.",
         checkSwish: "Check the Swish number →",
         submitting: "Approve the payment in Swish…",
         submitPrefix: "Book and pay ",

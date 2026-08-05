@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { accountToken, sameOrigin, unauthorized } from "@/lib/accountSession";
 import { appApi } from "@/lib/appApi";
-import { bookingPublicEnabled } from "@/lib/bookingApi";
+import { bookingPublicEnabled, proxyJson } from "@/lib/bookingApi";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   if (!bookingPublicEnabled) {
     return NextResponse.json({ detail: "Bokningspiloten är inte öppen ännu" }, { status: 503 });
   }
-  if (Number(request.headers.get("content-length") ?? 0) > 20_000) {
+  if (Number(request.headers.get("content-length") ?? 0) > 10_000) {
     return NextResponse.json({ detail: "För stor förfrågan" }, { status: 413 });
   }
   const token = await accountToken();
@@ -23,29 +23,17 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ detail: "Ogiltiga uppgifter" }, { status: 400 });
   }
-  // The browser never chooses contact identity, payer, price or duration.
+  // Only slot identity crosses the browser boundary. Entitlements, price and
+  // account identity are resolved from the signed-in App API session.
   const allowed = {
     venueId: body.venueId,
     courtId: body.courtId,
     date: body.date,
     startTime: body.startTime,
     productId: body.productId,
-    quoteId: body.quoteId,
-    streamRequested: body.streamRequested === true,
-    clientReference: body.clientReference,
-    channel: "WEB",
   };
-  const upstream = await appApi("/booking/checkout", {
+  return proxyJson(await appApi("/booking/quotes", {
     method: "POST",
     body: JSON.stringify(allowed),
-  }, { token });
-  const text = await upstream.text();
-  let payload: Record<string, unknown> = {};
-  try { payload = JSON.parse(text) as Record<string, unknown>; } catch { /* upstream error */ }
-  if (!upstream.ok) {
-    return NextResponse.json(payload, { status: upstream.status });
-  }
-  if (!payload.bookingId) return NextResponse.json({ detail: "Bokningssvaret var ofullständigt" }, { status: 502 });
-  delete payload.managementToken;
-  return NextResponse.json(payload, { status: upstream.status });
+  }, { token }));
 }

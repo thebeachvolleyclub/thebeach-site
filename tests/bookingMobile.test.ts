@@ -6,6 +6,7 @@ const widget = readFileSync("src/components/booking/BookingWidget.tsx", "utf8");
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
 const availabilityRoute = readFileSync("src/app/api/booking/availability/route.ts", "utf8");
 const configRoute = readFileSync("src/app/api/booking/config/route.ts", "utf8");
+const quoteRoute = readFileSync("src/app/api/booking/quotes/route.ts", "utf8");
 
 test("booking login and incomplete profile actions return to the booking page", () => {
   assert.match(widget, /const bookingPath = locale === "en" \? "\/en\/book" : "\/boka"/);
@@ -34,7 +35,10 @@ test("booking price UI accepts server-authored personal pricing metadata", () =>
   assert.match(widget, /ordinaryPriceSek\?:/);
   assert.match(widget, /priceLabel\?:/);
   assert.match(widget, /quoteExpiresAt\?:/);
-  assert.match(widget, /errorCode\(cause\) === "PRICE_CHANGED"/);
+  assert.match(widget, /\["PRICE_CHANGED", "QUOTE_EXPIRED", "SLOT_TAKEN"\]/);
+  assert.match(widget, /"\/api\/booking\/quotes"/);
+  assert.match(quoteRoute, /appApi\("\/booking\/quotes"/);
+  assert.doesNotMatch(quoteRoute, /priceSek|entitlementCode|customerScopes/);
   assert.doesNotMatch(widget, /body: JSON\.stringify\([^)]*priceSek/);
 });
 
