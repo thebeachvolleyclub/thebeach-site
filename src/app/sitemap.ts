@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { mergedAllEvents } from "@/lib/profixio";
+import { allArticles } from "@/lib/nyheter";
 
 // Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
 export const revalidate = 21600;
@@ -7,7 +8,7 @@ export const revalidate = 21600;
 
 const base = "https://thebeach.one";
 const staticPaths = [
-  "", "/boka", "/events", "/lokalen", "/trana", "/kalender", "/foreningen", "/faq",
+  "", "/boka", "/events", "/lokalen", "/trana", "/kalender", "/nyheter", "/foreningen", "/faq",
   "/skola", "/barnkalas", "/julbord", "/om-oss", "/om-beachvolley",
   "/avanmalan", "/andringsanmalan",
   "/hallbarhet", "/beachtravels", "/presentkort",
@@ -36,5 +37,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.5,
     }));
-  return [...pages, ...events];
+  const news = allArticles().map((a) => ({
+    url: `${base}/nyheter/${a.slug}`,
+    lastModified: new Date(a.datum),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+  return [...pages, ...events, ...news];
 }
