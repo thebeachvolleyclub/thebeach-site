@@ -26,6 +26,7 @@ export type Block =
 export type Article = {
   slug: string;
   datum: string;
+  uppdaterad?: string;
   kicker: string;
   title: string;
   ingress: string;
@@ -267,6 +268,10 @@ export function parseResultArticle(value: unknown): Article | null {
   return {
     slug: raw.slug,
     datum: raw.datum,
+    uppdaterad:
+      typeof raw.uppdaterad === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw.uppdaterad)
+        ? raw.uppdaterad
+        : undefined,
     kicker: raw.kicker,
     title: raw.title,
     ingress: raw.ingress,

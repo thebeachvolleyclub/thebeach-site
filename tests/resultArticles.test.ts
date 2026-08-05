@@ -8,6 +8,7 @@ test("accepts the Resultat editor website contract", () => {
     parseResultArticle({
       slug: "sbt-resultat-2026-w32",
       datum: "2026-08-05",
+      uppdaterad: "2026-08-06",
       kicker: "Swedish Beach Tour",
       title: "Veckans resultat",
       ingress: "Nya framgångar för The Beach.",
@@ -26,6 +27,7 @@ test("accepts the Resultat editor website contract", () => {
     {
       slug: "sbt-resultat-2026-w32",
       datum: "2026-08-05",
+      uppdaterad: "2026-08-06",
       kicker: "Swedish Beach Tour",
       title: "Veckans resultat",
       ingress: "Nya framgångar för The Beach.",

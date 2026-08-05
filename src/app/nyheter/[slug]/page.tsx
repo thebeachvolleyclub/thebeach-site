@@ -42,7 +42,7 @@ export default async function ArtikelPage({ params }: { params: Promise<{ slug: 
     headline: a.title,
     description: a.ingress,
     datePublished: a.datum,
-    dateModified: a.datum,
+    dateModified: a.uppdaterad ?? a.datum,
     image: a.hero
       ? (a.hero.src.startsWith("http") ? a.hero.src : `https://thebeach.one${a.hero.src}`)
       : "https://thebeach.one/opengraph-image.png",
