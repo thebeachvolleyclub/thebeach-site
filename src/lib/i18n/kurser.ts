@@ -26,7 +26,16 @@ export type KurserDict = {
   termsLanguageNote: string;
   termsAccept: string;
   paymentNote: string;
+  /** Betalrutan: belopp, reservationstid, kvitto och trygghetsrader. */
+  amountLabel: (amount: string) => string;
+  holdNotice: (clock: string) => string;
+  holdExpired: string;
+  afterPayment: string;
+  swishSecurity: string;
+  sellerLabel: string;
+  paymentHelp: (email: string) => string;
   loginPrompt: string;
+  loginWhy: string;
   loginCta: string;
   submitting: string;
   startingSwish: string;
@@ -76,7 +85,15 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsLanguageNote: "",
     termsAccept: "Jag har läst och godkänner kursvillkoren.",
     paymentNote: "Efter anmälan betalar du med Swish i mobilen. Platsen bekräftas först när betalningen är klar.",
+    amountLabel: (amount) => `Att betala: ${amount}`,
+    holdNotice: (clock) => `Platsen är reserverad åt dig ${clock} till.`,
+    holdExpired: "Reservationen gick ut. Klicka på Anmäl dig igen så startar vi en ny betalning — platsen finns kvar så länge kursen har plats.",
+    afterPayment: "När betalningen gått igenom är platsen din direkt. Bekräftelse och kvitto mejlas till adressen på ditt konto.",
+    swishSecurity: "Betalningen sker i Swish-appen. Vi ser aldrig dina bank- eller kortuppgifter.",
+    sellerLabel: "Säljare",
+    paymentHelp: (email) => `Något som strular? Mejla ${email} så löser vi det.`,
     loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
+    loginWhy: "Kontot är gratis och tar en halv minut — du fyller i din e-post och får en engångskod. I kontot ser du sedan dina kurser, bokningar och kvitton.",
     loginCta: "Logga in",
     submitting: "Skickar…",
     startingSwish: "Startar Swish…",
@@ -123,7 +140,15 @@ export const kurserDict: Record<Locale, KurserDict> = {
     termsLanguageNote: "The course terms are in Swedish. Email us and we\u2019ll walk you through them.",
     termsAccept: "I have read and accept the course terms.",
     paymentNote: "After registration, pay with Swish on your phone. Your place is confirmed only after payment.",
+    amountLabel: (amount) => `To pay: ${amount}`,
+    holdNotice: (clock) => `Your place is reserved for another ${clock}.`,
+    holdExpired: "The reservation ran out. Press Sign up again to start a new payment — the place is still there as long as the course has room.",
+    afterPayment: "The moment the payment clears, the place is yours. We email the confirmation and receipt to the address on your account.",
+    swishSecurity: "Payment happens inside the Swish app. We never see your bank or card details.",
+    sellerLabel: "Seller",
+    paymentHelp: (email) => `Something not working? Email ${email} and we'll sort it.`,
     loginPrompt: "Log in with your The Beach account to sign up.",
+    loginWhy: "The account is free and takes about thirty seconds — enter your email and we send you a one-time code. It's where you'll find your courses, bookings and receipts.",
     loginCta: "Log in",
     submitting: "Sending…",
     startingSwish: "Starting Swish…",

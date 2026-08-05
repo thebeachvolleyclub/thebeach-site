@@ -17,9 +17,9 @@ import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
 import { tranaDict } from "@/lib/i18n/trana";
 
 /**
- * Kursstegen. Korten kommer från plattformens kurs-API (ersätter MATCHi).
- * Går API:t inte att nå faller sektionen tillbaka på den redaktionella
- * versionen med MATCHi-länkar — sidan ska aldrig stå tom.
+ * Kursstegen. Korten kommer från plattformens kurs-API och anmälan sker i vår
+ * egen Swish-kassa (CourseEnrolButton). Går API:t inte att nå faller sektionen
+ * tillbaka på den redaktionella reservversionen — sidan ska aldrig stå tom.
  */
 export default async function CourseLadder({ locale }: { locale: Locale }) {
   const courses = await fetchCourses();
@@ -72,6 +72,9 @@ function CourseCard({
 }) {
   const k = kurserDict[locale];
   const state = courseState(course);
+  const priceLabel = `${course.priceSek.toLocaleString(
+    locale === "sv" ? "sv-SE" : "en-GB",
+  )} kr`;
   const sessions = liveSessions(course);
   const start = firstSessionDate(course);
   const end = lastSessionDate(course);
@@ -118,9 +121,7 @@ function CourseCard({
       )}
 
       <div className="mb-1 flex items-baseline gap-1.5 text-[13px] text-black/40">
-        <strong className="font-display text-xl text-black lg:text-2xl">
-          {course.priceSek.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB")} kr
-        </strong>
+        <strong className="font-display text-xl text-black lg:text-2xl">{priceLabel}</strong>
       </div>
 
       <p className="mb-4 text-[12px] font-semibold leading-snug">
@@ -151,6 +152,9 @@ function CourseCard({
         <CourseEnrolButton
           locale={locale}
           courseId={course.id}
+          courseName={subtitle ? `${title} · ${subtitle}` : title}
+          priceLabel={priceLabel}
+          priceSek={course.priceSek}
           termsVersion={course.termsVersion}
           termsMarkdown={course.termsMarkdown}
           waitlist={state === "waitlist"}

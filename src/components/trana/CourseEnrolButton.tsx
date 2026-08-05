@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
 import { kurserDict } from "@/lib/i18n/kurser";
+import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
+import { pushEvent } from "@/lib/gtm";
 import {
   clearCourseAttempt,
   courseAttemptKey,
@@ -21,6 +23,10 @@ import {
 type Props = {
   locale: Locale;
   courseId: number;
+  /** Visas i betalrutan så kunden ser vad hen betalar för — och hur mycket. */
+  courseName: string;
+  priceLabel: string;
+  priceSek: number;
   termsVersion: string;
   termsMarkdown: string | null;
   /** true när kursen är full — anmälan blir en köplats i stället. */
@@ -66,6 +72,9 @@ function randomAttemptKey() {
 export default function CourseEnrolButton({
   locale,
   courseId,
+  courseName,
+  priceLabel,
+  priceSek,
   termsVersion,
   termsMarkdown,
   waitlist,
@@ -77,6 +86,7 @@ export default function CourseEnrolButton({
   const [result, setResult] = useState<Result | null>(null);
   const [swishHandoff, setSwishHandoff] = useState<SwishHandoff | null>(null);
   const [showDesktopSwish, setShowDesktopSwish] = useState(false);
+  const [invoiceStartedAt, setInvoiceStartedAt] = useState<number | null>(null);
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
@@ -109,12 +119,18 @@ export default function CourseEnrolButton({
             window.navigator.maxTouchPoints,
           ));
         }
+        setInvoiceStartedAt(savedInvoice.createdAt);
         setPhase("waitingForSwish");
         await finishPayment(savedInvoice.invoiceId, controller, storage, savedInvoice.createdAt);
         return;
       }
 
       setPhase("enrolling");
+      pushEvent("course_signup_start", {
+        course_id: courseId,
+        course_name: courseName,
+        waitlist,
+      });
       const idempotencyKey = courseAttemptKey(
         courseId,
         storage,
@@ -137,6 +153,7 @@ export default function CourseEnrolButton({
 
       if (data.status === "waitlisted") {
         clearCourseAttempt(courseId, storage);
+        pushEvent("course_waitlisted", { course_id: courseId, course_name: courseName });
         setResult({ ok: true, kind: "waitlisted" });
         return;
       }
@@ -147,6 +164,7 @@ export default function CourseEnrolButton({
         return;
       }
       const invoiceCreatedAt = Date.now();
+      setInvoiceStartedAt(invoiceCreatedAt);
       rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt);
 
       setPhase("startingSwish");
@@ -170,6 +188,12 @@ export default function CourseEnrolButton({
         window.navigator.userAgent,
         window.navigator.maxTouchPoints,
       );
+      pushEvent("course_payment_start", {
+        course_id: courseId,
+        course_name: courseName,
+        value: priceSek,
+        currency: "SEK",
+      });
       setSwishHandoff({ deepLinkUrl, qrCodeDataUrl });
       setShowDesktopSwish(!mobileDevice);
       rememberCourseInvoice(
@@ -223,8 +247,15 @@ export default function CourseEnrolButton({
             !(cause instanceof PaymentStatusError) || ![401, 403, 404].includes(cause.status),
         },
       );
+      setInvoiceStartedAt(null);
       if (payment.state === "paid") {
         clearCourseAttempt(courseId, storage);
+        pushEvent("course_purchase", {
+          course_id: courseId,
+          course_name: courseName,
+          value: priceSek,
+          currency: "SEK",
+        });
         setSwishHandoff(null);
         setShowDesktopSwish(false);
         setResult({ ok: true, kind: "paid" });
@@ -234,6 +265,7 @@ export default function CourseEnrolButton({
         setShowDesktopSwish(false);
         setResult({ ok: false, message: t.paymentFailed });
       } else {
+        pushEvent("course_payment_timeout", { course_id: courseId, course_name: courseName });
         setSwishHandoff(null);
         setShowDesktopSwish(false);
         setResult({ ok: false, message: t.paymentTimeout });
@@ -244,7 +276,8 @@ export default function CourseEnrolButton({
   if (!loggedIn) {
     return (
       <div className="mt-auto border-t border-black/10 pt-5">
-        <p className="mb-3 text-[13px] leading-snug text-black/50">{t.loginPrompt}</p>
+        <p className="mb-2 text-[13px] leading-snug text-black/70">{t.loginPrompt}</p>
+        <p className="mb-3 text-[12px] leading-snug text-black/45">{t.loginWhy}</p>
         <a
           href={accountHref}
           className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80"
@@ -289,7 +322,7 @@ export default function CourseEnrolButton({
     <div className="mt-auto border-t border-black/10 pt-5">
       <p className="mb-3 text-[12px] leading-snug text-black/45">{t.paymentNote}</p>
 
-      {showDesktopSwish && swishHandoff && (
+      {swishHandoff && (
         <div
           role="status"
           aria-live="polite"
@@ -298,10 +331,24 @@ export default function CourseEnrolButton({
           <p className="font-display text-xl uppercase leading-none text-black">
             {t.desktopSwishTitle}
           </p>
-          <p className="mx-auto mt-2 max-w-xs text-[12px] leading-snug text-black/55">
+          <p className="mt-2 text-[13px] font-bold text-black">
+            {t.amountLabel(priceLabel)}
+          </p>
+          <p className="mt-0.5 text-[12px] leading-snug text-black/45">{courseName}</p>
+          {invoiceStartedAt !== null && (
+            <HoldCountdown
+              key={invoiceStartedAt}
+              startedAt={invoiceStartedAt}
+              notice={t.holdNotice}
+              expired={t.holdExpired}
+            />
+          )}
+          {showDesktopSwish && (
+          <p className="mx-auto mt-3 max-w-xs text-[12px] leading-snug text-black/55">
             {t.desktopSwishBody}
           </p>
-          {swishHandoff.qrCodeDataUrl ? (
+          )}
+          {showDesktopSwish && (swishHandoff.qrCodeDataUrl ? (
             <Image
               src={swishHandoff.qrCodeDataUrl}
               alt={t.swishQrAlt}
@@ -314,13 +361,16 @@ export default function CourseEnrolButton({
             <p role="alert" className="mt-4 text-[13px] leading-snug text-orange">
               {t.paymentQrUnavailable}
             </p>
-          )}
+          ))}
           <a
             href={swishHandoff.deepLinkUrl}
             className="mt-3 inline-flex min-h-[44px] items-center text-[11px] font-bold uppercase tracking-[0.08em] text-black underline underline-offset-4"
           >
             {t.openSwishCta}
           </a>
+          <p className="mt-3 border-t border-black/10 pt-3 text-[11px] leading-snug text-black/45">
+            {t.afterPayment}
+          </p>
         </div>
       )}
 
@@ -366,7 +416,53 @@ export default function CourseEnrolButton({
           <p>{result.message}</p>
         </div>
       )}
+
+      <div className="mt-4 space-y-1 border-t border-black/10 pt-3 text-[11px] leading-snug text-black/40">
+        <p>{t.swishSecurity}</p>
+        <p>
+          {t.sellerLabel}: {courseSellerLine()}
+        </p>
+        <p>{t.paymentHelp(COURSE_SELLER.supportEmail)}</p>
+      </div>
     </div>
+  );
+}
+
+/**
+ * Nedräkning på platsreservationen. Betalfönstret är ~15 minuter och gick
+ * tidigare ut helt tyst — kunden såg "Väntar på Swish…" och fick sedan ett
+ * timeout-fel utan att ha förstått att det tickade en klocka.
+ */
+function HoldCountdown({
+  startedAt,
+  notice,
+  expired,
+}: {
+  startedAt: number;
+  notice: (clock: string) => string;
+  expired: string;
+}) {
+  // Föräldern monterar om komponenten via key={invoiceStartedAt}, så
+  // initialvärdet räcker — effekten behöver bara hålla intervallet igång.
+  const [remaining, setRemaining] = useState(() =>
+    remainingCoursePaymentTimeout(startedAt),
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRemaining(remainingCoursePaymentTimeout(startedAt));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  return remaining > 0 ? (
+    <p className="mt-2 text-[12px] font-semibold tabular-nums text-black/60">
+      {notice(holdClock(remaining))}
+    </p>
+  ) : (
+    <p role="alert" className="mt-2 text-[12px] font-semibold leading-snug text-orange">
+      {expired}
+    </p>
   );
 }
 
