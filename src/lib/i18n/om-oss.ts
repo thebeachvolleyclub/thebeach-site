@@ -55,9 +55,6 @@ export const omOssDict: Dict<OmOssDict> = {
           roll: "VD & medgrundare",
           desc: "Event, affärer och det mesta bakom kulisserna.",
           kontakt: "david@thebeach.one",
-          tel: "0704-32 20 28",
-          telHref: "tel:+46704322028",
-          notis: "Skicka gärna SMS först — David svarar sällan på okända nummer.",
         },
         {
           namn: "Mattias Magnusson",
@@ -152,9 +149,6 @@ export const omOssDict: Dict<OmOssDict> = {
           roll: "CEO & co-founder",
           desc: "Events, partnerships and most things behind the scenes.",
           kontakt: "david@thebeach.one",
-          tel: "+46 704 32 20 28",
-          telHref: "tel:+46704322028",
-          notis: "Text first — David rarely answers unknown numbers.",
         },
         {
           namn: "Mattias Magnusson",

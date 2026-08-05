@@ -144,7 +144,7 @@ export const bokaDict: Dict<BokaDict> = {
         tag: "Bokning",
         title: "Direktbokningen är tillfälligt stängd",
         body: "Vi har tillfälligt stängt bokningen här på sidan. Ring eller mejla oss så fixar vi din tid.",
-        matchiCta: "Ring 070-432 20 28 →",
+        matchiCta: "Mejla boka@thebeach.one →",
       },
       confirmedPanel: {
         tag: "Bokning klar",
@@ -268,7 +268,7 @@ export const bokaDict: Dict<BokaDict> = {
         tag: "Booking",
         title: "Online booking is temporarily closed",
         body: "Online booking is temporarily closed on this page. Call or email us and we will sort out your time.",
-        matchiCta: "Call +46 70 432 20 28 →",
+        matchiCta: "Email boka@thebeach.one →",
       },
       confirmedPanel: {
         tag: "Booking complete",

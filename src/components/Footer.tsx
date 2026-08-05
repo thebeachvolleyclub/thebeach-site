@@ -108,8 +108,6 @@ export default function Footer({ locale = "sv" }: { locale?: "sv" | "en" }) {
             {" "}<br />
             {" "}<br />
             <a href="mailto:boka@thebeach.one" className="transition-colors hover:text-lime">boka@thebeach.one</a>
-            {" "}<br />
-            <a href="tel:+46704322028" className="transition-colors hover:text-lime">070-432 20 28</a>
           </p>
           <p className="mt-4 text-[13px] leading-[1.65] text-white/25">
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/25">

@@ -271,8 +271,7 @@ export default function JobbPage() {
                 >
                   david@thebeach.one
                 </a>{" "}
-                så läser vi löpande och hör av oss snabbt. Frågor? Ring David på{" "}
-                <a href="tel:+46704322028" className="font-semibold underline">070-432 20 28</a>.
+                så läser vi löpande och hör av oss snabbt.
               </p>
             </Reveal>
             <Reveal delay={0.06} className="shrink-0">

@@ -1,4 +1,4 @@
-import { ArrowRight, Phone, MapPin } from "./icons";
+import { ArrowRight, Mail, MapPin } from "./icons";
 import Reveal from "./Reveal";
 import Magnetic from "./Magnetic";
 
@@ -43,11 +43,11 @@ export default function CTASection() {
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 text-sm text-bone/60 sm:flex-row sm:gap-8">
                 <a
-                  href="tel:+46704322028"
+                  href="mailto:boka@thebeach.one"
                   className="inline-flex cursor-pointer items-center gap-2 transition-colors hover:text-bone"
                 >
-                  <Phone className="h-4 w-4 text-brass" />
-                  070-432 20 28
+                  <Mail className="h-4 w-4 text-brass" />
+                  boka@thebeach.one
                 </a>
                 <span className="inline-flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-brass" />
