@@ -44,3 +44,21 @@ test("rejects malformed remote articles instead of breaking Nyheter", () => {
   assert.equal(parseResultArticle({ slug: "../../bad", body: [] }), null);
   assert.equal(parseResultArticle(null), null);
 });
+
+test("drops structurally invalid and unsafe AI blocks", () => {
+  const parsed = parseResultArticle({
+    slug: "sbt-resultat-2026-w32",
+    datum: "2026-08-05",
+    kicker: "SBT",
+    title: "Resultat",
+    ingress: "Verifierat.",
+    body: [
+      { t: "p", text: "Säker text." },
+      { t: "table", head: "inte en lista", rows: [] },
+      { t: "cta", label: "Farlig", href: "javascript:alert(1)" },
+      { t: "img", src: "https://evil.example/photo.jpg", alt: "Fel källa" },
+    ],
+  });
+
+  assert.deepEqual(parsed?.body, [{ t: "p", text: "Säker text." }]);
+});
