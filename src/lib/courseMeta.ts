@@ -6,6 +6,7 @@ import {
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
+import { coursePriceHeadline } from "@/lib/coursePricing";
 
 /**
  * Titel och beskrivning för kurssidans metadata och OG-kort. Byggs av
@@ -20,9 +21,7 @@ export function courseSummary(course: Course, locale: Locale) {
   const when = day && time ? k.weekdayTime(day, time) : null;
   const title = when ? `${name} — ${when}` : name;
 
-  const price = `${course.priceSek.toLocaleString(
-    locale === "sv" ? "sv-SE" : "en-GB",
-  )} kr`;
+  const price = coursePriceHeadline(course, locale);
   const sessions = liveSessions(course).length;
   const start = firstSessionDate(course);
   const end = lastSessionDate(course);

@@ -16,6 +16,7 @@ import {
 import type { Locale } from "@/lib/i18n";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
 import { kursSidaDict } from "@/lib/i18n/kursSida";
+import { coursePriceHeadline, coursePriceLines } from "@/lib/coursePricing";
 
 /**
  * Egen sida per kurs. Finns för att kurserna ska gå att LÄNKA — i ett utskick,
@@ -44,9 +45,8 @@ export default function CourseDetail({
   const time = course.schedule?.startTime ?? null;
   const title = courseText(course.name.split("–")[0].trim() || course.name, locale);
   const subtitle = day && time ? k.weekdayTime(day, time) : null;
-  const priceLabel = `${course.priceSek.toLocaleString(
-    locale === "sv" ? "sv-SE" : "en-GB",
-  )} kr`;
+  const priceLabel = coursePriceHeadline(course, locale);
+  const priceLines = coursePriceLines(course, locale);
 
   const facts: { label: string; value: string }[] = [];
   if (sessions.length) facts.push({ label: t.factSessions, value: `${sessions.length}` });
@@ -128,6 +128,11 @@ export default function CourseDetail({
                 <p className="mb-1 font-display text-3xl uppercase leading-none text-black">
                   {priceLabel}
                 </p>
+                {priceLines.length > 0 && (
+                  <ul className="mb-4 space-y-1 border-t border-black/10 pt-3 text-[12px] leading-snug text-black/60">
+                    {priceLines.map((line) => <li key={line}>{line}</li>)}
+                  </ul>
+                )}
                 <p className="mb-4 text-[12px] font-semibold text-black/55">
                   {state === "closed"
                     ? k.closed
@@ -145,7 +150,6 @@ export default function CourseDetail({
                     locale={locale}
                     courseId={course.id}
                     courseName={subtitle ? `${title} · ${subtitle}` : title}
-                    priceLabel={priceLabel}
                     priceSek={course.priceSek}
                     termsVersion={course.termsVersion}
                     termsMarkdown={course.termsMarkdown}

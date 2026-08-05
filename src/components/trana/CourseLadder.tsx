@@ -16,6 +16,7 @@ import {
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
 import { coursePath, courseSlugs } from "@/lib/courseSlug";
+import { coursePriceHeadline, coursePriceLines } from "@/lib/coursePricing";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
 import { kursSidaDict } from "@/lib/i18n/kursSida";
 import { tranaDict } from "@/lib/i18n/trana";
@@ -80,9 +81,8 @@ function CourseCard({
 }) {
   const k = kurserDict[locale];
   const state = courseState(course);
-  const priceLabel = `${course.priceSek.toLocaleString(
-    locale === "sv" ? "sv-SE" : "en-GB",
-  )} kr`;
+  const priceLabel = coursePriceHeadline(course, locale);
+  const priceLines = coursePriceLines(course, locale);
   const sessions = liveSessions(course);
   const start = firstSessionDate(course);
   const end = lastSessionDate(course);
@@ -133,6 +133,11 @@ function CourseCard({
       <div className="mb-1 flex items-baseline gap-1.5 text-[13px] text-black/40">
         <strong className="font-display text-xl text-black lg:text-2xl">{priceLabel}</strong>
       </div>
+      {priceLines.length > 0 && (
+        <ul className="mb-4 space-y-0.5 text-[11px] leading-snug text-black/55">
+          {priceLines.map((line) => <li key={line}>{line}</li>)}
+        </ul>
+      )}
 
       <p className="mb-4 text-[12px] font-semibold leading-snug">
         <PlaceStatus course={course} locale={locale} />
@@ -170,7 +175,6 @@ function CourseCard({
           locale={locale}
           courseId={course.id}
           courseName={subtitle ? `${title} · ${subtitle}` : title}
-          priceLabel={priceLabel}
           priceSek={course.priceSek}
           termsVersion={course.termsVersion}
           termsMarkdown={course.termsMarkdown}

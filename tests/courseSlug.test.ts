@@ -20,7 +20,9 @@ function course(over: Partial<TestCourse> & { id: number }): TestCourse {
     termsMarkdown: null,
     termsVersion: "2026-2",
     season: null,
-    schedule: over.schedule ?? { dayOfWeek: 2, startTime: "19:00" },
+    schedule: over.schedule === undefined
+      ? { dayOfWeek: 2, startTime: "19:00" }
+      : over.schedule,
     coaches: [],
     capacity: 16,
     remainingPlaces: 16,

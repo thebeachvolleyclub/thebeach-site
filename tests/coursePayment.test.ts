@@ -225,10 +225,12 @@ test("persists one enrollment attempt and invoice across reloads during the hold
   rememberCourseInvoice(156, invoiceId, storage, 3_000, {
     deepLinkUrl: "swish://paymentrequest?token=provider-token",
     qrCodeDataUrl,
+    amountSek: 395,
   });
   assert.deepEqual(pendingCourseInvoice(156, storage, 4_000), {
     invoiceId,
     createdAt: 3_000,
+    amountSek: 395,
     deepLinkUrl: "swish://paymentrequest?token=provider-token",
     qrCodeDataUrl,
   });
@@ -494,7 +496,7 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);
   assert.match(component, /pendingCourseInvoice\(courseId, storage\)/);
-  assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt\)/);
+  assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt, \{ amountSek: netAmountSek \}\)/);
   assert.match(component, /await finishPayment\(invoiceId, controller, storage, invoiceCreatedAt\)/);
   assert.match(component, /aria-live="polite"/);
   const chargeFailureBranch = component.split("if (!chargeResponse.ok) {", 2)[1]

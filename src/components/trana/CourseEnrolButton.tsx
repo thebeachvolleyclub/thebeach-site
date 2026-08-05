@@ -25,7 +25,6 @@ type Props = {
   courseId: number;
   /** Visas i betalrutan så kunden ser vad hen betalar för — och hur mycket. */
   courseName: string;
-  priceLabel: string;
   priceSek: number;
   termsVersion: string;
   termsMarkdown: string | null;
@@ -79,7 +78,6 @@ export default function CourseEnrolButton({
   locale,
   courseId,
   courseName,
-  priceLabel,
   priceSek,
   termsVersion,
   termsMarkdown,
@@ -94,6 +92,8 @@ export default function CourseEnrolButton({
   const [swishHandoff, setSwishHandoff] = useState<SwishHandoff | null>(null);
   const [showDesktopSwish, setShowDesktopSwish] = useState(false);
   const [invoiceStartedAt, setInvoiceStartedAt] = useState<number | null>(null);
+  const [paymentPriceSek, setPaymentPriceSek] = useState(priceSek);
+  const paymentPriceRef = useRef(priceSek);
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
@@ -115,6 +115,10 @@ export default function CourseEnrolButton({
       const storage = window.sessionStorage;
       const savedInvoice = pendingCourseInvoice(courseId, storage);
       if (savedInvoice) {
+        if (savedInvoice.amountSek !== undefined) {
+          paymentPriceRef.current = savedInvoice.amountSek;
+          setPaymentPriceSek(savedInvoice.amountSek);
+        }
         if (savedInvoice.deepLinkUrl) {
           setSwishHandoff({
             deepLinkUrl: savedInvoice.deepLinkUrl,
@@ -170,8 +174,14 @@ export default function CourseEnrolButton({
         return;
       }
       const invoiceCreatedAt = Date.now();
+      const netAmountSek = typeof data.netAmountSek === "number" &&
+        Number.isSafeInteger(data.netAmountSek) && data.netAmountSek >= 0
+        ? data.netAmountSek
+        : priceSek;
+      paymentPriceRef.current = netAmountSek;
+      setPaymentPriceSek(netAmountSek);
       setInvoiceStartedAt(invoiceCreatedAt);
-      rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt);
+      rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt, { amountSek: netAmountSek });
 
       setPhase("startingSwish");
       const chargeResponse = await fetch(
@@ -198,7 +208,7 @@ export default function CourseEnrolButton({
       pushEvent("course_payment_start", {
         course_id: courseId,
         course_name: courseName,
-        value: priceSek,
+        value: paymentPriceRef.current,
         currency: "SEK",
       });
       setSwishHandoff({ deepLinkUrl, qrCodeDataUrl });
@@ -208,7 +218,7 @@ export default function CourseEnrolButton({
         invoiceId,
         storage,
         invoiceCreatedAt,
-        { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}) },
+        { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}), amountSek: netAmountSek },
       );
 
       setPhase("waitingForSwish");
@@ -260,7 +270,7 @@ export default function CourseEnrolButton({
         pushEvent("course_purchase", {
           course_id: courseId,
           course_name: courseName,
-          value: priceSek,
+          value: paymentPriceRef.current,
           currency: "SEK",
         });
         setSwishHandoff(null);
@@ -318,6 +328,9 @@ export default function CourseEnrolButton({
   }
 
   const busy = phase !== "idle";
+  const paymentPriceLabel = `${paymentPriceSek.toLocaleString(
+    locale === "sv" ? "sv-SE" : "en-GB",
+  )} kr`;
   const busyLabel =
     phase === "startingSwish"
       ? t.startingSwish
@@ -339,7 +352,7 @@ export default function CourseEnrolButton({
             {t.desktopSwishTitle}
           </p>
           <p className="mt-2 text-[13px] font-bold text-black">
-            {t.amountLabel(priceLabel)}
+            {t.amountLabel(paymentPriceLabel)}
           </p>
           <p className="mt-0.5 text-[12px] leading-snug text-black/45">{courseName}</p>
           {invoiceStartedAt !== null && (
@@ -421,6 +434,14 @@ export default function CourseEnrolButton({
       {result && !result.ok && (
         <div role="alert" className="mt-3 text-[13px] leading-snug text-orange">
           <p>{result.message}</p>
+          {result.message.toLocaleLowerCase("sv-SE").includes("födelsedatum") && (
+            <a
+              href="/konto#profil"
+              className="mt-2 inline-flex font-bold text-black underline underline-offset-4"
+            >
+              {locale === "sv" ? "Lägg till födelsedatum i profilen" : "Add your date of birth in your profile"}
+            </a>
+          )}
         </div>
       )}
 

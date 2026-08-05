@@ -19,6 +19,7 @@ type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export type PendingCourseInvoice = {
   invoiceId: string;
   createdAt: number;
+  amountSek?: number;
   deepLinkUrl?: string;
   qrCodeDataUrl?: string;
 };
@@ -127,6 +128,7 @@ export function pendingCourseInvoice(
     const saved = JSON.parse(storage.getItem(invoiceStorageKey(courseId)) ?? "null") as {
       invoiceId?: unknown;
       createdAt?: unknown;
+      amountSek?: unknown;
     } | null;
     if (
       saved &&
@@ -136,9 +138,16 @@ export function pendingCourseInvoice(
     ) {
       const deepLinkUrl = courseSwishLaunchUrl(saved);
       const qrCodeDataUrl = courseSwishQrCode(saved);
+      const amountSek = typeof saved.amountSek === "number" &&
+        Number.isSafeInteger(saved.amountSek) &&
+        saved.amountSek >= 0 &&
+        saved.amountSek <= 100000
+        ? saved.amountSek
+        : null;
       return {
         invoiceId: saved.invoiceId,
         createdAt: saved.createdAt,
+        ...(amountSek !== null ? { amountSek } : {}),
         ...(deepLinkUrl ? { deepLinkUrl } : {}),
         ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}),
       };
@@ -154,15 +163,20 @@ export function rememberCourseInvoice(
   invoiceId: string,
   storage: StorageLike,
   now = Date.now(),
-  handoff?: { deepLinkUrl: string; qrCodeDataUrl?: string },
+  handoff?: { deepLinkUrl?: string; qrCodeDataUrl?: string; amountSek?: number },
 ) {
   if (!validInvoiceId(invoiceId)) return;
   try {
     const deepLinkUrl = handoff ? courseSwishLaunchUrl(handoff) : null;
     const qrCodeDataUrl = handoff ? courseSwishQrCode(handoff) : null;
+    const amountSek = handoff && Number.isSafeInteger(handoff.amountSek) &&
+      Number(handoff.amountSek) >= 0 && Number(handoff.amountSek) <= 100000
+      ? Number(handoff.amountSek)
+      : null;
     storage.setItem(invoiceStorageKey(courseId), JSON.stringify({
       invoiceId,
       createdAt: now,
+      ...(amountSek !== null ? { amountSek } : {}),
       ...(deepLinkUrl ? { deepLinkUrl } : {}),
       ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}),
     }));

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { appApi } from "@/lib/appApi";
+import type { CoursePriceTier } from "@/lib/coursePricing";
 
 /**
  * Kurser från plattformens publika API (`/training/courses` på app-backend).
@@ -44,6 +45,9 @@ export type Course = {
   remainingPlaces: number;
   waitlistCount: number;
   priceSek: number;
+  fromPriceSek?: number;
+  priceTiers?: CoursePriceTier[];
+  membershipRequired?: false;
   registrationOpensAt: string | null;
   registrationClosesAt: string | null;
   sessions: CourseSession[];
