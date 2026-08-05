@@ -9,13 +9,15 @@ import ArticleBody from "@/components/nyheter/ArticleBody";
 import { allArticles, articleBySlug, formatDatum } from "@/lib/nyheter";
 import { og } from "@/lib/seo";
 
-export function generateStaticParams() {
-  return allArticles().map((a) => ({ slug: a.slug }));
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  return (await allArticles()).map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const a = articleBySlug(slug);
+  const a = await articleBySlug(slug);
   if (!a) return {};
   return {
     title: `${a.title} | The Beach`,
@@ -30,10 +32,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArtikelPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const a = articleBySlug(slug);
+  const a = await articleBySlug(slug);
   if (!a) notFound();
 
-  const others = allArticles().filter((x) => x.slug !== a.slug).slice(0, 3);
+  const others = (await allArticles()).filter((x) => x.slug !== a.slug).slice(0, 3);
 
   const articleLd = {
     "@context": "https://schema.org",
@@ -43,7 +45,7 @@ export default async function ArtikelPage({ params }: { params: Promise<{ slug: 
     datePublished: a.datum,
     dateModified: a.datum,
     image: a.hero
-      ? `https://thebeach.one${a.hero.src}`
+      ? (a.hero.src.startsWith("http") ? a.hero.src : `https://thebeach.one${a.hero.src}`)
       : "https://thebeach.one/opengraph-image.png",
     author: { "@type": "Organization", name: "The Beach", url: "https://thebeach.one" },
     publisher: {

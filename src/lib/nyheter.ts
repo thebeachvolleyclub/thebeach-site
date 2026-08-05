@@ -34,6 +34,9 @@ export type Article = {
   body: Block[];
 };
 
+const RESULT_ARTICLES_URL =
+  process.env.RESULT_ARTICLES_URL ?? "https://api.beachtv.se/results/articles";
+
 export const ARTICLES: Article[] = [
   {
     slug: "flest-sm-guld-2026",
@@ -154,13 +157,79 @@ export const ARTICLES: Article[] = [
   },
 ];
 
-/** Alla artiklar, nyast först. */
-export function allArticles(): Article[] {
-  return [...ARTICLES].sort((a, b) => b.datum.localeCompare(a.datum));
+const BLOCK_TYPES = new Set(["h2", "p", "ul", "img", "table", "cta", "callout"]);
+
+/** Fail closed on malformed AI output; a bad remote article must never break the site. */
+export function parseResultArticle(value: unknown): Article | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const body = Array.isArray(raw.body)
+    ? raw.body.filter(
+        (block): block is Block =>
+          !!block &&
+          typeof block === "object" &&
+          BLOCK_TYPES.has(String((block as { t?: unknown }).t ?? "")),
+      )
+    : [];
+  if (
+    typeof raw.slug !== "string" ||
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(raw.slug) ||
+    typeof raw.datum !== "string" ||
+    typeof raw.kicker !== "string" ||
+    typeof raw.title !== "string" ||
+    typeof raw.ingress !== "string" ||
+    body.length === 0
+  ) {
+    return null;
+  }
+  const hero =
+    raw.hero &&
+    typeof raw.hero === "object" &&
+    typeof (raw.hero as { src?: unknown }).src === "string" &&
+    typeof (raw.hero as { alt?: unknown }).alt === "string"
+      ? (raw.hero as Article["hero"])
+      : undefined;
+  return {
+    slug: raw.slug,
+    datum: raw.datum,
+    kicker: raw.kicker,
+    title: raw.title,
+    ingress: raw.ingress,
+    hero,
+    taggar: Array.isArray(raw.taggar)
+      ? raw.taggar.filter((tag): tag is string => typeof tag === "string")
+      : undefined,
+    body,
+  };
 }
 
-export function articleBySlug(slug: string): Article | undefined {
-  return ARTICLES.find((a) => a.slug === slug);
+async function resultArticles(): Promise<Article[]> {
+  try {
+    const response = await fetch(RESULT_ARTICLES_URL, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return [];
+    const payload = (await response.json()) as { articles?: unknown[] };
+    return (payload.articles ?? [])
+      .map(parseResultArticle)
+      .filter((article): article is Article => article !== null);
+  } catch {
+    return [];
+  }
+}
+
+/** Alla lokala och AI-redigerade artiklar, nyast först. */
+export async function allArticles(): Promise<Article[]> {
+  const merged = new Map<string, Article>();
+  for (const article of await resultArticles()) merged.set(article.slug, article);
+  // Handredigerade artiklar win on slug collisions.
+  for (const article of ARTICLES) merged.set(article.slug, article);
+  return [...merged.values()].sort((a, b) => b.datum.localeCompare(a.datum));
+}
+
+export async function articleBySlug(slug: string): Promise<Article | undefined> {
+  return (await allArticles()).find((a) => a.slug === slug);
 }
 
 const MONTHS_SV = ["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"];

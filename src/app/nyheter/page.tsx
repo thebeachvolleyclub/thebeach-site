@@ -18,8 +18,10 @@ export const metadata: Metadata = {
   openGraph: og("/nyheter", "Nyheter från The Beach", DESC),
 };
 
-export default function Page() {
-  const articles = allArticles();
+export const revalidate = 300;
+
+export default async function Page() {
+  const articles = await allArticles();
   const [lead, ...rest] = articles;
 
   const listLd = {
