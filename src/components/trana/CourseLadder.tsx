@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import Reveal from "@/components/Reveal";
 import CourseEnrolButton from "@/components/trana/CourseEnrolButton";
 import CourseLadderStatic from "@/components/trana/CourseLadderStatic";
@@ -13,7 +15,9 @@ import {
   type Course,
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
+import { coursePath, courseSlugs } from "@/lib/courseSlug";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
+import { kursSidaDict } from "@/lib/i18n/kursSida";
 import { tranaDict } from "@/lib/i18n/trana";
 
 /**
@@ -27,6 +31,7 @@ export default async function CourseLadder({ locale }: { locale: Locale }) {
 
   const t = tranaDict[locale].courses;
   const loggedIn = Boolean(await accountToken());
+  const slugs = courseSlugs(courses);
 
   return (
     <section id="kurser" className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
@@ -52,6 +57,7 @@ export default async function CourseLadder({ locale }: { locale: Locale }) {
             index={i}
             locale={locale}
             loggedIn={loggedIn}
+            href={coursePath(slugs.get(course.id) ?? String(course.id), locale)}
           />
         ))}
       </div>
@@ -64,11 +70,13 @@ function CourseCard({
   index,
   locale,
   loggedIn,
+  href,
 }: {
   course: Course;
   index: number;
   locale: Locale;
   loggedIn: boolean;
+  href: string;
 }) {
   const k = kurserDict[locale];
   const state = courseState(course);
@@ -112,7 +120,9 @@ function CourseCard({
       </div>
 
       <h3 className="mb-1.5 font-display text-3xl uppercase leading-none text-black lg:text-4xl">
-        {title}
+        <Link href={href} className="transition-opacity hover:opacity-60">
+          {title}
+        </Link>
       </h3>
       {subtitle && (
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">
@@ -141,6 +151,13 @@ function CourseCard({
           </li>
         ))}
       </ul>
+
+      <Link
+        href={href}
+        className="mb-4 inline-flex text-[11px] font-bold uppercase tracking-[0.12em] text-black/50 underline underline-offset-4 transition-colors hover:text-black"
+      >
+        {kursSidaDict[locale].readMore} <span aria-hidden="true">→</span>
+      </Link>
 
       {state === "closed" ? (
         <div className="mt-auto border-t border-black/10 pt-5">

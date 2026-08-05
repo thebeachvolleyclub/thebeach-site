@@ -32,6 +32,12 @@ type Props = {
   /** true när kursen är full — anmälan blir en köplats i stället. */
   waitlist: boolean;
   loggedIn: boolean;
+  /**
+   * Sidan anmälan sker på. Styr både vart inloggningen lämnar tillbaka och
+   * vart Swish returnerar på mobil — annars hamnar den som betalade från en
+   * kurssida på /trana och undrar om betalningen gick igenom.
+   */
+  returnPath?: string;
 };
 
 type Result =
@@ -79,6 +85,7 @@ export default function CourseEnrolButton({
   termsMarkdown,
   waitlist,
   loggedIn,
+  returnPath,
 }: Props) {
   const t = kurserDict[locale];
   const [accepted, setAccepted] = useState(false);
@@ -92,9 +99,8 @@ export default function CourseEnrolButton({
   const fallbackAttemptKey = useRef(randomAttemptKey());
 
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
-  const accountHref = `/konto?next=${encodeURIComponent(
-    locale === "en" ? "/en/training#kurser" : "/trana#kurser",
-  )}`;
+  const here = returnPath ?? (locale === "en" ? "/en/training#kurser" : "/trana#kurser");
+  const accountHref = `/konto?next=${encodeURIComponent(here)}`;
 
   useEffect(() => () => activeRequest.current?.abort(), []);
 
@@ -169,7 +175,8 @@ export default function CourseEnrolButton({
 
       setPhase("startingSwish");
       const chargeResponse = await fetch(
-        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish?locale=${locale}`,
+        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish?locale=${locale}` +
+          (returnPath ? `&returnPath=${encodeURIComponent(returnPath)}` : ""),
         { method: "POST", signal: controller.signal },
       );
       const charge = await json(chargeResponse);

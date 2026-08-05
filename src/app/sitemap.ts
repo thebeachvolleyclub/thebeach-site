@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { mergedAllEvents } from "@/lib/profixio";
 import { allArticles } from "@/lib/nyheter";
+import { allCourseSlugs } from "@/lib/coursePageData";
 
 // Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
 export const revalidate = 21600;
@@ -37,11 +38,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.5,
     }));
+  // Kurssidorna kommer från kurs-API:t och byts varje säsong — de får aldrig
+  // ligga i staticPaths, då blir de kvar när kursen är slut.
+  const courseSlugs = await allCourseSlugs();
+  const courses = courseSlugs.flatMap((slug) =>
+    [`/kurser/${slug}`, `/en/courses/${slug}`].map((path) => ({
+      url: `${base}${path}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    })),
+  );
   const news = (await allArticles()).map((a) => ({
     url: `${base}/nyheter/${a.slug}`,
     lastModified: new Date(a.datum),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
-  return [...pages, ...events, ...news];
+  return [...pages, ...courses, ...events, ...news];
 }

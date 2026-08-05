@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       { source: "/hem", destination: "/", permanent: true },
+      // Kursöversikten är kursstegen på /trana — /kurser finns bara som
+      // förälder till de enskilda kurssidorna, så den pekar dit.
+      { source: "/kurser", destination: "/trana#kurser", permanent: false },
+      { source: "/en/courses", destination: "/en/training#kurser", permanent: false },
       { source: "/spela_beachvolley", destination: "/trana", permanent: true },
       { source: "/spela_beachvolley/:path*", destination: "/trana", permanent: true },
       { source: "/category/traning", destination: "/trana", permanent: true },

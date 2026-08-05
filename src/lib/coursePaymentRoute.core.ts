@@ -29,11 +29,25 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+/**
+ * Sidor Swish får returnera till. Enbart våra egna kurssökvägar — en fri
+ * returadress vore en öppen omdirigering.
+ */
+const RETURN_PATHS = /^\/(?:trana|kurser\/[a-z0-9-]{1,80}|en\/(?:training|courses\/[a-z0-9-]{1,80}))$/;
+
+export function safeCourseReturnPath(raw: string | null): string | null {
+  if (!raw) return null;
+  const path = raw.split("#")[0].split("?")[0];
+  return RETURN_PATHS.test(path) ? path : null;
+}
+
 function courseSwishReturnUrl(request: Request, invoiceId: string): string | null {
   const origin = request.headers.get("origin");
   if (!origin) return null;
-  const locale = new URL(request.url).searchParams.get("locale");
-  const target = new URL(locale === "en" ? "/en/training" : "/trana", origin);
+  const params = new URL(request.url).searchParams;
+  const locale = params.get("locale");
+  const fallback = locale === "en" ? "/en/training" : "/trana";
+  const target = new URL(safeCourseReturnPath(params.get("returnPath")) ?? fallback, origin);
   target.searchParams.set("swish-return", "course");
   target.searchParams.set("invoice", invoiceId);
   target.hash = "kursbetalning";
