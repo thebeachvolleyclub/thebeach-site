@@ -146,11 +146,11 @@ function CourseCard({
         )}
       </div>
       {publicPriceOptions.length > 0 && (
+        // Ingen inloggningslänk här: villkoren står redan utskrivna, och en
+        // uppmaning att logga in "för att se ditt pris" fick priserna ovanför
+        // att läsas som preliminära. Inloggningen ligger kvar i anmälan nedan.
         <div className="mb-4 text-[12px] leading-snug text-black/55">
           {publicPriceOptions.map((option) => <p key={option}>{option}</p>)}
-          <Link href="/konto" className="mt-1 inline-flex font-bold text-black underline underline-offset-4">
-            {locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price"}
-          </Link>
         </div>
       )}
       {coursePriceNeedsBirthdate(course) && (

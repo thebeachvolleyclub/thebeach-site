@@ -140,9 +140,6 @@ export default function CourseDetail({
                       {locale === "sv" ? "Ordinarie pris" : "Standard price"}
                     </p>
                     {publicPriceOptions.map((option) => <p key={option}>{option}</p>)}
-                    <Link href="/konto" className="mt-2 inline-flex font-bold text-black underline underline-offset-4">
-                      {locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price"}
-                    </Link>
                   </div>
                 )}
                 {coursePriceNeedsBirthdate(course) && (
