@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
 import type { CoursePersonalPriceStatus } from "@/lib/coursePricing";
@@ -498,6 +498,10 @@ const inlineHeading = "mb-1 font-display text-xl uppercase leading-none text-bla
 function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: string }) {
   const t = kurserDict[locale];
   const router = useRouter();
+  // Explicit etikettkoppling i stallet for nastlad input: Chrome behandlar
+  // autofyll pa fält inuti <label> annorlunda, vilket kan gora att
+  // forslagslistan fungerar men tangentbordet inte landar i faltet.
+  const uid = useId();
   const [step, setStep] = useState<InlineStep>("email");
   const [pending, setPending] = useState<InlinePending>(null);
   const [email, setEmail] = useState("");
@@ -640,9 +644,11 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
         <>
           <p className={inlineHeading}>{t.inlineTitle}</p>
           <p className="mb-4 text-[12px] leading-snug text-black/45">{t.inlineIntro}</p>
-          <label className="mb-3 block">
-            <span className={inlineLabel}>{t.inlineEmailLabel}</span>
+          <div className="mb-3 block">
+            <label className={inlineLabel} htmlFor={`${uid}-email`}>{t.inlineEmailLabel}</label>
             <input
+              id={`${uid}-email`}
+              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => {
@@ -661,15 +667,17 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
               disabled={step === "code"}
               className={inlineField}
             />
-          </label>
+          </div>
           {step === "code" && (
             <>
               <p className="mb-3 text-[12px] leading-snug text-black/55">
                 {t.inlineCodeSentTo(address)}
               </p>
-              <label className="mb-3 block">
-                <span className={inlineLabel}>{t.inlineCodeLabel}</span>
+              <div className="mb-3 block">
+                <label className={inlineLabel} htmlFor={`${uid}-code`}>{t.inlineCodeLabel}</label>
                 <input
+                  id={`${uid}-code`}
+                  name="one-time-code"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   onKeyDown={(e) => {
@@ -683,7 +691,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
                   autoComplete="one-time-code"
                   className="min-h-12 w-full border border-black/20 bg-cream px-4 text-center text-lg tracking-[0.35em] outline-none focus:border-black"
                 />
-              </label>
+              </div>
             </>
           )}
           <button
@@ -733,19 +741,23 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
         <>
           <p className={inlineHeading}>{t.inlineProfileTitle}</p>
           <p className="mb-4 text-[12px] leading-snug text-black/45">{t.inlineProfileIntro}</p>
-          <label className="mb-3 block">
-            <span className={inlineLabel}>{t.inlineNameLabel}</span>
+          <div className="mb-3 block">
+            <label className={inlineLabel} htmlFor={`${uid}-name`}>{t.inlineNameLabel}</label>
             <input
+              id={`${uid}-name`}
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
               className={inlineField}
             />
             <span className={inlineHelp}>{t.inlineNameHelp}</span>
-          </label>
-          <label className="mb-4 block">
-            <span className={inlineLabel}>{t.inlineBirthdateLabel}</span>
+          </div>
+          <div className="mb-4 block">
+            <label className={inlineLabel} htmlFor={`${uid}-birthdate`}>{t.inlineBirthdateLabel}</label>
             <input
+              id={`${uid}-birthdate`}
+              name="bday"
               value={birthdate}
               onChange={(e) => setBirthdate(maskBirthdate(e.target.value))}
               onBlur={(e) => {
@@ -758,7 +770,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
               className={inlineField}
             />
             <span className={inlineHelp}>{t.inlineBirthdateHelp}</span>
-          </label>
+          </div>
           <button
             type="button"
             onClick={onSaveProfile}
