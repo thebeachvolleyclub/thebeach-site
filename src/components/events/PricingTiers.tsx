@@ -198,6 +198,26 @@ export default function PricingTiers({ locale }: { locale: Locale }) {
                   })}
                 </ul>
 
+                {/* Meny — utfällbar så korten behåller samma höjd */}
+                {tier.menu && (
+                  <details className="mb-6 border-b border-line pb-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright">
+                      {t.pricing.menuLabel}
+                      <span aria-hidden="true" className="text-bone/40">+</span>
+                    </summary>
+                    <ul className="mt-3 space-y-1.5">
+                      {tier.menu.map((m) => (
+                        <li key={m} className="text-xs leading-snug text-bone/55">
+                          {m}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 text-[11px] leading-snug text-bone/35">
+                      {t.pricing.menuNote}
+                    </p>
+                  </details>
+                )}
+
                 {/* CTA — min 44px tap height per WCAG 2.5.8 */}
                 {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
                 <a

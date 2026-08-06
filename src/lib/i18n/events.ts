@@ -43,6 +43,8 @@ export interface EventsDict {
     from: string;
     perPerson: string;
     plannerCta: string;
+    menuLabel: string;
+    menuNote: string;
     tiers: {
       tag: string;
       name: string;
@@ -50,6 +52,8 @@ export interface EventsDict {
       dayPrice: string;
       desc: string;
       features: { text: string; eveVariant?: string; dayVariant?: string }[];
+      /** Menyn för konceptet — visas i en utfällbar "Meny"-panel på kortet. */
+      menu?: string[];
     }[];
     builderTitle: string;
     builderTitleAccent: string;
@@ -191,6 +195,8 @@ export const eventsDict: Dict<EventsDict> = {
       from: "från",
       perPerson: "/person",
       plannerCta: "Planera ert event →",
+      menuLabel: "Meny",
+      menuNote: "Vi anpassar menyn efter allergier och specialkost. Vegetariskt alternativ finns alltid.",
       tiers: [
         {
           tag: "Enkelt & socialt",
@@ -198,6 +204,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "745 kr",
           dayPrice: "670 kr",
           desc: "After work, kickoff eller social aktivitet. Det enkla valet som alltid funkar — oavsett om ni är 10 eller 50.",
+          menu: ["Säsongens kallskurna ostar och charkuterier", "Kex och nybakat bröd med havssaltat smör"],
           features: [
             { text: "1,5 h beachvolleyturnering med instruktör" },
             { text: "Tapas — ost & chark" },
@@ -216,6 +223,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "945 kr",
           dayPrice: "850 kr",
           desc: "Vårt mest bokade koncept. Aktivitet + middag — perfekt för företag som vill kombinera sport med ett riktigt socialt häng.",
+          menu: ["Ört- och citrusmarinerad kycklingfilé", "Timjanrostad potatis", "Säsongens primörer", "Örtsås"],
           features: [
             { text: "1,5 h beachvolleyturnering med instruktör" },
             {
@@ -238,6 +246,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "1 195 kr",
           dayPrice: "1 075 kr",
           desc: "När ni vill maxa upplevelsen. Mat, dryck, tempo och stämning — för den grupp som inte nöjer sig med halvmesyrer.",
+          menu: ["The Beach's smoked pulled pork", "Baby back ribs", "Rostade primörer", "Grillad majskolv", "Melon- och fetaostmix", "Fräsch sallad"],
           features: [
             { text: "1,5 h beachvolleyturnering med instruktör" },
             {
@@ -442,6 +451,8 @@ export const eventsDict: Dict<EventsDict> = {
       from: "from",
       perPerson: "/person",
       plannerCta: "Plan your event →",
+      menuLabel: "Menu",
+      menuNote: "We adapt the menu for allergies and dietary requirements. A vegetarian option is always available.",
       tiers: [
         {
           tag: "Simple & social",
@@ -449,6 +460,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "SEK 745",
           dayPrice: "SEK 670",
           desc: "After work, kickoff or a social get-together. The easy choice that always works — whether you're 10 or 50.",
+          menu: ["A selection of seasonal cheeses and charcuterie", "Crackers and freshly baked bread with sea-salted butter"],
           features: [
             { text: "1.5 h beach volleyball tournament with instructor" },
             { text: "Tapas — cheese & charcuterie" },
@@ -467,6 +479,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "SEK 945",
           dayPrice: "SEK 850",
           desc: "Our most booked concept. Activity + dinner — perfect for companies that want to combine sport with a proper social hang.",
+          menu: ["Herb and citrus marinated chicken fillet", "Thyme-roasted potatoes", "Seasonal vegetables", "Herb sauce"],
           features: [
             { text: "1.5 h beach volleyball tournament with instructor" },
             {
@@ -489,6 +502,7 @@ export const eventsDict: Dict<EventsDict> = {
           evePrice: "SEK 1,195",
           dayPrice: "SEK 1,075",
           desc: "For when you want to max out the experience. Food, drinks, tempo and atmosphere — for the group that doesn't settle for half measures.",
+          menu: ["The Beach's smoked pulled pork", "Baby back ribs", "Roasted seasonal vegetables", "Grilled corn on the cob", "Melon and feta mix", "Fresh salad"],
           features: [
             { text: "1.5 h beach volleyball tournament with instructor" },
             {
