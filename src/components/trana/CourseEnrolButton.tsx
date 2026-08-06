@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
 import type { CoursePersonalPriceStatus } from "@/lib/coursePricing";
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
+import { isBirthdateValid, maskBirthdate, normalizeBirthdate } from "@/lib/birthdate";
 import { pushEvent } from "@/lib/gtm";
 import {
   clearCourseAttempt,
@@ -293,20 +295,9 @@ export default function CourseEnrolButton({
     }
   }
 
-  if (!loggedIn) {
-    return (
-      <div className="mt-auto border-t border-black/10 pt-5">
-        <p className="mb-2 text-[13px] leading-snug text-black/70">{t.loginPrompt}</p>
-        <p className="mb-3 text-[12px] leading-snug text-black/45">{t.loginWhy}</p>
-        <a
-          href={accountHref}
-          className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80"
-        >
-          {t.loginCta} <span aria-hidden="true">→</span>
-        </a>
-      </div>
-    );
-  }
+  // Utloggad besökare: hela inloggningen sker i kortet. Sidbytet till /konto
+  // och tillbaka via ?next= tappade folk mitt i anmälan.
+  if (!loggedIn) return <InlineSignup locale={locale} accountHref={accountHref} />;
 
   // The surrounding course card/detail places the profile error directly by
   // the price. Do not render terms or an enrol button until that price exists.
@@ -459,6 +450,382 @@ export default function CourseEnrolButton({
         </p>
         <p>{t.paymentHelp(COURSE_SELLER.supportEmail)}</p>
       </div>
+    </div>
+  );
+}
+
+type InlineStep = "email" | "code" | "family" | "profile" | "duplicate" | "merged" | "done";
+type InlinePending =
+  | null
+  | "sendCode"
+  | "resend"
+  | "verify"
+  | "saveProfile"
+  | "samePerson"
+  | "newPerson";
+type DuplicateMatch = { player_id: number; masked_email: string | null; birthdate_match: boolean };
+type InlineProfile = {
+  name?: string | null;
+  birthdate?: string | null;
+  duplicate_match?: DuplicateMatch | null;
+};
+
+const inlinePrimary =
+  "inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35";
+const inlineSecondary =
+  "inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime disabled:cursor-not-allowed disabled:opacity-35";
+const inlineQuiet =
+  "inline-flex min-h-[44px] cursor-pointer items-center text-[11px] font-bold uppercase tracking-[0.08em] text-black/50 underline underline-offset-4 transition-colors hover:text-black disabled:cursor-not-allowed disabled:opacity-35";
+const inlineField =
+  "min-h-12 w-full border border-black/20 bg-cream px-4 text-[14px] outline-none focus:border-black disabled:bg-black/5 disabled:text-black/45";
+const inlineLabel = "mb-1 block text-[11px] font-bold uppercase tracking-[0.1em] text-black/50";
+const inlineHelp = "mt-1 block text-[11px] leading-snug text-black/45";
+const inlineHeading = "mb-1 font-display text-xl uppercase leading-none text-black";
+
+/**
+ * Inline-anmälan för utloggade besökare — allt i samma kort, utan sidbyte.
+ *
+ * Steg: e-post → engångskod → (namn + födelsedatum om profilen saknar dem) →
+ * router.refresh(). Efter refreshen renderar serverkomponenten om med inloggad
+ * session och personligt pris, och den vanliga villkorsrutan + Swish-knappen
+ * dyker upp av sig själva. Vi anmäler ALDRIG automatiskt och startar aldrig en
+ * betalning åt kunden: kursvillkoren måste godkännas aktivt.
+ *
+ * Två fall lämnar kortet med flit: familjekonton (väljaren bor i kontoportalen)
+ * och dubbletthanteringen, som följer AccountPortal:s semantik — sammanslagning
+ * via /api/account/merge-request, ny person via confirm_new_identity.
+ */
+function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: string }) {
+  const t = kurserDict[locale];
+  const router = useRouter();
+  const [step, setStep] = useState<InlineStep>("email");
+  const [pending, setPending] = useState<InlinePending>(null);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [duplicate, setDuplicate] = useState<DuplicateMatch | null>(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  // Ref, inte state: ett dubbelklick hinner före nästa render och skulle
+  // annars skicka två koder.
+  const running = useRef(false);
+
+  const busy = pending !== null;
+  const address = email.trim().toLowerCase();
+  const cleanBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
+  const profileBlocker = name.trim().length < 2
+    ? t.inlineNameInvalid
+    : isBirthdateValid(cleanBirthdate)
+      ? ""
+      : t.inlineBirthdateInvalid;
+
+  /** API-fel visas som de kommer (`detail`), aldrig som ett generiskt fel. */
+  async function call<T>(url: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(url, {
+      ...init,
+      headers: init?.body ? { "Content-Type": "application/json" } : undefined,
+    });
+    const data = await json(response);
+    if (!response.ok) {
+      throw new Error(typeof data.detail === "string" && data.detail ? data.detail : t.errorGeneric);
+    }
+    return data as T;
+  }
+
+  async function run(mode: Exclude<InlinePending, null>, task: () => Promise<void>) {
+    if (running.current) return;
+    running.current = true;
+    setPending(mode);
+    setError("");
+    try {
+      await task();
+    } catch (cause) {
+      setError(cause instanceof Error && cause.message ? cause.message : t.errorGeneric);
+    } finally {
+      running.current = false;
+      setPending(null);
+    }
+  }
+
+  function finish() {
+    setStep("done");
+    router.refresh();
+  }
+
+  async function sendCode(resend: boolean) {
+    await call("/api/account/auth/request-code", {
+      method: "POST",
+      body: JSON.stringify({ email: address }),
+    });
+    setCode("");
+    setStep("code");
+    setNotice(resend ? t.inlineResent : "");
+  }
+
+  async function verify() {
+    setNotice("");
+    const result = await call<{ requiresSelection?: boolean }>("/api/account/auth/verify", {
+      method: "POST",
+      body: JSON.stringify({ email: address, code }),
+    });
+    if (result.requiresSelection) {
+      setStep("family");
+      return;
+    }
+    const profile = await call<InlineProfile>("/api/account/profile");
+    const savedName = (profile.name ?? "").trim();
+    const savedBirthdate = (profile.birthdate ?? "").slice(0, 10);
+    if (savedName.length >= 2 && isBirthdateValid(savedBirthdate)) {
+      finish();
+      return;
+    }
+    setName(savedName);
+    setBirthdate(isBirthdateValid(savedBirthdate) ? savedBirthdate : "");
+    setStep("profile");
+  }
+
+  /** true = profilen är klar. false = dubbletten måste besvaras först. */
+  async function saveProfile(confirmNewIdentity: boolean): Promise<boolean> {
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) throw new Error(t.inlineNameInvalid);
+    // Utan födelsedatum kan plattformen inte räkna fram rätt kurspris och
+    // nekar anmälan med 422 — därför stoppar vi redan här.
+    if (!isBirthdateValid(cleanBirthdate)) throw new Error(t.inlineBirthdateInvalid);
+    setBirthdate(cleanBirthdate);
+    const saved = await call<InlineProfile>("/api/account/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        name: trimmedName,
+        birthdate: cleanBirthdate,
+        check_duplicates: true,
+        confirm_new_identity: confirmNewIdentity || undefined,
+      }),
+    });
+    if (saved.duplicate_match) {
+      setDuplicate(saved.duplicate_match);
+      setStep("duplicate");
+      return false;
+    }
+    // Samma identitetsupplösning som kontoportalen kör efter ett sparat
+    // namn/födelsedatum. Misslyckas den är profilen ändå sparad.
+    await call("/api/account/profile/match-rating", { method: "POST" }).catch(() => null);
+    return true;
+  }
+
+  const onSendCode = () => run("sendCode", () => sendCode(false));
+  const onResend = () => run("resend", () => sendCode(true));
+  const onVerify = () => run("verify", verify);
+  const onSaveProfile = () => run("saveProfile", async () => {
+    if (await saveProfile(false)) finish();
+  });
+  const onSamePerson = () => run("samePerson", async () => {
+    if (!duplicate) return;
+    const result = await call<{ message?: string }>("/api/account/merge-request", {
+      method: "POST",
+      body: JSON.stringify({ player_id: duplicate.player_id }),
+    });
+    setNotice(result.message || t.inlineMergeQueued);
+    // Kontoportalen sparar med confirm_new_identity direkt efter begäran:
+    // profilen skapas nu, sammanslagningen hanteras av oss efteråt.
+    if (await saveProfile(true)) setStep("merged");
+  });
+  const onNewPerson = () => run("newPerson", async () => {
+    if (await saveProfile(true)) finish();
+  });
+
+  return (
+    <div className="mt-auto border-t border-black/10 pt-5">
+      {(step === "email" || step === "code") && (
+        <>
+          <p className={inlineHeading}>{t.inlineTitle}</p>
+          <p className="mb-4 text-[12px] leading-snug text-black/45">{t.inlineIntro}</p>
+          <label className="mb-3 block">
+            <span className={inlineLabel}>{t.inlineEmailLabel}</span>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && step === "email" && address && !busy) {
+                  e.preventDefault();
+                  onSendCode();
+                }
+              }}
+              type="email"
+              enterKeyHint="send"
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder={t.inlineEmailPlaceholder}
+              disabled={step === "code"}
+              className={inlineField}
+            />
+          </label>
+          {step === "code" && (
+            <>
+              <p className="mb-3 text-[12px] leading-snug text-black/55">
+                {t.inlineCodeSentTo(address)}
+              </p>
+              <label className="mb-3 block">
+                <span className={inlineLabel}>{t.inlineCodeLabel}</span>
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && code.length === 6 && !busy) {
+                      e.preventDefault();
+                      onVerify();
+                    }
+                  }}
+                  inputMode="numeric"
+                  enterKeyHint="go"
+                  autoComplete="one-time-code"
+                  className="min-h-12 w-full border border-black/20 bg-cream px-4 text-center text-lg tracking-[0.35em] outline-none focus:border-black"
+                />
+              </label>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={step === "code" ? onVerify : onSendCode}
+            disabled={busy || (step === "code" ? code.length !== 6 : !address)}
+            className={inlinePrimary}
+          >
+            {step === "code"
+              ? pending === "verify" ? t.inlineVerifying : t.inlineVerify
+              : pending === "sendCode" ? t.inlineSendingCode : t.inlineSendCode}
+          </button>
+          {step === "code" && (
+            <div className="mt-1 flex flex-wrap items-center gap-x-5">
+              <button type="button" onClick={onResend} disabled={busy} className={inlineQuiet}>
+                {pending === "resend" ? t.inlineResending : t.inlineResend}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                  setCode("");
+                  setNotice("");
+                  setError("");
+                }}
+                disabled={busy}
+                className={inlineQuiet}
+              >
+                {t.inlineChangeEmail}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {step === "family" && (
+        <>
+          <p className={inlineHeading}>{t.inlineFamilyTitle}</p>
+          <p className="mb-4 text-[13px] leading-snug text-black/55">{t.inlineFamilyBody}</p>
+          <a href={accountHref} className={inlinePrimary}>
+            {t.inlineFamilyCta} <span aria-hidden="true">→</span>
+          </a>
+        </>
+      )}
+
+      {step === "profile" && (
+        <>
+          <p className={inlineHeading}>{t.inlineProfileTitle}</p>
+          <p className="mb-4 text-[12px] leading-snug text-black/45">{t.inlineProfileIntro}</p>
+          <label className="mb-3 block">
+            <span className={inlineLabel}>{t.inlineNameLabel}</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              className={inlineField}
+            />
+            <span className={inlineHelp}>{t.inlineNameHelp}</span>
+          </label>
+          <label className="mb-4 block">
+            <span className={inlineLabel}>{t.inlineBirthdateLabel}</span>
+            <input
+              value={birthdate}
+              onChange={(e) => setBirthdate(maskBirthdate(e.target.value))}
+              onBlur={(e) => {
+                const fixed = normalizeBirthdate(e.target.value);
+                if (fixed) setBirthdate(fixed);
+              }}
+              placeholder={t.inlineBirthdatePlaceholder}
+              inputMode="numeric"
+              autoComplete="bday"
+              className={inlineField}
+            />
+            <span className={inlineHelp}>{t.inlineBirthdateHelp}</span>
+          </label>
+          <button
+            type="button"
+            onClick={onSaveProfile}
+            disabled={busy || Boolean(profileBlocker)}
+            className={inlinePrimary}
+          >
+            {pending === "saveProfile" ? t.inlineSavingProfile : t.inlineSaveProfile}
+          </button>
+          {/* Aldrig en död grå knapp utan förklaring — samma regel som i kontot. */}
+          {profileBlocker && (
+            <p className="mt-2 text-[12px] font-semibold leading-snug text-orange">{profileBlocker}</p>
+          )}
+        </>
+      )}
+
+      {step === "duplicate" && duplicate && (
+        <div className="border border-orange/40 bg-orange/10 p-4">
+          <p className="font-display text-xl uppercase leading-none text-black">
+            {t.inlineDuplicateTitle}
+          </p>
+          <p className="mt-2 text-[13px] leading-snug text-black/75">
+            {t.inlineDuplicateBody(duplicate.masked_email, duplicate.birthdate_match)}
+          </p>
+          <p className="mt-2 text-[13px] leading-snug text-black/75">{t.inlineDuplicateChoice}</p>
+          <div className="mt-4 space-y-2">
+            <button type="button" onClick={onSamePerson} disabled={busy} className={inlinePrimary}>
+              {pending === "samePerson" ? t.inlineDuplicateSameBusy : t.inlineDuplicateSame}
+            </button>
+            <button type="button" onClick={onNewPerson} disabled={busy} className={inlineSecondary}>
+              {pending === "newPerson" ? t.inlineDuplicateNewBusy : t.inlineDuplicateNew}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "merged" && (
+        <div role="status" aria-live="polite">
+          <p className={inlineHeading}>{t.inlineMergeTitle}</p>
+          <p className="mb-4 text-[13px] leading-snug text-black/55">{notice || t.inlineMergeQueued}</p>
+          <button type="button" onClick={finish} className={inlinePrimary}>
+            {t.inlineContinue} <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      )}
+
+      {step === "done" && (
+        <div role="status" aria-live="polite">
+          <p className={inlineHeading}>{t.inlineDoneTitle}</p>
+          <p className="text-[13px] leading-snug text-black/55">{t.inlineDoneBody}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className={`mt-1 ${inlineQuiet}`}
+          >
+            {t.inlineReload}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <p role="alert" className="mt-3 text-[13px] leading-snug text-orange">
+          {error}
+        </p>
+      )}
+      {notice && step !== "merged" && (
+        <p className="mt-3 text-[13px] font-semibold leading-snug text-teal">{notice}</p>
+      )}
     </div>
   );
 }

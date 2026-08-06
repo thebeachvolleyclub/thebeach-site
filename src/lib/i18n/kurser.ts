@@ -34,9 +34,52 @@ export type KurserDict = {
   swishSecurity: string;
   sellerLabel: string;
   paymentHelp: (email: string) => string;
-  loginPrompt: string;
-  loginWhy: string;
-  loginCta: string;
+  /**
+   * Inline-inloggningen i kurskortet: e-post → kod → namn/födelsedatum.
+   * Ersätter den gamla omvägen till /konto med ?next=.
+   */
+  inlineTitle: string;
+  inlineIntro: string;
+  inlineEmailLabel: string;
+  inlineEmailPlaceholder: string;
+  inlineSendCode: string;
+  inlineSendingCode: string;
+  inlineCodeSentTo: (email: string) => string;
+  inlineCodeLabel: string;
+  inlineVerify: string;
+  inlineVerifying: string;
+  inlineResend: string;
+  inlineResending: string;
+  inlineResent: string;
+  inlineChangeEmail: string;
+  inlineFamilyTitle: string;
+  inlineFamilyBody: string;
+  inlineFamilyCta: string;
+  inlineProfileTitle: string;
+  inlineProfileIntro: string;
+  inlineNameLabel: string;
+  inlineNameHelp: string;
+  inlineNameInvalid: string;
+  inlineBirthdateLabel: string;
+  inlineBirthdatePlaceholder: string;
+  inlineBirthdateHelp: string;
+  inlineBirthdateInvalid: string;
+  inlineSaveProfile: string;
+  inlineSavingProfile: string;
+  /** Dubblettvarningen — samma semantik och ordval som kontoportalen. */
+  inlineDuplicateTitle: string;
+  inlineDuplicateBody: (maskedEmail: string | null, birthdateMatch: boolean) => string;
+  inlineDuplicateChoice: string;
+  inlineDuplicateSame: string;
+  inlineDuplicateSameBusy: string;
+  inlineDuplicateNew: string;
+  inlineDuplicateNewBusy: string;
+  inlineMergeTitle: string;
+  inlineMergeQueued: string;
+  inlineContinue: string;
+  inlineDoneTitle: string;
+  inlineDoneBody: string;
+  inlineReload: string;
   submitting: string;
   startingSwish: string;
   waitingForSwish: string;
@@ -92,9 +135,48 @@ export const kurserDict: Record<Locale, KurserDict> = {
     swishSecurity: "Betalningen sker i Swish-appen. Vi ser aldrig dina bank- eller kortuppgifter.",
     sellerLabel: "Säljare",
     paymentHelp: (email) => `Något som strular? Mejla ${email} så löser vi det.`,
-    loginPrompt: "Logga in med ditt The Beach-konto för att anmäla dig.",
-    loginWhy: "Kontot är gratis och tar en halv minut — du fyller i din e-post och får en engångskod. I kontot ser du sedan dina kurser, bokningar och kvitton.",
-    loginCta: "Logga in",
+    inlineTitle: "Ange din e-post så anmäler vi dig",
+    inlineIntro: "Du får en engångskod på mejlen. Är du ny skapas kontot på köpet — du behöver inte lämna sidan.",
+    inlineEmailLabel: "E-post",
+    inlineEmailPlaceholder: "namn@exempel.se",
+    inlineSendCode: "Skicka kod",
+    inlineSendingCode: "Skickar…",
+    inlineCodeSentTo: (email) => `Vi har skickat en sexsiffrig kod till ${email}. Kolla gärna skräpposten om den dröjer.`,
+    inlineCodeLabel: "Sexsiffrig kod",
+    inlineVerify: "Fortsätt",
+    inlineVerifying: "Kontrollerar…",
+    inlineResend: "Skicka ny kod",
+    inlineResending: "Skickar ny kod…",
+    inlineResent: "En ny kod är på väg.",
+    inlineChangeEmail: "Byt e-postadress",
+    inlineFamilyTitle: "Flera personer på samma adress",
+    inlineFamilyBody: "Adressen är kopplad till flera personer. Logga in i Mitt konto och välj vem anmälan gäller — sedan kommer du tillbaka hit och slutför.",
+    inlineFamilyCta: "Välj person i Mitt konto",
+    inlineProfileTitle: "Nästan klart",
+    inlineProfileIntro: "Vi behöver ditt namn och födelsedatum. Födelsedatumet avgör vilket kurspris som gäller för dig — utan det kan vi inte ta emot anmälan.",
+    inlineNameLabel: "Namn",
+    inlineNameHelp: "För- och efternamn.",
+    inlineNameInvalid: "Fyll i för- och efternamn.",
+    inlineBirthdateLabel: "Födelsedatum",
+    inlineBirthdatePlaceholder: "ÅÅÅÅ-MM-DD",
+    inlineBirthdateHelp: "Skriv bara siffrorna — bindestrecken fylls i automatiskt.",
+    inlineBirthdateInvalid: "Skriv födelsedatum som ÅÅÅÅ-MM-DD, till exempel 1990-05-12.",
+    inlineSaveProfile: "Spara och fortsätt",
+    inlineSavingProfile: "Sparar…",
+    inlineDuplicateTitle: "Är det här du?",
+    inlineDuplicateBody: (maskedEmail, birthdateMatch) =>
+      `En spelare med ditt namn${birthdateMatch ? " och födelsedatum" : ""} finns redan i våra register${maskedEmail ? `, kopplad till e-postadressen ${maskedEmail}` : ""}.`,
+    inlineDuplicateChoice: "Är det du? Då kopplar vi ihop din anmälan med din befintliga profil.",
+    inlineDuplicateSame: "Ja, det är jag",
+    inlineDuplicateSameBusy: "Kopplar ihop…",
+    inlineDuplicateNew: "Det är inte jag — fortsätt som vanligt",
+    inlineDuplicateNewBusy: "Fortsätter…",
+    inlineMergeTitle: "Tack — vi tar hand om det",
+    inlineMergeQueued: "Begäran är registrerad. Vi kontaktar dig när profilerna är ihopslagna — du kan slutföra anmälan som vanligt.",
+    inlineContinue: "Fortsätt till anmälan",
+    inlineDoneTitle: "Du är inloggad",
+    inlineDoneBody: "Vi hämtar ditt pris. Godkänn kursvillkoren här nedanför så tar vi dig vidare till Swish.",
+    inlineReload: "Ladda om sidan",
     submitting: "Skickar…",
     startingSwish: "Startar Swish…",
     waitingForSwish: "Väntar på Swish…",
@@ -147,9 +229,48 @@ export const kurserDict: Record<Locale, KurserDict> = {
     swishSecurity: "Payment happens inside the Swish app. We never see your bank or card details.",
     sellerLabel: "Seller",
     paymentHelp: (email) => `Something not working? Email ${email} and we'll sort it.`,
-    loginPrompt: "Log in with your The Beach account to sign up.",
-    loginWhy: "The account is free and takes about thirty seconds — enter your email and we send you a one-time code. It's where you'll find your courses, bookings and receipts.",
-    loginCta: "Log in",
+    inlineTitle: "Enter your email and we'll sign you up",
+    inlineIntro: "We'll email you a one-time code. New here? Your account is created along the way — no need to leave this page.",
+    inlineEmailLabel: "Email",
+    inlineEmailPlaceholder: "name@example.com",
+    inlineSendCode: "Send code",
+    inlineSendingCode: "Sending…",
+    inlineCodeSentTo: (email) => `We sent a six-digit code to ${email}. Check your spam folder if it takes a moment.`,
+    inlineCodeLabel: "Six-digit code",
+    inlineVerify: "Continue",
+    inlineVerifying: "Checking…",
+    inlineResend: "Send a new code",
+    inlineResending: "Sending a new code…",
+    inlineResent: "A new code is on its way.",
+    inlineChangeEmail: "Use a different email",
+    inlineFamilyTitle: "Several people on this address",
+    inlineFamilyBody: "This address is linked to more than one person. Sign in to My account, pick who the registration is for, and you'll come straight back here to finish.",
+    inlineFamilyCta: "Choose person in My account",
+    inlineProfileTitle: "Almost there",
+    inlineProfileIntro: "We need your name and date of birth. Your date of birth decides which course price applies to you — without it we cannot accept the registration.",
+    inlineNameLabel: "Name",
+    inlineNameHelp: "First and last name.",
+    inlineNameInvalid: "Enter your first and last name.",
+    inlineBirthdateLabel: "Date of birth",
+    inlineBirthdatePlaceholder: "YYYY-MM-DD",
+    inlineBirthdateHelp: "Just type the digits — we add the hyphens for you.",
+    inlineBirthdateInvalid: "Write your date of birth as YYYY-MM-DD, for example 1990-05-12.",
+    inlineSaveProfile: "Save and continue",
+    inlineSavingProfile: "Saving…",
+    inlineDuplicateTitle: "Is this you?",
+    inlineDuplicateBody: (maskedEmail, birthdateMatch) =>
+      `A player with your name${birthdateMatch ? " and date of birth" : ""} is already in our records${maskedEmail ? `, linked to the email address ${maskedEmail}` : ""}.`,
+    inlineDuplicateChoice: "Is that you? Then we'll link this registration to your existing profile.",
+    inlineDuplicateSame: "Yes, that's me",
+    inlineDuplicateSameBusy: "Linking…",
+    inlineDuplicateNew: "That's not me — carry on",
+    inlineDuplicateNewBusy: "Carrying on…",
+    inlineMergeTitle: "Thanks — we'll take it from here",
+    inlineMergeQueued: "Your request is registered. We'll be in touch once the profiles are merged — you can finish your registration as usual.",
+    inlineContinue: "Continue to sign-up",
+    inlineDoneTitle: "You're signed in",
+    inlineDoneBody: "We're fetching your price. Accept the course terms just below and we'll take you to Swish.",
+    inlineReload: "Reload the page",
     submitting: "Sending…",
     startingSwish: "Starting Swish…",
     waitingForSwish: "Waiting for Swish…",
