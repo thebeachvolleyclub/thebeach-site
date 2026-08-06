@@ -119,6 +119,18 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
 - The pre-container placeholder site is archived at
   `/home/beachinfo/site-backups/thebeach.one-placeholder-20260710.tar.gz`
   (offbox copy on beachapps-dev: `~/site-promote/offbox-backups/`).
+- **Course campaign links:** use a dedicated course URL with
+  `?kampanjkod=CODE&kurs=COURSE_ID`. The shorter `promotionCode`/`promo` and
+  `courseId` aliases are accepted for existing links, then successful manual
+  validation is preserved in the canonical Swedish parameter shape. `ref` or
+  `tipskod` is separate, attribution-only referral metadata and never changes
+  the displayed price. The browser validates one exact promotion through the
+  same-origin `POST /api/courses/promotions/lookup` BFF. The App API remains the
+  sole pricing/eligibility authority and revalidates under lock at enrolment;
+  the site never calculates a campaign price or exposes a promotion catalogue.
+  The route reuses the signed-IP trust boundary above for durable per-IP and
+  global anti-enumeration limits, safely degrading to the global API limit when
+  proxy trust or its shared secret is not configured.
 - Pre-cutover Apache vhost backups: `*.bak-20260710` in
   `/etc/apache2/sites-available/`.
 - The Vercel instructions in AGENTS.md refer to David's old preview flow, not

@@ -42,6 +42,15 @@ export type KurserDict = {
   promotionLabel: string;
   promotionPlaceholder: string;
   promotionHelp: string;
+  promotionApply: string;
+  promotionChecking: string;
+  promotionInvalid: string;
+  promotionLookupUnavailable: string;
+  promotionPreviewTitle: string;
+  promotionPreviewRegular: (amount: string) => string;
+  promotionPreviewTier: (year: number, amount: string) => string;
+  promotionValidateFirst: string;
+  referralAttribution: (code: string) => string;
   promotionAppliedTitle: string;
   promotionAppliedNote: (code: string, amount: string) => string;
   promotionWasLabel: (amount: string) => string;
@@ -155,6 +164,15 @@ export const kurserDict: Record<Locale, KurserDict> = {
     promotionLabel: "Kampanjkod",
     promotionPlaceholder: "T.EX. SOMMAR25",
     promotionHelp: "Skriv koden precis som du fått den. Rabatten dras av innan du betalar.",
+    promotionApply: "Kontrollera kod",
+    promotionChecking: "Kontrollerar…",
+    promotionInvalid: "Koden är inte giltig för den här kursen. Kontrollera stavningen och försök igen.",
+    promotionLookupUnavailable: "Koden kunde inte kontrolleras just nu. Vänta en stund och försök igen.",
+    promotionPreviewTitle: "Ditt rabatterade pris",
+    promotionPreviewRegular: (amount) => `Ordinarie åldersgrupp: ${amount}`,
+    promotionPreviewTier: (year, amount) => `Född ${year} eller senare: ${amount}`,
+    promotionValidateFirst: "Kontrollera koden för att se priset innan du anmäler dig.",
+    referralAttribution: (code) => `Tipskod ${code} kopplas till anmälan. Den påverkar inte priset.`,
     promotionAppliedTitle: "Rabatten är avdragen",
     promotionAppliedNote: (code, amount) => `Kampanjkoden ${code} gav ${amount} i rabatt.`,
     promotionWasLabel: (amount) => `Ordinarie pris ${amount}`,
@@ -263,6 +281,15 @@ export const kurserDict: Record<Locale, KurserDict> = {
     promotionLabel: "Promo code",
     promotionPlaceholder: "E.G. SUMMER25",
     promotionHelp: "Enter the code exactly as you received it. The discount comes off before you pay.",
+    promotionApply: "Check code",
+    promotionChecking: "Checking…",
+    promotionInvalid: "This code is not valid for this course. Check the spelling and try again.",
+    promotionLookupUnavailable: "We cannot check the code right now. Wait a moment and try again.",
+    promotionPreviewTitle: "Your discounted price",
+    promotionPreviewRegular: (amount) => `Standard age group: ${amount}`,
+    promotionPreviewTier: (year, amount) => `Born ${year} or later: ${amount}`,
+    promotionValidateFirst: "Check the code to see the price before signing up.",
+    referralAttribution: (code) => `Referral code ${code} is linked to the signup. It does not change the price.`,
     promotionAppliedTitle: "Discount applied",
     promotionAppliedNote: (code, amount) => `Promo code ${code} took ${amount} off.`,
     promotionWasLabel: (amount) => `Regular price ${amount}`,
@@ -355,13 +382,10 @@ export function shortDate(iso: string, locale: Locale): string {
 }
 
 /**
- * TILLFÄLLIG ÖVERSÄTTNING — tas bort när kurs-API:t har språkfält.
- *
- * Kursens namn, nivå och förkunskapskrav kommer från plattformen och finns
- * bara på svenska (ett textfält per kurs). Plattformsärende #28 begär name_en
- * och description_en; tills dess mappas de strängar VI själva har författat,
- * så att /en/training inte blandar språk. Okänd text lämnas orörd — bättre
- * svenska än fel engelska.
+ * Compatibility translations for older records and shared single-language
+ * fields such as level/prerequisites. New course names and descriptions come
+ * from the platform's nameEn/descriptionEn fields; unknown legacy text remains
+ * Swedish rather than being guessed incorrectly.
  */
 const enOverrides: Record<string, string> = {
   Grundkurs: "Beginner",

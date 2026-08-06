@@ -33,8 +33,10 @@ export type CourseSession = {
 export type Course = {
   id: number;
   name: string;
+  nameEn?: string | null;
   level: string;
   description: string | null;
+  descriptionEn?: string | null;
   prerequisites: string | null;
   termsMarkdown: string | null;
   termsVersion: string;
@@ -54,6 +56,16 @@ export type Course = {
   registrationClosesAt: string | null;
   sessions: CourseSession[];
 };
+
+/** Platform-managed copy with a safe Swedish fallback while records migrate. */
+export function localizedCourseName(course: Course, locale: "sv" | "en"): string {
+  return locale === "en" && course.nameEn?.trim() ? course.nameEn.trim() : course.name;
+}
+
+export function localizedCourseDescription(course: Course, locale: "sv" | "en"): string | null {
+  if (locale === "en" && course.descriptionEn?.trim()) return course.descriptionEn.trim();
+  return course.description;
+}
 
 /** Pass som faktiskt går av stapeln — inställda räknas inte. */
 export function liveSessions(course: Course): CourseSession[] {

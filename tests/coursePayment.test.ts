@@ -491,7 +491,7 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /courseSwishLaunchUrl\(charge\)/);
   assert.match(component, /courseSwishQrCode\(charge\)/);
   assert.match(component, /courseSwishMobileDevice/);
-  assert.match(component, /if \(mobileDevice\) window\.location\.assign\(deepLinkUrl\)/);
+  assert.match(component, /if \(mobileDevice && outcome\?\.kind !== "none"\) window\.location\.assign\(deepLinkUrl\)/);
   assert.match(component, /swishHandoff\.qrCodeDataUrl/);
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);

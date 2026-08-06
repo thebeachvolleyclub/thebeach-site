@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Kampanj- och värvningskoder normaliseras redan här: trimmade, versaliserade
- * och begränsade till A–Z, 0–9 och bindestreck. Plattformen versaliserar också,
+ * och begränsade till A–Z, 0–9, understreck och bindestreck. Plattformen versaliserar också,
  * men vi vill inte skicka vidare fritext som råkat hamna i fältet. Tomt fält
  * utelämnas helt — det är inte samma sak som en ogiltig kod.
  */
@@ -14,7 +14,7 @@ function normalizeCode(value: unknown): string | null | undefined {
   if (typeof value !== "string") return null;
   const code = value.trim().toUpperCase();
   if (!code) return undefined;
-  return /^[A-Z0-9-]{1,32}$/.test(code) ? code : null;
+  return /^[A-Z0-9_-]{1,32}$/.test(code) ? code : null;
 }
 
 /**

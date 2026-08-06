@@ -11,6 +11,8 @@ import {
   firstSessionDate,
   lastSessionDate,
   liveSessions,
+  localizedCourseDescription,
+  localizedCourseName,
   type Course,
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
@@ -48,7 +50,8 @@ export default function CourseDetail({
   const end = lastSessionDate(course);
   const day = course.schedule?.dayOfWeek ? k.weekdays[course.schedule.dayOfWeek] : null;
   const time = course.schedule?.startTime ?? null;
-  const title = courseText(course.name.split("–")[0].trim() || course.name, locale);
+  const localizedName = localizedCourseName(course, locale);
+  const title = courseText(localizedName.split("–")[0].trim() || localizedName, locale);
   const subtitle = day && time ? k.weekdayTime(day, time) : null;
   const priceLabel = coursePriceHeadline(course, locale);
   const priceStatus = coursePersonalPriceStatus(course);
@@ -63,7 +66,7 @@ export default function CourseDetail({
   facts.push({ label: t.factPrice, value: priceLabel });
 
   // Beskrivningen från plattformen är radbruten klartext, inte markdown.
-  const paragraphs = (course.description ?? "")
+  const paragraphs = (localizedCourseDescription(course, locale) ?? "")
     .split(/\n{2,}/)
     .map((block) => block.trim())
     .filter(Boolean);

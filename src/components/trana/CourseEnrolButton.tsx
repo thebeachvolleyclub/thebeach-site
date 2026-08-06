@@ -49,6 +49,26 @@ type Result =
 
 type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
 
+type PromotionLookupResult =
+  | { valid: false; lookupVersion: number }
+  | {
+      valid: true;
+      lookupVersion: number;
+      discountPercent: number;
+      priceSek: number;
+      priceTiers: { birthYearFrom: number; priceSek: number }[];
+      personalPriceSek: number | null;
+      personalPriceStatus: CoursePersonalPriceStatus;
+      endsAt: string | null;
+    };
+
+type PromotionLookupState =
+  | { kind: "idle" }
+  | { kind: "loading"; code: string }
+  | { kind: "valid"; code: string; preview: Extract<PromotionLookupResult, { valid: true }> }
+  | { kind: "invalid"; code: string }
+  | { kind: "error"; code: string };
+
 /**
  * Utfallet av en inskriven kampanjkod. "none" betyder att anmälan gick igenom
  * men att plattformen inte räknade av något — kunden ska se det innan hen
@@ -83,7 +103,58 @@ function amountSek(value: unknown): number | null {
 
 /** Fältet håller sig till samma tecken som API-rutten släpper igenom. */
 function cleanPromotionCode(value: string): string {
-  return value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
+  return value.toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 32);
+}
+
+function cleanReferralCode(value: string): string {
+  return value.toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 24);
+}
+
+async function lookupPromotion(
+  courseId: number,
+  code: string,
+  signal?: AbortSignal,
+): Promise<PromotionLookupResult> {
+  const response = await fetch("/api/courses/promotions/lookup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ courseId, code }),
+    signal,
+  });
+  const data = await json(response);
+  if (!response.ok) throw new Error("promotion lookup failed");
+  if (data.valid !== true) return { valid: false, lookupVersion: 1 };
+
+  const priceSek = amountSek(data.priceSek);
+  const personalPriceSek = data.personalPriceSek === null ? null : amountSek(data.personalPriceSek);
+  const priceTiers = Array.isArray(data.priceTiers)
+    ? data.priceTiers.flatMap((tier) => {
+        if (!tier || typeof tier !== "object") return [];
+        const birthYearFrom = (tier as Record<string, unknown>).birthYearFrom;
+        const tierPrice = amountSek((tier as Record<string, unknown>).priceSek);
+        return Number.isSafeInteger(birthYearFrom) && tierPrice !== null
+          ? [{ birthYearFrom: birthYearFrom as number, priceSek: tierPrice }]
+          : [];
+      })
+    : [];
+  if (
+    priceSek === null
+    || typeof data.discountPercent !== "number"
+    || ![50, 100].includes(data.discountPercent)
+    || (data.personalPriceSek !== null && personalPriceSek === null)
+  ) {
+    throw new Error("invalid promotion response");
+  }
+  return {
+    valid: true,
+    lookupVersion: 1,
+    discountPercent: data.discountPercent,
+    priceSek,
+    priceTiers,
+    personalPriceSek,
+    personalPriceStatus: data.personalPriceStatus as CoursePersonalPriceStatus,
+    endsAt: typeof data.endsAt === "string" ? data.endsAt : null,
+  };
 }
 
 function randomAttemptKey() {
@@ -114,6 +185,8 @@ export default function CourseEnrolButton({
   const [accepted, setAccepted] = useState(false);
   const [promotionOpen, setPromotionOpen] = useState(false);
   const [promotionCode, setPromotionCode] = useState("");
+  const [promotionLookup, setPromotionLookup] = useState<PromotionLookupState>({ kind: "idle" });
+  const [referralCode, setReferralCode] = useState("");
   const [discount, setDiscount] = useState<DiscountOutcome | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Result | null>(null);
@@ -124,6 +197,7 @@ export default function CourseEnrolButton({
   const paymentPriceRef = useRef(priceSek);
   const inFlight = useRef(false);
   const activeRequest = useRef<AbortController | null>(null);
+  const promotionRequest = useRef<AbortController | null>(null);
   const fallbackAttemptKey = useRef(randomAttemptKey());
 
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
@@ -132,9 +206,109 @@ export default function CourseEnrolButton({
   const formatSek = (value: number) =>
     `${value.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB")} kr`;
 
-  useEffect(() => () => activeRequest.current?.abort(), []);
+  useEffect(() => () => {
+    activeRequest.current?.abort();
+    promotionRequest.current?.abort();
+  }, []);
+
+  // Campaign links remain useful before login. A successful lookup is written
+  // back in one canonical URL shape so the code survives inline login and can
+  // be shared. Referral codes stay attribution-only and are never represented
+  // as a discount.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const targetCourse = params.get("kurs") ?? params.get("courseId");
+    if (targetCourse && targetCourse !== String(courseId)) return;
+    const linkedReferral = cleanReferralCode(params.get("tipskod") ?? params.get("ref") ?? "");
+    const linkedCode = cleanPromotionCode(
+      params.get("kampanjkod") ?? params.get("promotionCode") ?? params.get("promo") ?? "",
+    );
+    // A generic listing can contain several courses with different campaign
+    // scopes. Require an explicit course there; a dedicated course page has a
+    // returnPath and is unambiguous without the extra parameter.
+    const shouldLookup = linkedCode.length >= 3 && Boolean(targetCourse || returnPath);
+    if (!linkedReferral && !shouldLookup) return;
+    let active = true;
+    let controller: AbortController | null = null;
+    queueMicrotask(() => {
+      if (!active) return;
+      if (linkedReferral) setReferralCode(linkedReferral);
+      setPromotionOpen(true);
+      if (!shouldLookup) return;
+      setPromotionCode(linkedCode);
+      setPromotionLookup({ kind: "loading", code: linkedCode });
+      controller = new AbortController();
+      promotionRequest.current = controller;
+      void lookupPromotion(courseId, linkedCode, controller.signal)
+        .then((preview) => {
+          if (!active) return;
+          setPromotionLookup(
+            preview.valid
+              ? { kind: "valid", code: linkedCode, preview }
+              : { kind: "invalid", code: linkedCode },
+          );
+        })
+        .catch((cause) => {
+          if (active && !(cause instanceof DOMException && cause.name === "AbortError")) {
+            setPromotionLookup({ kind: "error", code: linkedCode });
+          }
+        });
+    });
+    return () => {
+      active = false;
+      controller?.abort();
+    };
+  }, [courseId, loggedIn, returnPath]);
+
+  const busy = phase !== "idle";
+
+  function clearPromotionFromUrl() {
+    const url = new URL(window.location.href);
+    for (const key of ["kampanjkod", "promotionCode", "promo", "kurs", "courseId"]) {
+      url.searchParams.delete(key);
+    }
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  async function checkPromotion() {
+    const code = cleanPromotionCode(promotionCode);
+    if (code.length < 3) {
+      setPromotionLookup({ kind: "invalid", code });
+      return;
+    }
+    promotionRequest.current?.abort();
+    const controller = new AbortController();
+    promotionRequest.current = controller;
+    setPromotionLookup({ kind: "loading", code });
+    try {
+      const preview = await lookupPromotion(courseId, code, controller.signal);
+      if (!preview.valid) {
+        setPromotionLookup({ kind: "invalid", code });
+        return;
+      }
+      setPromotionLookup({ kind: "valid", code, preview });
+      const url = new URL(window.location.href);
+      url.searchParams.set("kampanjkod", code);
+      url.searchParams.set("kurs", String(courseId));
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch (cause) {
+      if (!(cause instanceof DOMException && cause.name === "AbortError")) {
+        setPromotionLookup({ kind: "error", code });
+      }
+    } finally {
+      if (promotionRequest.current === controller) promotionRequest.current = null;
+    }
+  }
 
   async function submit() {
+    const submittedCode = cleanPromotionCode(promotionCode);
+    if (
+      submittedCode
+      && !(promotionLookup.kind === "valid" && promotionLookup.code === submittedCode)
+    ) {
+      setResult({ ok: false, message: t.promotionValidateFirst });
+      return;
+    }
     if (inFlight.current) return;
     inFlight.current = true;
     activeRequest.current?.abort();
@@ -177,7 +351,7 @@ export default function CourseEnrolButton({
         storage,
         () => fallbackAttemptKey.current,
       );
-      const submittedCode = cleanPromotionCode(promotionCode);
+      const submittedReferral = cleanReferralCode(referralCode);
       const response = await fetch(`/api/courses/${courseId}/enrol`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -185,6 +359,7 @@ export default function CourseEnrolButton({
           termsVersion,
           idempotencyKey,
           ...(submittedCode ? { promotionCode: submittedCode } : {}),
+          ...(submittedReferral ? { referralCode: submittedReferral } : {}),
         }),
         signal: controller.signal,
       });
@@ -204,18 +379,19 @@ export default function CourseEnrolButton({
         return;
       }
 
-      const grossSek = amountSek(data.grossAmountSek);
-      const discountSek = amountSek(data.discountAmountSek);
       const netSek = amountSek(data.netAmountSek);
       const netAmountSek = netSek ?? priceSek;
-      // Koden är kundens — utfallet ska synas oavsett om den bet eller inte.
+      // Plattformens discountAmountSek includes both the age-qualified price
+      // and the campaign discount. Attribute only the difference from this
+      // viewer's already-resolved price to the campaign code in customer copy.
+      const promotionDiscountSek = Math.max(0, priceSek - netAmountSek);
       const outcome: DiscountOutcome | null = submittedCode
-        ? discountSek && discountSek > 0
+        ? promotionDiscountSek > 0
           ? {
               kind: "applied",
               code: submittedCode,
-              grossSek: grossSek ?? priceSek,
-              discountSek,
+              grossSek: priceSek,
+              discountSek: promotionDiscountSek,
               netSek: netAmountSek,
             }
           : { kind: "none", code: submittedCode }
@@ -360,9 +536,123 @@ export default function CourseEnrolButton({
     }
   }
 
+  const validPromotion = promotionLookup.kind === "valid" ? promotionLookup.preview : null;
+  const promotionNeedsValidation = Boolean(
+    promotionCode
+    && !(promotionLookup.kind === "valid" && promotionLookup.code === promotionCode),
+  );
+  const promotionPanel = (
+    <div className="mb-4">
+      <button
+        type="button"
+        onClick={() => setPromotionOpen((open) => !open)}
+        aria-expanded={promotionOpen}
+        aria-controls={`${uid}-promotion`}
+        className={inlineQuiet}
+      >
+        {t.promotionToggle}
+      </button>
+      <div id={`${uid}-promotion`}>
+        {promotionOpen && (
+          <div className="mt-2">
+            <label className={inlineLabel} htmlFor={`${uid}-promotion-code`}>
+              {t.promotionLabel}
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${uid}-promotion-code`}
+                name="promotion-code"
+                value={promotionCode}
+                onChange={(event) => {
+                  promotionRequest.current?.abort();
+                  setPromotionCode(cleanPromotionCode(event.target.value));
+                  setPromotionLookup({ kind: "idle" });
+                  setResult(null);
+                  clearPromotionFromUrl();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && promotionCode.length >= 3 && !busy) {
+                    event.preventDefault();
+                    void checkPromotion();
+                  }
+                }}
+                placeholder={t.promotionPlaceholder}
+                autoComplete="off"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+                disabled={busy || promotionLookup.kind === "loading"}
+                className={inlineField}
+              />
+              <button
+                type="button"
+                onClick={() => void checkPromotion()}
+                disabled={busy || promotionLookup.kind === "loading" || promotionCode.length < 3}
+                className="inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center bg-black px-5 text-[11px] font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                {promotionLookup.kind === "loading" ? t.promotionChecking : t.promotionApply}
+              </button>
+            </div>
+            <span className={inlineHelp}>{t.promotionHelp}</span>
+
+            {validPromotion && (
+              <div role="status" aria-live="polite" className="mt-3 border border-teal/40 bg-teal/10 p-4">
+                <p className="font-display text-xl uppercase leading-none text-black">
+                  {t.promotionPreviewTitle}
+                </p>
+                {validPromotion.personalPriceSek !== null ? (
+                  <p className="mt-2 text-[15px] font-bold text-black">
+                    <span className="mr-2 font-normal text-black/45 line-through">
+                      {formatSek(priceSek)}
+                    </span>
+                    {formatSek(validPromotion.personalPriceSek)}
+                  </p>
+                ) : (
+                  <div className="mt-2 space-y-1 text-[12px] leading-snug text-black/65">
+                    <p>{t.promotionPreviewRegular(formatSek(validPromotion.priceSek))}</p>
+                    {validPromotion.priceTiers.map((tier) => (
+                      <p key={tier.birthYearFrom}>
+                        {t.promotionPreviewTier(tier.birthYearFrom, formatSek(tier.priceSek))}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {promotionLookup.kind === "invalid" && (
+              <p role="alert" className="mt-2 text-[12px] font-semibold leading-snug text-orange">
+                {t.promotionInvalid}
+              </p>
+            )}
+            {promotionLookup.kind === "error" && (
+              <p role="alert" className="mt-2 text-[12px] font-semibold leading-snug text-orange">
+                {t.promotionLookupUnavailable}
+              </p>
+            )}
+            {promotionNeedsValidation && promotionLookup.kind === "idle" && (
+              <p className="mt-2 text-[11px] leading-snug text-black/45">
+                {t.promotionValidateFirst}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+      {referralCode && (
+        <p className="mt-2 text-[11px] leading-snug text-black/45">
+          {t.referralAttribution(referralCode)}
+        </p>
+      )}
+    </div>
+  );
+
   // Utloggad besökare: hela inloggningen sker i kortet. Sidbytet till /konto
   // och tillbaka via ?next= tappade folk mitt i anmälan.
-  if (!loggedIn) return <InlineSignup locale={locale} accountHref={accountHref} />;
+  if (!loggedIn) return (
+    <>
+      <div className="mt-auto border-t border-black/10 pt-5">{promotionPanel}</div>
+      <InlineSignup locale={locale} accountHref={accountHref} />
+    </>
+  );
 
   // The surrounding course card/detail places the profile error directly by
   // the price. Do not render terms or an enrol button until that price exists.
@@ -398,7 +688,6 @@ export default function CourseEnrolButton({
     );
   }
 
-  const busy = phase !== "idle";
   const paymentPriceLabel = formatSek(paymentPriceSek);
   const busyLabel =
     phase === "startingSwish"
@@ -410,6 +699,8 @@ export default function CourseEnrolButton({
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
       <p className="mb-3 text-[12px] leading-snug text-black/45">{t.paymentNote}</p>
+
+      {promotionPanel}
 
       {discount?.kind === "applied" && (
         <div
@@ -523,46 +814,9 @@ export default function CourseEnrolButton({
         {t.termsAccept}
       </label>
 
-      {/* Stängd som standard: de flesta har ingen kod. Men länken ligger kvar
-          vid knappen, så den som fått en kod ser den utan att leta. */}
-      <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => setPromotionOpen((open) => !open)}
-          aria-expanded={promotionOpen}
-          aria-controls={`${uid}-promotion`}
-          className={inlineQuiet}
-        >
-          {t.promotionToggle}
-        </button>
-        <div id={`${uid}-promotion`}>
-          {promotionOpen && (
-            <div className="mt-2">
-              <label className={inlineLabel} htmlFor={`${uid}-promotion-code`}>
-                {t.promotionLabel}
-              </label>
-              <input
-                id={`${uid}-promotion-code`}
-                name="promotion-code"
-                value={promotionCode}
-                onChange={(e) => setPromotionCode(cleanPromotionCode(e.target.value))}
-                placeholder={t.promotionPlaceholder}
-                autoComplete="off"
-                autoCapitalize="characters"
-                autoCorrect="off"
-                spellCheck={false}
-                disabled={busy}
-                className={inlineField}
-              />
-              <span className={inlineHelp}>{t.promotionHelp}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
       <button
         type="button"
-        disabled={!accepted || busy}
+        disabled={!accepted || busy || promotionNeedsValidation}
         onClick={submit}
         className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
       >

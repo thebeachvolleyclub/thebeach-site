@@ -2,6 +2,7 @@ import {
   firstSessionDate,
   lastSessionDate,
   liveSessions,
+  localizedCourseName,
   type Course,
 } from "@/lib/courses";
 import type { Locale } from "@/lib/i18n";
@@ -15,7 +16,8 @@ import { coursePriceHeadline } from "@/lib/coursePricing";
  */
 export function courseSummary(course: Course, locale: Locale) {
   const k = kurserDict[locale];
-  const name = courseText(course.name.split("–")[0].trim() || course.name, locale);
+  const localizedName = localizedCourseName(course, locale);
+  const name = courseText(localizedName.split("–")[0].trim() || localizedName, locale);
   const day = course.schedule?.dayOfWeek ? k.weekdays[course.schedule.dayOfWeek] : null;
   const time = course.schedule?.startTime ?? null;
   const when = day && time ? k.weekdayTime(day, time) : null;

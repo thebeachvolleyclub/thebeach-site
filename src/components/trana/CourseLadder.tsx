@@ -11,6 +11,7 @@ import {
   firstSessionDate,
   lastSessionDate,
   liveSessions,
+  localizedCourseName,
   SHOW_COACHES,
   type Course,
 } from "@/lib/courses";
@@ -98,7 +99,8 @@ function CourseCard({
 
   // Kursnamnet bär redan dag och tid ("… – tisdagar 19:00 (höst 2026)").
   // Kortet visar det strukturerat i stället, så rubriken kortas vid tankstrecket.
-  const title = courseText(course.name.split("–")[0].trim() || course.name, locale);
+  const localizedName = localizedCourseName(course, locale);
+  const title = courseText(localizedName.split("–")[0].trim() || localizedName, locale);
 
   // Dag och tid står som underrubrik — två kurser med samma nivå skiljs åt där.
   const subtitle = day && time ? k.weekdayTime(day, time) : null;
