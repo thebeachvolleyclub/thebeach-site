@@ -19,6 +19,7 @@ import { kursSidaDict } from "@/lib/i18n/kursSida";
 import {
   coursePriceHeadline,
   coursePriceNeedsBirthdate,
+  coursePublicPriceOptions,
   coursePersonalPriceStatus,
 } from "@/lib/coursePricing";
 
@@ -50,6 +51,8 @@ export default function CourseDetail({
   const title = courseText(course.name.split("–")[0].trim() || course.name, locale);
   const subtitle = day && time ? k.weekdayTime(day, time) : null;
   const priceLabel = coursePriceHeadline(course, locale);
+  const priceStatus = coursePersonalPriceStatus(course);
+  const publicPriceOptions = coursePublicPriceOptions(course, locale);
 
   const facts: { label: string; value: string }[] = [];
   if (sessions.length) facts.push({ label: t.factSessions, value: `${sessions.length}` });
@@ -131,6 +134,17 @@ export default function CourseDetail({
                 <p className={`mb-1 font-display text-3xl uppercase leading-none ${coursePriceNeedsBirthdate(course) ? "text-orange" : "text-black"}`}>
                   {priceLabel}
                 </p>
+                {priceStatus === "sign_in_required" && (
+                  <div className="mb-4 text-[12px] leading-snug text-black/55">
+                    <p className="mb-1 font-bold uppercase tracking-[0.1em] text-black/35">
+                      {locale === "sv" ? "Ordinarie pris" : "Standard price"}
+                    </p>
+                    {publicPriceOptions.map((option) => <p key={option}>{option}</p>)}
+                    <Link href="/konto" className="mt-2 inline-flex font-bold text-black underline underline-offset-4">
+                      {locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price"}
+                    </Link>
+                  </div>
+                )}
                 {coursePriceNeedsBirthdate(course) && (
                   <div role="alert" className="mb-4 border-l-2 border-orange pl-3 text-[12px] leading-snug text-orange">
                     <p>
@@ -161,7 +175,7 @@ export default function CourseDetail({
                     courseId={course.id}
                     courseName={subtitle ? `${title} · ${subtitle}` : title}
                     priceSek={course.personalPriceSek ?? course.priceSek}
-                    priceStatus={coursePersonalPriceStatus(course)}
+                    priceStatus={priceStatus}
                     termsVersion={course.termsVersion}
                     termsMarkdown={course.termsMarkdown}
                     waitlist={state === "waitlist"}

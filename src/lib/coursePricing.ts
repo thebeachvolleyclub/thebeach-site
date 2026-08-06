@@ -26,9 +26,36 @@ export function coursePriceHeadline(course: PricedCourse, locale: "sv" | "en"): 
     return locale === "sv" ? "Födelsedatum saknas" : "Date of birth required";
   }
   if (status === "sign_in_required") {
-    return locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price";
+    return money(course.priceSek, locale);
   }
   return money(course.personalPriceSek ?? course.priceSek, locale);
+}
+
+/**
+ * Generic product terms for signed-out visitors. These are explicit,
+ * birth-year-qualified alternatives to the ordinary price — never a lowest
+ * "from" price. Once identity is known the UI shows only personalPriceSek.
+ */
+export function coursePublicPriceOptions(
+  course: PricedCourse,
+  locale: "sv" | "en",
+): string[] {
+  if (coursePersonalPriceStatus(course) !== "sign_in_required") return [];
+  const tiers = [...(course.priceTiers ?? [])]
+    .filter((tier) => Number.isSafeInteger(tier.birthYearFrom) && Number.isSafeInteger(tier.priceSek))
+    .sort((a, b) => b.birthYearFrom - a.birthYearFrom);
+
+  return tiers.map((tier, index) => {
+    const upperYear = index === 0 ? null : tiers[index - 1].birthYearFrom - 1;
+    const eligibility = upperYear === null
+      ? locale === "sv"
+        ? `född ${tier.birthYearFrom} eller senare`
+        : `born ${tier.birthYearFrom} or later`
+      : locale === "sv"
+        ? `född ${tier.birthYearFrom}–${upperYear}`
+        : `born ${tier.birthYearFrom}–${upperYear}`;
+    return `${money(tier.priceSek, locale)} · ${eligibility}`;
+  });
 }
 
 export function coursePersonalPriceStatus(course: PricedCourse): CoursePersonalPriceStatus {

@@ -19,6 +19,7 @@ import { coursePath, courseSlugs } from "@/lib/courseSlug";
 import {
   coursePriceHeadline,
   coursePriceNeedsBirthdate,
+  coursePublicPriceOptions,
   coursePersonalPriceStatus,
 } from "@/lib/coursePricing";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
@@ -87,6 +88,8 @@ function CourseCard({
   const k = kurserDict[locale];
   const state = courseState(course);
   const priceLabel = coursePriceHeadline(course, locale);
+  const priceStatus = coursePersonalPriceStatus(course);
+  const publicPriceOptions = coursePublicPriceOptions(course, locale);
   const sessions = liveSessions(course);
   const start = firstSessionDate(course);
   const end = lastSessionDate(course);
@@ -138,7 +141,18 @@ function CourseCard({
         <strong className={`font-display text-xl lg:text-2xl ${coursePriceNeedsBirthdate(course) ? "text-orange" : "text-black"}`}>
           {priceLabel}
         </strong>
+        {priceStatus === "sign_in_required" && (
+          <span>{locale === "sv" ? "ordinarie pris" : "standard price"}</span>
+        )}
       </div>
+      {publicPriceOptions.length > 0 && (
+        <div className="mb-4 text-[12px] leading-snug text-black/55">
+          {publicPriceOptions.map((option) => <p key={option}>{option}</p>)}
+          <Link href="/konto" className="mt-1 inline-flex font-bold text-black underline underline-offset-4">
+            {locale === "sv" ? "Logga in för att se ditt pris" : "Sign in to see your price"}
+          </Link>
+        </div>
+      )}
       {coursePriceNeedsBirthdate(course) && (
         <div role="alert" className="mb-4 text-[12px] leading-snug text-orange">
           <p>{locale === "sv"
@@ -187,7 +201,7 @@ function CourseCard({
           courseId={course.id}
           courseName={subtitle ? `${title} · ${subtitle}` : title}
           priceSek={course.personalPriceSek ?? course.priceSek}
-          priceStatus={coursePersonalPriceStatus(course)}
+          priceStatus={priceStatus}
           termsVersion={course.termsVersion}
           termsMarkdown={course.termsMarkdown}
           waitlist={state === "waitlist"}

@@ -4,11 +4,12 @@ import test from "node:test";
 import {
   coursePriceHeadline,
   coursePriceNeedsBirthdate,
+  coursePublicPriceOptions,
   coursePriceResolved,
 } from "../src/lib/coursePricing.ts";
 import { tranaDict } from "../src/lib/i18n/trana.ts";
 
-test("never advertises another customers lower course price before login", () => {
+test("shows a qualified public price table instead of a misleading from price", () => {
   const course = {
     priceSek: 795,
     fromPriceSek: 395,
@@ -17,9 +18,29 @@ test("never advertises another customers lower course price before login", () =>
     personalPriceStatus: "sign_in_required" as const,
   };
 
-  assert.equal(coursePriceHeadline(course, "sv"), "Logga in för att se ditt pris");
-  assert.doesNotMatch(coursePriceHeadline(course, "sv"), /395|Från/);
+  assert.equal(coursePriceHeadline(course, "sv"), "795 kr");
+  assert.deepEqual(coursePublicPriceOptions(course, "sv"), [
+    "395 kr · född 2001 eller senare",
+  ]);
+  assert.doesNotMatch(coursePriceHeadline(course, "sv"), /Från/);
   assert.equal(coursePriceResolved(course), false);
+});
+
+test("renders non-overlapping public birth-year ranges", () => {
+  const course = {
+    priceSek: 3695,
+    priceTiers: [
+      { birthYearFrom: 2001, priceSek: 2955 },
+      { birthYearFrom: 2007, priceSek: 2585 },
+    ],
+    personalPriceSek: null,
+    personalPriceStatus: "sign_in_required" as const,
+  };
+
+  assert.deepEqual(coursePublicPriceOptions(course, "sv"), [
+    "2 585 kr · född 2007 eller senare",
+    "2 955 kr · född 2001–2006",
+  ]);
 });
 
 test("shows only the signed-in players resolved continuation price", () => {
@@ -30,6 +51,7 @@ test("shows only the signed-in players resolved continuation price", () => {
   };
 
   assert.equal(coursePriceHeadline(course, "sv"), "2 955 kr");
+  assert.deepEqual(coursePublicPriceOptions(course, "sv"), []);
   assert.equal(coursePriceHeadline(course, "en"), "2,955 kr");
   assert.equal(coursePriceResolved(course), true);
 });
