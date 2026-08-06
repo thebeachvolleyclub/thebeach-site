@@ -49,6 +49,15 @@ type Result =
 
 type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
 
+/**
+ * Utfallet av en inskriven kampanjkod. "none" betyder att anmälan gick igenom
+ * men att plattformen inte räknade av något — kunden ska se det innan hen
+ * betalar, inte efteråt på kvittot.
+ */
+type DiscountOutcome =
+  | { kind: "applied"; code: string; grossSek: number; discountSek: number; netSek: number }
+  | { kind: "none"; code: string };
+
 type SwishHandoff = {
   deepLinkUrl: string;
   qrCodeDataUrl: string | null;
@@ -65,6 +74,16 @@ class PaymentStatusError extends Error {
   ) {
     super(message);
   }
+}
+
+/** Beloppen från plattformen är hela kronor. Allt annat behandlas som saknat. */
+function amountSek(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+/** Fältet håller sig till samma tecken som API-rutten släpper igenom. */
+function cleanPromotionCode(value: string): string {
+  return value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 32);
 }
 
 function randomAttemptKey() {
@@ -91,7 +110,11 @@ export default function CourseEnrolButton({
   returnPath,
 }: Props) {
   const t = kurserDict[locale];
+  const uid = useId();
   const [accepted, setAccepted] = useState(false);
+  const [promotionOpen, setPromotionOpen] = useState(false);
+  const [promotionCode, setPromotionCode] = useState("");
+  const [discount, setDiscount] = useState<DiscountOutcome | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Result | null>(null);
   const [swishHandoff, setSwishHandoff] = useState<SwishHandoff | null>(null);
@@ -106,6 +129,8 @@ export default function CourseEnrolButton({
   // Kontoportalen finns bara på /konto (ingen /en-variant ännu).
   const here = returnPath ?? (locale === "en" ? "/en/training#kurser" : "/trana#kurser");
   const accountHref = `/konto?next=${encodeURIComponent(here)}`;
+  const formatSek = (value: number) =>
+    `${value.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB")} kr`;
 
   useEffect(() => () => activeRequest.current?.abort(), []);
 
@@ -116,6 +141,7 @@ export default function CourseEnrolButton({
     const controller = new AbortController();
     activeRequest.current = controller;
     setResult(null);
+    setDiscount(null);
     try {
       const storage = window.sessionStorage;
       const savedInvoice = pendingCourseInvoice(courseId, storage);
@@ -151,10 +177,15 @@ export default function CourseEnrolButton({
         storage,
         () => fallbackAttemptKey.current,
       );
+      const submittedCode = cleanPromotionCode(promotionCode);
       const response = await fetch(`/api/courses/${courseId}/enrol`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ termsVersion, idempotencyKey }),
+        body: JSON.stringify({
+          termsVersion,
+          idempotencyKey,
+          ...(submittedCode ? { promotionCode: submittedCode } : {}),
+        }),
         signal: controller.signal,
       });
       const data = await json(response);
@@ -173,18 +204,50 @@ export default function CourseEnrolButton({
         return;
       }
 
+      const grossSek = amountSek(data.grossAmountSek);
+      const discountSek = amountSek(data.discountAmountSek);
+      const netSek = amountSek(data.netAmountSek);
+      const netAmountSek = netSek ?? priceSek;
+      // Koden är kundens — utfallet ska synas oavsett om den bet eller inte.
+      const outcome: DiscountOutcome | null = submittedCode
+        ? discountSek && discountSek > 0
+          ? {
+              kind: "applied",
+              code: submittedCode,
+              grossSek: grossSek ?? priceSek,
+              discountSek,
+              netSek: netAmountSek,
+            }
+          : { kind: "none", code: submittedCode }
+        : null;
+      setDiscount(outcome);
+      paymentPriceRef.current = netAmountSek;
+      setPaymentPriceSek(netAmountSek);
+
+      // 100 %-kod: nettot är noll och det finns ingen betalning att göra. Swish
+      // kan inte debitera 0 kr, så anmälan är klar redan här. Sparat betalförsök
+      // rensas så att inget ligger kvar och pollar en faktura som aldrig betalas.
+      if (netSek === 0) {
+        clearCourseAttempt(courseId, storage);
+        pushEvent("course_purchase", {
+          course_id: courseId,
+          course_name: courseName,
+          value: 0,
+          currency: "SEK",
+        });
+        setSwishHandoff(null);
+        setShowDesktopSwish(false);
+        setInvoiceStartedAt(null);
+        setResult({ ok: true, kind: "paid" });
+        return;
+      }
+
       const invoiceId = courseInvoiceId(data);
       if (!invoiceId) {
         setResult({ ok: false, message: t.missingInvoice });
         return;
       }
       const invoiceCreatedAt = Date.now();
-      const netAmountSek = typeof data.netAmountSek === "number" &&
-        Number.isSafeInteger(data.netAmountSek) && data.netAmountSek >= 0
-        ? data.netAmountSek
-        : priceSek;
-      paymentPriceRef.current = netAmountSek;
-      setPaymentPriceSek(netAmountSek);
       setInvoiceStartedAt(invoiceCreatedAt);
       rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt, { amountSek: netAmountSek });
 
@@ -227,7 +290,9 @@ export default function CourseEnrolButton({
       );
 
       setPhase("waitingForSwish");
-      if (mobileDevice) window.location.assign(deepLinkUrl);
+      // Gav koden ingen rabatt ska kunden hinna läsa varningen innan Swish tar
+      // över skärmen — då lämnar vi över först när hen trycker på länken själv.
+      if (mobileDevice && outcome?.kind !== "none") window.location.assign(deepLinkUrl);
       await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -305,18 +370,26 @@ export default function CourseEnrolButton({
 
   if (result?.ok) {
     const waitlisted = result.kind === "waitlisted";
+    const applied = discount?.kind === "applied" ? discount : null;
+    // Hela avgiften betald av koden — då är "Betalt och klart" fel besked.
+    const free = applied !== null && applied.netSek === 0;
     return (
       <div className="mt-auto border-t border-black/10 pt-5">
         <p className="mb-1 font-display text-xl uppercase leading-none text-black">
-          {waitlisted ? t.waitlistSuccessTitle : t.successTitle}
+          {waitlisted ? t.waitlistSuccessTitle : free ? t.promotionFreeTitle : t.successTitle}
         </p>
-        <p className="mb-4 text-[13px] leading-snug text-black/55">
-          {waitlisted ? t.waitlistSuccessBody : t.successBody}
+        <p className="text-[13px] leading-snug text-black/55">
+          {waitlisted ? t.waitlistSuccessBody : free ? t.promotionFreeBody(applied.code) : t.successBody}
         </p>
+        {!waitlisted && applied && !free && (
+          <p className="mt-1 text-[13px] font-semibold leading-snug text-teal">
+            {t.promotionAppliedNote(applied.code, formatSek(applied.discountSek))}
+          </p>
+        )}
         {!waitlisted && (
           <a
             href="/konto#traningsgrupper"
-            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
+            className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
           >
             {t.myCoursesCta} <span aria-hidden="true">→</span>
           </a>
@@ -326,9 +399,7 @@ export default function CourseEnrolButton({
   }
 
   const busy = phase !== "idle";
-  const paymentPriceLabel = `${paymentPriceSek.toLocaleString(
-    locale === "sv" ? "sv-SE" : "en-GB",
-  )} kr`;
+  const paymentPriceLabel = formatSek(paymentPriceSek);
   const busyLabel =
     phase === "startingSwish"
       ? t.startingSwish
@@ -339,6 +410,42 @@ export default function CourseEnrolButton({
   return (
     <div className="mt-auto border-t border-black/10 pt-5">
       <p className="mb-3 text-[12px] leading-snug text-black/45">{t.paymentNote}</p>
+
+      {discount?.kind === "applied" && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-4 border border-teal/40 bg-teal/10 p-4"
+        >
+          <p className="font-display text-xl uppercase leading-none text-black">
+            {t.promotionAppliedTitle}
+          </p>
+          <p className="mt-2 text-[15px] font-bold text-black">
+            <span className="mr-2 font-normal text-black/45 line-through">
+              <span className="sr-only">{t.promotionWasLabel(formatSek(discount.grossSek))}</span>
+              <span aria-hidden="true">{formatSek(discount.grossSek)}</span>
+            </span>
+            <span>
+              <span className="sr-only">{t.promotionNowLabel(formatSek(discount.netSek))}</span>
+              <span aria-hidden="true">{formatSek(discount.netSek)}</span>
+            </span>
+          </p>
+          <p className="mt-1 text-[12px] leading-snug text-black/60">
+            {t.promotionAppliedNote(discount.code, formatSek(discount.discountSek))}
+          </p>
+        </div>
+      )}
+
+      {discount?.kind === "none" && (
+        <div role="alert" className="mb-4 border border-orange/40 bg-orange/10 p-4">
+          <p className="font-display text-xl uppercase leading-none text-black">
+            {t.promotionNoDiscountTitle}
+          </p>
+          <p className="mt-2 text-[13px] leading-snug text-black/75">
+            {t.promotionNoDiscountBody(discount.code)}
+          </p>
+        </div>
+      )}
 
       {swishHandoff && (
         <div
@@ -415,6 +522,44 @@ export default function CourseEnrolButton({
         />
         {t.termsAccept}
       </label>
+
+      {/* Stängd som standard: de flesta har ingen kod. Men länken ligger kvar
+          vid knappen, så den som fått en kod ser den utan att leta. */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => setPromotionOpen((open) => !open)}
+          aria-expanded={promotionOpen}
+          aria-controls={`${uid}-promotion`}
+          className={inlineQuiet}
+        >
+          {t.promotionToggle}
+        </button>
+        <div id={`${uid}-promotion`}>
+          {promotionOpen && (
+            <div className="mt-2">
+              <label className={inlineLabel} htmlFor={`${uid}-promotion-code`}>
+                {t.promotionLabel}
+              </label>
+              <input
+                id={`${uid}-promotion-code`}
+                name="promotion-code"
+                value={promotionCode}
+                onChange={(e) => setPromotionCode(cleanPromotionCode(e.target.value))}
+                placeholder={t.promotionPlaceholder}
+                autoComplete="off"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+                disabled={busy}
+                className={inlineField}
+              />
+              <span className={inlineHelp}>{t.promotionHelp}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <button
         type="button"
         disabled={!accepted || busy}

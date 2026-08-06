@@ -35,6 +35,22 @@ export type KurserDict = {
   sellerLabel: string;
   paymentHelp: (email: string) => string;
   /**
+   * Kampanjkoden: utfällbart fält vid villkorsrutan, och utfallet som visas
+   * innan betalningen startar (rabatt avdragen, kod utan rabatt, gratis plats).
+   */
+  promotionToggle: string;
+  promotionLabel: string;
+  promotionPlaceholder: string;
+  promotionHelp: string;
+  promotionAppliedTitle: string;
+  promotionAppliedNote: (code: string, amount: string) => string;
+  promotionWasLabel: (amount: string) => string;
+  promotionNowLabel: (amount: string) => string;
+  promotionNoDiscountTitle: string;
+  promotionNoDiscountBody: (code: string) => string;
+  promotionFreeTitle: string;
+  promotionFreeBody: (code: string) => string;
+  /**
    * Inline-inloggningen i kurskortet: e-post → kod → namn/födelsedatum.
    * Ersätter den gamla omvägen till /konto med ?next=.
    */
@@ -135,6 +151,20 @@ export const kurserDict: Record<Locale, KurserDict> = {
     swishSecurity: "Betalningen sker i Swish-appen. Vi ser aldrig dina bank- eller kortuppgifter.",
     sellerLabel: "Säljare",
     paymentHelp: (email) => `Något som strular? Mejla ${email} så löser vi det.`,
+    promotionToggle: "Har du en kampanjkod?",
+    promotionLabel: "Kampanjkod",
+    promotionPlaceholder: "T.EX. SOMMAR25",
+    promotionHelp: "Skriv koden precis som du fått den. Rabatten dras av innan du betalar.",
+    promotionAppliedTitle: "Rabatten är avdragen",
+    promotionAppliedNote: (code, amount) => `Kampanjkoden ${code} gav ${amount} i rabatt.`,
+    promotionWasLabel: (amount) => `Ordinarie pris ${amount}`,
+    promotionNowLabel: (amount) => `Ditt pris ${amount}`,
+    promotionNoDiscountTitle: "Koden gav ingen rabatt",
+    promotionNoDiscountBody: (code) =>
+      `Vi kunde inte räkna av någon rabatt för ${code}. Kontrollera stavningen, och att koden gäller den här kursen och fortfarande är giltig. Din plats är reserverad — fortsätter du betalar du ordinarie pris.`,
+    promotionFreeTitle: "Klart — inget att betala",
+    promotionFreeBody: (code) =>
+      `Kampanjkoden ${code} täckte hela kursavgiften. Din plats är bekräftad och bekräftelsen mejlas till adressen på ditt konto.`,
     inlineTitle: "Ange din e-post så anmäler vi dig",
     inlineIntro: "Du får en engångskod på mejlen. Är du ny skapas kontot på köpet — du behöver inte lämna sidan.",
     inlineEmailLabel: "E-post",
@@ -229,6 +259,20 @@ export const kurserDict: Record<Locale, KurserDict> = {
     swishSecurity: "Payment happens inside the Swish app. We never see your bank or card details.",
     sellerLabel: "Seller",
     paymentHelp: (email) => `Something not working? Email ${email} and we'll sort it.`,
+    promotionToggle: "Got a promo code?",
+    promotionLabel: "Promo code",
+    promotionPlaceholder: "E.G. SUMMER25",
+    promotionHelp: "Enter the code exactly as you received it. The discount comes off before you pay.",
+    promotionAppliedTitle: "Discount applied",
+    promotionAppliedNote: (code, amount) => `Promo code ${code} took ${amount} off.`,
+    promotionWasLabel: (amount) => `Regular price ${amount}`,
+    promotionNowLabel: (amount) => `Your price ${amount}`,
+    promotionNoDiscountTitle: "The code gave no discount",
+    promotionNoDiscountBody: (code) =>
+      `We could not apply any discount for ${code}. Check the spelling, and that the code is valid for this course and still active. Your place is reserved — if you continue, you pay the regular price.`,
+    promotionFreeTitle: "All set — nothing to pay",
+    promotionFreeBody: (code) =>
+      `Promo code ${code} covered the full course fee. Your place is confirmed and we email the confirmation to the address on your account.`,
     inlineTitle: "Enter your email and we'll sign you up",
     inlineIntro: "We'll email you a one-time code. New here? Your account is created along the way — no need to leave this page.",
     inlineEmailLabel: "Email",
