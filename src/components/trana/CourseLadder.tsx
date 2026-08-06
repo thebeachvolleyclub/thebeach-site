@@ -226,11 +226,8 @@ function PlaceStatus({ course, locale }: { course: Course; locale: Locale }) {
       </span>
     );
   }
-  // Under en fjärdedel kvar räknas som bråttom.
-  const scarce = course.remainingPlaces <= Math.max(2, Math.ceil(course.capacity / 4));
-  return (
-    <span className={scarce ? "text-orange" : "text-black/55"}>
-      {k.placesLeft(course.remainingPlaces)}
-    </span>
-  );
+  // Antal lediga platser visas inte. Ett hogt tal ar ett negativt kopsignal, och
+  // banfordelningen mellan kurserna kan andras under sasongen. Fullbokat och stangd
+  // anmalan visas fortfarande — de sager nagot kunden behover veta.
+  return null;
 }

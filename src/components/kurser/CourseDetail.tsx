@@ -154,13 +154,11 @@ export default function CourseDetail({
                     </Link>
                   </div>
                 )}
-                <p className="mb-4 text-[12px] font-semibold text-black/55">
-                  {state === "closed"
-                    ? k.closed
-                    : state === "waitlist"
-                      ? k.full
-                      : k.placesLeft(course.remainingPlaces)}
-                </p>
+                {state !== "open" && (
+                  <p className="mb-4 text-[12px] font-semibold text-black/55">
+                    {state === "closed" ? k.closed : k.full}
+                  </p>
+                )}
 
                 {state === "closed" ? (
                   <p className="border-t border-black/10 pt-5 text-xs font-bold uppercase tracking-[0.1em] text-black/35">
