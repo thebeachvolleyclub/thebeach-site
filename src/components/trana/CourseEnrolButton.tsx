@@ -476,8 +476,11 @@ const inlineSecondary =
   "inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 border border-black/20 px-6 py-3 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime disabled:cursor-not-allowed disabled:opacity-35";
 const inlineQuiet =
   "inline-flex min-h-[44px] cursor-pointer items-center text-[11px] font-bold uppercase tracking-[0.08em] text-black/50 underline underline-offset-4 transition-colors hover:text-black disabled:cursor-not-allowed disabled:opacity-35";
+// text-black/caret-black ar inte dekoration: kortet arver cream textfarg fran
+// sin sektion, och falten har cream bakgrund. Utan explicit farg blir det
+// cream pa cream — man ser varken det man skriver eller markoren.
 const inlineField =
-  "min-h-12 w-full border border-black/20 bg-cream px-4 text-[14px] outline-none focus:border-black disabled:bg-black/5 disabled:text-black/45";
+  "min-h-12 w-full border border-black/20 bg-cream px-4 text-[14px] text-black caret-black placeholder:text-black/35 outline-none focus:border-black disabled:bg-black/5 disabled:text-black/45";
 const inlineLabel = "mb-1 block text-[11px] font-bold uppercase tracking-[0.1em] text-black/50";
 const inlineHelp = "mt-1 block text-[11px] leading-snug text-black/45";
 const inlineHeading = "mb-1 font-display text-xl uppercase leading-none text-black";
@@ -689,7 +692,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
                   inputMode="numeric"
                   enterKeyHint="go"
                   autoComplete="one-time-code"
-                  className="min-h-12 w-full border border-black/20 bg-cream px-4 text-center text-lg tracking-[0.35em] outline-none focus:border-black"
+                  className="min-h-12 w-full border border-black/20 bg-cream px-4 text-center text-lg tracking-[0.35em] text-black caret-black outline-none focus:border-black"
                 />
               </div>
             </>
