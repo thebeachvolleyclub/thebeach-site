@@ -6,6 +6,10 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
 import type { CoursePersonalPriceStatus } from "@/lib/coursePricing";
+import {
+  parseCoursePromotionLookup,
+  type CoursePromotionLookupResult,
+} from "@/lib/coursePromotion";
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
 import { isBirthdateValid, maskBirthdate, normalizeBirthdate } from "@/lib/birthdate";
@@ -49,23 +53,10 @@ type Result =
 
 type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
 
-type PromotionLookupResult =
-  | { valid: false; lookupVersion: number }
-  | {
-      valid: true;
-      lookupVersion: number;
-      discountPercent: number;
-      priceSek: number;
-      priceTiers: { birthYearFrom: number; priceSek: number }[];
-      personalPriceSek: number | null;
-      personalPriceStatus: CoursePersonalPriceStatus;
-      endsAt: string | null;
-    };
-
 type PromotionLookupState =
   | { kind: "idle" }
   | { kind: "loading"; code: string }
-  | { kind: "valid"; code: string; preview: Extract<PromotionLookupResult, { valid: true }> }
+  | { kind: "valid"; code: string; preview: Extract<CoursePromotionLookupResult, { valid: true }> }
   | { kind: "invalid"; code: string }
   | { kind: "error"; code: string };
 
@@ -114,7 +105,7 @@ async function lookupPromotion(
   courseId: number,
   code: string,
   signal?: AbortSignal,
-): Promise<PromotionLookupResult> {
+): Promise<CoursePromotionLookupResult> {
   const response = await fetch("/api/courses/promotions/lookup", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -123,38 +114,7 @@ async function lookupPromotion(
   });
   const data = await json(response);
   if (!response.ok) throw new Error("promotion lookup failed");
-  if (data.valid !== true) return { valid: false, lookupVersion: 1 };
-
-  const priceSek = amountSek(data.priceSek);
-  const personalPriceSek = data.personalPriceSek === null ? null : amountSek(data.personalPriceSek);
-  const priceTiers = Array.isArray(data.priceTiers)
-    ? data.priceTiers.flatMap((tier) => {
-        if (!tier || typeof tier !== "object") return [];
-        const birthYearFrom = (tier as Record<string, unknown>).birthYearFrom;
-        const tierPrice = amountSek((tier as Record<string, unknown>).priceSek);
-        return Number.isSafeInteger(birthYearFrom) && tierPrice !== null
-          ? [{ birthYearFrom: birthYearFrom as number, priceSek: tierPrice }]
-          : [];
-      })
-    : [];
-  if (
-    priceSek === null
-    || typeof data.discountPercent !== "number"
-    || ![50, 100].includes(data.discountPercent)
-    || (data.personalPriceSek !== null && personalPriceSek === null)
-  ) {
-    throw new Error("invalid promotion response");
-  }
-  return {
-    valid: true,
-    lookupVersion: 1,
-    discountPercent: data.discountPercent,
-    priceSek,
-    priceTiers,
-    personalPriceSek,
-    personalPriceStatus: data.personalPriceStatus as CoursePersonalPriceStatus,
-    endsAt: typeof data.endsAt === "string" ? data.endsAt : null,
-  };
+  return parseCoursePromotionLookup(data);
 }
 
 function randomAttemptKey() {
