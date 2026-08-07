@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import Footer from "@/components/Footer";
@@ -15,6 +16,7 @@ import {
   localizedCourseName,
   type Course,
 } from "@/lib/courses";
+import { courseHero } from "@/lib/courseHero";
 import type { Locale } from "@/lib/i18n";
 import { courseText, kurserDict, shortDate } from "@/lib/i18n/kurser";
 import { kursSidaDict } from "@/lib/i18n/kursSida";
@@ -71,6 +73,8 @@ export default function CourseDetail({
     .map((block) => block.trim())
     .filter(Boolean);
 
+  const hero = courseHero(course.level);
+
   return (
     <>
       <Navbar locale={locale} />
@@ -96,6 +100,26 @@ export default function CourseDetail({
                 </p>
               )}
             </Reveal>
+          </div>
+        </section>
+
+        {/* Hjältebild. Kurssidan är oftast det första en värvad person ser —
+            en länk från en kompis leder hit, inte till startsidan. Utan bild
+            läser sidan som ett kvitto i stället för som en inbjudan. */}
+        <section className="bg-black">
+          <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
+            <Image
+              src={hero.src}
+              alt={hero.alt[locale === "en" ? "en" : "sv"]}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
+            />
           </div>
         </section>
 
