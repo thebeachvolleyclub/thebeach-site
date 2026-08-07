@@ -106,20 +106,23 @@ export default function CourseDetail({
         {/* Hjältebild. Kurssidan är oftast det första en värvad person ser —
             en länk från en kompis leder hit, inte till startsidan. Utan bild
             läser sidan som ett kvitto i stället för som en inbjudan. */}
-        <section className="bg-black">
-          <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
-            <Image
-              src={hero.src}
-              alt={hero.alt[locale === "en" ? "en" : "sv"]}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
-            />
+        <section className="bg-black px-5 pb-14 sm:px-8 lg:px-14">
+          <div className="mx-auto max-w-3xl">
+            <Reveal>
+              {/* Originalen ar kvadratiska (900x900). En panoramabeskarning
+                  kapar ansiktena, och det ar ansiktena som saljer kursen —
+                  darfor 4:3 och en aning ovanfor mitten. */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <Image
+                  src={hero.src}
+                  alt={hero.alt[locale === "en" ? "en" : "sv"]}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 48rem, 100vw"
+                  className="object-cover object-[50%_38%]"
+                />
+              </div>
+            </Reveal>
           </div>
         </section>
 
