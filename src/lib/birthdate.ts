@@ -63,7 +63,9 @@ export function isBirthdateValid(value: string): boolean {
   if (y < 1900 || m < 1 || m > 12 || d < 1 || d > 31) return false;
   const date = new Date(Date.UTC(y, m - 1, d));
   if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return false;
-  return date.getTime() <= Date.now();
+  const now = new Date();
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return date.getTime() < today;
 }
 
 /** Customer-facing reason the value is not acceptable yet, or "" when it is. */

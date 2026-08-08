@@ -8,11 +8,14 @@ import {
   safeAccountNext,
 } from "@/lib/accountReturn.core";
 import { maskBirthdate, normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
+import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 
 type Profile = {
   id: string;
   email: string;
   name: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   birthdate: string | null;
   swish_phone: string | null;
   emoji_icon: string;
@@ -23,10 +26,27 @@ type Profile = {
   banner_url: string | null;
   profile_complete: boolean;
   canonical_player_id: number | null;
+  identity_status?: "pending_identity" | "duplicate_review" | "merge_pending" | "active";
+  identity_onboarding_v2_enabled?: boolean;
   // Set on a profile save that hit the duplicate guard: a master-registry
   // player with the same name (+ birthdate when known). BeachID creation is
   // deferred until the user picks a path — see the alert card.
   duplicate_match?: { player_id: number; masked_email: string | null; birthdate_match: boolean } | null;
+};
+
+type IdentityCandidate = {
+  player_id: number;
+  name: string;
+  masked_email: string | null;
+  birthdate_match: boolean;
+};
+type IdentityState = {
+  identity_status: "pending_identity" | "duplicate_review" | "merge_pending" | "active";
+  first_name: string | null;
+  last_name: string | null;
+  birthdate: string | null;
+  candidates: IdentityCandidate[];
+  message: string | null;
 };
 
 type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null };
@@ -118,6 +138,17 @@ type RatingMatchResult = {
 
 const EMOJIS = ["🏐", "🌴", "☀️", "🌊", "🦩", "🦀", "🐚", "🥥", "😎", "🔥", "⚡", "💪"];
 
+function splitProfileName(profile: Profile) {
+  if (profile.first_name?.trim() && profile.last_name?.trim()) {
+    return { firstName: profile.first_name.trim(), lastName: profile.last_name.trim() };
+  }
+  const parts = (profile.name ?? "").trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (typeof init?.body === "string") headers.set("Content-Type", "application/json");
@@ -185,13 +216,15 @@ export default function AccountPortal() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [swish, setSwish] = useState("");
   const [description, setDescription] = useState("");
   // Duplicate-account alert (profile-setup guard) + merge confirmation.
   const [dupAlert, setDupAlert] = useState<NonNullable<Profile["duplicate_match"]> | null>(null);
   const [mergeMessage, setMergeMessage] = useState("");
+  const [identityState, setIdentityState] = useState<IdentityState | null>(null);
   const [emoji, setEmoji] = useState("🏐");
   const [isPublic, setIsPublic] = useState(true);
   const [newEmail, setNewEmail] = useState("");
@@ -222,14 +255,21 @@ export default function AccountPortal() {
   }, []);
 
   const applyProfile = useCallback((next: Profile) => {
+    const structured = splitProfileName(next);
     setProfile(next);
-    setName(next.name ?? "");
+    setFirstName(structured.firstName);
+    setLastName(structured.lastName);
     setBirthdate(next.birthdate ?? "");
     setSwish(next.swish_phone ?? "");
     setDescription(next.description ?? "");
     setEmoji(next.emoji_icon || "🏐");
     setIsPublic(next.is_public);
   }, []);
+
+  const identityRequired = Boolean(
+    profile?.identity_onboarding_v2_enabled
+    && profile.identity_status !== "active",
+  );
 
   // Profile-first hand-back (?next=/anmalan): pages that require a signed-in
   // profile send visitors here to log in / register, then get them back.
@@ -244,16 +284,35 @@ export default function AccountPortal() {
   useEffect(() => {
     // Hold the hand-back while the duplicate alert is open — the user must
     // pick a path (old login / merge / new player) before continuing.
-    if (canReturnFromAccount(nextPath, profile) && !dupAlert) window.location.assign(nextPath as string);
-  }, [nextPath, profile?.name, profile?.swish_phone, dupAlert]);
+    if (canReturnFromAccount(nextPath, profile) && !dupAlert && !identityRequired) {
+      window.location.assign(nextPath as string);
+    }
+  }, [nextPath, profile?.name, profile?.swish_phone, dupAlert, identityRequired]);
 
   // A fresh account has no name yet — profile completion IS the next step,
   // so land new registrants straight on the profile tab.
   useEffect(() => {
-    if (profile && (!profile.name?.trim() || (accountReturnNeedsSwish(nextPath) && !profile.swish_phone?.trim()))) {
+    if (profile && (identityRequired || !profile.name?.trim() || (accountReturnNeedsSwish(nextPath) && !profile.swish_phone?.trim()))) {
       setTab("profile");
     }
-  }, [nextPath, profile?.name, profile?.swish_phone]);
+  }, [nextPath, profile?.name, profile?.swish_phone, identityRequired]);
+
+  useEffect(() => {
+    if (!identityRequired) return;
+    let active = true;
+    api<IdentityState>("/api/account/identity")
+      .then((state) => {
+        if (!active) return;
+        setIdentityState(state);
+        if (state.first_name) setFirstName(state.first_name);
+        if (state.last_name) setLastName(state.last_name);
+        if (state.birthdate) setBirthdate(state.birthdate.slice(0, 10));
+      })
+      .catch((cause) => {
+        if (active) setError(cause instanceof Error ? cause.message : "Kunde inte läsa identitetskontrollen");
+      });
+    return () => { active = false; };
+  }, [identityRequired, profile?.id]);
 
 
   const loadSession = useCallback(async () => {
@@ -286,9 +345,9 @@ export default function AccountPortal() {
     return () => { active = false; };
   }, [applyProfile]);
 
-  const profileId = profile?.id;
+  const profileId = identityRequired ? undefined : profile?.id;
   useEffect(() => {
-    if (!profileId) { setSignupMine(null); setSignupLoaded(false); return; }
+    if (!profileId) return;
     let active = true;
     api<SignupMine>("/api/signup/mine")
       .then((result) => { if (active) setSignupMine(result); })
@@ -380,6 +439,16 @@ export default function AccountPortal() {
 
   const saveProfile = async (confirmNewIdentity = false) => {
     const normalizedBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
+    const trimmedFirstName = normalizePersonName(firstName);
+    const trimmedLastName = normalizePersonName(lastName);
+    if (!validNameComponent(trimmedFirstName)) {
+      setError("Ange ett giltigt förnamn med minst två bokstäver.");
+      return;
+    }
+    if (!validNameComponent(trimmedLastName)) {
+      setError("Ange ett giltigt efternamn med minst två bokstäver.");
+      return;
+    }
     if (!isBirthdateValid(normalizedBirthdate)) {
       setError(birthdateHint(birthdate));
       return;
@@ -387,10 +456,34 @@ export default function AccountPortal() {
     if (normalizedBirthdate !== birthdate) setBirthdate(normalizedBirthdate);
     setBusy(true); setError(""); setMessage("");
     try {
+      if (identityRequired) {
+        const state = await api<IdentityState>("/api/account/identity", {
+          method: "PUT",
+          body: JSON.stringify({
+            first_name: trimmedFirstName,
+            last_name: trimmedLastName,
+            birthdate: normalizedBirthdate,
+          }),
+        });
+        setIdentityState(state);
+        if (state.identity_status !== "active") return;
+        const activated = await api<Profile>("/api/account/profile");
+        const ratingMatch = await api<RatingMatchResult>("/api/account/profile/match-rating", {
+          method: "POST",
+        });
+        applyProfile(ratingMatch.profile ?? activated);
+        setMessage(ratingMatch.status === "found"
+          ? "Profilen är sparad och din spelhistorik har kopplats."
+          : "Profilen är sparad och uppdaterad i appen.");
+        return;
+      }
       const next = await api<Profile>("/api/account/profile", {
         method: "PUT",
         body: JSON.stringify({
-          name, swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic,
+          name: `${trimmedFirstName} ${trimmedLastName}`,
+          first_name: trimmedFirstName,
+          last_name: trimmedLastName,
+          swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic,
           birthdate: normalizedBirthdate || undefined,
           // Duplicate guard: a name/birthdate match in the player registry
           // pauses BeachID creation and raises the alert card instead.
@@ -416,6 +509,28 @@ export default function AccountPortal() {
       }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte spara profilen"); }
     finally { setBusy(false); }
+  };
+
+  const decideIdentityCandidate = async (decision: "yes" | "no") => {
+    const candidate = identityState?.candidates[0];
+    if (!candidate) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const state = await api<IdentityState>(`/api/account/identity/${candidate.player_id}`, {
+        method: "POST",
+        body: JSON.stringify({ decision }),
+      });
+      setIdentityState(state);
+      if (state.identity_status === "active") {
+        const activated = await api<Profile>("/api/account/profile");
+        applyProfile(activated);
+        setMessage("Identiteten är klar. Du kan nu fortsätta.");
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte spara ditt svar");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const requestMerge = async () => {
@@ -516,6 +631,7 @@ export default function AccountPortal() {
   const logout = async () => {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
+    setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName("");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed({ memberships: [], activeCount: 0 });
@@ -564,14 +680,14 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span>{membershipFeed.activeCount > 0 ? <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black">Medlem</span> : null}</div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{[["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
       {label}
       {value === "training" && signupMine?.submission ? (
         <span className="grid h-4 w-4 place-items-center rounded-full bg-lime text-[10px] font-bold text-black" aria-label="Anmäld" title="Anmäld">✓</span>
       ) : value === "training" && signupMine?.can_signup ? (
         <span className="rounded-full bg-lime px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-black">Anmälan öppen</span>
       ) : null}
-    </button>)}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
+    </button>) : <strong className="px-4 py-3 text-xs uppercase tracking-[0.08em]">Slutför identitetskontrollen</strong>}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
 
     {(!profile.name || !profile.swish_phone) ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Namn krävs för kontot och Swish-nummer krävs när du bokar bana.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
     {message ? <p className="border-x border-b border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{message}</p> : null}
@@ -604,6 +720,22 @@ export default function AccountPortal() {
     /> : null}
 
     {tab === "profile" ? <>
+    {identityRequired && identityState?.identity_status === "duplicate_review" && identityState.candidates[0] ? <div className="border-x border-b border-orange/40 bg-orange/10 p-6">
+      <p className="font-display text-2xl uppercase text-black">Är detta du?</p>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
+        <strong>{identityState.candidates[0].name}</strong><br />
+        {identityState.candidates[0].birthdate_match ? "Samma namn och födelsedatum" : "Samma namn"} finns redan i registret
+        {identityState.candidates[0].masked_email ? <>, kopplat till <strong>{identityState.candidates[0].masked_email}</strong></> : null}.
+      </p>
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+        <button type="button" onClick={() => decideIdentityCandidate("yes")} disabled={busy} className="min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Ja, det är jag</button>
+        <button type="button" onClick={() => decideIdentityCandidate("no")} disabled={busy} className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:opacity-35">Nej, det är inte jag</button>
+      </div>
+    </div> : null}
+    {identityRequired && identityState?.identity_status === "merge_pending" ? <div className="border-x border-b border-teal/30 bg-mint p-6">
+      <p className="font-display text-2xl uppercase text-black">Vi kontrollerar din profil</p>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/70">{identityState.message ?? "Du har bekräftat att den befintliga profilen är din. Vi granskar kopplingen och meddelar dig när den är klar."}</p>
+    </div> : null}
     {dupAlert ? <div className="border-x border-b border-orange/40 bg-orange/10 p-6">
       <p className="font-display text-2xl uppercase text-black">Är det här du?</p>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
@@ -630,23 +762,30 @@ export default function AccountPortal() {
       </div>
     </div> : null}
     {mergeMessage ? <div className="border-x border-b border-teal/30 bg-mint p-5 text-sm leading-relaxed text-teal">{mergeMessage}</div> : null}
-    <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
+    {!identityRequired || identityState?.identity_status === "pending_identity" ? <div className="grid gap-0.5 bg-black/10 lg:grid-cols-2">
       <section className="bg-white p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Uppgifter</p><div className="space-y-4">
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Namn *</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs — för- och efternamn.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Förnamn *</span><input value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Skriv eventuella ytterligare förnamn här.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Efternamn *</span><input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input value={birthdate} onChange={(e) => setBirthdate(maskBirthdate(e.target.value))} onBlur={(e) => { const fixed = normalizeBirthdate(e.target.value); if (fixed) setBirthdate(fixed); }} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter. Skriv bara siffrorna — bindestrecken fylls i automatiskt.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
         {(() => {
           const cleanedBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
-          const nameOk = name.trim().length >= 2;
+          const firstNameOk = validNameComponent(firstName);
+          const lastNameOk = validNameComponent(lastName);
           const bdOk = isBirthdateValid(cleanedBirthdate);
           // Never leave the user with a dead grey button and no reason: on a
           // phone the old numeric keypad had no hyphen key, so this state was
           // unreachable-by-typing and completely unexplained.
-          const blocker = !nameOk ? "Fyll i för- och efternamn." : !bdOk ? birthdateHint(birthdate) : "";
+          const identityLocked = identityRequired && identityState?.identity_status !== "pending_identity";
+          const blocker = !firstNameOk
+            ? "Ange ett giltigt förnamn med minst två bokstäver."
+            : !lastNameOk
+              ? "Ange ett giltigt efternamn med minst två bokstäver."
+              : !bdOk ? birthdateHint(birthdate) : identityLocked ? "Besvara identitetskontrollen ovan." : "";
           return <>
-            <button type="button" onClick={() => saveProfile()} disabled={busy || !nameOk || !bdOk} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+            <button type="button" onClick={() => saveProfile()} disabled={busy || !firstNameOk || !lastNameOk || !bdOk || identityLocked} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
             {blocker ? <p className="mt-2 text-xs font-semibold text-orange">{blocker}</p> : null}
           </>;
         })()}
@@ -664,7 +803,7 @@ export default function AccountPortal() {
           </div>
         </div>
       </section>
-    </div></> : null}
+    </div> : null}</> : null}
 
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
     {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}</article>)}</div>}</section> : null}

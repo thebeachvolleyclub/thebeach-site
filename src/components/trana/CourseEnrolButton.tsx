@@ -13,6 +13,7 @@ import {
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
 import { isBirthdateValid, maskBirthdate, normalizeBirthdate } from "@/lib/birthdate";
+import { normalizePersonName, splitValidFullName, validNameComponent } from "@/lib/personIdentity";
 import { pushEvent } from "@/lib/gtm";
 import {
   clearCourseAttempt,
@@ -825,8 +826,21 @@ type InlinePending =
 type DuplicateMatch = { player_id: number; masked_email: string | null; birthdate_match: boolean };
 type InlineProfile = {
   name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   birthdate?: string | null;
+  identity_status?: "pending_identity" | "duplicate_review" | "merge_pending" | "active";
+  identity_onboarding_v2_enabled?: boolean;
   duplicate_match?: DuplicateMatch | null;
+};
+type InlineIdentityCandidate = DuplicateMatch & { name: string };
+type InlineIdentityState = {
+  identity_status: "pending_identity" | "duplicate_review" | "merge_pending" | "active";
+  first_name: string | null;
+  last_name: string | null;
+  birthdate: string | null;
+  candidates: InlineIdentityCandidate[];
+  message: string | null;
 };
 
 const inlinePrimary =
@@ -869,8 +883,11 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [duplicate, setDuplicate] = useState<DuplicateMatch | null>(null);
+  const [identityV2, setIdentityV2] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   // Ref, inte state: ett dubbelklick hinner före nästa render och skulle
@@ -880,8 +897,12 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   const busy = pending !== null;
   const address = email.trim().toLowerCase();
   const cleanBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
-  const profileBlocker = name.trim().length < 2
-    ? t.inlineNameInvalid
+  const profileBlocker = identityV2 && !validNameComponent(firstName)
+    ? locale === "sv" ? "Ange ett giltigt förnamn med minst två bokstäver." : "Enter a valid first name with at least two letters."
+    : identityV2 && !validNameComponent(lastName)
+      ? locale === "sv" ? "Ange ett giltigt efternamn med minst två bokstäver." : "Enter a valid last name with at least two letters."
+    : !identityV2 && !splitValidFullName(name)
+      ? t.inlineNameInvalid
     : isBirthdateValid(cleanBirthdate)
       ? ""
       : t.inlineBirthdateInvalid;
@@ -940,6 +961,31 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
       return;
     }
     const profile = await call<InlineProfile>("/api/account/profile");
+    const usesIdentityV2 = Boolean(profile.identity_onboarding_v2_enabled);
+    setIdentityV2(usesIdentityV2);
+    if (usesIdentityV2) {
+      const parts = profile.first_name?.trim() && profile.last_name?.trim()
+        ? { firstName: profile.first_name.trim(), lastName: profile.last_name.trim() }
+        : splitValidFullName(profile.name ?? "");
+      setFirstName(parts?.firstName ?? "");
+      setLastName(parts?.lastName ?? "");
+    }
+    if (usesIdentityV2 && profile.identity_status !== "active") {
+      const state = await call<InlineIdentityState>("/api/account/identity");
+      setFirstName(state.first_name ?? "");
+      setLastName(state.last_name ?? "");
+      setBirthdate(state.birthdate?.slice(0, 10) ?? "");
+      if (state.identity_status === "duplicate_review" && state.candidates[0]) {
+        setDuplicate(state.candidates[0]);
+        setStep("duplicate");
+      } else if (state.identity_status === "merge_pending") {
+        setNotice(state.message ?? t.inlineMergeQueued);
+        setStep("merged");
+      } else {
+        setStep("profile");
+      }
+      return;
+    }
     const savedName = (profile.name ?? "").trim();
     const savedBirthdate = (profile.birthdate ?? "").slice(0, 10);
     if (savedName.length >= 2 && isBirthdateValid(savedBirthdate)) {
@@ -954,11 +1000,36 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   /** true = profilen är klar. false = dubbletten måste besvaras först. */
   async function saveProfile(confirmNewIdentity: boolean): Promise<boolean> {
     const trimmedName = name.trim();
-    if (trimmedName.length < 2) throw new Error(t.inlineNameInvalid);
+    if (identityV2) {
+      if (!validNameComponent(firstName)) throw new Error(locale === "sv" ? "Ange ett giltigt förnamn." : "Enter a valid first name.");
+      if (!validNameComponent(lastName)) throw new Error(locale === "sv" ? "Ange ett giltigt efternamn." : "Enter a valid last name.");
+    } else if (!splitValidFullName(trimmedName)) throw new Error(t.inlineNameInvalid);
     // Utan födelsedatum kan plattformen inte räkna fram rätt kurspris och
     // nekar anmälan med 422 — därför stoppar vi redan här.
     if (!isBirthdateValid(cleanBirthdate)) throw new Error(t.inlineBirthdateInvalid);
     setBirthdate(cleanBirthdate);
+    if (identityV2) {
+      const state = await call<InlineIdentityState>("/api/account/identity", {
+        method: "PUT",
+        body: JSON.stringify({
+          first_name: normalizePersonName(firstName),
+          last_name: normalizePersonName(lastName),
+          birthdate: cleanBirthdate,
+        }),
+      });
+      if (state.identity_status === "duplicate_review" && state.candidates[0]) {
+        setDuplicate(state.candidates[0]);
+        setStep("duplicate");
+        return false;
+      }
+      if (state.identity_status === "merge_pending") {
+        setNotice(state.message ?? t.inlineMergeQueued);
+        setStep("merged");
+        return false;
+      }
+      await call("/api/account/profile/match-rating", { method: "POST" }).catch(() => null);
+      return state.identity_status === "active";
+    }
     const saved = await call<InlineProfile>("/api/account/profile", {
       method: "PUT",
       body: JSON.stringify({
@@ -987,6 +1058,15 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   });
   const onSamePerson = () => run("samePerson", async () => {
     if (!duplicate) return;
+    if (identityV2) {
+      const state = await call<InlineIdentityState>(`/api/account/identity/${duplicate.player_id}`, {
+        method: "POST",
+        body: JSON.stringify({ decision: "yes" }),
+      });
+      setNotice(state.message ?? t.inlineMergeQueued);
+      setStep("merged");
+      return;
+    }
     const result = await call<{ message?: string }>("/api/account/merge-request", {
       method: "POST",
       body: JSON.stringify({ player_id: duplicate.player_id }),
@@ -997,6 +1077,19 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     if (await saveProfile(true)) setStep("merged");
   });
   const onNewPerson = () => run("newPerson", async () => {
+    if (identityV2 && duplicate) {
+      const state = await call<InlineIdentityState>(`/api/account/identity/${duplicate.player_id}`, {
+        method: "POST",
+        body: JSON.stringify({ decision: "no" }),
+      });
+      if (state.identity_status === "duplicate_review" && state.candidates[0]) {
+        setDuplicate(state.candidates[0]);
+        setStep("duplicate");
+        return;
+      }
+      if (state.identity_status === "active") finish();
+      return;
+    }
     if (await saveProfile(true)) finish();
   });
 
@@ -1103,18 +1196,21 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
         <>
           <p className={inlineHeading}>{t.inlineProfileTitle}</p>
           <p className="mb-4 text-[12px] leading-snug text-black/45">{t.inlineProfileIntro}</p>
-          <div className="mb-3 block">
+          {identityV2 ? <>
+            <div className="mb-3 block">
+              <label className={inlineLabel} htmlFor={`${uid}-first-name`}>{locale === "sv" ? "Förnamn" : "First name"}</label>
+              <input id={`${uid}-first-name`} name="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" maxLength={60} className={inlineField} />
+            </div>
+            <div className="mb-3 block">
+              <label className={inlineLabel} htmlFor={`${uid}-last-name`}>{locale === "sv" ? "Efternamn" : "Last name"}</label>
+              <input id={`${uid}-last-name`} name="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" maxLength={60} className={inlineField} />
+              <span className={inlineHelp}>{t.inlineNameHelp}</span>
+            </div>
+          </> : <div className="mb-3 block">
             <label className={inlineLabel} htmlFor={`${uid}-name`}>{t.inlineNameLabel}</label>
-            <input
-              id={`${uid}-name`}
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              className={inlineField}
-            />
+            <input id={`${uid}-name`} name="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className={inlineField} />
             <span className={inlineHelp}>{t.inlineNameHelp}</span>
-          </div>
+          </div>}
           <div className="mb-4 block">
             <label className={inlineLabel} htmlFor={`${uid}-birthdate`}>{t.inlineBirthdateLabel}</label>
             <input
@@ -1172,9 +1268,11 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
         <div role="status" aria-live="polite">
           <p className={inlineHeading}>{t.inlineMergeTitle}</p>
           <p className="mb-4 text-[13px] leading-snug text-black/55">{notice || t.inlineMergeQueued}</p>
-          <button type="button" onClick={finish} className={inlinePrimary}>
+          {identityV2 ? <a href={accountHref} className={inlineSecondary}>
+            {locale === "sv" ? "Öppna mitt konto" : "Open my account"} <span aria-hidden="true">→</span>
+          </a> : <button type="button" onClick={finish} className={inlinePrimary}>
             {t.inlineContinue} <span aria-hidden="true">→</span>
-          </button>
+          </button>}
         </div>
       )}
 

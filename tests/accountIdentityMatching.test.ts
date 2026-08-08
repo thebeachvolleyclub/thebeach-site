@@ -5,6 +5,9 @@ import test from "node:test";
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
 const profileRoute = readFileSync("src/app/api/account/profile/route.ts", "utf8");
 const matchingRoute = readFileSync("src/app/api/account/profile/match-rating/route.ts", "utf8");
+const identityRoute = readFileSync("src/app/api/account/identity/route.ts", "utf8");
+const decisionRoute = readFileSync("src/app/api/account/identity/[playerId]/route.ts", "utf8");
+const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
 
 test("all web account profiles require birthdate and opt into the Master duplicate guard", () => {
   // Birthdate is still mandatory — the gate just moved from a bare
@@ -23,7 +26,36 @@ test("web profile matching completes before the signup hand-back", () => {
   const saveEnd = portal.indexOf("const requestMerge", saveStart);
   const saveFlow = portal.slice(saveStart, saveEnd);
   assert.ok(saveFlow.indexOf("/api/account/profile/match-rating") < saveFlow.indexOf("applyProfile(ratingMatch.profile ?? next)"));
-  assert.match(portal, /if \(canReturnFromAccount\(nextPath, profile\) && !dupAlert\)/);
+  assert.match(portal, /if \(canReturnFromAccount\(nextPath, profile\) && !dupAlert && !identityRequired\)/);
+});
+
+test("durable identity onboarding is server-capability gated and blocks person-scoped account data", () => {
+  assert.match(portal, /profile\?\.identity_onboarding_v2_enabled/);
+  assert.match(portal, /profile\.identity_status !== "active"/);
+  assert.match(portal, /const profileId = identityRequired \? undefined : profile\?\.id/);
+  assert.match(portal, /!identityRequired \? \[\["overview"/);
+  assert.match(courseSignup, /Boolean\(profile\.identity_onboarding_v2_enabled\)/);
+});
+
+test("web onboarding persists a structured identity and requires an explicit yes or no", () => {
+  assert.match(portal, /first_name: trimmedFirstName/);
+  assert.match(portal, /last_name: trimmedLastName/);
+  assert.match(portal, /decideIdentityCandidate\("yes"\)/);
+  assert.match(portal, /decideIdentityCandidate\("no"\)/);
+  assert.match(portal, /Ja, det är jag/);
+  assert.match(portal, /Nej, det är inte jag/);
+  assert.match(courseSignup, /body: JSON\.stringify\(\{ decision: "yes" \}\)/);
+  assert.match(courseSignup, /body: JSON\.stringify\(\{ decision: "no" \}\)/);
+});
+
+test("identity BFF routes keep the bearer token server-side and reject cross-origin mutations", () => {
+  assert.match(identityRoute, /accountToken\(\)/);
+  assert.match(identityRoute, /sameOrigin\(request\)/);
+  assert.match(identityRoute, /\/matchmaking\/identity\/onboarding\/profile/);
+  assert.match(decisionRoute, /accountToken\(\)/);
+  assert.match(decisionRoute, /sameOrigin\(request\)/);
+  assert.match(decisionRoute, /body\.decision !== "yes" && body\.decision !== "no"/);
+  assert.match(decisionRoute, /\^\\d\+\$/);
 });
 
 test("server-side web matching uses trusted lookup then persists found data", () => {

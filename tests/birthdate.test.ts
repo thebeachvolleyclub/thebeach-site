@@ -47,6 +47,9 @@ test("birthdate validation requires a real, past calendar date", () => {
   assert.equal(isBirthdateValid("2999-01-01"), false);
   assert.equal(isBirthdateValid("19900512"), false);
   assert.equal(isBirthdateValid(""), false);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  assert.equal(isBirthdateValid(today), false);
 });
 
 test("profile and signup forms keep the birthdate field usable on a phone", () => {
