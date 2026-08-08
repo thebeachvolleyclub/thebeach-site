@@ -3,14 +3,19 @@ import {
   accountDeviceId,
   sameOrigin,
   setAccountSession,
-  setFamilyChoice,
+  setIdentityChoice,
 } from "@/lib/accountSession";
 import { appApi } from "@/lib/appApi";
 
 export const dynamic = "force-dynamic";
 
-type FamilyUser = { id: string; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null; auth_token?: string | null };
-type VerifyPayload = { user?: { id?: string }; family_users?: FamilyUser[]; auth_token?: string | null };
+type FamilyUser = { id: string; player_id?: number; name?: string | null; emoji_icon?: string | null; avatar_thumb_url?: string | null };
+type VerifyPayload = {
+  user?: { id?: string };
+  family_users?: FamilyUser[];
+  auth_token?: string | null;
+  identity_challenge?: string | null;
+};
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
@@ -22,7 +27,11 @@ export async function POST(request: Request) {
   }
   const upstream = await appApi(
     "/matchmaking/auth/verify-code",
-    { method: "POST", body: JSON.stringify({ email, code }) },
+    {
+      method: "POST",
+      headers: { "X-Identity-Flow": "beachid-v2" },
+      body: JSON.stringify({ email, code }),
+    },
     { deviceId: await accountDeviceId() ?? undefined },
   );
   const raw = await upstream.text();
@@ -38,13 +47,17 @@ export async function POST(request: Request) {
     // which let any API-key holder become any user (audit 2026-07-17).
     const family = Array.isArray(payload.family_users) ? payload.family_users.filter((item) => item?.id) : [];
     if (family.length > 1) {
-      const missing = family.filter((member) => !member.auth_token);
-      if (missing.length) return NextResponse.json({ detail: "Inloggningssvaret saknade session" }, { status: 502 });
+      if (!payload.identity_challenge) {
+        return NextResponse.json({ detail: "Inloggningssvaret saknade identitetsval" }, { status: 502 });
+      }
       const response = NextResponse.json({
         requiresSelection: true,
-        familyUsers: family.map(({ auth_token: _token, ...member }) => member),
+        familyUsers: family,
       });
-      for (const member of family) setFamilyChoice(response, member.id, member.auth_token as string);
+      // The verified-email challenge stays HttpOnly. The browser only sends
+      // the selected Master BeachID, which the App API checks against the
+      // challenge's server-side allow-list before minting a user session.
+      setIdentityChoice(response, payload.identity_challenge);
       return response;
     }
     const userId = payload.user?.id;

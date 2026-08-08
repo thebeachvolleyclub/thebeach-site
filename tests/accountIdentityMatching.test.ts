@@ -7,7 +7,11 @@ const profileRoute = readFileSync("src/app/api/account/profile/route.ts", "utf8"
 const matchingRoute = readFileSync("src/app/api/account/profile/match-rating/route.ts", "utf8");
 const identityRoute = readFileSync("src/app/api/account/identity/route.ts", "utf8");
 const decisionRoute = readFileSync("src/app/api/account/identity/[playerId]/route.ts", "utf8");
+const verifyRoute = readFileSync("src/app/api/account/auth/verify/route.ts", "utf8");
+const selectFamilyRoute = readFileSync("src/app/api/account/auth/select-family/route.ts", "utf8");
+const logoutRoute = readFileSync("src/app/api/account/auth/logout/route.ts", "utf8");
 const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
+const seasonSignup = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
 
 test("all web account profiles require birthdate and opt into the Master duplicate guard", () => {
   // Birthdate is still mandatory — the gate just moved from a bare
@@ -35,6 +39,11 @@ test("durable identity onboarding is server-capability gated and blocks person-s
   assert.match(portal, /const profileId = identityRequired \? undefined : profile\?\.id/);
   assert.match(portal, /!identityRequired \? \[\["overview"/);
   assert.match(courseSignup, /Boolean\(profile\.identity_onboarding_v2_enabled\)/);
+  assert.match(seasonSignup, /session\.profile\?\.identity_onboarding_v2_enabled/);
+  assert.match(seasonSignup, /session\.profile\.identity_status !== "active"/);
+  assert.match(seasonSignup, /if \(requiresIdentity\) return/);
+  assert.match(seasonSignup, /Slutför identitetskontrollen/);
+  assert.match(seasonSignup, /href="\/konto\?next=\/anmalan"/);
 });
 
 test("web onboarding persists a structured identity and requires an explicit yes or no", () => {
@@ -56,6 +65,23 @@ test("identity BFF routes keep the bearer token server-side and reject cross-ori
   assert.match(decisionRoute, /sameOrigin\(request\)/);
   assert.match(decisionRoute, /body\.decision !== "yes" && body\.decision !== "no"/);
   assert.match(decisionRoute, /\^\\d\+\$/);
+});
+
+test("shared-email web login uses the server challenge and an explicit Master BeachID choice", () => {
+  assert.match(verifyRoute, /"X-Identity-Flow": "beachid-v2"/);
+  assert.match(verifyRoute, /payload\.identity_challenge/);
+  assert.match(verifyRoute, /setIdentityChoice\(response, payload\.identity_challenge\)/);
+  assert.doesNotMatch(verifyRoute, /member\.auth_token/);
+
+  assert.match(selectFamilyRoute, /IDENTITY_CHOICE_COOKIE/);
+  assert.match(selectFamilyRoute, /\/matchmaking\/auth\/select-identity/);
+  assert.match(selectFamilyRoute, /player_id: Number\(playerId\)/);
+  assert.match(selectFamilyRoute, /"X-Identity-Flow": "beachid-v2"/);
+  assert.match(selectFamilyRoute, /deviceId: await accountDeviceId\(\)/);
+  assert.match(selectFamilyRoute, /setAccountSession\(response, payload\.auth_token\)/);
+  assert.doesNotMatch(selectFamilyRoute, /tb_account_choice_/);
+  assert.doesNotMatch(portal, /candidateIds:/);
+  assert.match(logoutRoute, /clearIdentityChoice\(response\)/);
 });
 
 test("server-side web matching uses trusted lookup then persists found data", () => {

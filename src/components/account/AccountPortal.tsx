@@ -431,7 +431,7 @@ export default function AccountPortal() {
   const selectFamily = async (userId: string) => {
     setBusy(true); setError("");
     try {
-      await api("/api/account/auth/select-family", { method: "POST", body: JSON.stringify({ userId, candidateIds: family.map((item) => item.id) }) });
+      await api("/api/account/auth/select-family", { method: "POST", body: JSON.stringify({ userId }) });
       setFamily([]); await loadSession();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte välja profil"); }
     finally { setBusy(false); }

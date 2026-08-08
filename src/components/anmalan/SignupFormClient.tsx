@@ -391,6 +391,7 @@ export default function SignupFormClient() {
   const [mine, setMine] = useState<MineState | null>(null);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
+  const [identityRequired, setIdentityRequired] = useState(false);
   const [viewerIsTester, setViewerIsTester] = useState(false);
   const [membershipConfirmed, setMembershipConfirmed] = useState<boolean | null>(null);
 
@@ -451,13 +452,24 @@ export default function SignupFormClient() {
     try {
       const cfg = await api<Config>("/api/signup/config").catch(() => null);
       setConfig(cfg);
-      const session = await api<{ authenticated: boolean; profile?: { name?: string | null; is_app_tester?: boolean } }>(
+      const session = await api<{ authenticated: boolean; profile?: {
+        name?: string | null;
+        is_app_tester?: boolean;
+        identity_status?: string | null;
+        identity_onboarding_v2_enabled?: boolean;
+      } }>(
         "/api/account/session",
       ).catch(() => null);
       if (session?.authenticated) {
         setAuthed(true);
         setAccountName(session.profile?.name ?? null);
         setViewerIsTester(!!session.profile?.is_app_tester);
+        const requiresIdentity = Boolean(
+          session.profile?.identity_onboarding_v2_enabled
+          && session.profile.identity_status !== "active",
+        );
+        setIdentityRequired(requiresIdentity);
+        if (requiresIdentity) return;
         const [pf, mineState, membershipFeed] = await Promise.all([
           api<Prefill>("/api/signup/prefill").catch(() => null),
           api<MineState>("/api/signup/mine").catch(() => null),
@@ -488,6 +500,9 @@ export default function SignupFormClient() {
             if (pf.gender) setGender(pf.gender);
           }
         }
+      } else {
+        setAuthed(false);
+        setIdentityRequired(false);
       }
     } finally {
       setLoading(false);
@@ -708,6 +723,33 @@ export default function SignupFormClient() {
 
   if (loading) {
     return <div className={`${cardCls} text-black/50`}>{t.loading}</div>;
+  }
+
+  // A verified email session is not yet a person. Keep every signup field
+  // and person-scoped request behind the same durable identity decision as
+  // the app; direct navigation to /anmalan must not become a side door.
+  if (identityRequired) {
+    return (
+      <div>
+        {langRow}
+        <div className={cardCls}>
+          <p className="font-display text-2xl uppercase text-black">
+            {lang === "sv" ? "Slutför identitetskontrollen" : "Complete the identity check"}
+          </p>
+          <p className={hintCls}>
+            {lang === "sv"
+              ? "Bekräfta namn, födelsedatum och eventuell befintlig BeachID innan du anmäler dig."
+              : "Confirm your name, date of birth and any existing BeachID before signing up."}
+          </p>
+          <Link
+            href="/konto?next=/anmalan"
+            className="mt-5 inline-flex min-h-12 items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-teal"
+          >
+            {lang === "sv" ? "Fortsätt till identitetskontrollen" : "Continue to identity check"} →
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (!config) {

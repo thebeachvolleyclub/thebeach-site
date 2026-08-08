@@ -5,6 +5,7 @@ import type { NextResponse } from "next/server";
 
 export const ACCOUNT_COOKIE = "tb_account_session";
 export const DEVICE_COOKIE = "tb_account_device";
+export const IDENTITY_CHOICE_COOKIE = "tb_account_identity_choice";
 const YEAR = 60 * 60 * 24 * 365;
 
 const baseCookie = {
@@ -34,20 +35,16 @@ export function setAccountDevice(response: NextResponse, deviceId: string) {
   response.cookies.set(DEVICE_COOKIE, deviceId, { ...baseCookie, maxAge: YEAR });
 }
 
-export function familyChoiceCookie(userId: string): string {
-  return `tb_account_choice_${userId}`;
-}
-
-export function setFamilyChoice(response: NextResponse, userId: string, token: string) {
-  response.cookies.set(familyChoiceCookie(userId), token, {
+export function setIdentityChoice(response: NextResponse, challenge: string) {
+  response.cookies.set(IDENTITY_CHOICE_COOKIE, challenge, {
     ...baseCookie,
     path: "/api/account/auth/select-family",
     maxAge: 10 * 60,
   });
 }
 
-export function clearFamilyChoice(response: NextResponse, userId: string) {
-  response.cookies.set(familyChoiceCookie(userId), "", {
+export function clearIdentityChoice(response: NextResponse) {
+  response.cookies.set(IDENTITY_CHOICE_COOKIE, "", {
     ...baseCookie,
     path: "/api/account/auth/select-family",
     maxAge: 0,
