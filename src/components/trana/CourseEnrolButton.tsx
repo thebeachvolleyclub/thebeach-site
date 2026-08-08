@@ -12,7 +12,7 @@ import {
 } from "@/lib/coursePromotion";
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
-import { isBirthdateValid, maskBirthdate, normalizeBirthdate } from "@/lib/birthdate";
+import { isBirthdateValid, normalizeBirthdate } from "@/lib/birthdate";
 import { normalizePersonName, splitValidFullName, validNameComponent } from "@/lib/personIdentity";
 import { pushEvent } from "@/lib/gtm";
 import {
@@ -1216,14 +1216,11 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
             <input
               id={`${uid}-birthdate`}
               name="bday"
+              type="date"
+              min="1900-01-01"
+              required
               value={birthdate}
-              onChange={(e) => setBirthdate(maskBirthdate(e.target.value))}
-              onBlur={(e) => {
-                const fixed = normalizeBirthdate(e.target.value);
-                if (fixed) setBirthdate(fixed);
-              }}
-              placeholder={t.inlineBirthdatePlaceholder}
-              inputMode="numeric"
+              onChange={(e) => setBirthdate(e.target.value)}
               autoComplete="bday"
               className={inlineField}
             />

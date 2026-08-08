@@ -8,7 +8,7 @@ import {
   signupDiscountPct,
   type JuniorPricing,
 } from "@/lib/signupPricing";
-import { maskBirthdate, normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
+import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 
 /**
  * Season-signup form — the web port of the app's SeasonSignupScreen.
@@ -205,7 +205,7 @@ const STR = {
     cancelConfirmBody: "Om du fortsätter tas din anmälan bort ur säsongens gruppplanering. Du kan anmäla dig på nytt så länge anmälan är öppen.",
     cancelConfirmYes: "Ja, dra tillbaka",
     cancelConfirmNo: "Nej, behåll anmälan",
-    errIdentity: "Fyll i namn, e-post, födelsedatum (ÅÅÅÅ-MM-DD) och kön.",
+    errIdentity: "Fyll i namn, e-post, födelsedatum och kön.",
     errSlots: (n: number) => `Välj förstahandstider på minst ${n} olika ${n === 1 ? "dag" : "dagar"} – eller kryssa i "vilken dag/tid som helst".`,
     errAcks: "Du måste godkänna bekräftelserna för att skicka in.",
     errPilotFeedback: "Välj tumme upp eller tumme ner och skriv en kort kommentar.",
@@ -318,7 +318,7 @@ const STR = {
     cancelConfirmBody: "If you continue, your registration will be removed from the season group planning. You can register again while registration is open.",
     cancelConfirmYes: "Yes, withdraw it",
     cancelConfirmNo: "No, keep registration",
-    errIdentity: "Fill in name, email, date of birth (YYYY-MM-DD) and gender.",
+    errIdentity: "Fill in name, email, date of birth and gender.",
     errSlots: (n: number) => `Choose first-choice times on at least ${n} separate ${n === 1 ? "day" : "days"} — or tick "any day/any time".`,
     errAcks: "You must accept the confirmations to submit.",
     errPilotFeedback: "Choose thumbs up or thumbs down and write a short comment.",
@@ -1000,8 +1000,8 @@ export default function SignupFormClient() {
               </div>
             ) : (
               <div>
-                <label htmlFor="su-birth" className={labelCls}>{t.birthdate} (ÅÅÅÅ-MM-DD) *</label>
-                <input id="su-birth" className={inputCls} value={birthdate} onChange={(e) => setBirthdate(maskBirthdate(e.target.value))} onBlur={(e) => { const fixed = normalizeBirthdate(e.target.value); if (fixed) setBirthdate(fixed); }} placeholder="1990-05-15" inputMode="numeric" autoComplete="bday" />
+                <label htmlFor="su-birth" className={labelCls}>{t.birthdate} *</label>
+                <input id="su-birth" type="date" min="1900-01-01" required className={inputCls} value={birthdate} onChange={(e) => setBirthdate(e.target.value)} autoComplete="bday" />
                 {birthdate.trim() && !birthdateValid ? <p className="mt-1 text-xs font-semibold text-orange">{birthdateHint(birthdate)}</p> : null}
               </div>
             )}

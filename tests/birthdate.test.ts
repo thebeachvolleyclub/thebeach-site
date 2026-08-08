@@ -52,18 +52,21 @@ test("birthdate validation requires a real, past calendar date", () => {
   assert.equal(isBirthdateValid(today), false);
 });
 
-test("profile and signup forms keep the birthdate field usable on a phone", () => {
+test("all web identity forms use a native date selector", () => {
   const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
   const signup = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
+  const course = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
 
-  // Regression guard: the raw ÅÅÅÅ-MM-DD regex must not come back as the
-  // gate on either form without the mask that makes it typeable.
-  for (const [label, source] of [["AccountPortal", portal], ["SignupFormClient", signup]] as const) {
-    assert.ok(source.includes("maskBirthdate("), `${label} masks birthdate input`);
+  for (const [label, source] of [["AccountPortal", portal], ["SignupFormClient", signup], ["CourseEnrolButton", course]] as const) {
+    assert.ok(source.includes('type="date"'), `${label} renders a native date selector`);
+    assert.ok(source.includes('min="1900-01-01"'), `${label} rejects dates before the supported range`);
     assert.ok(source.includes("normalizeBirthdate("), `${label} normalises pasted birthdates`);
     assert.ok(source.includes("isBirthdateValid("), `${label} validates via shared helper`);
-    assert.ok(source.includes("birthdateHint("), `${label} tells the user why it is blocked`);
   }
+  assert.ok(portal.includes("birthdateHint("), "AccountPortal explains invalid dates");
+  assert.ok(signup.includes("birthdateHint("), "SignupFormClient explains invalid dates");
+  assert.ok(!portal.includes('placeholder="ÅÅÅÅ-MM-DD"'), "account form has no format instruction");
+  assert.ok(!signup.includes("(ÅÅÅÅ-MM-DD)"), "signup form has no format instruction");
 
   // The login step must submit on the phone keyboard's Go/Enter key, not only
   // via a button that sits behind the keyboard.

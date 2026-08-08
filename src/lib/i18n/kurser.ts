@@ -86,7 +86,6 @@ export type KurserDict = {
   inlineNameHelp: string;
   inlineNameInvalid: string;
   inlineBirthdateLabel: string;
-  inlineBirthdatePlaceholder: string;
   inlineBirthdateHelp: string;
   inlineBirthdateInvalid: string;
   inlineSaveProfile: string;
@@ -206,9 +205,8 @@ export const kurserDict: Record<Locale, KurserDict> = {
     inlineNameHelp: "För- och efternamn.",
     inlineNameInvalid: "Fyll i för- och efternamn.",
     inlineBirthdateLabel: "Födelsedatum",
-    inlineBirthdatePlaceholder: "ÅÅÅÅ-MM-DD",
-    inlineBirthdateHelp: "Skriv bara siffrorna — bindestrecken fylls i automatiskt.",
-    inlineBirthdateInvalid: "Skriv födelsedatum som ÅÅÅÅ-MM-DD, till exempel 1990-05-12.",
+    inlineBirthdateHelp: "Välj ditt födelsedatum.",
+    inlineBirthdateInvalid: "Välj ett giltigt födelsedatum.",
     inlineSaveProfile: "Spara och fortsätt",
     inlineSavingProfile: "Sparar…",
     inlineDuplicateTitle: "Är det här du?",
@@ -323,9 +321,8 @@ export const kurserDict: Record<Locale, KurserDict> = {
     inlineNameHelp: "First and last name.",
     inlineNameInvalid: "Enter your first and last name.",
     inlineBirthdateLabel: "Date of birth",
-    inlineBirthdatePlaceholder: "YYYY-MM-DD",
-    inlineBirthdateHelp: "Just type the digits — we add the hyphens for you.",
-    inlineBirthdateInvalid: "Write your date of birth as YYYY-MM-DD, for example 1990-05-12.",
+    inlineBirthdateHelp: "Select your date of birth.",
+    inlineBirthdateInvalid: "Select a valid date of birth.",
     inlineSaveProfile: "Save and continue",
     inlineSavingProfile: "Saving…",
     inlineDuplicateTitle: "Is this you?",

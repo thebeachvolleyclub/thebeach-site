@@ -14,9 +14,9 @@ const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", 
 const seasonSignup = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
 
 test("all web account profiles require birthdate and opt into the Master duplicate guard", () => {
-  // Birthdate is still mandatory — the gate just moved from a bare
-  // ÅÅÅÅ-MM-DD regex to the shared validator, so a phone keypad (which has
-  // no hyphen key) can actually satisfy it. See tests/birthdate.test.ts.
+  // Birthdate is still mandatory, selected through the browser's native date
+  // control and validated by the shared validator. See tests/birthdate.test.ts.
+  assert.match(portal, /type="date"/);
   assert.match(portal, /if \(!isBirthdateValid\(normalizedBirthdate\)\)/);
   assert.match(portal, /setError\(birthdateHint\(birthdate\)\)/);
   assert.doesNotMatch(portal, /!profile\?\.canonical_player_id && !/);

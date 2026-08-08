@@ -7,7 +7,7 @@ import {
   canReturnFromAccount,
   safeAccountNext,
 } from "@/lib/accountReturn.core";
-import { maskBirthdate, normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
+import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 
 type Profile = {
@@ -766,7 +766,7 @@ export default function AccountPortal() {
       <section className="bg-white p-6 sm:p-8"><p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-black/45">Uppgifter</p><div className="space-y-4">
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Förnamn *</span><input value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Skriv eventuella ytterligare förnamn här.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Efternamn *</span><input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
-        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input value={birthdate} onChange={(e) => setBirthdate(maskBirthdate(e.target.value))} onBlur={(e) => { const fixed = normalizeBirthdate(e.target.value); if (fixed) setBirthdate(fixed); }} placeholder="ÅÅÅÅ-MM-DD" inputMode="numeric" autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter. Skriv bara siffrorna — bindestrecken fylls i automatiskt.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input type="date" min="1900-01-01" required value={birthdate} onChange={(e) => setBirthdate(e.target.value)} autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
@@ -775,9 +775,7 @@ export default function AccountPortal() {
           const firstNameOk = validNameComponent(firstName);
           const lastNameOk = validNameComponent(lastName);
           const bdOk = isBirthdateValid(cleanedBirthdate);
-          // Never leave the user with a dead grey button and no reason: on a
-          // phone the old numeric keypad had no hyphen key, so this state was
-          // unreachable-by-typing and completely unexplained.
+          // Never leave the user with a dead grey button and no reason.
           const identityLocked = identityRequired && identityState?.identity_status !== "pending_identity";
           const blocker = !firstNameOk
             ? "Ange ett giltigt förnamn med minst två bokstäver."

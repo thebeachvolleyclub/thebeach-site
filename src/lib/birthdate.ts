@@ -1,12 +1,9 @@
 /**
  * Birthdate input helpers.
  *
- * Why this exists: the profile and signup forms ask for ÅÅÅÅ-MM-DD in an
- * input with inputMode="numeric". On iOS that keypad has no hyphen key, so a
- * phone user physically cannot type the required format — the save button
- * stayed disabled with no explanation and the account could never be
- * completed. The mask below supplies the hyphens as the user types digits,
- * and normalize() accepts the other formats people actually paste.
+ * Current browser forms use native date inputs. The tolerant helpers remain
+ * useful at API boundaries and for older clients that may still send compact
+ * or loosely formatted values.
  */
 
 /** Digits typed so far → ÅÅÅÅ-MM-DD, hyphens inserted automatically. */
@@ -71,7 +68,7 @@ export function isBirthdateValid(value: string): boolean {
 /** Customer-facing reason the value is not acceptable yet, or "" when it is. */
 export function birthdateHint(value: string): string {
   const v = (value ?? "").trim();
-  if (!v) return "Fyll i ditt födelsedatum, till exempel 1990-05-12.";
+  if (!v) return "Välj ditt födelsedatum.";
   if (isBirthdateValid(v)) return "";
   const parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
   if (parsed) {
@@ -79,5 +76,5 @@ export function birthdateHint(value: string): string {
     if (asDate.getTime() > Date.now()) return "Födelsedatumet kan inte ligga i framtiden.";
     return "Datumet finns inte. Kontrollera år, månad och dag.";
   }
-  return "Skriv födelsedatum som ÅÅÅÅ-MM-DD, till exempel 1990-05-12.";
+  return "Välj ett giltigt födelsedatum.";
 }
