@@ -79,7 +79,13 @@ test("resolves a newly published remote slug without the build-time cache", asyn
         ingress: "Publicerad efter webbbygget.",
         body: [{ t: "p", text: "Verifierad text." }],
       }],
-    }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "X-The-Beach-Environment": "production",
+      },
+    });
   }) as typeof fetch;
 
   try {

@@ -14,6 +14,17 @@ export function isDemoHostname(hostname: string): boolean {
   return normalized.endsWith(DEMO_PUBLIC_SUFFIX);
 }
 
+export function hostnameEnvironment(hostname: string): AppEnvironment {
+  return isDemoHostname(hostname) ? "demo" : "production";
+}
+
+export function environmentMatchesHostname(
+  environment: AppEnvironment,
+  hostname: string,
+): boolean {
+  return environment === hostnameEnvironment(hostname);
+}
+
 function isDemoServiceHostname(hostname: string): boolean {
   if (isDemoHostname(hostname) || hostname.endsWith(".demo.internal")) return true;
 

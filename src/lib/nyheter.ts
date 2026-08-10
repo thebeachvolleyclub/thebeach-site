@@ -14,6 +14,12 @@
  * public/media/nyheter/. Ange alltid fotograf i `credit`.
  */
 
+import {
+  parseAppEnvironment,
+  responseEnvironmentMatches,
+  serviceEndpoint,
+} from "./runtimeEnvironment.core.ts";
+
 export type Block =
   | { t: "h2"; text: string }
   | { t: "p"; text: string }
@@ -34,9 +40,6 @@ export type Article = {
   taggar?: string[];
   body: Block[];
 };
-
-const RESULT_ARTICLES_URL =
-  process.env.RESULT_ARTICLES_URL ?? "https://api.beachtv.se/results/articles";
 
 export const ARTICLES: Article[] = [
   {
@@ -285,10 +288,25 @@ export function parseResultArticle(value: unknown): Article | null {
 
 async function resultArticles(fresh = false): Promise<Article[]> {
   try {
-    const response = await fetch(RESULT_ARTICLES_URL, {
+    const environment = parseAppEnvironment(process.env.APP_ENV);
+    const url = serviceEndpoint(
+      "RESULT_ARTICLES_URL",
+      process.env.RESULT_ARTICLES_URL,
+      environment,
+      "https://api.beachtv.se/results/articles",
+    );
+    const response = await fetch(url, {
       headers: { Accept: "application/json" },
       ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 300 } }),
     });
+    if (
+      !responseEnvironmentMatches(
+        environment,
+        response.headers.get("X-The-Beach-Environment"),
+      )
+    ) {
+      return [];
+    }
     if (!response.ok) return [];
     const payload = (await response.json()) as { articles?: unknown[] };
     return (payload.articles ?? [])
