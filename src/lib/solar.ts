@@ -2,6 +2,8 @@
 // Kiosk-token är en publik, read-only delningslänk (roteras ~årligen).
 // Kan överstyras via env SOLAR_KIOSK_URL. Se runbook för förnyelse.
 
+import { appEnvironment } from "./runtimeEnvironment";
+
 const KIOSK_URL =
   process.env.SOLAR_KIOSK_URL ??
   "https://uni002eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=BhCOEr1wgkHOdeg1nzPjAvMnK5BLos6E";
@@ -27,6 +29,7 @@ function unescapeEntities(s: string): string {
 
 // Hämtas server-side. Cache 5 min. Returnerar null vid fel så att sidan aldrig kraschar.
 export async function getSolarData(): Promise<SolarData | null> {
+  if (appEnvironment() === "demo") return null;
   try {
     const res = await fetch(KIOSK_URL, { next: { revalidate: 300 } });
     if (!res.ok) return null;

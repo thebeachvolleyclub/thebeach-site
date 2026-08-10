@@ -17,6 +17,7 @@
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
 import { getAppCalendarEvents } from "./app-events";
 import { resolveBeachTvTournaments } from "./beachtv-tournaments";
+import { appEnvironment } from "./runtimeEnvironment";
 import {
   attachBeachTvLinksToRenderedManualRows,
   snapshotInvitationsForRenderedManualRows,
@@ -80,6 +81,7 @@ async function fetchList(): Promise<ProfixioEvent[]> {
 }
 
 export async function getProfixioTheBeach(): Promise<ProfixioEvent[]> {
+  if (appEnvironment() === "demo") return [];
   if (cache && Date.now() - cache.at < TTL_MS) return cache.events;
   try {
     const events = await fetchList();
