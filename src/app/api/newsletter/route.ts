@@ -36,7 +36,8 @@ export async function POST(req: Request) {
     const data = (await res.json().catch(() => null)) as
       | { success?: boolean; ok?: boolean }
       | null;
-    return NextResponse.json({ ok: res.ok && !!(data?.success ?? data?.ok) });
+    const ok = res.ok && !!(data?.success ?? data?.ok);
+    return NextResponse.json({ ok }, { status: ok ? 200 : 502 });
   } catch (e) {
     console.error("newsletter forward failed", e);
     return NextResponse.json({ ok: false, error: "upstream" }, { status: 502 });

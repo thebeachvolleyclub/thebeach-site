@@ -13,7 +13,9 @@ import {
 
 test("recognizes only the explicit demo hostname namespace", () => {
   assert.equal(isDemoHostname("arena.dev.thebeach.one"), true);
-  assert.equal(isDemoHostname("ADMIN.DEV.THEBEACH.ONE."), true);
+  assert.equal(isDemoHostname("ARENA.DEV.THEBEACH.ONE."), true);
+  assert.equal(isDemoHostname("admin.dev.thebeach.one"), false);
+  assert.equal(isDemoHostname("beach.dev.thebeach.one"), false);
   assert.equal(isDemoHostname("thebeach.one"), false);
   assert.equal(isDemoHostname("dev.thebeach.one.evil.example"), false);
   assert.equal(hostnameEnvironment("arena.dev.thebeach.one"), "demo");
@@ -92,10 +94,21 @@ test("demo newsletter and public feeds cannot use production defaults", () => {
   const newsletter = readFileSync("src/app/api/newsletter/route.ts", "utf8");
   const events = readFileSync("src/lib/app-events.ts", "utf8");
   const articles = readFileSync("src/lib/nyheter.ts", "utf8");
+  const resultArticles = readFileSync(
+    "src/lib/resultArticles.core.ts",
+    "utf8",
+  );
+  const forms = readFileSync("src/lib/submit.ts", "utf8");
+  const profixio = readFileSync("src/lib/profixio.ts", "utf8");
+  const solar = readFileSync("src/lib/solar.ts", "utf8");
   assert.match(newsletter, /NEWSLETTER_ENDPOINT/);
   assert.match(newsletter, /verifiedUpstreamResponse/);
   assert.match(events, /APP_EVENTS_URL/);
   assert.match(events, /verifiedUpstreamResponse/);
   assert.match(articles, /RESULT_ARTICLES_URL/);
-  assert.match(articles, /responseEnvironmentMatches/);
+  assert.match(resultArticles, /responseEnvironmentMatches/);
+  assert.match(forms, /verifiedUpstreamResponse/);
+  assert.match(profixio, /await connection\(\)/);
+  assert.match(articles, /await connection\(\)/);
+  assert.match(solar, /await connection\(\)/);
 });

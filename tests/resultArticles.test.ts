@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { articleBySlug, parseResultArticle } from "../src/lib/nyheter.ts";
+import {
+  fetchResultArticles,
+  parseResultArticle,
+} from "../src/lib/resultArticles.core.ts";
 
 test("accepts the Resultat editor website contract", () => {
   assert.deepEqual(
@@ -65,34 +68,45 @@ test("drops structurally invalid and unsafe AI blocks", () => {
   assert.deepEqual(parsed?.body, [{ t: "p", text: "Säker text." }]);
 });
 
-test("resolves a newly published remote slug without the build-time cache", async () => {
-  const originalFetch = globalThis.fetch;
+test("fetches a newly published remote slug without the build-time cache", async () => {
   let observedCache: RequestCache | undefined;
-  globalThis.fetch = (async (_input: string | URL | Request, init?: RequestInit) => {
-    observedCache = init?.cache;
-    return new Response(JSON.stringify({
-      articles: [{
-        slug: "sbt-resultat-2026-w99",
-        datum: "2026-12-31",
-        kicker: "Swedish Beach Tour",
-        title: "Ny utgåva",
-        ingress: "Publicerad efter webbbygget.",
-        body: [{ t: "p", text: "Verifierad text." }],
-      }],
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "X-The-Beach-Environment": "production",
-      },
-    });
-  }) as typeof fetch;
+  const articles = await fetchResultArticles(
+    "https://api.beachtv.se/results/articles",
+    "production",
+    true,
+    async (_input, init) => {
+      observedCache = init.cache;
+      return new Response(JSON.stringify({
+        articles: [{
+          slug: "sbt-resultat-2026-w99",
+          datum: "2026-12-31",
+          kicker: "Swedish Beach Tour",
+          title: "Ny utgåva",
+          ingress: "Publicerad efter webbbygget.",
+          body: [{ t: "p", text: "Verifierad text." }],
+        }],
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "X-The-Beach-Environment": "production",
+        },
+      });
+    },
+  );
 
-  try {
-    const article = await articleBySlug("sbt-resultat-2026-w99");
-    assert.equal(article?.title, "Ny utgåva");
-    assert.equal(observedCache, "no-store");
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+  assert.equal(articles[0]?.title, "Ny utgåva");
+  assert.equal(observedCache, "no-store");
+});
+
+test("rejects an article response from the wrong runtime environment", async () => {
+  const articles = await fetchResultArticles(
+    "http://app-api:8849/results/articles",
+    "demo",
+    false,
+    async () => new Response(JSON.stringify({ articles: [] }), {
+      headers: { "X-The-Beach-Environment": "production" },
+    }),
+  );
+  assert.deepEqual(articles, []);
 });
