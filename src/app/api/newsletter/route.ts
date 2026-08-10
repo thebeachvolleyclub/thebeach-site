@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 
+import {
+  appEnvironment,
+  configuredServiceEndpoint,
+  verifiedUpstreamResponse,
+} from "@/lib/runtimeEnvironment";
+
 /**
  * Serverside-proxy för nyhetsbrevsanmälan → Brevo.
  * Browsern postar hit (same-origin) i stället för direkt till Brevo, så vi
@@ -19,11 +25,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "missing email" }, { status: 400 });
   }
   try {
-    const res = await fetch(BREVO_ENDPOINT, { method: "POST", body: fd });
-    const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
-    return NextResponse.json({ ok: !!data?.success });
+    const demo = appEnvironment() === "demo";
+    const endpoint = demo
+      ? configuredServiceEndpoint("NEWSLETTER_ENDPOINT", process.env.NEWSLETTER_ENDPOINT)
+      : BREVO_ENDPOINT;
+    const upstream = await fetch(endpoint, { method: "POST", body: fd });
+    const res = demo
+      ? verifiedUpstreamResponse(upstream, "Nyhetsbrevstjänsten")
+      : upstream;
+    const data = (await res.json().catch(() => null)) as
+      | { success?: boolean; ok?: boolean }
+      | null;
+    return NextResponse.json({ ok: res.ok && !!(data?.success ?? data?.ok) });
   } catch (e) {
-    console.error("brevo newsletter forward failed", e);
+    console.error("newsletter forward failed", e);
     return NextResponse.json({ ok: false, error: "upstream" }, { status: 502 });
   }
 }
