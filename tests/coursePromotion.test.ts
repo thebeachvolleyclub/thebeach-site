@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-// @ts-expect-error Node's native TypeScript runner needs the explicit extension.
 import { parseCoursePromotionLookup } from "../src/lib/coursePromotion.ts";
 
 const route = readFileSync(

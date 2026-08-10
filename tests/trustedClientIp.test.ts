@@ -4,7 +4,6 @@ import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-// @ts-expect-error Node's native TS test runner needs the explicit extension.
 import { parseTrustedIp, signIp, isProxyTrusted, INTERNAL_CLIENT_IP_HEADER } from '../src/lib/trustedClientIp.core.ts';
 
 // Trusted-network-identity throttle (Overseer audit thebeach-app-v2-dd5bcd49,
