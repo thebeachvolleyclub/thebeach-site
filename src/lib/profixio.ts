@@ -14,6 +14,7 @@
  * - Cache: 6 h i minnet + ISR-revalidate på sidorna som konsumerar datat.
  */
 
+import { connection } from "next/server";
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
 import { getAppCalendarEvents } from "./app-events";
 import { resolveBeachTvTournaments } from "./beachtv-tournaments";
@@ -185,6 +186,10 @@ function monthKey(label: string): number {
 
 /** Sajtens kalender = manuella poster + Profixio-tävlingar + appaktiviteter. */
 export async function getMergedMonths(): Promise<Month[]> {
+  // This image is promoted unchanged between production and demo. Defer all
+  // environment-dependent feeds until the container receives a request so
+  // production data can never be baked into demo HTML/RSC during `next build`.
+  await connection();
   const months: Month[] = JSON.parse(JSON.stringify(MANUAL_MONTHS));
   const today = todayStockholm();
 

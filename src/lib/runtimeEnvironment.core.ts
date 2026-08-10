@@ -1,6 +1,11 @@
 export type AppEnvironment = "production" | "demo";
 
-const DEMO_PUBLIC_SUFFIX = ".dev.thebeach.one";
+const DEMO_PUBLIC_HOSTS = new Set(["arena.dev.thebeach.one"]);
+const DEMO_SERVICE_SUFFIX = ".dev.thebeach.one";
+
+function normalizedHostname(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/\.$/, "");
+}
 
 export function parseAppEnvironment(value: string | undefined): AppEnvironment {
   const normalized = value?.trim().toLowerCase();
@@ -10,8 +15,7 @@ export function parseAppEnvironment(value: string | undefined): AppEnvironment {
 }
 
 export function isDemoHostname(hostname: string): boolean {
-  const normalized = hostname.trim().toLowerCase().replace(/\.$/, "");
-  return normalized.endsWith(DEMO_PUBLIC_SUFFIX);
+  return DEMO_PUBLIC_HOSTS.has(normalizedHostname(hostname));
 }
 
 export function hostnameEnvironment(hostname: string): AppEnvironment {
@@ -26,12 +30,18 @@ export function environmentMatchesHostname(
 }
 
 function isDemoServiceHostname(hostname: string): boolean {
-  if (isDemoHostname(hostname) || hostname.endsWith(".demo.internal")) return true;
+  const normalized = normalizedHostname(hostname);
+  if (
+    normalized.endsWith(DEMO_SERVICE_SUFFIX) ||
+    normalized.endsWith(".demo.internal")
+  ) {
+    return true;
+  }
 
   // Docker Compose service names stay on the private demo network and contain
   // no dots. In particular, this excludes host.docker.internal: demo services
   // must never use it as a shortcut back into production listeners.
-  return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(hostname);
+  return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(normalized);
 }
 
 export function serviceEndpoint(
@@ -56,13 +66,14 @@ export function serviceEndpoint(
     throw new Error(`${name} must not contain credentials`);
   }
 
-  const hostname = url.hostname.toLowerCase();
+  const hostname = normalizedHostname(url.hostname);
   if (environment === "demo" && !isDemoServiceHostname(hostname)) {
     throw new Error(`${name} must point to an isolated demo service`);
   }
   if (
     environment === "production" &&
-    (isDemoHostname(hostname) || hostname.endsWith(".demo.internal"))
+    (hostname.endsWith(DEMO_SERVICE_SUFFIX) ||
+      hostname.endsWith(".demo.internal"))
   ) {
     throw new Error(`${name} must not point to a demo service in production`);
   }

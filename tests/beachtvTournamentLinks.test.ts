@@ -1,12 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-// @ts-expect-error Node's native TS test runner needs the explicit extension.
 import {
   resolveBeachTvTournament,
   resolveBeachTvTournaments,
 } from "../src/lib/beachtv-tournaments.ts";
-// @ts-expect-error Node's native TS test runner needs the explicit extension.
 import {
   attachBeachTvLinksToRenderedManualRows,
   snapshotInvitationsForRenderedManualRows,
