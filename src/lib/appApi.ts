@@ -1,7 +1,25 @@
 import "server-only";
 
-const APP_API_URL = (process.env.APP_API_URL ?? "https://api.beachtv.se").replace(/\/$/, "");
-const APP_API_KEY = process.env.APP_API_KEY ?? "thebeach-matchmaking-2026";
+import {
+  configuredSecret,
+  configuredServiceEndpoint,
+  verifiedUpstreamResponse,
+} from "./runtimeEnvironment";
+
+function appApiConfig() {
+  return {
+    url: configuredServiceEndpoint(
+      "APP_API_URL",
+      process.env.APP_API_URL,
+      "https://api.beachtv.se",
+    ),
+    key: configuredSecret(
+      "APP_API_KEY",
+      process.env.APP_API_KEY,
+      "thebeach-matchmaking-2026",
+    ),
+  };
+}
 
 export async function appApi(
   path: string,
@@ -15,8 +33,9 @@ export async function appApi(
     signedClientIp?: { ip: string; sig: string };
   },
 ): Promise<Response> {
+  const config = appApiConfig();
   const headers = new Headers(init?.headers);
-  headers.set("X-API-Key", APP_API_KEY);
+  headers.set("X-API-Key", config.key);
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options?.userId) headers.set("X-User-Id", options.userId);
   if (options?.deviceId) headers.set("X-Device-Id", options.deviceId);
@@ -28,12 +47,13 @@ export async function appApi(
     headers.set("Content-Type", "application/json");
   }
   try {
-    return await fetch(`${APP_API_URL}${path}`, {
+    const response = await fetch(`${config.url}${path}`, {
       ...init,
       headers,
       cache: "no-store",
       signal: AbortSignal.timeout(25_000),
     });
+    return verifiedUpstreamResponse(response, "Kontotjänsten");
   } catch {
     return Response.json(
       { detail: "Kontotjänsten svarar inte just nu" },

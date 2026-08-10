@@ -1,5 +1,7 @@
 "use client";
 
+import { isDemoHostname } from "./runtimeEnvironment.core";
+
 /**
  * Google Tag Manager-hjälpare.
  * Sajten laddar GTM (GTM-K3J7NWXJ) i layout.tsx med Consent Mode v2 —
@@ -17,6 +19,7 @@ declare global {
 /** Säker dataLayer-push (no-op på servern). */
 export function pushEvent(event: string, params: DataLayerObject = {}) {
   if (typeof window === "undefined") return;
+  if (isDemoHostname(window.location.hostname)) return;
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event, ...params });
 }
