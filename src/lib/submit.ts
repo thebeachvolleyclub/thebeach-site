@@ -4,9 +4,14 @@
  * PROD:  sätt FORMS_ENDPOINT (+ ev. FORMS_ENDPOINT_KEY) → inskick POST:as dit.
  * DEV:   utan FORMS_ENDPOINT sparas inskick via contract-sql till
  *        dev_own_david.form_submissions (fungerar bara på dev-VM:en).
- * Mejl:  BREVO_API_KEY sätter på notisen till boka@thebeach.one i båda miljöer.
+ * Mejl:  BREVO_API_KEY sätter på notisen till boka@thebeach.one i prod.
+ *        Demo får aldrig kontakta Brevo och sparar enbart via sitt demosink.
  */
 import { execFile } from "node:child_process";
+import {
+  appEnvironment,
+  configuredServiceEndpoint,
+} from "./runtimeEnvironment";
 
 export type Submission = {
   form: string;
@@ -54,10 +59,19 @@ async function saveViaEndpoint(s: Submission, endpoint: string): Promise<void> {
 
 export function saveToDb(s: Submission): Promise<void> {
   const endpoint = process.env.FORMS_ENDPOINT;
+  if (appEnvironment() === "demo") {
+    return endpoint
+      ? saveViaEndpoint(
+          s,
+          configuredServiceEndpoint("FORMS_ENDPOINT", endpoint),
+        )
+      : Promise.reject(new Error("FORMS_ENDPOINT must be configured in demo"));
+  }
   return endpoint ? saveViaEndpoint(s, endpoint) : saveViaContractSql(s);
 }
 
 export async function notifyByEmail(s: Submission): Promise<void> {
+  if (appEnvironment() === "demo") return;
   const key = process.env.BREVO_API_KEY;
   if (!key) return; // nyckel saknas ännu — datat ligger tryggt i listan
   const rows = Object.entries(s)
@@ -82,6 +96,7 @@ export async function notifyByEmail(s: Submission): Promise<void> {
  *  då engelska, men VÄRDENA är de svenska strängarna ur submissionen (teamets
  *  interna format) — medvetet val, noterat i i18n etapp 2f. */
 export async function receiptByEmail(s: Submission): Promise<void> {
+  if (appEnvironment() === "demo") return;
   const key = process.env.BREVO_API_KEY;
   if (!key || !["eventplaneraren", "privatplaneraren"].includes(s.form) || !s.epost) return;
   const en = s.sprak === "en";
