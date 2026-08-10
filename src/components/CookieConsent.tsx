@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
+import { isDemoHostname } from "@/lib/runtimeEnvironment.core";
 
 /**
  * Cookie-banner + Google Consent Mode v2.
@@ -10,6 +11,30 @@ import { usePathname } from "next/navigation";
  */
 
 const KEY = "cookie_consent"; // "granted" | "denied"
+const CHANGE_EVENT = "thebeach-cookie-consent";
+
+type ConsentSnapshot = "loading" | "disabled" | "unset" | "granted" | "denied";
+
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(CHANGE_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(CHANGE_EVENT, callback);
+  };
+}
+
+function browserSnapshot(): ConsentSnapshot {
+  if (isDemoHostname(window.location.hostname)) return "disabled";
+  try {
+    const value = localStorage.getItem(KEY);
+    return value === "granted" || value === "denied" ? value : "unset";
+  } catch {
+    return "disabled";
+  }
+}
+
+const serverSnapshot = (): ConsentSnapshot => "loading";
 
 function updateConsent(granted: boolean) {
   window.dataLayer = window.dataLayer || [];
@@ -30,17 +55,9 @@ function updateConsent(granted: boolean) {
 }
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+  const consent = useSyncExternalStore(subscribe, browserSnapshot, serverSnapshot);
   const pathname = usePathname();
   const en = pathname?.startsWith("/en");
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(KEY)) setVisible(true);
-    } catch {
-      /* private mode etc — visa inte bannern om lagring saknas */
-    }
-  }, []);
 
   function choose(granted: boolean) {
     try {
@@ -49,10 +66,10 @@ export default function CookieConsent() {
       /* ignore */
     }
     updateConsent(granted);
-    setVisible(false);
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }
 
-  if (!visible) return null;
+  if (consent !== "unset") return null;
 
   return (
     <div
