@@ -8,7 +8,11 @@
 
 import type { Ev } from "./kalender";
 
-const FEED_URL = "https://api.beachtv.se/api/public/events";
+import {
+  configuredServiceEndpoint,
+  verifiedUpstreamResponse,
+} from "./runtimeEnvironment";
+
 const REVALIDATE_SECONDS = 6 * 60 * 60;
 const REQUEST_TIMEOUT_MS = 5_000;
 const STOCKHOLM = "Europe/Stockholm";
@@ -98,10 +102,16 @@ async function fetchAppEvents(): Promise<AppFeedEvent[]> {
   }
 
   try {
-    const response = await fetch(FEED_URL, {
+    const url = configuredServiceEndpoint(
+      "APP_EVENTS_URL",
+      process.env.APP_EVENTS_URL,
+      "https://api.beachtv.se/api/public/events",
+    );
+    const upstream = await fetch(url, {
       next: { revalidate: REVALIDATE_SECONDS },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
+    const response = verifiedUpstreamResponse(upstream, "Aktivitetsflödet");
     if (!response.ok) throw new Error(`API:t svarade ${response.status}`);
 
     const feed = parseFeed(await response.json());
