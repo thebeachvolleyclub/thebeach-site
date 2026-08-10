@@ -11,6 +11,7 @@ import { execFile } from "node:child_process";
 import {
   appEnvironment,
   configuredServiceEndpoint,
+  verifiedUpstreamResponse,
 } from "./runtimeEnvironment";
 
 export type Submission = {
@@ -43,8 +44,12 @@ function saveViaContractSql(s: Submission): Promise<void> {
   });
 }
 
-async function saveViaEndpoint(s: Submission, endpoint: string): Promise<void> {
-  const res = await fetch(endpoint, {
+async function saveViaEndpoint(
+  s: Submission,
+  endpoint: string,
+  verifyEnvironment = false,
+): Promise<void> {
+  const upstream = await fetch(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -54,6 +59,9 @@ async function saveViaEndpoint(s: Submission, endpoint: string): Promise<void> {
     },
     body: JSON.stringify(s),
   });
+  const res = verifyEnvironment
+    ? verifiedUpstreamResponse(upstream, "Formulärtjänsten")
+    : upstream;
   if (!res.ok) throw new Error(`forms endpoint ${res.status}`);
 }
 
@@ -64,6 +72,7 @@ export function saveToDb(s: Submission): Promise<void> {
       ? saveViaEndpoint(
           s,
           configuredServiceEndpoint("FORMS_ENDPOINT", endpoint),
+          true,
         )
       : Promise.reject(new Error("FORMS_ENDPOINT must be configured in demo"));
   }
