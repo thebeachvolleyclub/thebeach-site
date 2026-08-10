@@ -3,9 +3,9 @@
 // Kan överstyras via env SOLAR_KIOSK_URL. Se runbook för förnyelse.
 
 import { appEnvironment } from "./runtimeEnvironment";
+import { connection } from "next/server";
 
-const KIOSK_URL =
-  process.env.SOLAR_KIOSK_URL ??
+const PRODUCTION_KIOSK_URL =
   "https://uni002eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=BhCOEr1wgkHOdeg1nzPjAvMnK5BLos6E";
 
 export type SolarData = {
@@ -29,9 +29,13 @@ function unescapeEntities(s: string): string {
 
 // Hämtas server-side. Cache 5 min. Returnerar null vid fel så att sidan aldrig kraschar.
 export async function getSolarData(): Promise<SolarData | null> {
+  // SOLAR_KIOSK_URL is a container runtime setting. Reading it before a real
+  // request could bake production data into the shared demo image.
+  await connection();
   if (appEnvironment() === "demo") return null;
+  const kioskUrl = process.env.SOLAR_KIOSK_URL ?? PRODUCTION_KIOSK_URL;
   try {
-    const res = await fetch(KIOSK_URL, { next: { revalidate: 300 } });
+    const res = await fetch(kioskUrl, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     const outer = (await res.json()) as { data?: string };
     if (!outer?.data) return null;
