@@ -1,3 +1,5 @@
+import { parseAppEnvironment } from "./runtimeEnvironment.core.ts";
+
 const BEACH_TV_ORIGIN = "https://tv.thebeach.one";
 const LOOKUP_REVALIDATE_SECONDS = 6 * 60 * 60;
 const LOOKUP_TIMEOUT_MS = 4_000;
@@ -30,6 +32,7 @@ export async function resolveBeachTvTournament(
 ): Promise<string | null> {
   const invitationId = ibId.trim();
   if (!invitationId) return null;
+  if (parseAppEnvironment(process.env.APP_ENV) === "demo") return null;
 
   try {
     const response = await fetcher(
