@@ -1,20 +1,24 @@
-const BOOKING_API_URL = (process.env.BOOKING_API_URL ?? "").replace(/\/$/, "");
+import {
+  configuredServiceEndpoint,
+  verifiedUpstreamResponse,
+} from "./runtimeEnvironment";
 
 export const bookingPublicEnabled =
-  process.env.BOOKING_PUBLIC_ENABLED === "true" && Boolean(BOOKING_API_URL);
+  process.env.BOOKING_PUBLIC_ENABLED === "true" && Boolean(process.env.BOOKING_API_URL);
 
 export async function bookingApi(
   path: string,
   init?: RequestInit,
 ): Promise<Response> {
-  if (!BOOKING_API_URL) {
+  if (!process.env.BOOKING_API_URL) {
     return Response.json(
       { detail: "Bokningspiloten är inte konfigurerad ännu" },
       { status: 503 },
     );
   }
   try {
-    return await fetch(`${BOOKING_API_URL}${path}`, {
+    const url = configuredServiceEndpoint("BOOKING_API_URL", process.env.BOOKING_API_URL);
+    const response = await fetch(`${url}${path}`, {
       ...init,
       cache: "no-store",
       signal: AbortSignal.timeout(20_000),
@@ -23,6 +27,7 @@ export async function bookingApi(
         ...(init?.headers ?? {}),
       },
     });
+    return verifiedUpstreamResponse(response, "Bokningssystemet");
   } catch {
     return Response.json(
       { detail: "Bokningssystemet svarar inte just nu" },
