@@ -94,6 +94,19 @@ Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
   Season-signup identity is the HttpOnly `tb_account_session` cookie (a
   verified bearer token); the routes forward that token and never trust a
   browser-supplied user id.
+- **Containerized demo runtime:** the same immutable site image can run at
+  `arena.dev.thebeach.one` with `APP_ENV=demo`. Demo must set explicit
+  `APP_API_URL`, `APP_API_KEY`, `BOOKING_API_URL`, and `FORMS_ENDPOINT` values
+  pointing either to a single-label service on the private Compose network or
+  to `*.dev.thebeach.one`; production defaults are deliberately unavailable.
+  `host.docker.internal`, production URLs, URL credentials, missing upstream
+  environment headers, and responses not marked
+  `X-The-Beach-Environment: demo` fail closed. The public demo hostname always
+  shows an amber synthetic-data/no-real-payment banner and disables GTM,
+  cookie consent, Brevo notifications, and customer receipts. The demo vhost
+  must additionally set `X-Robots-Tag: noindex, nofollow` and use the admin SSO
+  gate. Account cookies remain host-only, so demo and production sessions are
+  separate without changing the image.
 - **Anonymous season-signup throttle** (`/api/signup/submit`): the route keys
   abuse control on the client's TRUSTED NETWORK IP, NOT a cookie — a visitor
   cannot reset their bucket by clearing cookies. It reads ONLY the dedicated
