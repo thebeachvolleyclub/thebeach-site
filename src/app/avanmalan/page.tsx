@@ -13,10 +13,13 @@ export const metadata: Metadata = {
   openGraph: og("/avanmalan", "Avanmälan & villkor — träningsgrupper | The Beach", "Så fungerar betalning och avanmälan för träningsgrupper på The Beach: betalningsvillkor, avanmälningsregler, läkarintyg och varför reglerna finns."),
 };
 
+// Sista dagen att avanmäla sig kostnadsfritt. Uppdatera vid ny säsong.
+const AVGIFTSFRITT_DATUM = "15 augusti 2026";
+
 const VILLKOR: { when: string; cost: string }[] = [
-  { when: "Innan grupperna publiceras (fram till det avgiftsfria datum som anges i din anmälan)", cost: "Kostnadsfritt." },
+  { when: `Fram till och med det avgiftsfria datumet – ${AVGIFTSFRITT_DATUM}`, cost: "Kostnadsfritt. Du behöver inte ange någon anledning." },
   { when: "Om vi missat ett krav du angav i anmälan", cost: "Kostnadsfritt, så länge du avanmäler dig utan dröjsmål. (Krav är inte samma sak som önskemål.)" },
-  { when: "Från sista avgiftsfria datum fram till dagen grupperna publiceras", cost: "Administrativ avgift 500 kr + läkarintyg." },
+  { when: `Dagen efter ${AVGIFTSFRITT_DATUM} fram till dagen grupperna publiceras`, cost: "Administrativ avgift 500 kr + läkarintyg." },
   { when: "Dagen grupperna publiceras eller dagen efter", cost: "Administrativ avgift 1 000 kr + läkarintyg." },
   { when: "Efter det", cost: "Hela träningsavgiften debiteras, oavsett deltagande. Med giltigt läkarintyg före femte passet kan upp till 50 % krediteras mot framtida träning. Efter femte passet kan platsen inte längre ersättas och ingen kreditering är möjlig." },
 ];

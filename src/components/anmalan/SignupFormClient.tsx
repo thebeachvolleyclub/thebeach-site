@@ -184,6 +184,8 @@ const STR = {
     confirmTitle: "Bekräftelse",
     ackPayment: "Jag förbinder mig att betala avgiften för min plats.",
     ackCancellation: "Jag har läst och förstått reglerna för avbokning.",
+    ackCancellationLink: "Läs reglerna för avanmälan och avbokning",
+    ackCancellationFree: "Avanmälan är kostnadsfri till och med 15 augusti 2026.",
     optNewsletter: "Jag vill ta emot nyhetsbrev från The Beach.",
     pilotTitle: "Snabb feedback på anmälan",
     pilotHint: "Hur upplevde du anmälningsflödet? Din feedback hjälper oss att göra det ännu bättre.",
@@ -297,6 +299,8 @@ const STR = {
     confirmTitle: "Confirmation",
     ackPayment: "I commit to paying the fee for my spot.",
     ackCancellation: "I have read and understood the cancellation rules.",
+    ackCancellationLink: "Read the cancellation and withdrawal rules",
+    ackCancellationFree: "Cancellation is free of charge up to and including 15 August 2026.",
     optNewsletter: "I'd like to receive newsletters from The Beach.",
     pilotTitle: "Quick registration feedback",
     pilotHint: "How did you find the registration flow? Your feedback helps us make it even better.",
@@ -1185,7 +1189,20 @@ export default function SignupFormClient() {
           <h3 className={`${headingCls} mb-4`}>{t.confirmTitle}</h3>
           <div className="space-y-3">
             <CheckRow checked={paymentAck} onToggle={() => setPaymentAck((v) => !v)} label={t.ackPayment} />
-            <CheckRow checked={cancellationAck} onToggle={() => setCancellationAck((v) => !v)} label={t.ackCancellation} />
+            <div>
+              <CheckRow checked={cancellationAck} onToggle={() => setCancellationAck((v) => !v)} label={t.ackCancellation} />
+              <p className="mt-1 pl-[30px] text-[13px] leading-snug text-black/55">
+                {t.ackCancellationFree}{" "}
+                <a
+                  href="/avanmalan"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-black"
+                >
+                  {t.ackCancellationLink}
+                </a>
+              </p>
+            </div>
             <CheckRow checked={newsletterOptIn} onToggle={() => setNewsletterOptIn((v) => !v)} label={t.optNewsletter} />
           </div>
         </section>
