@@ -1,7 +1,253 @@
 {
- "uppdaterad": "2026-08-07T12:45:00+02:00",
- "startar": "2026-08-07",
- "slutar": "2026-08-21",
- "troskel": 4,
- "deltagare": []
+  "uppdaterad": "2026-08-14T15:00:00+02:00",
+  "startar": "2026-08-07",
+  "slutar": "2026-08-21",
+  "troskel": 4,
+  "deltagare": [
+    {
+      "namn": "Alfred Mjörnheim",
+      "promotionId": "0732ffa0-dfeb-4d07-b2a9-9d4fcc830aac",
+      "antal": 0
+    },
+    {
+      "namn": "Camilla Nilsson",
+      "promotionId": "c438d772-2a8a-45cf-8196-aaffd8c4a48e",
+      "antal": 0
+    },
+    {
+      "namn": "Christoffer Fjällid",
+      "promotionId": "88127830-4f84-4bf1-8157-c6b981bf98d2",
+      "antal": 0
+    },
+    {
+      "namn": "Cornelia Björkquist",
+      "promotionId": "d80c2286-e713-4af3-bd23-116f461156f3",
+      "antal": 2
+    },
+    {
+      "namn": "David Cabrera",
+      "promotionId": "f6bcd04b-0f43-4f6c-908b-30b54155e0df",
+      "antal": 0
+    },
+    {
+      "namn": "Eivind Stenström",
+      "promotionId": "caeb68fa-7878-43d8-9e8e-5e0a5ee943a9",
+      "antal": 0
+    },
+    {
+      "namn": "Emil Vannebäck",
+      "promotionId": "7a80b81e-84c3-4b55-915f-841b6863436d",
+      "antal": 0
+    },
+    {
+      "namn": "Emilia Berg",
+      "promotionId": "a421c4fc-05ef-47bc-81b3-7e325f938617",
+      "antal": 0
+    },
+    {
+      "namn": "Emma Haglund",
+      "promotionId": "58672be8-d5a8-4270-8143-a4d0cfadc253",
+      "antal": 0
+    },
+    {
+      "namn": "Emmelie Viklund",
+      "promotionId": "637f2dcb-220d-479f-8bd3-447bea63c5f9",
+      "antal": 0
+    },
+    {
+      "namn": "Fabian Ramén",
+      "promotionId": "add28ee6-6f53-4466-ad83-f9462e73f45c",
+      "antal": 0
+    },
+    {
+      "namn": "George Danho",
+      "promotionId": "a4632858-3232-4e9a-ac6b-4bb68fcda00e",
+      "antal": 0
+    },
+    {
+      "namn": "Henric Carlsson",
+      "promotionId": "a03dc3f8-f1f8-416d-9e95-9d60caa1b8be",
+      "antal": 0
+    },
+    {
+      "namn": "Ingrid Axland",
+      "promotionId": "1a8260ee-4bb5-40fe-9025-b8f4cd833d28",
+      "antal": 0
+    },
+    {
+      "namn": "Joanna Saber",
+      "promotionId": "30c4ef3e-1c6d-484f-a1e0-fdb4118499aa",
+      "antal": 0
+    },
+    {
+      "namn": "Katarina Anfelt",
+      "promotionId": "25d7b82f-842a-4fcd-a4e6-74621434b12d",
+      "antal": 0
+    },
+    {
+      "namn": "Linda Ericsson",
+      "promotionId": "e50ea443-f5ff-4713-a127-56b4a91865b3",
+      "antal": 0
+    },
+    {
+      "namn": "Lisa Söderlund",
+      "promotionId": "5af99cec-c3bf-43ab-82ec-8b9b079734a3",
+      "antal": 0
+    },
+    {
+      "namn": "Livio Jaconelli",
+      "promotionId": "af6aba2f-c31b-4f8a-8f3a-2cc90866a1d9",
+      "antal": 0
+    },
+    {
+      "namn": "Malin Erkander",
+      "promotionId": "5aa16d18-1835-4c46-9955-4a2894278607",
+      "antal": 0
+    },
+    {
+      "namn": "Manne Norman",
+      "promotionId": "5eb42315-2f82-4f1e-b4a1-43df6a71d874",
+      "antal": 0
+    },
+    {
+      "namn": "Markus Collin",
+      "promotionId": "30c292ee-8223-446b-a2c7-db9a5e884b77",
+      "antal": 0
+    },
+    {
+      "namn": "Markus Ohlsson",
+      "promotionId": "4acbd936-9293-4f53-b32d-8ee12fcd2d75",
+      "antal": 0
+    },
+    {
+      "namn": "Martin Lind",
+      "promotionId": "c8ad75e2-3c4d-456e-9770-02c5b6c24ca4",
+      "antal": 0
+    },
+    {
+      "namn": "Matilda Skagerberg",
+      "promotionId": "69c279c6-e633-42de-8709-04cac2118d08",
+      "antal": 0
+    },
+    {
+      "namn": "Mattias Haaparanta",
+      "promotionId": "876036ac-32c6-4178-be5b-e569299250a2",
+      "antal": 0
+    },
+    {
+      "namn": "Mattias Magnusson",
+      "promotionId": "0de883d1-b4f9-4ae7-9c30-dc08dcacb66a",
+      "antal": 0
+    },
+    {
+      "namn": "Michaela Engman",
+      "promotionId": "540bf2e8-c3d9-4641-8142-40129e57643c",
+      "antal": 0
+    },
+    {
+      "namn": "Mårten Norman",
+      "promotionId": "2487ddc1-5c54-4030-a71f-93dd10a52e8a",
+      "antal": 0
+    },
+    {
+      "namn": "Natalia Kupovets",
+      "promotionId": "0f96d2a3-fefc-4bd6-8f2a-bb64af3ef7c4",
+      "antal": 0
+    },
+    {
+      "namn": "Neo Broady",
+      "promotionId": "19cf21b8-90db-4a3b-80b9-48b498ec09c8",
+      "antal": 0
+    },
+    {
+      "namn": "Nicklas Berger",
+      "promotionId": "f931aedd-6a6c-4a15-9f37-11ffdafc347c",
+      "antal": 0
+    },
+    {
+      "namn": "Niklas Gustafsson",
+      "promotionId": "3db6d637-279c-4d9d-a046-6d183120aa9a",
+      "antal": 0
+    },
+    {
+      "namn": "Oscar Berg",
+      "promotionId": "b6337586-b5bb-4d02-b29b-71f70f875339",
+      "antal": 0
+    },
+    {
+      "namn": "Ossian Öhman",
+      "promotionId": "74ab7821-1848-4037-8dbd-65c6539462ef",
+      "antal": 0
+    },
+    {
+      "namn": "Rasmus Boden",
+      "promotionId": "5271df52-393e-48c5-96c0-7dc6f66a49a1",
+      "antal": 2
+    },
+    {
+      "namn": "Sanna Thurin",
+      "promotionId": "bee67c1f-9b6e-4378-96fe-3220a5244e58",
+      "antal": 0
+    },
+    {
+      "namn": "Sara Cavretti",
+      "promotionId": "0a432a6e-1dbd-416b-94a4-87b0295da505",
+      "antal": 0
+    },
+    {
+      "namn": "Simon Klyvare",
+      "promotionId": "e175af56-1445-4a58-adde-29e6333715d7",
+      "antal": 0
+    },
+    {
+      "namn": "Sofia Russo",
+      "promotionId": "e80bb1c1-df9f-4c50-a488-3b4d1c21516d",
+      "antal": 0
+    },
+    {
+      "namn": "Sofia Uddin",
+      "promotionId": "01e2e66c-56a1-49cd-8afe-bb4ad5b00423",
+      "antal": 0
+    },
+    {
+      "namn": "Sofia Wahlén",
+      "promotionId": "54a0c234-8ee8-4c9b-b753-0c135cb31bf9",
+      "antal": 0
+    },
+    {
+      "namn": "Sofia Ögren",
+      "promotionId": "4eb2659b-37b8-4750-ac71-eea2f866147d",
+      "antal": 0
+    },
+    {
+      "namn": "Tanja Peltoarvo",
+      "promotionId": "1539c0b8-1022-4347-a007-092fed9910c7",
+      "antal": 0
+    },
+    {
+      "namn": "Theo Hiller",
+      "promotionId": "47e6ae84-4e28-437e-9d2a-486000f7aa9d",
+      "antal": 0
+    },
+    {
+      "namn": "Tina Thurin",
+      "promotionId": "d89bdaee-9444-46ee-abbe-3e5798c622bd",
+      "antal": 0
+    },
+    {
+      "namn": "Vanessa Paukovic",
+      "promotionId": "33e372a5-9c29-41df-b048-42f6a5537820",
+      "antal": 0
+    },
+    {
+      "namn": "Viktor Jonsson",
+      "promotionId": "6d59b99a-7020-4457-82c9-cc1e60f06ca8",
+      "antal": 0
+    },
+    {
+      "namn": "Wille Nilsson",
+      "promotionId": "3e10a761-003f-4143-aa98-34556705b11c",
+      "antal": 0
+    }
+  ]
 }

@@ -12,15 +12,20 @@ import kampanjData from "@/data/coachkampanj.json";
  * Sidan är AVSIKTLIGT oindexerad (robots: noindex) och ligger varken i
  * sitemap.ts eller i någon meny. Den ska vara nåbar för den som har länken.
  *
- * Datan i src/data/coachkampanj.json fylls på för hand av en människa under
- * kampanjen. Ingen fetch — JSON:en importeras rakt in i serverkomponenten.
- * `revalidate` gör att nedräkningen räknas om löpande i stället för att
- * frysas vid build.
+ * Datan i src/data/coachkampanj.json synkas automatiskt av det schemalagda
+ * jobbet (scripts/coachkampanj-sync.mjs) som läser antal använda kampanjkoder
+ * ur bokningssystemet och committar resultatet. Ingen fetch vid rendering —
+ * JSON:en importeras rakt in i serverkomponenten, så sidan kan inte gå sönder
+ * av att ett API är nere. `revalidate` gör att nedräkningen räknas om löpande
+ * i stället för att frysas vid build.
+ *
+ * `promotionId` kopplar varje coach till sin kampanjkod. Själva koden lagras
+ * ALDRIG här — den är hemlig och finns bara hashad i bokningssystemet.
  */
 
 export const revalidate = 3600;
 
-type Deltagare = { namn: string; kod: string; antal: number };
+type Deltagare = { namn: string; promotionId: string; antal: number };
 type Kampanj = {
   uppdaterad: string;
   startar: string;
@@ -76,7 +81,7 @@ function formateraUppdaterad(iso: string): string | null {
   return `${datum} kl. ${tid}`;
 }
 
-/** Raden som renderas — medvetet UTAN `kod`, koderna ska aldrig nå sidan. */
+/** Raden som renderas — medvetet UTAN `promotionId`, kopplingen ska aldrig nå sidan. */
 type Rad = { namn: string; antal: number; placering: number };
 
 /** Sorterar fallande på antal, hoppar över nollor och låter lika antal dela placering. */
@@ -194,8 +199,8 @@ export default function CoachkampanjenPage() {
                   <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-bone/60">
                     Ingen har värvat någon än — vilket betyder att listan är helt öppen.
                     Den första koden som används sätter dig direkt i topp, och därifrån är
-                    det bara att bygga vidare. Dela din kod, så syns du här nästa gång
-                    listan uppdateras.
+                    det bara att bygga vidare. Dela din kod, så räknas den in automatiskt
+                    vid nästa synk.
                   </p>
                 </div>
               </Reveal>
@@ -316,9 +321,9 @@ export default function CoachkampanjenPage() {
                       —{" "}
                     </>
                   ) : null}
-                  listan räknas ihop för hand och uppdateras några gånger i veckan, inte i
-                  realtid. Har du värvat någon som ännu inte syns här dyker den upp vid
-                  nästa uppdatering.
+                  listan räknas automatiskt från din kampanjkod och synkas ett par gånger
+                  om dagen. Har du värvat någon som ännu inte syns här dyker den upp vid
+                  nästa synk — du behöver inte rapportera något.
                 </p>
               </div>
             </Reveal>
