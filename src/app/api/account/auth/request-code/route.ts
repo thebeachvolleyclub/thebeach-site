@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { accountDeviceId, sameOrigin, setAccountDevice } from "@/lib/accountSession";
+import { completedAccountLoginResponse, type VerifiedLoginPayload } from "@/lib/accountLogin";
 import { appApi } from "@/lib/appApi";
+import { stagingAutoLoginConfig } from "@/lib/stagingAutoLogin.core";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,39 @@ export async function POST(request: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
     return NextResponse.json({ detail: "Ange en giltig e-postadress" }, { status: 422 });
   }
+
+  const stagingLogin = stagingAutoLoginConfig({
+    enabled: process.env.STAGING_AUTO_LOGIN,
+    requestHost: request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
+    appApiUrl: process.env.APP_API_URL,
+    deviceId: process.env.STAGING_AUTO_LOGIN_DEVICE_ID,
+  });
+  if (stagingLogin) {
+    const upstream = await appApi(
+      "/matchmaking/auth/verify-code",
+      {
+        method: "POST",
+        headers: { "X-Identity-Flow": "beachid-v2" },
+        // The isolated API recognizes the server-only staging device and
+        // therefore ignores this placeholder. It is never accepted by prod.
+        body: JSON.stringify({ email, code: "000000" }),
+      },
+      { deviceId: stagingLogin.deviceId },
+    );
+    const raw = await upstream.text();
+    let payload: VerifiedLoginPayload = {};
+    try { payload = JSON.parse(raw) as VerifiedLoginPayload; } catch { /* handled below */ }
+    if (!upstream.ok) {
+      return NextResponse.json(payload, {
+        status: upstream.status,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
+    const response = completedAccountLoginResponse(payload);
+    setAccountDevice(response, stagingLogin.deviceId);
+    return response;
+  }
+
   const deviceId = await accountDeviceId() ?? `web-${randomUUID()}`;
   const upstream = await appApi(
     "/matchmaking/auth/request-code",
