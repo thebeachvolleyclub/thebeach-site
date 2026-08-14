@@ -14,14 +14,11 @@ export function safeAccountNext(raw: string | null) {
   return raw;
 }
 
-/** Ankaret spelar ingen roll för vilka fält som måste vara ifyllda. */
-function accountReturnPath(nextPath: string | null) {
-  return nextPath ? nextPath.split("#")[0] : null;
-}
-
 export function accountReturnNeedsSwish(nextPath: string | null) {
-  const path = accountReturnPath(nextPath);
-  return path === "/boka" || path === "/en/book";
+  // Booking now offers Stripe as a fallback, so a valid name is sufficient to
+  // return. Swish remains the primary button and asks for a number when chosen.
+  void nextPath;
+  return false;
 }
 
 export function canReturnFromAccount(

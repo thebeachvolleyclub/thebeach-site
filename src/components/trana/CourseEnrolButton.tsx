@@ -12,6 +12,7 @@ import {
 } from "@/lib/coursePromotion";
 import { kurserDict } from "@/lib/i18n/kurser";
 import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
+import { courseStripeCheckoutUrl } from "@/lib/coursePaymentRoute.core";
 import { isBirthdateValid, normalizeBirthdate } from "@/lib/birthdate";
 import { normalizePersonName, splitValidFullName, validNameComponent } from "@/lib/personIdentity";
 import { pushEvent } from "@/lib/gtm";
@@ -52,7 +53,7 @@ type Result =
   | { ok: true; kind: "paid" | "waitlisted" }
   | { ok: false; message: string };
 
-type Phase = "idle" | "enrolling" | "startingSwish" | "waitingForSwish";
+type Phase = "idle" | "enrolling" | "startingSwish" | "startingStripe" | "waitingForSwish";
 
 type PromotionLookupState =
   | { kind: "idle" }
@@ -261,7 +262,7 @@ export default function CourseEnrolButton({
     }
   }
 
-  async function submit() {
+  async function submit(paymentProvider: "SWISH" | "STRIPE") {
     const submittedCode = cleanPromotionCode(promotionCode);
     if (
       submittedCode
@@ -277,6 +278,82 @@ export default function CourseEnrolButton({
     activeRequest.current = controller;
     setResult(null);
     setDiscount(null);
+
+    const startStripeCheckout = async (
+      invoiceId: string,
+      requestController: AbortController,
+    ) => {
+      setPhase("startingStripe");
+      const chargeResponse = await fetch(
+        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/stripe`,
+        { method: "POST", signal: requestController.signal },
+      );
+      const charge = await json(chargeResponse);
+      if (!chargeResponse.ok) {
+        throw new PaymentStatusError(
+          chargeResponse.status,
+          typeof charge.detail === "string" ? charge.detail : t.paymentFailed,
+        );
+      }
+      const checkoutUrl = courseStripeCheckoutUrl(charge);
+      if (!checkoutUrl) throw new PaymentStatusError(502, t.paymentFailed);
+      pushEvent("course_payment_start", {
+        course_id: courseId,
+        course_name: courseName,
+        value: paymentPriceRef.current,
+        currency: "SEK",
+        payment_provider: "stripe",
+      });
+      window.location.assign(checkoutUrl);
+    };
+
+    const startSwishCheckout = async (
+      invoiceId: string,
+      requestController: AbortController,
+      storage: Storage,
+      invoiceCreatedAt: number,
+      amountSek: number,
+      autoOpen: boolean,
+    ) => {
+      setPhase("startingSwish");
+      const chargeResponse = await fetch(
+        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish?locale=${locale}` +
+          (returnPath ? `&returnPath=${encodeURIComponent(returnPath)}` : ""),
+        { method: "POST", signal: requestController.signal },
+      );
+      const charge = await json(chargeResponse);
+      if (!chargeResponse.ok) {
+        throw new PaymentStatusError(
+          chargeResponse.status,
+          typeof charge.detail === "string" ? charge.detail : t.paymentFailed,
+        );
+      }
+      const deepLinkUrl = courseSwishLaunchUrl(charge);
+      if (!deepLinkUrl) throw new PaymentStatusError(502, t.paymentFailed);
+      const qrCodeDataUrl = courseSwishQrCode(charge);
+      const mobileDevice = courseSwishMobileDevice(
+        window.navigator.userAgent,
+        window.navigator.maxTouchPoints,
+      );
+      pushEvent("course_payment_start", {
+        course_id: courseId,
+        course_name: courseName,
+        value: paymentPriceRef.current,
+        currency: "SEK",
+        payment_provider: "swish",
+      });
+      setSwishHandoff({ deepLinkUrl, qrCodeDataUrl });
+      setShowDesktopSwish(!mobileDevice);
+      rememberCourseInvoice(
+        courseId,
+        invoiceId,
+        storage,
+        invoiceCreatedAt,
+        { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}), amountSek },
+      );
+      if (mobileDevice && autoOpen) window.location.assign(deepLinkUrl);
+    };
+
     try {
       const storage = window.sessionStorage;
       const savedInvoice = pendingCourseInvoice(courseId, storage);
@@ -296,6 +373,20 @@ export default function CourseEnrolButton({
           ));
         }
         setInvoiceStartedAt(savedInvoice.createdAt);
+        if (paymentProvider === "STRIPE") {
+          await startStripeCheckout(savedInvoice.invoiceId, controller);
+          return;
+        }
+        if (!savedInvoice.deepLinkUrl) {
+          await startSwishCheckout(
+            savedInvoice.invoiceId,
+            controller,
+            storage,
+            savedInvoice.createdAt,
+            savedInvoice.amountSek ?? paymentPriceRef.current,
+            true,
+          );
+        }
         setPhase("waitingForSwish");
         await finishPayment(savedInvoice.invoiceId, controller, storage, savedInvoice.createdAt);
         return;
@@ -388,48 +479,20 @@ export default function CourseEnrolButton({
       setInvoiceStartedAt(invoiceCreatedAt);
       rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt, { amountSek: netAmountSek });
 
-      setPhase("startingSwish");
-      const chargeResponse = await fetch(
-        `/api/courses/invoices/${encodeURIComponent(invoiceId)}/swish?locale=${locale}` +
-          (returnPath ? `&returnPath=${encodeURIComponent(returnPath)}` : ""),
-        { method: "POST", signal: controller.signal },
-      );
-      const charge = await json(chargeResponse);
-      if (!chargeResponse.ok) {
-        const detail = typeof charge.detail === "string" ? charge.detail : t.paymentFailed;
-        setResult({ ok: false, message: detail });
+      if (paymentProvider === "STRIPE") {
+        await startStripeCheckout(invoiceId, controller);
         return;
       }
-      const deepLinkUrl = courseSwishLaunchUrl(charge);
-      if (!deepLinkUrl) {
-        setResult({ ok: false, message: t.paymentFailed });
-        return;
-      }
-      const qrCodeDataUrl = courseSwishQrCode(charge);
-      const mobileDevice = courseSwishMobileDevice(
-        window.navigator.userAgent,
-        window.navigator.maxTouchPoints,
-      );
-      pushEvent("course_payment_start", {
-        course_id: courseId,
-        course_name: courseName,
-        value: paymentPriceRef.current,
-        currency: "SEK",
-      });
-      setSwishHandoff({ deepLinkUrl, qrCodeDataUrl });
-      setShowDesktopSwish(!mobileDevice);
-      rememberCourseInvoice(
-        courseId,
+
+      await startSwishCheckout(
         invoiceId,
+        controller,
         storage,
         invoiceCreatedAt,
-        { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}), amountSek: netAmountSek },
+        netAmountSek,
+        outcome?.kind !== "none",
       );
-
       setPhase("waitingForSwish");
-      // Gav koden ingen rabatt ska kunden hinna läsa varningen innan Swish tar
-      // över skärmen — då lämnar vi över först när hen trycker på länken själv.
-      if (mobileDevice && outcome?.kind !== "none") window.location.assign(deepLinkUrl);
       await finishPayment(invoiceId, controller, storage, invoiceCreatedAt);
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -653,6 +716,8 @@ export default function CourseEnrolButton({
   const busyLabel =
     phase === "startingSwish"
       ? t.startingSwish
+      : phase === "startingStripe"
+        ? locale === "sv" ? "Öppnar säker kortbetalning…" : "Opening secure card payment…"
       : phase === "waitingForSwish"
         ? t.waitingForSwish
         : t.submitting;
@@ -778,12 +843,23 @@ export default function CourseEnrolButton({
       <button
         type="button"
         disabled={!accepted || busy || promotionNeedsValidation}
-        onClick={submit}
+        onClick={() => submit("SWISH")}
         className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
       >
         {busy ? busyLabel : waitlist ? t.waitlistCta : t.signupCta}
         {!busy && <span aria-hidden="true">→</span>}
       </button>
+      {!waitlist && (
+        <button
+          type="button"
+          disabled={!accepted || busy || promotionNeedsValidation}
+          onClick={() => submit("STRIPE")}
+          className="ml-0 mt-3 inline-flex min-h-[44px] cursor-pointer items-center gap-2 border-2 border-black bg-white px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-35 sm:ml-3 sm:mt-0"
+        >
+          {busy ? busyLabel : locale === "sv" ? "Kort, Apple Pay eller Google Pay" : "Card, Apple Pay or Google Pay"}
+          {!busy && <span aria-hidden="true">→</span>}
+        </button>
+      )}
       {busy && (
         <p role="status" aria-live="polite" className="sr-only">
           {busyLabel}

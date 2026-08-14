@@ -21,13 +21,13 @@ test("account hand back keeps the anchor the course cards send", () => {
   assert.equal(safeAccountNext("/trana#kurser?x=1"), null);
   assert.equal(safeAccountNext("/trana#a#b"), null);
   assert.equal(canReturnFromAccount("/trana#kurser", { name: "Mattias", swish_phone: null }), true);
-  assert.equal(accountReturnNeedsSwish("/boka#tider"), true);
+  assert.equal(accountReturnNeedsSwish("/boka#tider"), false);
 });
 
-test("booking hand back waits for both name and Swish number", () => {
-  assert.equal(accountReturnNeedsSwish("/boka"), true);
-  assert.equal(accountReturnNeedsSwish("/en/book"), true);
-  assert.equal(canReturnFromAccount("/boka", { name: "Mattias", swish_phone: null }), false);
+test("booking hand back allows Stripe users without a Swish number", () => {
+  assert.equal(accountReturnNeedsSwish("/boka"), false);
+  assert.equal(accountReturnNeedsSwish("/en/book"), false);
+  assert.equal(canReturnFromAccount("/boka", { name: "Mattias", swish_phone: null }), true);
   assert.equal(canReturnFromAccount("/boka", { name: "Mattias", swish_phone: "46701234567" }), true);
 });
 
