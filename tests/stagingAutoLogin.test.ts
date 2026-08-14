@@ -28,3 +28,18 @@ test("staging auto-login fails closed for a missing flag or malformed device", (
   assert.equal(stagingAutoLoginConfig({ ...valid, enabled: "false" }), null);
   assert.equal(stagingAutoLoginConfig({ ...valid, deviceId: "web-device" }), null);
 });
+
+test("demo auto-login requires the complete one-container boundary", () => {
+  const demo = {
+    enabled: "true",
+    environment: "demo",
+    requestHost: "arena.dev.thebeach.one",
+    appApiUrl: "http://app-api:8849",
+    deviceId: "demo-web-instant-login-v1",
+  };
+  assert.deepEqual(stagingAutoLoginConfig(demo), { deviceId: demo.deviceId });
+  assert.equal(stagingAutoLoginConfig({ ...demo, environment: "production" }), null);
+  assert.equal(stagingAutoLoginConfig({ ...demo, requestHost: "thebeach.one" }), null);
+  assert.equal(stagingAutoLoginConfig({ ...demo, appApiUrl: "https://api.beachtv.se" }), null);
+  assert.equal(stagingAutoLoginConfig({ ...demo, deviceId: "staging-web-instant-login-v1" }), null);
+});
