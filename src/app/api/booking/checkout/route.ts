@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   }
   if (!payload.bookingId) return NextResponse.json({ detail: "Bokningssvaret var ofullständigt" }, { status: 502 });
   if (allowed.paymentProvider === "STRIPE") {
-    const checkoutUrl = courseStripeCheckoutUrl(payload);
+    const checkoutUrl = courseStripeCheckoutUrl(payload, new URL(request.url).hostname);
     if (!checkoutUrl) {
       return NextResponse.json({ detail: "Betalsidan kunde inte öppnas" }, { status: 502 });
     }
