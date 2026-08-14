@@ -42,6 +42,13 @@ test("booking price UI accepts server-authored personal pricing metadata", () =>
   assert.doesNotMatch(widget, /body: JSON\.stringify\([^)]*priceSek/);
 });
 
+test("booking keeps Swish first and passes only an allow-listed Stripe provider", () => {
+  const checkoutRoute = readFileSync("src/app/api/booking/checkout/route.ts", "utf8");
+  assert.ok(widget.indexOf('checkout("SWISH")') < widget.indexOf('checkout("STRIPE")'));
+  assert.match(widget, /checkoutUrl/);
+  assert.match(checkoutRoute, /body\.paymentProvider === "STRIPE" \? "STRIPE" : "SWISH"/);
+});
+
 test("booking configuration never invents a static base price", () => {
   assert.match(configRoute, /pricingMode: "SERVER_AUTHORITATIVE"/);
   assert.doesNotMatch(configRoute, /priceSek|slotLengthMinutes|\b400\b/);

@@ -22,8 +22,10 @@ import {
 // @ts-expect-error Node's native TypeScript runner needs the explicit extension.
 import {
   createCourseInvoiceStatusGet,
+  createCourseStripePost,
   createCourseSwishPost,
   createMyCourseEnrolmentsGet,
+  courseStripeCheckoutUrl,
 } from "../src/lib/coursePaymentRoute.core.ts";
 
 const invoiceId = "2adb3894-2460-4a88-98c0-e4440b31d3ae";
@@ -69,6 +71,15 @@ test("accepts only a bounded PNG QR image from the course payment BFF", () => {
   assert.equal(courseSwishQrCode({ qrCodeDataUrl: "data:image/svg+xml;base64,PHN2Zz4=" }), null);
   assert.equal(courseSwishQrCode({ qrCodeDataUrl: "https://evil.test/qr.png" }), null);
   assert.equal(courseSwishQrCode({ qrCodeDataUrl: "data:image/png;base64,not valid" }), null);
+});
+
+test("accepts only Stripe-hosted HTTPS checkout handoffs", () => {
+  assert.equal(
+    courseStripeCheckoutUrl({ checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123" }),
+    "https://checkout.stripe.com/c/pay/cs_test_123",
+  );
+  assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "https://evil.test/cs_test_123" }), null);
+  assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "javascript:alert(1)" }), null);
 });
 
 test("opens Swish automatically only on phones and tablets", () => {
@@ -395,6 +406,37 @@ test("charge handler returns validated mobile and desktop handoffs with a same-s
   assert.deepEqual(await invalidResponse.json(), { detail: "Swish kunde inte öppnas" });
 });
 
+test("Stripe charge handler keeps credentials server-side and returns only Checkout URL", async () => {
+  const calls: Array<{ path: string; body?: string; token?: string }> = [];
+  const handler = createCourseStripePost({
+    accountToken: async () => "account-token",
+    courseInvoiceStatus: () => "",
+    sameOrigin: () => true,
+    unauthorized: () => Response.json({}, { status: 401 }),
+    validInvoiceId,
+    appApi: async (path, init, options) => {
+      calls.push({ path, body: init?.body as string | undefined, token: options?.token });
+      return Response.json({
+        checkout_url: "https://checkout.stripe.com/c/pay/cs_test_123",
+        payment_intent_id: "private",
+      });
+    },
+  });
+  const response = await handler(
+    new Request("https://site.test/api", { method: "POST", headers: { Origin: "https://site.test" } }),
+    { params: Promise.resolve({ invoiceId }) },
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123",
+  });
+  assert.deepEqual(calls, [{
+    path: `/training/invoices/${invoiceId}/stripe/charge`,
+    body: JSON.stringify({ channel: "WEB" }),
+    token: "account-token",
+  }]);
+});
+
 test("status handler returns only normalized status", async () => {
   const handler = createCourseInvoiceStatusGet({
     accountToken: async () => "account-token",
@@ -469,6 +511,10 @@ test("course payment routes keep credentials and invoice details on the server",
     "src/app/api/courses/invoices/[invoiceId]/swish/route.ts",
     "utf8",
   );
+  const stripeCharge = readFileSync(
+    "src/app/api/courses/invoices/[invoiceId]/stripe/route.ts",
+    "utf8",
+  );
   const status = readFileSync(
     "src/app/api/courses/invoices/[invoiceId]/status/route.ts",
     "utf8",
@@ -481,6 +527,8 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(charge, /createCourseSwishPost\(\{/);
   assert.match(charge, /QRCode\.toDataURL\(`D\$\{paymentRequestToken\}`/);
   assert.doesNotMatch(charge, /X-API-Key|Authorization/);
+  assert.match(stripeCharge, /createCourseStripePost\(\{/);
+  assert.doesNotMatch(stripeCharge, /X-API-Key|Authorization|STRIPE_SECRET/);
 
   assert.match(status, /createCourseInvoiceStatusGet\(\{/);
   assert.doesNotMatch(status, /proxyAppJson|pay-status|\bexp\b/);
@@ -491,7 +539,7 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /courseSwishLaunchUrl\(charge\)/);
   assert.match(component, /courseSwishQrCode\(charge\)/);
   assert.match(component, /courseSwishMobileDevice/);
-  assert.match(component, /if \(mobileDevice && outcome\?\.kind !== "none"\) window\.location\.assign\(deepLinkUrl\)/);
+  assert.match(component, /if \(mobileDevice && autoOpen\) window\.location\.assign\(deepLinkUrl\)/);
   assert.match(component, /swishHandoff\.qrCodeDataUrl/);
   assert.match(component, /pollCoursePayment/);
   assert.match(component, /if \(inFlight\.current\) return/);
@@ -500,10 +548,13 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt, \{ amountSek: netAmountSek \}\)/);
   assert.match(component, /await finishPayment\(invoiceId, controller, storage, invoiceCreatedAt\)/);
   assert.match(component, /aria-live="polite"/);
-  const chargeFailureBranch = component.split("if (!chargeResponse.ok) {", 2)[1]
+  const swishChargeSection = component.split('setPhase("startingSwish")').at(-1) ?? "";
+  const chargeFailureBranch = swishChargeSection.split("if (!chargeResponse.ok) {", 2)[1]
     ?.split("const deepLinkUrl", 1)[0] ?? "";
-  assert.match(chargeFailureBranch, /setResult\(\{ ok: false, message: detail \}\)/);
+  assert.match(chargeFailureBranch, /throw new PaymentStatusError/);
   assert.doesNotMatch(chargeFailureBranch, /finishPayment/);
+  assert.match(component, /if \(paymentProvider === "STRIPE"\)/);
+  assert.match(component, /if \(!savedInvoice\.deepLinkUrl\)/);
 
   assert.match(ladder, /<CoursePaymentReturn/);
   assert.match(ladder, /personalPriceSek \?\? course\.priceSek/);

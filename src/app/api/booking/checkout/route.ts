@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     quoteId: body.quoteId,
     streamRequested: body.streamRequested === true,
     clientReference: body.clientReference,
+    paymentProvider: body.paymentProvider === "STRIPE" ? "STRIPE" : "SWISH",
     channel: "WEB",
   };
   const upstream = await appApi("/booking/checkout", {

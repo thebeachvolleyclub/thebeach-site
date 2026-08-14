@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   accountReturnNeedsSwish,
@@ -63,6 +64,7 @@ type Booking = {
 };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
 type Invoice = { id: string; amount_sek: number; status: string; paid_at?: string | null; created_at?: string | null; lines?: InvoiceLine[] };
+type InvoicePaymentHandoff = { invoiceId: string; deepLinkUrl: string; qrCodeDataUrl: string | null };
 type InvoiceFeed = { invoices: Invoice[]; active_count?: number };
 type TrainingGroup = { group_name: string; day_time: string; court: number | null; season?: string | null };
 type TrainingLookup = { found: boolean; groups: TrainingGroup[]; message?: string | null };
@@ -160,7 +162,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 function statusText(status: string) {
-  return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på Swish", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
+  return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på betalning", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
 }
 
 function courseStatusText(enrolment: CourseEnrolment) {
@@ -237,6 +239,7 @@ export default function AccountPortal() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeInvoiceCount, setActiveInvoiceCount] = useState(0);
+  const [invoicePaymentHandoff, setInvoicePaymentHandoff] = useState<InvoicePaymentHandoff | null>(null);
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>({ memberships: [], activeCount: 0 });
@@ -628,6 +631,33 @@ export default function AccountPortal() {
     }
   };
 
+  const startInvoicePayment = async (invoice: Invoice, provider: "SWISH" | "STRIPE") => {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      if (provider === "STRIPE") {
+        const result = await api<{ checkoutUrl: string }>(
+          `/api/courses/invoices/${encodeURIComponent(invoice.id)}/stripe`,
+          { method: "POST" },
+        );
+        window.location.assign(result.checkoutUrl);
+        return;
+      }
+      const result = await api<{ deepLinkUrl: string; qrCodeDataUrl?: string }>(
+        `/api/courses/invoices/${encodeURIComponent(invoice.id)}/swish?locale=sv&returnPath=${encodeURIComponent("/konto")}`,
+        { method: "POST" },
+      );
+      setInvoicePaymentHandoff({
+        invoiceId: invoice.id,
+        deepLinkUrl: result.deepLinkUrl,
+        qrCodeDataUrl: result.qrCodeDataUrl ?? null,
+      });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte starta betalningen");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const logout = async () => {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
@@ -689,7 +719,7 @@ export default function AccountPortal() {
       ) : null}
     </button>) : <strong className="px-4 py-3 text-xs uppercase tracking-[0.08em]">Slutför identitetskontrollen</strong>}<button type="button" onClick={logout} className="ml-auto cursor-pointer px-4 py-3 text-xs font-bold uppercase text-orange sm:px-5">Logga ut</button></div>
 
-    {(!profile.name || !profile.swish_phone) ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Namn krävs för kontot och Swish-nummer krävs när du bokar bana.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
+    {!profile.name ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Ditt namn krävs innan du kan boka eller anmäla dig.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
     {message ? <p className="border-x border-b border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{message}</p> : null}
     {error ? <p role="alert" className="border-x border-b border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">{error}</p> : null}
 
@@ -804,7 +834,7 @@ export default function AccountPortal() {
     </div> : null}</> : null}
 
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
-    {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}</article>)}</div>}</section> : null}
+    {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}{invoice.status === "sent" ? <div className="mt-4 grid gap-2 border-t border-black/10 pt-4 sm:grid-cols-2"><button type="button" disabled={busy} onClick={() => startInvoicePayment(invoice, "SWISH")} className="min-h-11 cursor-pointer bg-black px-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Betala med Swish</button><button type="button" disabled={busy} onClick={() => startInvoicePayment(invoice, "STRIPE")} className="min-h-11 cursor-pointer border-2 border-black bg-white px-4 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35">Kort, Apple Pay eller Google Pay</button></div> : null}{invoicePaymentHandoff?.invoiceId === invoice.id ? <div className="mt-4 border border-black/10 bg-cream p-4 text-center"><strong className="block">Betala med Swish</strong>{invoicePaymentHandoff.qrCodeDataUrl ? <Image src={invoicePaymentHandoff.qrCodeDataUrl} alt="Swish QR-kod" width={192} height={192} unoptimized className="mx-auto mt-3 h-48 w-48 bg-white p-2" /> : null}<a href={invoicePaymentHandoff.deepLinkUrl} className="mt-3 inline-flex text-xs font-bold uppercase underline underline-offset-4">Öppna Swish</a></div> : null}</article>)}</div>}</section> : null}
   </div>;
 }
 

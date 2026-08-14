@@ -17,6 +17,10 @@ type ChargeDependencies = CommonDependencies & {
   swishQrCode: (paymentRequestToken: string) => Promise<string | null>;
 };
 
+type StripeChargeDependencies = CommonDependencies & {
+  sameOrigin: (request: Request) => boolean;
+};
+
 type RouteContext = { params: Promise<{ invoiceId: string }> };
 
 function upstreamDetail(payload: Record<string, unknown>, fallback: string) {
@@ -33,7 +37,7 @@ function record(value: unknown): Record<string, unknown> | null {
  * Sidor Swish får returnera till. Enbart våra egna kurssökvägar — en fri
  * returadress vore en öppen omdirigering.
  */
-const RETURN_PATHS = /^\/(?:trana|kurser\/[a-z0-9-]{1,80}|en\/(?:training|courses\/[a-z0-9-]{1,80}))$/;
+const RETURN_PATHS = /^\/(?:konto|trana|kurser\/[a-z0-9-]{1,80}|en\/(?:training|courses\/[a-z0-9-]{1,80}))$/;
 
 export function safeCourseReturnPath(raw: string | null): string | null {
   if (!raw) return null;
@@ -112,6 +116,56 @@ export function createCourseSwishPost(dependencies: ChargeDependencies) {
 
     return Response.json(
       { deepLinkUrl, ...(qrCodeDataUrl ? { qrCodeDataUrl } : {}) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
+  };
+}
+
+export function courseStripeCheckoutUrl(payload: Record<string, unknown>): string | null {
+  const raw = typeof payload.checkout_url === "string"
+    ? payload.checkout_url
+    : typeof payload.checkoutUrl === "string"
+      ? payload.checkoutUrl
+      : "";
+  try {
+    const target = new URL(raw);
+    return target.protocol === "https:" && target.hostname === "checkout.stripe.com"
+      ? target.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function createCourseStripePost(dependencies: StripeChargeDependencies) {
+  return async function POST(request: Request, context: RouteContext) {
+    if (!dependencies.sameOrigin(request)) {
+      return Response.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
+    }
+    const token = await dependencies.accountToken();
+    if (!token) return dependencies.unauthorized();
+    const { invoiceId } = await context.params;
+    if (!dependencies.validInvoiceId(invoiceId)) {
+      return Response.json({ detail: "Okänd faktura" }, { status: 400 });
+    }
+    const upstream = await dependencies.appApi(
+      `/training/invoices/${encodeURIComponent(invoiceId)}/stripe/charge`,
+      { method: "POST", body: JSON.stringify({ channel: "WEB" }) },
+      { token },
+    );
+    const payload = (await upstream.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!upstream.ok) {
+      return Response.json(
+        { detail: upstreamDetail(payload, "Kunde inte starta kortbetalningen") },
+        { status: upstream.status },
+      );
+    }
+    const checkoutUrl = courseStripeCheckoutUrl(payload);
+    if (!checkoutUrl) {
+      return Response.json({ detail: "Betalsidan kunde inte öppnas" }, { status: 502 });
+    }
+    return Response.json(
+      { checkoutUrl },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   };

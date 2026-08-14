@@ -254,13 +254,16 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   const todayValue = localDate(dates[0]);
   const tomorrowValue = localDate(dates[1]);
 
-  const checkout = async () => {
+  const checkout = async (paymentProvider: "SWISH" | "STRIPE") => {
     if (!selected || !venueId || !profile) return;
-    if (!profile.name || !profile.swish_phone) { setError(t.completeProfileError); return; }
+    if (!profile.name || (paymentProvider === "SWISH" && !profile.swish_phone)) {
+      setError(t.completeProfileError);
+      return;
+    }
     setSubmitting(true); setError("");
     try {
       // Freeze the authenticated customer's winning rule and all concurrent
-      // entitlements immediately before Swish is started.
+      // entitlements immediately before the selected provider is started.
       const quote = await api<{ quoteId: string }>("/api/booking/quotes", {
         method: "POST",
         body: JSON.stringify({
@@ -271,8 +274,12 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
           ...(selected.productId ? { productId: selected.productId } : {}),
         }),
       }, t.genericError);
-      const result = await api<{ bookingId: string }>("/api/booking/checkout", { method: "POST", body: JSON.stringify({ venueId, courtId: selected.courtId, date, startTime: selected.startTime, productId: selected.productId, quoteId: quote.quoteId, streamRequested, clientReference: `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` }) }, t.genericError);
+      const result = await api<{ bookingId: string; checkoutUrl?: string }>("/api/booking/checkout", { method: "POST", body: JSON.stringify({ venueId, courtId: selected.courtId, date, startTime: selected.startTime, productId: selected.productId, quoteId: quote.quoteId, streamRequested, paymentProvider, clientReference: `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` }) }, t.genericError);
       setBookingId(result.bookingId);
+      if (paymentProvider === "STRIPE") {
+        if (!result.checkoutUrl) throw new Error(locale === "sv" ? "Betalsidan saknas" : "The payment page is missing");
+        window.location.assign(result.checkoutUrl);
+      }
     } catch (cause) {
       setSubmitting(false);
       const code = cause instanceof BookingApiError ? errorCode(cause) : "";
@@ -280,7 +287,7 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
         await loadSlots(venueId, date);
         setError(code === "SLOT_TAKEN" ? t.pay.slotTaken : code === "QUOTE_EXPIRED" ? t.pay.quoteExpired : t.pay.priceChanged);
       } else {
-        setError(cause instanceof Error ? cause.message : t.swishStartError);
+        setError(cause instanceof Error ? cause.message : paymentProvider === "SWISH" ? t.swishStartError : locale === "sv" ? "Kunde inte starta kortbetalningen" : "Could not start card payment");
       }
     }
   };
@@ -296,7 +303,8 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
 
   if (confirmed) return <div className="border-2 border-lime bg-white p-7 text-black lg:p-10"><span className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-full bg-black text-2xl text-lime">✓</span><p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-black/40">{t.confirmedPanel.tag}</p><h3 className="font-display text-4xl">{t.confirmedPanel.title}</h3><p className="mt-4 text-black/60">{confirmed.courtName}, {confirmed.date} {t.confirmedPanel.timePrefix}{confirmed.startTime}–{confirmed.endTime}</p><p className="mt-2 font-bold">{t.confirmedPanel.paidPrefix}{confirmed.priceSek}{t.priceSuffix}</p><button type="button" onClick={() => { setConfirmed(null); setBookingId(null); setShowMine(true); loadMine(); }} className="mt-7 cursor-pointer bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime">{t.confirmedPanel.myBookingsCta}</button></div>;
 
-  const profileReady = Boolean(profile?.name && profile?.swish_phone);
+  const profileReady = Boolean(profile?.name);
+  const swishReady = Boolean(profile?.name && profile?.swish_phone);
   const selectedPrice = selected ? actualPrice(selected) : null;
   const selectedOrdinaryPrice = selected ? ordinaryPrice(selected) : null;
   const selectedDiscount = selected ? priceDiscount(selected) : null;
@@ -315,9 +323,12 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     </div>
 
     <div ref={paymentPanel} className="min-w-0 scroll-mt-20 overflow-hidden border border-black/10 bg-cream p-5 text-black sm:p-7 lg:p-10"><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-black/40">{t.pay.tag}</p>{selected ? <><h3 className="mt-3 break-words font-display text-2xl">{selected.courtName}</h3><p className="mt-2 break-words text-sm text-black/55">{date} · {selected.startTime}–{selected.endTime} · {selected.durationMin} min</p><div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">{selectedOrdinaryPrice !== null && selectedPrice !== null && selectedOrdinaryPrice > selectedPrice ? <span className="text-sm text-black/45 line-through" aria-label={`${t.pay.ordinaryPrice} ${selectedOrdinaryPrice}${t.priceSuffix}`}>{selectedOrdinaryPrice}{t.priceSuffix}</span> : null}<strong className="text-xl">{selectedPrice}{t.priceSuffix}</strong>{selectedPriceLabel ? <span className="rounded-full bg-lime px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-black">{selectedPriceLabel}</span> : null}</div>{selectedDiscount !== null ? <p className="mt-1 text-xs font-semibold text-teal">{t.pay.discount} {selectedDiscount}{t.priceSuffix}</p> : null}{selectedQuoteTime ? <p className="mt-1 text-[11px] text-black/45">{t.pay.quoteUntil} {selectedQuoteTime}</p> : null}</> : <p className="mt-3 text-sm text-black/45">{t.pay.pickPrompt}</p>}
-      <div className="mt-7 min-w-0 border border-black/10 bg-white p-4">{accountLoading ? <p className="text-sm text-black/45">{t.pay.checkingAccount}</p> : !profile ? <><strong className="block">{t.pay.loginTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.loginBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.loginCta}</Link></> : !profileReady ? <><strong className="block">{t.pay.profileTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.profileBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.profileCta}</Link></> : <div className="flex min-w-0 items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-mint text-xl">{profile.avatar_thumb_url ? <img src={profile.avatar_thumb_url} alt="" className="h-full w-full object-cover" /> : profile.emoji_icon || "🏐"}</span><div className="min-w-0 flex-1"><strong className="block truncate">{profile.name}</strong><span className="block truncate text-xs text-black/45">{t.pay.swishPrefix}{profile.swish_phone}</span></div><Link href={accountHref} className="shrink-0 text-xs font-bold uppercase text-teal">{t.pay.edit}</Link></div>}</div>
+      <div className="mt-7 min-w-0 border border-black/10 bg-white p-4">{accountLoading ? <p className="text-sm text-black/45">{t.pay.checkingAccount}</p> : !profile ? <><strong className="block">{t.pay.loginTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.loginBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.loginCta}</Link></> : !profileReady ? <><strong className="block">{t.pay.profileTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.profileBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.profileCta}</Link></> : <div className="flex min-w-0 items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-mint text-xl">{profile.avatar_thumb_url ? <img src={profile.avatar_thumb_url} alt="" className="h-full w-full object-cover" /> : profile.emoji_icon || "🏐"}</span><div className="min-w-0 flex-1"><strong className="block truncate">{profile.name}</strong><span className="block truncate text-xs text-black/45">{profile.swish_phone ? `${t.pay.swishPrefix}${profile.swish_phone}` : profile.email}</span></div><Link href={accountHref} className="shrink-0 text-xs font-bold uppercase text-teal">{t.pay.edit}</Link></div>}</div>
       {selected?.cameraEnabled && profileReady ? <label className="mt-4 flex cursor-pointer items-start gap-3 border border-black/10 bg-white p-4"><input type="checkbox" checked={streamRequested} onChange={(event) => setStreamRequested(event.target.checked)} className="mt-0.5 h-5 w-5 accent-black" /><span className="text-sm"><strong className="flex items-center gap-2"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg>{t.pay.streamTitle}</strong><span className="mt-1 block text-black/45">{t.pay.streamBody}</span></span></label> : null}
-      {error ? <div role="alert" className="mt-4 border border-orange/25 bg-orange/10 p-4 text-sm font-semibold text-orange"><p>{error}</p>{error.toLowerCase().includes("profil") ? <Link href={accountHref} className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.08em] underline underline-offset-4">{t.pay.checkSwish}</Link> : null}</div> : null}<button type="button" disabled={!selected || submitting || !profileReady} onClick={checkout} className="mt-6 min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35">{submitting ? t.pay.submitting : selected && selectedPrice !== null ? `${t.pay.submitPrefix}${selectedPrice}${t.priceSuffix}` : t.pay.submitEmpty}</button><p className="mt-3 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine1}</p><p className="mt-2 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine2}</p>
+      {error ? <div role="alert" className="mt-4 border border-orange/25 bg-orange/10 p-4 text-sm font-semibold text-orange"><p>{error}</p>{error.toLowerCase().includes("profil") ? <Link href={accountHref} className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.08em] underline underline-offset-4">{t.pay.checkSwish}</Link> : null}</div> : null}
+      <button type="button" disabled={!selected || submitting || !swishReady} onClick={() => checkout("SWISH")} className="mt-6 min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35">{submitting ? t.pay.submitting : selected && selectedPrice !== null ? `${t.pay.submitPrefix}${selectedPrice}${t.priceSuffix}` : t.pay.submitEmpty}</button>
+      <button type="button" disabled={!selected || submitting || !profileReady} onClick={() => checkout("STRIPE")} className="mt-3 min-h-13 w-full cursor-pointer border-2 border-black bg-white px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:cursor-not-allowed disabled:opacity-35">{locale === "sv" ? "Betala med kort, Apple Pay eller Google Pay" : "Pay by card, Apple Pay or Google Pay"}</button>
+      <p className="mt-3 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine1}</p><p className="mt-2 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine2}</p>
     </div>
   </div>;
 }
