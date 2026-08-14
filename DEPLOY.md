@@ -159,6 +159,25 @@ Henric/Mattias also push from their own environments.
 | Ledger | `/home/beachinfo/thebeach-site-deploy/ledger.jsonl` (who/when/action/from→to) + Telegram notify on prod-affecting actions |
 | MCP keys | `/home/beachinfo/thebeach-site-deploy/mcp_keys.json` (mode 600; per-user, like devstack) |
 
+## Isolated payment-lab login
+
+The staging website can bypass the email-code screen when it is connected to
+the isolated App API at `https://api.dev.thebeach.one`. Set both server-only
+workshop variables:
+
+```text
+STAGING_AUTO_LOGIN=true
+STAGING_AUTO_LOGIN_DEVICE_ID=staging-web-instant-login-v1
+```
+
+The same device id must be registered in the isolated API database's
+`dev_devices` table. The shortcut is fail-closed unless all three boundaries
+match: the incoming host is exactly `staging.thebeach.one`, `APP_API_URL` is
+HTTPS on exactly `api.dev.thebeach.one`, and the device id follows the staging
+server convention. Never register this device in the production database.
+Production login continues to require an emailed verification code even if a
+staging variable is copied accidentally.
+
 ## The publish rules (enforced, not advisory)
 
 - **Prod publishes ONLY a pushed GitHub commit.** Publish refuses if the

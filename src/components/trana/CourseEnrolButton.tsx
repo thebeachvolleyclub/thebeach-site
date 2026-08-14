@@ -1016,26 +1016,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     router.refresh();
   }
 
-  async function sendCode(resend: boolean) {
-    await call("/api/account/auth/request-code", {
-      method: "POST",
-      body: JSON.stringify({ email: address }),
-    });
-    setCode("");
-    setStep("code");
-    setNotice(resend ? t.inlineResent : "");
-  }
-
-  async function verify() {
-    setNotice("");
-    const result = await call<{ requiresSelection?: boolean }>("/api/account/auth/verify", {
-      method: "POST",
-      body: JSON.stringify({ email: address, code }),
-    });
-    if (result.requiresSelection) {
-      setStep("family");
-      return;
-    }
+  async function continueAfterLogin() {
     const profile = await call<InlineProfile>("/api/account/profile");
     const usesIdentityV2 = Boolean(profile.identity_onboarding_v2_enabled);
     setIdentityV2(usesIdentityV2);
@@ -1071,6 +1052,40 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     setName(savedName);
     setBirthdate(isBirthdateValid(savedBirthdate) ? savedBirthdate : "");
     setStep("profile");
+  }
+
+  async function sendCode(resend: boolean) {
+    const result = await call<{ authenticated?: boolean; requiresSelection?: boolean }>(
+      "/api/account/auth/request-code",
+      {
+        method: "POST",
+        body: JSON.stringify({ email: address }),
+      },
+    );
+    if (result.requiresSelection) {
+      setStep("family");
+      return;
+    }
+    if (result.authenticated) {
+      await continueAfterLogin();
+      return;
+    }
+    setCode("");
+    setStep("code");
+    setNotice(resend ? t.inlineResent : "");
+  }
+
+  async function verify() {
+    setNotice("");
+    const result = await call<{ requiresSelection?: boolean }>("/api/account/auth/verify", {
+      method: "POST",
+      body: JSON.stringify({ email: address, code }),
+    });
+    if (result.requiresSelection) {
+      setStep("family");
+      return;
+    }
+    await continueAfterLogin();
   }
 
   /** true = profilen är klar. false = dubbletten måste besvaras först. */

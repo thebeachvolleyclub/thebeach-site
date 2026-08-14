@@ -415,7 +415,20 @@ export default function AccountPortal() {
   const requestCode = async () => {
     setBusy(true); setError(""); setMessage("");
     try {
-      const result = await api<{ message: string }>("/api/account/auth/request-code", { method: "POST", body: JSON.stringify({ email }) });
+      const result = await api<{
+        message?: string;
+        authenticated?: boolean;
+        requiresSelection?: boolean;
+        familyUsers?: FamilyUser[];
+      }>("/api/account/auth/request-code", { method: "POST", body: JSON.stringify({ email }) });
+      if (result.requiresSelection) {
+        setFamily(result.familyUsers ?? []);
+        return;
+      }
+      if (result.authenticated) {
+        await loadSession();
+        return;
+      }
       setCodeSent(true); setMessage(result.message || "Koden är skickad till din e-post.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Kunde inte skicka kod"); }
     finally { setBusy(false); }
