@@ -65,8 +65,15 @@ test("customer payment surfaces visually prefer Swish and disclose card wallets 
 });
 
 test("booking configuration never invents a static base price", () => {
+  assert.match(configRoute, /appApi\("\/booking\/config"\)/);
+  assert.match(configRoute, /stripeEnabled: payload\.stripe_enabled === true/);
   assert.match(configRoute, /pricingMode: "SERVER_AUTHORITATIVE"/);
   assert.doesNotMatch(configRoute, /priceSek|slotLengthMinutes|\b400\b/);
+});
+
+test("the website image keeps the all-in-one standalone runtime contract", () => {
+  const nextConfig = readFileSync("next.config.ts", "utf8");
+  assert.match(nextConfig, /output: "standalone"/);
 });
 
 test("account training renders purchased courses and invoice hand-off", () => {

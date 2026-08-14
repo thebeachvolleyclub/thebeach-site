@@ -1,3 +1,5 @@
+import { isDemoHostname } from "./runtimeEnvironment.core.ts";
+
 type AccountOptions = { token?: string };
 type AppApi = (path: string, init?: RequestInit, options?: AccountOptions) => Promise<Response>;
 
@@ -121,7 +123,10 @@ export function createCourseSwishPost(dependencies: ChargeDependencies) {
   };
 }
 
-export function courseStripeCheckoutUrl(payload: Record<string, unknown>): string | null {
+export function courseStripeCheckoutUrl(
+  payload: Record<string, unknown>,
+  runtimeHostname = "",
+): string | null {
   const raw = typeof payload.checkout_url === "string"
     ? payload.checkout_url
     : typeof payload.checkoutUrl === "string"
@@ -129,12 +134,20 @@ export function courseStripeCheckoutUrl(payload: Record<string, unknown>): strin
       : "";
   try {
     const target = new URL(raw);
-    return target.protocol === "https:"
+    if (target.protocol === "https:"
       && target.hostname === "checkout.stripe.com"
       && !target.username
       && !target.password
-      ? target.toString()
-      : null;
+    ) return target.toString();
+    const simulatedDemoCheckout = isDemoHostname(runtimeHostname)
+      && target.protocol === "https:"
+      && target.hostname === "api.dev.thebeach.one"
+      && !target.username
+      && !target.password
+      && !target.search
+      && !target.hash
+      && /^\/booking\/payments\/stripe\/demo\/cs_test_demo_[a-f0-9]{32}$/.test(target.pathname);
+    return simulatedDemoCheckout ? target.toString() : null;
   } catch {
     return null;
   }
@@ -163,7 +176,7 @@ export function createCourseStripePost(dependencies: StripeChargeDependencies) {
         { status: upstream.status },
       );
     }
-    const checkoutUrl = courseStripeCheckoutUrl(payload);
+    const checkoutUrl = courseStripeCheckoutUrl(payload, new URL(request.url).hostname);
     if (!checkoutUrl) {
       return Response.json({ detail: "Betalsidan kunde inte öppnas" }, { status: 502 });
     }

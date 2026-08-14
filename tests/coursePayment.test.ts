@@ -78,6 +78,24 @@ test("accepts only Stripe-hosted HTTPS checkout handoffs", () => {
   );
   assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "https://evil.test/cs_test_123" }), null);
   assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "javascript:alert(1)" }), null);
+  const simulated = "https://api.dev.thebeach.one/booking/payments/stripe/demo/" +
+    "cs_test_demo_0123456789abcdef0123456789abcdef";
+  assert.equal(courseStripeCheckoutUrl({ checkoutUrl: simulated }), null);
+  assert.equal(
+    courseStripeCheckoutUrl({ checkoutUrl: simulated }, "arena.dev.thebeach.one"),
+    simulated,
+  );
+  assert.equal(
+    courseStripeCheckoutUrl({ checkoutUrl: simulated }, "thebeach.one"),
+    null,
+  );
+  assert.equal(
+    courseStripeCheckoutUrl(
+      { checkoutUrl: `${simulated}?continue=https://evil.test` },
+      "arena.dev.thebeach.one",
+    ),
+    null,
+  );
 });
 
 test("opens Swish automatically only on phones and tablets", () => {
@@ -96,6 +114,10 @@ test("recovers only a validated invoice from a course Swish browser return", () 
   assert.equal(courseSwishReturnInvoice(`?swish-return=other&invoice=${invoiceId}`), null);
   assert.equal(courseSwishReturnInvoice("?swish-return=course&invoice=../../admin"), null);
   assert.equal(courseSwishReturnInvoice("?swish-return=course"), null);
+  assert.equal(
+    courseSwishReturnInvoice(`?payment-return=course&provider=stripe&invoice=${invoiceId}`),
+    invoiceId,
+  );
 });
 
 test("finds only a recent confirmed paid course receipt", () => {
