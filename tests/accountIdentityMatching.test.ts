@@ -8,6 +8,7 @@ const matchingRoute = readFileSync("src/app/api/account/profile/match-rating/rou
 const identityRoute = readFileSync("src/app/api/account/identity/route.ts", "utf8");
 const decisionRoute = readFileSync("src/app/api/account/identity/[playerId]/route.ts", "utf8");
 const verifyRoute = readFileSync("src/app/api/account/auth/verify/route.ts", "utf8");
+const accountLogin = readFileSync("src/lib/accountLogin.ts", "utf8");
 const selectFamilyRoute = readFileSync("src/app/api/account/auth/select-family/route.ts", "utf8");
 const logoutRoute = readFileSync("src/app/api/account/auth/logout/route.ts", "utf8");
 const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
@@ -69,8 +70,9 @@ test("identity BFF routes keep the bearer token server-side and reject cross-ori
 
 test("shared-email web login uses the server challenge and an explicit Master BeachID choice", () => {
   assert.match(verifyRoute, /"X-Identity-Flow": "beachid-v2"/);
-  assert.match(verifyRoute, /payload\.identity_challenge/);
-  assert.match(verifyRoute, /setIdentityChoice\(response, payload\.identity_challenge\)/);
+  assert.match(verifyRoute, /completedAccountLoginResponse\(payload\)/);
+  assert.match(accountLogin, /payload\.identity_challenge/);
+  assert.match(accountLogin, /setIdentityChoice\(response, payload\.identity_challenge\)/);
   assert.doesNotMatch(verifyRoute, /member\.auth_token/);
 
   assert.match(selectFamilyRoute, /IDENTITY_CHOICE_COOKIE/);
