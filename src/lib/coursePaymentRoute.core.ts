@@ -1,3 +1,4 @@
+
 import { isDemoHostname } from "./runtimeEnvironment.core.ts";
 
 type AccountOptions = { token?: string };
@@ -134,21 +135,20 @@ export function courseStripeCheckoutUrl(
       : "";
   try {
     const target = new URL(raw);
-    if (
+    const stripeHosted =
       target.protocol === "https:"
       && target.hostname === "checkout.stripe.com"
       && !target.username
-      && !target.password
+      && !target.password;
+    if (
+      stripeHosted
+      && (!isDemoHostname(runtimeHostname)
+        || /^\/c\/pay\/cs_test_[A-Za-z0-9_]+$/.test(target.pathname))
     ) return target.toString();
-    const simulatedDemoCheckout = isDemoHostname(runtimeHostname)
-      && target.protocol === "https:"
-      && target.hostname === "api.dev.thebeach.one"
-      && !target.username
-      && !target.password
-      && !target.search
-      && !target.hash
-      && /^\/booking\/payments\/stripe\/demo\/cs_test_demo_[a-f0-9]{32}$/.test(target.pathname);
-    return simulatedDemoCheckout ? target.toString() : null;
+    // Demo uses Stripe's real test-mode hosted Checkout too. Never accept a
+    // locally simulated payment page: that would test our mock rather than the
+    // integration we intend to release.
+    return null;
   } catch {
     return null;
   }
