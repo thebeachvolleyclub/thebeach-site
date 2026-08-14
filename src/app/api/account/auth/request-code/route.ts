@@ -16,10 +16,15 @@ export async function POST(request: Request) {
   }
 
   const stagingLogin = stagingAutoLoginConfig({
-    enabled: process.env.STAGING_AUTO_LOGIN,
+    enabled: process.env.APP_ENV === "demo"
+      ? process.env.DEMO_AUTO_LOGIN
+      : process.env.STAGING_AUTO_LOGIN,
+    environment: process.env.APP_ENV,
     requestHost: request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
     appApiUrl: process.env.APP_API_URL,
-    deviceId: process.env.STAGING_AUTO_LOGIN_DEVICE_ID,
+    deviceId: process.env.APP_ENV === "demo"
+      ? process.env.DEMO_AUTO_LOGIN_DEVICE_ID
+      : process.env.STAGING_AUTO_LOGIN_DEVICE_ID,
   });
   if (stagingLogin) {
     const upstream = await appApi(
@@ -27,7 +32,7 @@ export async function POST(request: Request) {
       {
         method: "POST",
         headers: { "X-Identity-Flow": "beachid-v2" },
-        // The isolated API recognizes the server-only staging device and
+        // The isolated API recognizes the server-only staging/demo device and
         // therefore ignores this placeholder. It is never accepted by prod.
         body: JSON.stringify({ email, code: "000000" }),
       },
