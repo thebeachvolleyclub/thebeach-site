@@ -295,7 +295,7 @@ export default function CourseEnrolButton({
           typeof charge.detail === "string" ? charge.detail : t.paymentFailed,
         );
       }
-      const checkoutUrl = courseStripeCheckoutUrl(charge);
+      const checkoutUrl = courseStripeCheckoutUrl(charge, window.location.hostname);
       if (!checkoutUrl) throw new PaymentStatusError(502, t.paymentFailed);
       pushEvent("course_payment_start", {
         course_id: courseId,

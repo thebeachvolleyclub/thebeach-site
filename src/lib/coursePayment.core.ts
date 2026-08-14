@@ -257,7 +257,10 @@ export function courseSwishMobileDevice(userAgent: string, maxTouchPoints = 0): 
 
 export function courseSwishReturnInvoice(search: string): string | null {
   const params = new URLSearchParams(search);
-  if (params.get("swish-return") !== "course") return null;
+  if (
+    params.get("swish-return") !== "course"
+    && params.get("payment-return") !== "course"
+  ) return null;
   const invoiceId = params.get("invoice");
   return validInvoiceId(invoiceId) ? invoiceId : null;
 }

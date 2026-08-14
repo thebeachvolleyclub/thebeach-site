@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { accountToken, sameOrigin, unauthorized } from "@/lib/accountSession";
 import { appApi } from "@/lib/appApi";
 import { bookingPublicEnabled } from "@/lib/bookingApi";
+import { courseStripeCheckoutUrl } from "@/lib/coursePaymentRoute.core";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,13 @@ export async function POST(request: Request) {
     return NextResponse.json(payload, { status: upstream.status });
   }
   if (!payload.bookingId) return NextResponse.json({ detail: "Bokningssvaret var ofullständigt" }, { status: 502 });
+  if (allowed.paymentProvider === "STRIPE") {
+    const checkoutUrl = courseStripeCheckoutUrl(payload, new URL(request.url).hostname);
+    if (!checkoutUrl) {
+      return NextResponse.json({ detail: "Betalsidan kunde inte öppnas" }, { status: 502 });
+    }
+    payload.checkoutUrl = checkoutUrl;
+  }
   delete payload.managementToken;
   return NextResponse.json(payload, { status: upstream.status });
 }
