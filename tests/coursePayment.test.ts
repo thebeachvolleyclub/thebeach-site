@@ -76,26 +76,26 @@ test("accepts only Stripe-hosted HTTPS checkout handoffs", () => {
     courseStripeCheckoutUrl({ checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123" }),
     "https://checkout.stripe.com/c/pay/cs_test_123",
   );
+  assert.equal(
+    courseStripeCheckoutUrl(
+      { checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123#checkout" },
+      "arena.dev.thebeach.one",
+    ),
+    "https://checkout.stripe.com/c/pay/cs_test_123#checkout",
+  );
+  assert.equal(
+    courseStripeCheckoutUrl(
+      { checkoutUrl: "https://checkout.stripe.com/c/pay/cs_live_123" },
+      "arena.dev.thebeach.one",
+    ),
+    null,
+  );
   assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "https://evil.test/cs_test_123" }), null);
   assert.equal(courseStripeCheckoutUrl({ checkoutUrl: "javascript:alert(1)" }), null);
   const simulated = "https://api.dev.thebeach.one/booking/payments/stripe/demo/" +
     "cs_test_demo_0123456789abcdef0123456789abcdef";
   assert.equal(courseStripeCheckoutUrl({ checkoutUrl: simulated }), null);
-  assert.equal(
-    courseStripeCheckoutUrl({ checkoutUrl: simulated }, "arena.dev.thebeach.one"),
-    simulated,
-  );
-  assert.equal(
-    courseStripeCheckoutUrl({ checkoutUrl: simulated }, "thebeach.one"),
-    null,
-  );
-  assert.equal(
-    courseStripeCheckoutUrl(
-      { checkoutUrl: `${simulated}?continue=https://evil.test` },
-      "arena.dev.thebeach.one",
-    ),
-    null,
-  );
+  assert.equal(courseStripeCheckoutUrl({ checkoutUrl: simulated }, "arena.dev.thebeach.one"), null);
 });
 
 test("opens Swish automatically only on phones and tablets", () => {
