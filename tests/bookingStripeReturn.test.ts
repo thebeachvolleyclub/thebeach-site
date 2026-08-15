@@ -46,3 +46,11 @@ test("web return page polls the authenticated booking API", () => {
   assert.match(panel, /Betalt och bokat/);
   assert.match(panel, /window\.setTimeout\(poll, 2000\)/);
 });
+
+test("mobile Stripe return is a single-purpose handoff back to the app", () => {
+  const panel = readFileSync("src/components/payments/StripeReturnPanel.tsx", "utf8");
+  assert.match(panel, /Tillbaka till The Beach/);
+  assert.match(panel, /Öppna The Beach/);
+  assert.match(panel, /thebeach:\/\/stripe-return/);
+  assert.match(panel, /!mobile \? <a href="\/boka"/);
+});
