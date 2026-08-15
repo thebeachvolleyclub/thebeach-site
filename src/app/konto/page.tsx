@@ -5,6 +5,10 @@ import PageHero from "@/components/PageHero";
 import AccountPortal from "@/components/account/AccountPortal";
 import { demoWebAccounts } from "@/lib/demoAccounts";
 
+// Demo personas are selected from the runtime environment of the shared
+// website image. Do not freeze this page at image-build time.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Mitt konto — The Beach",
   description: "Se dina kurser, bokningar, träningsgrupper, fakturor och profil hos The Beach.",
