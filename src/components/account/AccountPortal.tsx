@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { DemoWebAccount } from "@/lib/demoAccounts";
 import {
   accountReturnNeedsSwish,
   canReturnFromAccount,
@@ -207,7 +208,11 @@ function cancellationMessage(result: CancellationResult) {
   return "Bokningen är avbokad.";
 }
 
-export default function AccountPortal() {
+type AccountPortalProps = {
+  demoAccounts?: readonly DemoWebAccount[];
+};
+
+export default function AccountPortal({ demoAccounts = [] }: AccountPortalProps) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tab, setTab] = useState<AccountTab>(tabFromHash);
@@ -412,7 +417,7 @@ export default function AccountPortal() {
     return () => { active = false; };
   }, [profileId]);
 
-  const requestCode = async () => {
+  const requestCode = async (requestedEmail = email) => {
     setBusy(true); setError(""); setMessage("");
     try {
       const result = await api<{
@@ -420,7 +425,7 @@ export default function AccountPortal() {
         authenticated?: boolean;
         requiresSelection?: boolean;
         familyUsers?: FamilyUser[];
-      }>("/api/account/auth/request-code", { method: "POST", body: JSON.stringify({ email }) });
+      }>("/api/account/auth/request-code", { method: "POST", body: JSON.stringify({ email: requestedEmail }) });
       if (result.requiresSelection) {
         setFamily(result.familyUsers ?? []);
         return;
@@ -702,11 +707,18 @@ export default function AccountPortal() {
     return <div className="mx-auto max-w-xl border border-white/10 bg-white p-7 text-black sm:p-10">
       <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-black/40">The Beach-konto</p>
       <h2 className="font-display text-4xl">Logga in eller skapa konto</h2>
-      <p className="mt-4 text-sm leading-relaxed text-black/55">Ange din e-post så skickar vi samma sexsiffriga kod som i appen. Om du är ny skapas kontot när adressen är verifierad.</p>
+      <p className="mt-4 text-sm leading-relaxed text-black/55">{demoAccounts.length ? "Välj ett syntetiskt testkonto. Du loggas in direkt utan e-postkod." : "Ange din e-post så skickar vi samma sexsiffriga kod som i appen. Om du är ny skapas kontot när adressen är verifierad."}</p>
+      {demoAccounts.length ? <div className="mt-7 space-y-3" aria-label="Demokonton">
+        {demoAccounts.map((account) => <button key={account.email} type="button" disabled={busy} onClick={() => { setEmail(account.email); void requestCode(account.email); }} className="w-full cursor-pointer border border-black/15 bg-cream p-4 text-left hover:border-black disabled:opacity-40">
+          <strong className="block text-sm">{account.name}</strong>
+          <span className="mt-1 block text-xs leading-relaxed text-black/55">{account.description}</span>
+          <span className="mt-2 block break-all text-[11px] font-bold uppercase tracking-[0.06em] text-teal">{account.email}</span>
+        </button>)}
+      </div> : null}
       {family.length ? <div className="mt-7 space-y-2"><strong className="block text-sm">Vem loggar in?</strong>{family.map((item) => <button key={item.id} type="button" disabled={busy} onClick={() => selectFamily(item.id)} className="flex w-full cursor-pointer items-center gap-3 border border-black/15 p-3 text-left hover:border-black"><span className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-mint text-xl">{item.avatar_thumb_url ? <img src={item.avatar_thumb_url} alt="" className="h-full w-full object-cover" /> : item.emoji_icon || "🏐"}</span><span className="font-semibold">{item.name || "Spelare"}</span></button>)}</div> : <div className="mt-7 space-y-4">
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">E-post</span><input value={email} onChange={(event) => setEmail(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !busy && email && !codeSent) { event.preventDefault(); void requestCode(); } }} type="email" enterKeyHint="send" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} className="min-h-13 w-full border border-black/20 bg-cream px-4 text-base outline-none focus:border-black" /></label>
         {codeSent ? <label className="block"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Sexsiffrig kod</span><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} onKeyDown={(event) => { if (event.key === "Enter" && !busy && code.length === 6) { event.preventDefault(); void verify(); } }} inputMode="numeric" enterKeyHint="go" autoComplete="one-time-code" className="min-h-13 w-full border border-black/20 bg-cream px-4 text-center text-xl tracking-[0.35em] outline-none focus:border-black" /></label> : null}
-        <button type="button" disabled={busy || !email || (codeSent && code.length !== 6)} onClick={codeSent ? verify : requestCode} className="min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busy ? "Vänta…" : codeSent ? "Logga in" : "Skicka kod"}</button>
+        <button type="button" disabled={busy || !email || (codeSent && code.length !== 6)} onClick={codeSent ? verify : () => { void requestCode(); }} className="min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busy ? "Vänta…" : codeSent ? "Logga in" : "Skicka kod"}</button>
         {codeSent ? <button type="button" onClick={() => { setCodeSent(false); setCode(""); setMessage(""); }} className="w-full cursor-pointer text-xs font-bold uppercase text-black/50 hover:text-black">Byt e-postadress</button> : null}
       </div>}
       {message ? <p className="mt-5 text-sm font-semibold text-teal">{message}</p> : null}
