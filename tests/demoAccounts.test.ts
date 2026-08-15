@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { demoWebAccounts } from "../src/lib/demoAccounts.ts";
@@ -12,4 +13,10 @@ test("synthetic website accounts are exposed only in the demo environment", () =
   assert.ok(accounts.every((account) => account.email.endsWith("@example.test")));
   assert.ok(accounts.some((account) => account.email === "member-coach-youth@example.test"));
   assert.ok(accounts.some((account) => account.email === "nonmember@example.test"));
+});
+
+test("the account page resolves demo personas at runtime", () => {
+  const page = readFileSync(new URL("../src/app/konto/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /export const dynamic = ["']force-dynamic["']/);
+  assert.match(page, /demoWebAccounts\(process\.env\.APP_ENV\)/);
 });
