@@ -4,6 +4,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
+import {
+  AlternativePaymentOption,
+  SwishButtonLabel,
+} from "@/components/payments/PaymentMethodOptions";
+
 import type { Locale } from "@/lib/i18n";
 import type { CoursePersonalPriceStatus } from "@/lib/coursePricing";
 import {
@@ -846,19 +851,20 @@ export default function CourseEnrolButton({
         onClick={() => submit("SWISH")}
         className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
       >
-        {busy ? busyLabel : waitlist ? t.waitlistCta : t.signupCta}
+        {waitlist ? (
+          <span>{busy ? busyLabel : t.waitlistCta}</span>
+        ) : (
+          <SwishButtonLabel>{busy ? busyLabel : t.signupCta}</SwishButtonLabel>
+        )}
         {!busy && <span aria-hidden="true">→</span>}
       </button>
       {!waitlist && (
-        <button
-          type="button"
+        <AlternativePaymentOption
+          busy={busy}
           disabled={!accepted || busy || promotionNeedsValidation}
           onClick={() => submit("STRIPE")}
-          className="ml-0 mt-3 inline-flex min-h-[44px] cursor-pointer items-center gap-2 border-2 border-black bg-white px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-35 sm:ml-3 sm:mt-0"
-        >
-          {busy ? busyLabel : locale === "sv" ? "Kort, Apple Pay eller Google Pay" : "Card, Apple Pay or Google Pay"}
-          {!busy && <span aria-hidden="true">→</span>}
-        </button>
+          locale={locale}
+        />
       )}
       {busy && (
         <p role="status" aria-live="polite" className="sr-only">

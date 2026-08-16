@@ -4,6 +4,8 @@ import test from "node:test";
 
 const widget = readFileSync("src/components/booking/BookingWidget.tsx", "utf8");
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
+const courseEnrol = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
+const paymentOptions = readFileSync("src/components/payments/PaymentMethodOptions.tsx", "utf8");
 const availabilityRoute = readFileSync("src/app/api/booking/availability/route.ts", "utf8");
 const configRoute = readFileSync("src/app/api/booking/config/route.ts", "utf8");
 const quoteRoute = readFileSync("src/app/api/booking/quotes/route.ts", "utf8");
@@ -47,6 +49,19 @@ test("booking keeps Swish first and passes only an allow-listed Stripe provider"
   assert.ok(widget.indexOf('checkout("SWISH")') < widget.indexOf('checkout("STRIPE")'));
   assert.match(widget, /checkoutUrl/);
   assert.match(checkoutRoute, /body\.paymentProvider === "STRIPE" \? "STRIPE" : "SWISH"/);
+});
+
+test("customer payment surfaces visually prefer Swish and disclose card wallets as fallback", () => {
+  assert.match(paymentOptions, /Övriga betalningsmetoder/);
+  assert.match(paymentOptions, /<details/);
+  assert.match(paymentOptions, /<rect x="6" y="2\.5"/);
+  assert.match(widget, /<SwishButtonLabel>/);
+  assert.match(widget, /<AlternativePaymentOption/);
+  assert.match(courseEnrol, /<SwishButtonLabel>/);
+  assert.match(courseEnrol, /<AlternativePaymentOption/);
+  assert.match(portal, /<SwishButtonLabel>Betala med Swish<\/SwishButtonLabel>/);
+  assert.match(portal, /<AlternativePaymentOption/);
+  assert.doesNotMatch(widget, /border-2 border-black bg-white[^>]+checkout\("STRIPE"\)/);
 });
 
 test("booking configuration never invents a static base price", () => {

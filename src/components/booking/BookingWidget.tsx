@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlternativePaymentOption,
+  SwishButtonLabel,
+} from "@/components/payments/PaymentMethodOptions";
 import type { Locale } from "@/lib/i18n";
 import { bokaDict, type BokaWidgetDict } from "@/lib/i18n/boka";
 
@@ -318,8 +322,13 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
       <div className="mt-7 min-w-0 border border-black/10 bg-white p-4">{accountLoading ? <p className="text-sm text-black/45">{t.pay.checkingAccount}</p> : !profile ? <><strong className="block">{t.pay.loginTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.loginBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.loginCta}</Link></> : !profileReady ? <><strong className="block">{t.pay.profileTitle}</strong><p className="mt-1 text-sm text-black/50">{t.pay.profileBody}</p><Link href={accountHref} className="mt-4 inline-flex max-w-full bg-black px-5 py-3 text-center text-xs font-bold uppercase text-lime">{t.pay.profileCta}</Link></> : <div className="flex min-w-0 items-center gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-mint text-xl">{profile.avatar_thumb_url ? <img src={profile.avatar_thumb_url} alt="" className="h-full w-full object-cover" /> : profile.emoji_icon || "🏐"}</span><div className="min-w-0 flex-1"><strong className="block truncate">{profile.name}</strong><span className="block truncate text-xs text-black/45">{profile.swish_phone ? `${t.pay.swishPrefix}${profile.swish_phone}` : profile.email}</span></div><Link href={accountHref} className="shrink-0 text-xs font-bold uppercase text-teal">{t.pay.edit}</Link></div>}</div>
       {selected?.cameraEnabled && profileReady ? <label className="mt-4 flex cursor-pointer items-start gap-3 border border-black/10 bg-white p-4"><input type="checkbox" checked={streamRequested} onChange={(event) => setStreamRequested(event.target.checked)} className="mt-0.5 h-5 w-5 accent-black" /><span className="text-sm"><strong className="flex items-center gap-2"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg>{t.pay.streamTitle}</strong><span className="mt-1 block text-black/45">{t.pay.streamBody}</span></span></label> : null}
       {error ? <div role="alert" className="mt-4 border border-orange/25 bg-orange/10 p-4 text-sm font-semibold text-orange"><p>{error}</p>{error.toLowerCase().includes("profil") ? <Link href={accountHref} className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.08em] underline underline-offset-4">{t.pay.checkSwish}</Link> : null}</div> : null}
-      <button type="button" disabled={!selected || submitting || !swishReady} onClick={() => checkout("SWISH")} className="mt-6 min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35">{submitting ? t.pay.submitting : selected && selectedPrice !== null ? `${t.pay.submitPrefix}${selectedPrice}${t.priceSuffix}` : t.pay.submitEmpty}</button>
-      <button type="button" disabled={!selected || submitting || !profileReady} onClick={() => checkout("STRIPE")} className="mt-3 min-h-13 w-full cursor-pointer border-2 border-black bg-white px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:cursor-not-allowed disabled:opacity-35">{locale === "sv" ? "Betala med kort, Apple Pay eller Google Pay" : "Pay by card, Apple Pay or Google Pay"}</button>
+      <button type="button" disabled={!selected || submitting || !swishReady} onClick={() => checkout("SWISH")} className="mt-6 min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35"><SwishButtonLabel>{submitting ? t.pay.submitting : selected && selectedPrice !== null ? `${t.pay.submitPrefix}${selectedPrice}${t.priceSuffix}` : t.pay.submitEmpty}</SwishButtonLabel></button>
+      <AlternativePaymentOption
+        busy={submitting}
+        disabled={!selected || submitting || !profileReady}
+        locale={locale}
+        onClick={() => checkout("STRIPE")}
+      />
       <p className="mt-3 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine1}</p><p className="mt-2 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine2}</p>
     </div>
   </div>;
