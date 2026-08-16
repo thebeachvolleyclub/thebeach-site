@@ -4,6 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  AlternativePaymentOption,
+  SwishButtonLabel,
+} from "@/components/payments/PaymentMethodOptions";
+import {
   accountReturnNeedsSwish,
   canReturnFromAccount,
   safeAccountNext,
@@ -834,7 +838,67 @@ export default function AccountPortal() {
     </div> : null}</> : null}
 
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
-    {tab === "invoices" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina fakturor</h3>{invoices.length === 0 ? <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p> : <div className="mt-7 space-y-3">{invoices.map((invoice) => <article key={invoice.id} className="border border-black/10 p-5"><div className="flex items-start justify-between gap-4"><div><strong className="block">Träningsfaktura</strong><span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span></div><div className="text-right"><strong className="block text-xl">{invoice.amount_sek} kr</strong><span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span></div></div>{invoice.lines?.length ? <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">{invoice.lines.map((line, index) => <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1"><span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span><span>{line.amount_sek} kr</span></li>)}</ul> : null}{invoice.status === "sent" ? <div className="mt-4 grid gap-2 border-t border-black/10 pt-4 sm:grid-cols-2"><button type="button" disabled={busy} onClick={() => startInvoicePayment(invoice, "SWISH")} className="min-h-11 cursor-pointer bg-black px-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Betala med Swish</button><button type="button" disabled={busy} onClick={() => startInvoicePayment(invoice, "STRIPE")} className="min-h-11 cursor-pointer border-2 border-black bg-white px-4 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35">Kort, Apple Pay eller Google Pay</button></div> : null}{invoicePaymentHandoff?.invoiceId === invoice.id ? <div className="mt-4 border border-black/10 bg-cream p-4 text-center"><strong className="block">Betala med Swish</strong>{invoicePaymentHandoff.qrCodeDataUrl ? <Image src={invoicePaymentHandoff.qrCodeDataUrl} alt="Swish QR-kod" width={192} height={192} unoptimized className="mx-auto mt-3 h-48 w-48 bg-white p-2" /> : null}<a href={invoicePaymentHandoff.deepLinkUrl} className="mt-3 inline-flex text-xs font-bold uppercase underline underline-offset-4">Öppna Swish</a></div> : null}</article>)}</div>}</section> : null}
+    {tab === "invoices" ? (
+      <section className="bg-white p-6 sm:p-8">
+        <h3 className="font-display text-3xl">Mina fakturor</h3>
+        {invoices.length === 0 ? (
+          <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p>
+        ) : (
+          <div className="mt-7 space-y-3">
+            {invoices.map((invoice) => (
+              <article key={invoice.id} className="border border-black/10 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <strong className="block">Träningsfaktura</strong>
+                    <span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span>
+                  </div>
+                  <div className="text-right">
+                    <strong className="block text-xl">{invoice.amount_sek} kr</strong>
+                    <span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span>
+                  </div>
+                </div>
+                {invoice.lines?.length ? (
+                  <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">
+                    {invoice.lines.map((line, index) => (
+                      <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1">
+                        <span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span>
+                        <span>{line.amount_sek} kr</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {invoice.status === "sent" ? (
+                  <div className="mt-4 border-t border-black/10 pt-4 text-center">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => startInvoicePayment(invoice, "SWISH")}
+                      className="min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35"
+                    >
+                      <SwishButtonLabel>Betala med Swish</SwishButtonLabel>
+                    </button>
+                    <AlternativePaymentOption
+                      busy={busy}
+                      disabled={busy}
+                      onClick={() => startInvoicePayment(invoice, "STRIPE")}
+                    />
+                  </div>
+                ) : null}
+                {invoicePaymentHandoff?.invoiceId === invoice.id ? (
+                  <div className="mt-4 border border-black/10 bg-cream p-4 text-center">
+                    <strong className="block">Betala med Swish</strong>
+                    {invoicePaymentHandoff.qrCodeDataUrl ? (
+                      <Image src={invoicePaymentHandoff.qrCodeDataUrl} alt="Swish QR-kod" width={192} height={192} unoptimized className="mx-auto mt-3 h-48 w-48 bg-white p-2" />
+                    ) : null}
+                    <a href={invoicePaymentHandoff.deepLinkUrl} className="mt-3 inline-flex text-xs font-bold uppercase underline underline-offset-4">Öppna Swish</a>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    ) : null}
   </div>;
 }
 
