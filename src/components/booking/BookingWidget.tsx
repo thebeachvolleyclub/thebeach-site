@@ -130,10 +130,13 @@ function CameraMark({ label }: { label: string }) {
   return <span className="ml-2 inline-flex items-center border-l border-current/25 pl-2" title={label} aria-label={label}><svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg></span>;
 }
 
-// Publikt bokningsfönster: rullande 7 dagar (idag + 6). Beslut David 2026-08-17.
-// Admin/personal bokar utan gräns via admin-konsolen — den regeln ligger server-side
-// i beach-booking-api. Här är bara den publika UI-gränsen.
-const BOOKING_WINDOW_DAYS = 7;
+// Publikt bokningsfönster: rullande idag + 7 dagar. Beslut David 2026-08-17
+// (ändrat samma dag från idag + 6). Konstanten är ANTALET valbara datum i raden,
+// alltså 8 rutor: idag och sju dagar framåt.
+// Admin/personal bokar utan gräns via admin-konsolen — den bindande regeln ligger
+// server-side i beach-booking-api. Här är bara den publika UI-gränsen, och den får
+// inte visa fler dagar än venue.publicBookingDays, annars ger sista rutan 422.
+const BOOKING_WINDOW_DAYS = 8;
 
 export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   const t = bokaDict[locale].widget;
