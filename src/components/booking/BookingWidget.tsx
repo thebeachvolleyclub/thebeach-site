@@ -130,9 +130,14 @@ function CameraMark({ label }: { label: string }) {
   return <span className="ml-2 inline-flex items-center border-l border-current/25 pl-2" title={label} aria-label={label}><svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg></span>;
 }
 
+// Publikt bokningsfönster: rullande 7 dagar (idag + 6). Beslut David 2026-08-17.
+// Admin/personal bokar utan gräns via admin-konsolen — den regeln ligger server-side
+// i beach-booking-api. Här är bara den publika UI-gränsen.
+const BOOKING_WINDOW_DAYS = 7;
+
 export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   const t = bokaDict[locale].widget;
-  const dates = useMemo(() => Array.from({ length: 14 }, (_, index) => {
+  const dates = useMemo(() => Array.from({ length: BOOKING_WINDOW_DAYS }, (_, index) => {
     const date = new Date(); date.setDate(date.getDate() + index); date.setHours(12, 0, 0, 0); return date;
   }), []);
   const [enabled, setEnabled] = useState<boolean | null>(null);
