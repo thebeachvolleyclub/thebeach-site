@@ -40,6 +40,61 @@ const RESULT_ARTICLES_URL =
 
 export const ARTICLES: Article[] = [
   {
+    slug: "hostens-traningar-2026",
+    datum: "2026-08-17",
+    kicker: "Höstterminen 2026",
+    title: "Nedräkningen har startat — allt inför höstens träningar",
+    ingress:
+      "All organiserad träning startar söndag den 30 augusti. EM-framgångarna inspirerar och anmälningstempot är högt — här är läget för träningsgrupper, kurser, barn & ungdom och allt annat som händer i höst.",
+    taggar: ["Träning", "Kurser", "Barn & ungdom", "Landslaget"],
+    hero: {
+      src: "/media/landslag-fotosession.webp",
+      alt: "Landslagsspelarna framför solnedgångsväggen på The Beach.",
+      caption: "EM-framgångarna inspirerar — och det märks i anmälningstempot.",
+      credit: "The Beach",
+    },
+    body: [
+      { t: "p", text: "Hösten närmar sig och vi är superpeppade att dra igång all organiserad träning. EM-framgångarna inspirerar — och det märks inte minst i anmälningstempot till höstens träningar. **All organiserad träning startar söndag den 30 augusti** och framåt." },
+
+      { t: "h2", text: "Träningsgrupper" },
+      { t: "p", text: "Ordinarie anmälan är stängd och vi jobbar just nu med att skapa jämna, bra grupper. Som tidigare meddelat siktar vi på att vara klara med höstens träningsgrupper **senast den 23 augusti**." },
+
+      { t: "h2", text: "Grundkurser & fortsättningskurser" },
+      { t: "p", text: "**Grundkurs tisdagar 19.00** blev snabbt fullbokad — vi har öppnat upp 8 platser till. **Grundkurs torsdagar 20.30** har än så länge gott om plats, men det brukar smälla till rätt snabbt. Vill du vara med är det läge att signa nu." },
+      { t: "p", text: "Fortsättningskurserna på tisdagar och torsdagar har ungefär samma status — platser finns, men de brukar gå fort." },
+      { t: "cta", label: "Se kurser och tider", href: "/trana" },
+
+      { t: "h2", text: "Barn & ungdom" },
+      { t: "p", text: "Planeringen inför terminsstarten pågår för fullt. Precis som tidigare gäller att man behåller sin plats tills man avanmäler sig. Det är många i kö — om du eller ditt barn inte önskar ha kvar platsen, maila mans@thebeach.one så går den vidare till nästa på tur." },
+      { t: "p", text: "Vill du eller ditt barn vara med? Fyll i formuläret på träningssidan — vi gör vårt bästa för att skapa plats för så många som möjligt. Ett tips: de mest populära tiderna är svårast att få plats på. Titta gärna på de tidigare tiderna på vardagar — där är chansen som störst." },
+
+      { t: "h2", text: "Klubblags-SM för ungdomar 5–6 september" },
+      { t: "p", text: "Vi arrangerar Klubblags-SM för ungdomar hos oss helgen den 5–6 september, i fyra klasser: **U16F, U18F, U16P och U18P**. Vi är superpeppade att välkomna lirare från hela landet!" },
+
+      { t: "h2", text: "Lördagar blir Swedish Beach Tour-dagar" },
+      { t: "p", text: "I princip varje lördag under hela terminen kör vi sanktionerad turnering. Vi väntar på att turneringarna ska godkännas — så fort de är det ser du dem i kalendern, både här på hemsidan och i appen." },
+      { t: "cta", label: "Till kalendern", href: "/kalender", secondary: true },
+
+      { t: "h2", text: "Abonnemang" },
+      { t: "p", text: "När den organiserade träningsverksamheten växer blir det färre banor lediga för bokning. Vi har fått stort intresse för abonnemang på sistone men inte hunnit ikapp än — och vi väntar på att några pusselbitar ska falla på plats innan vi kan återkomma om vilka som får abonnemang. Saknar du svar, eller vill du anmäla intresse? Maila david@thebeach.one." },
+
+      { t: "h2", text: "Landslagskoll: nästa stopp Montreal" },
+      { t: "p", text: "Vi tog ett snack med förbundskapten Rasmus Jonsson i morse, och det händer mycket i landslagsvärlden just nu." },
+      {
+        t: "img",
+        src: "/media/nyheter/host26-montreal.webp",
+        alt: "Elmer och Jacke framför solnedgångsväggen på The Beach.",
+        caption: "Elmer och Jacke — näst på tur: Elite16 i Montreal.",
+        credit: "The Beach",
+      },
+      { t: "p", text: "Efter EM-succén reser **Elmer och Jacke** tillsammans med Rasmus till Montreal för att spela **Elite16** — en av de största tävlingarna på touren. Matcherna visas på **SVT Play** med Mattias Magnusson som expertkommentator. De går på nätterna svensk tid, men det fina är att du kan se dem när du vill i efterhand." },
+      { t: "p", text: "För våra OS- och VM-mästare **David och Jonis, samt Anders**, blir det enligt planen inget Montreal den här gången. Efter många tuffa matcher i Polen väntar i stället välförtjänt återhämtning på hemmaplan." },
+      { t: "p", text: "Blickar vi framåt startar den OS-kvalificerande perioden mot **Los Angeles 2028** i november. Exakt när och var är fortfarande oklart — planen från början var Doha, men med det oroliga läget i regionen är det troligt att tävlingarna hamnar på en annan adress. Vi håller er uppdaterade." },
+
+      { t: "callout", title: "PS. Klubbmästerskap nu på söndag!", text: "Missa inte — mer info och anmälan hittar du i kalendern och i appen." },
+    ],
+  },
+  {
     slug: "flest-sm-guld-2026",
     datum: "2026-08-05",
     kicker: "Beachvolley-SM 2026",
