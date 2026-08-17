@@ -9,6 +9,7 @@ import {
   type JuniorPricing,
 } from "@/lib/signupPricing";
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
+import { seasonSignupAvailability } from "@/lib/seasonSignupAvailability";
 
 /**
  * Season-signup form — the web port of the app's SeasonSignupScreen.
@@ -54,6 +55,7 @@ type Config = {
   title: string;
   intro_md: string | null;
   is_open: boolean;
+  waitlist_open?: boolean;
   preview_open: boolean;
   pilot_feedback_required: boolean;
   testers_only: boolean;
@@ -85,6 +87,7 @@ type SubmissionWish = {
 
 type Submission = {
   id: number;
+  submission_phase?: string | null;
   first_name: string | null; last_name: string | null; email: string | null;
   birthdate: string | null; gender: "M" | "W" | null; phone: string | null;
   address: string | null; postcode: string | null; city: string | null;
@@ -107,7 +110,7 @@ type MineState = {
   edits_locked: boolean;
   is_open: boolean;
   contact_email: string;
-  last_cancelled: { id: number; cancelled_at: string | null } | null;
+  last_cancelled: { id: number; cancelled_at: string | null; submission_phase?: string | null } | null;
 };
 
 type WishRow = {
@@ -127,8 +130,10 @@ const STR = {
     noOpen: "Det finns ingen öppen anmälan just nu.",
     opensLater: (d: string) => `Anmälan öppnar ${d} — här på hemsidan.`,
     closed: "Anmälan är stängd.",
+    waitlistNoticeTitle: "Fullbokat — väntelista",
+    waitlistNoticeBody: "Träningsgrupperna är fullbokade. Du kan ändå skicka samma bindande anmälan till väntelistan. Om du erbjuds en plats är anmälan bindande och du förbinder dig att betala avgiften.",
     previewTitle: "Anmälan öppnar snart",
-    previewBody: "Anmälan till träningsgrupperna öppnar för alla den 1 augusti. Just nu är den öppen endast för testare/admins.",
+    previewBody: "Anmälan är just nu öppen endast för testare och administratörer.",
     previewLoginHint: "Är du testare? Logga in med samma e-post som i appen så kan du anmäla dig nu.",
     loginNudgeTitle: "Har du ett Beach-konto?",
     loginNudge: "Logga in så fyller vi i dina uppgifter — och du kan öppna och ändra din anmälan senare.",
@@ -144,8 +149,10 @@ const STR = {
     nameMissingBody: "Fyll i ditt namn i din profil, så kan du anmäla dig direkt efteråt.",
     loggedInAs: (n: string) => `Inloggad som ${n}`,
     editBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}. Du kan ändra den nedan och spara igen, eller dra tillbaka den.`,
+    waitlistEditBanner: (d: string | null) => `Din bindande väntelistanmälan är registrerad${d ? ` (${d})` : ""}. Du kan ändra den nedan och spara igen, eller dra tillbaka den.`,
     changedNote: (d: string) => `Senast ändrad ${d}.`,
     cancelledBanner: (d: string | null, open: boolean) => `Din anmälan har dragits tillbaka${d ? ` (${d})` : ""}.${open ? " Du kan göra en ny anmälan nedan." : ""}`,
+    waitlistCancelledBanner: (d: string | null, open: boolean) => `Din väntelistanmälan har dragits tillbaka${d ? ` (${d})` : ""}.${open ? " Du kan ställa dig på väntelistan igen nedan." : ""}`,
     lockedTitle: "Ändringsfönstret har stängt",
     lockedBody: (email: string) => `Din anmälan är låst och kan inte längre ändras här. Behöver du ändra eller dra tillbaka anmälan? Mejla ${email} så hjälper vi dig.`,
     detailsTitle: "Dina uppgifter",
@@ -197,8 +204,11 @@ const STR = {
     juniorMembershipBody: (discount: number, fee: number) =>
       `Du får ${discount} % rabatt som medlem i The Beach Volley Club Huddinge. Har du tävlingslicens ska den vara hos oss. Vi hittar inget aktivt medlemskap, så om det fortfarande saknas vid fakturering lägger vi till junioravgiften ${fee} kr. Om du istället vill betala fullt pris, skriv det som ett övrigt önskemål ovan.`,
     submit: "Skicka anmälan", submitUpdate: "Spara ändringar", sending: "Skickar…",
+    waitlistSubmit: "Ställ mig på väntelistan", waitlistSubmitUpdate: "Spara ändringar i väntelistanmälan",
     cancelBtn: "Dra tillbaka anmälan", cancelling: "Drar tillbaka…",
+    waitlistCancelBtn: "Dra tillbaka väntelistanmälan", waitlistCancelling: "Drar tillbaka väntelistanmälan…",
     viewBanner: (d: string | null) => `Din anmälan är registrerad${d ? ` (${d})` : ""}.`,
+    waitlistViewBanner: (d: string | null) => `Din bindande väntelistanmälan är registrerad${d ? ` (${d})` : ""}.`,
     editBtn: "Ändra min anmälan",
     backToView: "← Tillbaka utan att spara",
     errDescription: "Beskriv dig själv som spelare.",
@@ -207,6 +217,10 @@ const STR = {
     cancelConfirmBody: "Om du fortsätter tas din anmälan bort ur säsongens gruppplanering. Du kan anmäla dig på nytt så länge anmälan är öppen.",
     cancelConfirmYes: "Ja, dra tillbaka",
     cancelConfirmNo: "Nej, behåll anmälan",
+    waitlistCancelConfirmTitle: "Dra tillbaka väntelistanmälan?",
+    waitlistCancelConfirmBody: "Om du fortsätter tas din anmälan bort från väntelistan. Du kan anmäla dig till väntelistan igen så länge den är öppen.",
+    waitlistCancelConfirmYes: "Ja, lämna väntelistan",
+    waitlistCancelConfirmNo: "Nej, stå kvar på väntelistan",
     errIdentity: "Fyll i namn, e-post, födelsedatum och kön.",
     errSlots: (n: number) => `Välj förstahandstider på minst ${n} olika ${n === 1 ? "dag" : "dagar"} – eller kryssa i "vilken dag/tid som helst".`,
     errAcks: "Du måste godkänna bekräftelserna för att skicka in.",
@@ -219,9 +233,13 @@ const STR = {
     freeTextPh: "Skriv ditt önskemål…",
     thanksTitle: "Tack för din anmälan! 🏐",
     thanksBody: "Vi hör av oss med gruppplacering inför säsongen.",
+    waitlistThanksTitle: "Du står på väntelistan! 🏐",
+    waitlistThanksBody: "Vi hör av oss om du erbjuds en plats. Om du får en plats är din anmälan bindande.",
     thanksEditNote: "Vill du kunna ändra eller dra tillbaka din anmälan senare? Logga in på Mitt konto med samma e-postadress.",
     updatedTitle: "Dina ändringar är sparade!",
     updatedBody: "Vi använder din senaste version när vi bygger grupperna.",
+    waitlistUpdatedTitle: "Din väntelistanmälan är uppdaterad!",
+    waitlistUpdatedBody: "Vi använder din senaste version om vi kan erbjuda dig en plats.",
     backToForm: "Öppna anmälan igen",
     roSubmitted: (d: string | null) => `Anmäld${d ? ` ${d}` : ""}`,
     roSessions: "Pass per vecka", roAnySlot: "Vilken dag/tid som helst",
@@ -242,8 +260,10 @@ const STR = {
     noOpen: "There is no open registration right now.",
     opensLater: (d: string) => `Registration opens ${d} — right here on the website.`,
     closed: "Registration is closed.",
+    waitlistNoticeTitle: "Fully booked — waiting list",
+    waitlistNoticeBody: "The training groups are fully booked. You can still submit the same binding registration to the waiting list. If you are offered a place, the registration is binding and you commit to paying the fee.",
     previewTitle: "Registration opens soon",
-    previewBody: "Registration for the training groups opens for everyone on 1 August. Right now it's open only to testers/admins.",
+    previewBody: "Registration is currently open only to testers and administrators.",
     previewLoginHint: "Are you a tester? Sign in with the same email as in the app to register now.",
     loginNudgeTitle: "Have a Beach account?",
     loginNudge: "Sign in and we prefill your details — and you can open and change your registration later.",
@@ -259,8 +279,10 @@ const STR = {
     nameMissingBody: "Add your name to your profile, then sign up right after.",
     loggedInAs: (n: string) => `Signed in as ${n}`,
     editBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}. You can change it below and save again, or withdraw it.`,
+    waitlistEditBanner: (d: string | null) => `Your binding waiting-list registration is on file${d ? ` (${d})` : ""}. You can change it below and save again, or withdraw it.`,
     changedNote: (d: string) => `Last changed ${d}.`,
     cancelledBanner: (d: string | null, open: boolean) => `Your registration has been withdrawn${d ? ` (${d})` : ""}.${open ? " You can register again below." : ""}`,
+    waitlistCancelledBanner: (d: string | null, open: boolean) => `Your waiting-list registration has been withdrawn${d ? ` (${d})` : ""}.${open ? " You can join the waiting list again below." : ""}`,
     lockedTitle: "The change window has closed",
     lockedBody: (email: string) => `Your registration is locked and can no longer be changed here. Need to change or withdraw it? Email ${email} and we'll help you.`,
     detailsTitle: "Your details",
@@ -312,8 +334,11 @@ const STR = {
     juniorMembershipBody: (discount: number, fee: number) =>
       `You receive ${discount}% off as a member of The Beach Volley Club Huddinge. If you have a competition licence, it must be with us. We cannot find an active membership, so if it is still missing when invoiced, the SEK ${fee} junior membership fee will be added. If you would rather pay full price, add this under other requests above.`,
     submit: "Submit registration", submitUpdate: "Save changes", sending: "Sending…",
+    waitlistSubmit: "Join the waiting list", waitlistSubmitUpdate: "Save waiting-list changes",
     cancelBtn: "Withdraw registration", cancelling: "Withdrawing…",
+    waitlistCancelBtn: "Withdraw waiting-list registration", waitlistCancelling: "Withdrawing from waiting list…",
     viewBanner: (d: string | null) => `Your registration is on file${d ? ` (${d})` : ""}.`,
+    waitlistViewBanner: (d: string | null) => `Your binding waiting-list registration is on file${d ? ` (${d})` : ""}.`,
     editBtn: "Change my registration",
     backToView: "← Back without saving",
     errDescription: "Describe yourself as a player.",
@@ -322,6 +347,10 @@ const STR = {
     cancelConfirmBody: "If you continue, your registration will be removed from the season group planning. You can register again while registration is open.",
     cancelConfirmYes: "Yes, withdraw it",
     cancelConfirmNo: "No, keep registration",
+    waitlistCancelConfirmTitle: "Withdraw from the waiting list?",
+    waitlistCancelConfirmBody: "If you continue, your registration will be removed from the waiting list. You can join again while the waiting list is open.",
+    waitlistCancelConfirmYes: "Yes, leave the waiting list",
+    waitlistCancelConfirmNo: "No, stay on the list",
     errIdentity: "Fill in name, email, date of birth and gender.",
     errSlots: (n: number) => `Choose first-choice times on at least ${n} separate ${n === 1 ? "day" : "days"} — or tick "any day/any time".`,
     errAcks: "You must accept the confirmations to submit.",
@@ -334,9 +363,13 @@ const STR = {
     freeTextPh: "Write your wish…",
     thanksTitle: "Thank you for your registration! 🏐",
     thanksBody: "We'll be in touch with your group placement before the season.",
+    waitlistThanksTitle: "You're on the waiting list! 🏐",
+    waitlistThanksBody: "We'll contact you if we can offer you a place. If you receive a place, your registration is binding.",
     thanksEditNote: "Want to change or withdraw your registration later? Sign in to My account with the same email address.",
     updatedTitle: "Your changes are saved!",
     updatedBody: "We use your latest version when we build the groups.",
+    waitlistUpdatedTitle: "Your waiting-list registration is updated!",
+    waitlistUpdatedBody: "We'll use your latest version if we can offer you a place.",
     backToForm: "Open the registration again",
     roSubmitted: (d: string | null) => `Registered${d ? ` ${d}` : ""}`,
     roSessions: "Sessions per week", roAnySlot: "Any day/any time",
@@ -363,13 +396,25 @@ const cardCls = "border border-black/10 bg-white p-6 sm:p-8";
 const headingCls = "font-display text-2xl uppercase text-black";
 const hintCls = "mt-1 text-sm leading-relaxed text-black/55";
 
+class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (typeof init?.body === "string") headers.set("Content-Type", "application/json");
   const response = await fetch(url, { ...init, headers });
   let payload: Record<string, unknown> = {};
   try { payload = await response.json() as Record<string, unknown>; } catch { /* handled below */ }
-  if (!response.ok) throw new Error(typeof payload.detail === "string" ? payload.detail : "Något gick fel");
+  if (!response.ok) {
+    throw new ApiError(
+      typeof payload.detail === "string" ? payload.detail : "Något gick fel",
+      response.status,
+    );
+  }
   return payload as T;
 }
 
@@ -405,6 +450,7 @@ export default function SignupFormClient() {
   const [editing, setEditing] = useState(false);
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [lastCancelledWasWaitlist, setLastCancelledWasWaitlist] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<"created" | "updated" | null>(null);
 
@@ -520,13 +566,23 @@ export default function SignupFormClient() {
 
   const existing = mine?.submission ?? null;
   const readOnly = !!existing && mine?.can_edit === false;
-  // Fail CLOSED against a legacy/partial API: v3 also carries the
-  // server-authoritative pilot-feedback requirement.
-  const SIGNUP_CONFIG_VERSION = 3;
-  const gateAware = (config?.config_version ?? 0) >= SIGNUP_CONFIG_VERSION;
+  const availability = seasonSignupAvailability(config);
+  // v3 is the minimum trusted ordinary-registration gate. Waiting-list
+  // access is deliberately stricter and is resolved only from the explicit
+  // v4 server flag by seasonSignupAvailability.
+  const gateAware = (config?.config_version ?? 0) >= 3;
+  const waitlistOpen = availability.state === "waitlist";
+  const existingIsWaitlist = existing?.submission_phase === "waitlist";
+  const waitlistContext = existingIsWaitlist || (waitlistOpen && !existing);
+  const cancelledIsWaitlist = lastCancelledWasWaitlist
+    || mine?.last_cancelled?.submission_phase === "waitlist";
   // Who may sign up: publicly open (everyone), or an app-tester during the
   // pre-launch preview. The API enforces this too — this only governs the UI.
-  const canSignup = !!config && gateAware && (config.is_open || (config.preview_open && viewerIsTester));
+  const canSignup = !!config && gateAware && (
+    availability.state === "open"
+    || waitlistOpen
+    || (config.preview_open && viewerIsTester)
+  );
 
   const title = (lang === "en" && config?.config?.title_en) || config?.title || "";
   const intro = (lang === "en" && config?.config?.intro_en) || config?.intro_md || "";
@@ -635,11 +691,41 @@ export default function SignupFormClient() {
     setBusy(true);
     try {
       const wasUpdate = !!existing;
+      // Re-read the effective gate immediately before the mutation. If an
+      // ordinary signup has become a waiting-list signup while the customer
+      // filled in the form, stop here: setConfig reveals the binding
+      // waiting-list notice and a second explicit click is required.
+      const latestConfig = await api<Config>("/api/signup/config");
+      const latestAvailability = seasonSignupAvailability(latestConfig);
+      setConfig(latestConfig);
+      if (!existing) {
+        const latestGateAware = (latestConfig.config_version ?? 0) >= 3;
+        const latestCanSignup = latestGateAware && (
+          latestAvailability.state === "open"
+          || latestAvailability.state === "waitlist"
+          || (latestConfig.preview_open && viewerIsTester)
+        );
+        if (!latestCanSignup) {
+          window.scrollTo({ top: 0 });
+          return;
+        }
+        if (
+          latestConfig.season_id !== config?.season_id
+          || latestAvailability.state !== availability.state
+        ) {
+          window.scrollTo({ top: 0 });
+          return;
+        }
+      }
+      const expectedSubmissionPhase = latestAvailability.state === "waitlist"
+        ? "waitlist"
+        : "registration";
       await api("/api/signup/submit", {
         method: "POST",
         body: JSON.stringify({
-          season_id: config?.season_id,
+          season_id: existing ? config?.season_id : latestConfig.season_id,
           source: "web",
+          ...(!existing ? { expected_submission_phase: expectedSubmissionPhase } : {}),
           // Identity is profile-authoritative server-side — these merely
           // echo the printed values (and fill birthdate/gender gaps).
           first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(),
@@ -660,12 +746,21 @@ export default function SignupFormClient() {
       setDone(wasUpdate ? "updated" : "created");
       window.scrollTo({ top: 0 });
     } catch (cause) {
+      if (cause instanceof ApiError && cause.status === 409) {
+        // The server atomically detected a phase change after our final GET.
+        // Refresh the notice/gate and require a fresh explicit submit without
+        // turning the expected transition into a generic failure message.
+        const refreshedConfig = await api<Config>("/api/signup/config").catch(() => null);
+        setConfig(refreshedConfig);
+        window.scrollTo({ top: 0 });
+        return;
+      }
       setError(cause instanceof Error ? cause.message : t.genericError);
     } finally {
       setBusy(false);
     }
   }, [identityOk, descriptionOk, acksOk, slotsOk, pilotFeedbackOk, t, sessions, wishes, primarySlots, secondarySlots,
-    existing, config, firstName, lastName, email, birthdate, gender, phone,
+    existing, config, availability.state, viewerIsTester, firstName, lastName, email, birthdate, gender, phone,
     description, anySlot, newsletterOptIn, paymentAck,
     cancellationAck, pilotFeedbackRating, pilotFeedbackComment, corrections]);
 
@@ -678,6 +773,7 @@ export default function SignupFormClient() {
     setCancelBusy(true);
     setError("");
     try {
+      setLastCancelledWasWaitlist(existingIsWaitlist);
       await api("/api/signup/cancel", { method: "POST" });
       const mineState = await api<MineState>("/api/signup/mine").catch(() => null);
       setMine(mineState);
@@ -688,15 +784,15 @@ export default function SignupFormClient() {
     } finally {
       setCancelBusy(false);
     }
-  }, [t]);
+  }, [existingIsWaitlist, t]);
 
   const cancelDialog = (
     <WithdrawalDialog
       open={cancelConfirmOpen}
-      title={t.cancelConfirmTitle}
-      message={t.cancelConfirmBody}
-      confirmLabel={t.cancelConfirmYes}
-      cancelLabel={t.cancelConfirmNo}
+      title={waitlistContext ? t.waitlistCancelConfirmTitle : t.cancelConfirmTitle}
+      message={waitlistContext ? t.waitlistCancelConfirmBody : t.cancelConfirmBody}
+      confirmLabel={waitlistContext ? t.waitlistCancelConfirmYes : t.cancelConfirmYes}
+      cancelLabel={waitlistContext ? t.waitlistCancelConfirmNo : t.cancelConfirmNo}
       busy={cancelBusy}
       error={cancelConfirmOpen ? error : ""}
       onConfirm={cancelSignup}
@@ -723,6 +819,13 @@ export default function SignupFormClient() {
         </button>
       ))}
     </div>
+  );
+
+  const waitlistNotice = (
+    <aside className="mb-6 border-l-4 border-orange bg-orange/10 p-5" role="status">
+      <p className="font-display text-2xl uppercase text-black">{t.waitlistNoticeTitle}</p>
+      <p className="mt-2 text-sm leading-relaxed text-black/70">{t.waitlistNoticeBody}</p>
+    </aside>
   );
 
   if (loading) {
@@ -771,10 +874,14 @@ export default function SignupFormClient() {
         {langRow}
         <div className={`${cardCls} text-center`}>
           <p className="font-display text-3xl uppercase text-black">
-            {done === "updated" ? t.updatedTitle : t.thanksTitle}
+            {waitlistContext
+              ? done === "updated" ? t.waitlistUpdatedTitle : t.waitlistThanksTitle
+              : done === "updated" ? t.updatedTitle : t.thanksTitle}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-black/60">
-            {done === "updated" ? t.updatedBody : t.thanksBody}
+            {waitlistContext
+              ? done === "updated" ? t.waitlistUpdatedBody : t.waitlistThanksBody
+              : done === "updated" ? t.updatedBody : t.thanksBody}
           </p>
           {!authed ? (
             <p className="mt-4 border-t border-black/10 pt-4 text-sm leading-relaxed text-black/55">
@@ -823,7 +930,11 @@ export default function SignupFormClient() {
           <p className="font-display text-2xl uppercase text-black">{t.previewTitle}</p>
           <p className={hintCls}>{t.previewBody}</p>
           {mine?.last_cancelled ? (
-            <p className={hintCls}>{t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)}</p>
+            <p className={hintCls}>
+              {cancelledIsWaitlist
+                ? t.waitlistCancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)
+                : t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)}
+            </p>
           ) : null}
           {!authed ? (
             <p className="mt-4 border-t border-black/10 pt-4 text-sm text-black/55">
@@ -847,7 +958,11 @@ export default function SignupFormClient() {
             {opensInFuture ? t.opensLater(fmtOpens(config.opens_at as string, lang)) : t.closed}
           </p>
           {mine?.last_cancelled ? (
-            <p className={hintCls}>{t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)}</p>
+            <p className={hintCls}>
+              {cancelledIsWaitlist
+                ? t.waitlistCancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)
+                : t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), false)}
+            </p>
           ) : !opensInFuture ? (
             <p className={hintCls}>{t.noOpen}</p>
           ) : null}
@@ -869,6 +984,7 @@ export default function SignupFormClient() {
     return (
       <div>
         {langRow}
+        {waitlistContext ? waitlistNotice : null}
         {!!title && <h2 className="mb-2 font-display text-3xl uppercase text-black">{title}</h2>}
         {!!intro && <p className="mb-6 text-[15px] leading-relaxed text-black/70">{intro}</p>}
         <div className={cardCls}>
@@ -906,7 +1022,9 @@ export default function SignupFormClient() {
           {t.loggedInAs(accountName || email || "–")}
         </p>
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
-          {t.viewBanner(fmtDate(existing.created_at))}
+          {existingIsWaitlist
+            ? t.waitlistViewBanner(fmtDate(existing.created_at))
+            : t.viewBanner(fmtDate(existing.created_at))}
           {existing.is_changed && existing.changed_at ? ` ${t.changedNote(fmtDate(existing.changed_at) as string)}` : ""}
         </div>
         <ReadOnlySummary sub={existing} config={config} t={t} />
@@ -927,7 +1045,9 @@ export default function SignupFormClient() {
             disabled={cancelBusy}
             className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center border border-orange px-6 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50"
           >
-            {cancelBusy ? t.cancelling : t.cancelBtn}
+            {cancelBusy
+              ? waitlistContext ? t.waitlistCancelling : t.cancelling
+              : waitlistContext ? t.waitlistCancelBtn : t.cancelBtn}
           </button>
         </div>
         {cancelDialog}
@@ -939,6 +1059,8 @@ export default function SignupFormClient() {
     <div>
       {langRow}
 
+      {waitlistContext ? waitlistNotice : null}
+
       {!!title && <h2 className="mb-2 font-display text-3xl uppercase text-black">{title}</h2>}
       {!!intro && <p className="mb-6 text-[15px] leading-relaxed text-black/70">{intro}</p>}
 
@@ -949,7 +1071,9 @@ export default function SignupFormClient() {
       {existing ? (
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
           <p>
-            {t.editBanner(fmtDate(existing.created_at))}
+            {existingIsWaitlist
+              ? t.waitlistEditBanner(fmtDate(existing.created_at))
+              : t.editBanner(fmtDate(existing.created_at))}
             {existing.is_changed && existing.changed_at ? ` ${t.changedNote(fmtDate(existing.changed_at) as string)}` : ""}
           </p>
           <button
@@ -962,7 +1086,9 @@ export default function SignupFormClient() {
         </div>
       ) : mine?.last_cancelled ? (
         <div className="mb-6 border border-teal/25 bg-mint p-5 text-sm leading-relaxed text-teal">
-          {t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), config.is_open)}
+          {cancelledIsWaitlist
+            ? t.waitlistCancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), waitlistOpen)
+            : t.cancelledBanner(fmtDate(mine.last_cancelled.cancelled_at), availability.state === "open")}
         </div>
       ) : null}
 
@@ -1274,7 +1400,14 @@ export default function SignupFormClient() {
             disabled={busy || !canSubmit}
             className="inline-flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 bg-black px-9 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {busy ? t.sending : <>{existing ? t.submitUpdate : t.submit} <span aria-hidden="true">→</span></>}
+            {busy
+              ? t.sending
+              : <>
+                  {waitlistContext
+                    ? existing ? t.waitlistSubmitUpdate : t.waitlistSubmit
+                    : existing ? t.submitUpdate : t.submit}{" "}
+                  <span aria-hidden="true">→</span>
+                </>}
           </button>
           {!canSubmit && (
             <p className="text-center text-[13px] text-black/45">
@@ -1296,7 +1429,9 @@ export default function SignupFormClient() {
               disabled={cancelBusy}
               className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center border border-orange px-6 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50"
             >
-              {cancelBusy ? t.cancelling : t.cancelBtn}
+              {cancelBusy
+                ? waitlistContext ? t.waitlistCancelling : t.cancelling
+                : waitlistContext ? t.waitlistCancelBtn : t.cancelBtn}
             </button>
           ) : null}
         </div>

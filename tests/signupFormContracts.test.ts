@@ -73,3 +73,16 @@ test("registration withdrawal uses explicit copy and a destructive confirmation 
   assert.match(source, /onClick=\{onConfirm\}/);
   assert.match(source, /await api\("\/api\/signup\/cancel", \{ method: "POST" \}\)/);
 });
+
+test("waiting-list mode keeps the binding acknowledgements and uses phase-aware actions", () => {
+  assert.match(source, /waitlist_open\?: boolean/);
+  assert.match(source, /submission_phase\?: string \| null/);
+  assert.match(source, /existing\?\.submission_phase === "waitlist"/);
+  assert.match(source, /waitlistSubmit: "Ställ mig på väntelistan"/);
+  assert.match(source, /waitlistThanksTitle: "Du står på väntelistan!/);
+  assert.match(source, /waitlistCancelConfirmTitle: "Dra tillbaka väntelistanmälan\?"/);
+  assert.doesNotMatch(source, /köanmäl|stå i kön|väntelisteanmäl/);
+  assert.match(source, /const acksOk = paymentAck && cancellationAck/);
+  assert.match(source, /ackPayment: "Jag förbinder mig att betala avgiften för min plats\."/);
+  assert.match(source, /ackCancellation: "Jag har läst och förstått reglerna för avbokning\."/);
+});

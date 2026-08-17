@@ -80,16 +80,21 @@ export interface TranaDict {
     youth: { title: string; body: string };
     signup: {
       title: string;
-      body1: string;
-      strong: string;
-      body2: string;
+      statusOpen: string;
+      statusWaitlist: string;
+      statusClosed: string;
+      statusBeforeOpen: string;
+      details1: string;
       termsLabel: string;
-      body3: string;
+      details2: string;
       changeLabel: string;
-      body4: string;
+      details3: string;
+      ctaOpen: string;
+      ctaWaitlist: string;
+      ctaBeforeOpen: string;
+      ctaClosed: string;
     };
     questionsTitle: string;
-    cta: string;
   };
   youth: {
     eyebrow: string;
@@ -228,7 +233,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         under21Regular: {
           title: "Du kan välja båda spåren",
-          body: "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna (anmälan öppnar 1 aug 20:00).",
+          body: "Under 21 och spelar redan? Juniorträningen via klubben tränar hela terminen med jämnåriga — eller sikta på träningsgrupperna. Aktuell anmälningsstatus visas längre ner på sidan.",
           ctas: [
             { label: "Juniorträning via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
             { label: "Se träningsgrupperna", href: "#traningsgrupper" },
@@ -247,7 +252,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         adultRegular: {
           title: "Träningsgrupperna är nästa steg",
-          body: "Spelar du regelbundet placeras du i en grupp som matchar din nivå — jämna grupper, 15 pass per säsong. Anmälan öppnar 1 aug kl 20:00.",
+          body: "Spelar du regelbundet placeras du i en grupp som matchar din nivå — jämna grupper, 15 pass per säsong. Aktuell anmälningsstatus visas under träningsgrupperna.",
           ctas: [{ label: "Se träningsgrupperna", href: "#traningsgrupper" }],
         },
       },
@@ -319,16 +324,21 @@ export const tranaDict: Dict<TranaDict> = {
       },
       signup: {
         title: "Anmälan",
-        body1: "Öppnar ",
-        strong: "1 augusti kl 20:00",
-        body2: ". Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande — läs ",
+        statusOpen: "Anmälan är öppen.",
+        statusWaitlist: "Fullbokat. Nya anmälningar går till väntelistan och är bindande om du erbjuds en plats.",
+        statusClosed: "Anmälan är stängd.",
+        statusBeforeOpen: "Anmälan öppnar",
+        details1: "Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande — läs ",
         termsLabel: "villkor & avanmälan",
-        body3: ". Redan med i en grupp och vill byta? Gör en ",
+        details2: ". Redan med i en grupp och vill byta? Gör en ",
         changeLabel: "ändringsanmälan",
-        body4: ".",
+        details3: ".",
+        ctaOpen: "Till anmälan",
+        ctaWaitlist: "Till väntelistan",
+        ctaBeforeOpen: "Anmälan öppnar senare",
+        ctaClosed: "Anmälan stängd",
       },
       questionsTitle: "Frågor",
-      cta: "Till anmälan — öppnar 1 aug 20:00",
     },
     youth: {
       eyebrow: "3–21 år",
@@ -492,7 +502,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         under21Regular: {
           title: "You can choose either track",
-          body: "Under 21 and already playing? The junior programme through the club trains the whole term with players your own age — or aim for the training groups (registration opens 1 Aug 20:00).",
+          body: "Under 21 and already playing? The junior programme through the club trains the whole term with players your own age — or aim for the training groups. The current registration status is shown further down the page.",
           ctas: [
             { label: "Junior training via Svenska Lag", href: "https://www.svenskalag.se/thebeach", external: true },
             { label: "See the training groups", href: "#traningsgrupper" },
@@ -511,7 +521,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         adultRegular: {
           title: "The training groups are your next step",
-          body: "If you play regularly you're placed in a group that matches your level — balanced groups, 15 sessions per season. Registration opens 1 Aug at 20:00.",
+          body: "If you play regularly you're placed in a group that matches your level — balanced groups, 15 sessions per season. The current registration status is shown with the training groups.",
           ctas: [{ label: "See the training groups", href: "#traningsgrupper" }],
         },
       },
@@ -583,16 +593,21 @@ export const tranaDict: Dict<TranaDict> = {
       },
       signup: {
         title: "Sign-up",
-        body1: "Opens ",
-        strong: "1 August at 20:00",
-        body2: ". Want to train with friends? You'll be placed in the group matching the lowest level in your crew — level is always the main rule. Tick every time you can make in the form to raise your chances of two or three sessions a week. Registration is binding — read the ",
+        statusOpen: "Registration is open.",
+        statusWaitlist: "Fully booked. New registrations go to the waiting list and are binding if you are offered a place.",
+        statusClosed: "Registration is closed.",
+        statusBeforeOpen: "Registration opens",
+        details1: "Want to train with friends? You'll be placed in the group matching the lowest level in your crew — level is always the main rule. Tick every time you can make in the form to raise your chances of two or three sessions a week. Registration is binding — read the ",
         termsLabel: "terms & cancellation policy",
-        body3: " (in Swedish). Already in a group and want to switch? Submit a ",
+        details2: " (in Swedish). Already in a group and want to switch? Submit a ",
         changeLabel: "change request",
-        body4: " (in Swedish).",
+        details3: " (in Swedish).",
+        ctaOpen: "Go to registration",
+        ctaWaitlist: "Join the waiting list",
+        ctaBeforeOpen: "Registration opens later",
+        ctaClosed: "Registration closed",
       },
       questionsTitle: "Questions",
-      cta: "To sign-up — opens 1 Aug 20:00",
     },
     youth: {
       eyebrow: "Ages 3–21",

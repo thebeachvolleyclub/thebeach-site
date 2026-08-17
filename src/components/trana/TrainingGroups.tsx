@@ -1,10 +1,69 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { fillYears } from "@/lib/ages";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { tranaDict } from "@/lib/i18n/trana";
+import {
+  seasonSignupAvailability,
+  type SeasonSignupAvailability,
+} from "@/lib/seasonSignupAvailability";
+
+function formatOpening(iso: string, locale: Locale) {
+  return new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
 
 export default function TrainingGroups({ locale }: { locale: Locale }) {
   const t = tranaDict[locale].groups;
+  // Start closed and remain closed on every transport/schema error. This
+  // prevents a stale static page from advertising registration as available.
+  const [availability, setAvailability] = useState<SeasonSignupAvailability>({
+    state: "closed",
+    opensAt: null,
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/signup/config", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json() as Promise<Record<string, unknown>>;
+      })
+      .then((config) => {
+        if (!controller.signal.aborted) setAvailability(seasonSignupAvailability(config));
+      })
+      .catch(() => {
+        // Intentionally keep the fail-safe closed state.
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const signupAvailable = availability.state === "open" || availability.state === "waitlist";
+  const statusText = availability.state === "open"
+    ? t.signup.statusOpen
+    : availability.state === "waitlist"
+      ? t.signup.statusWaitlist
+      : availability.state === "before_open"
+        ? `${t.signup.statusBeforeOpen} ${formatOpening(availability.opensAt, locale)}.`
+        : t.signup.statusClosed;
+  const ctaLabel = availability.state === "open"
+    ? t.signup.ctaOpen
+    : availability.state === "waitlist"
+      ? t.signup.ctaWaitlist
+      : availability.state === "before_open"
+        ? t.signup.ctaBeforeOpen
+        : t.signup.ctaClosed;
+
   return (
     <section
       id="traningsgrupper"
@@ -98,7 +157,10 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
               {t.signup.title}
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
-              {t.signup.body1}<strong className="text-bone">{t.signup.strong}</strong>{t.signup.body2}<a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.termsLabel}</a>{t.signup.body3}<a href="/andringsanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.changeLabel}</a>{t.signup.body4}
+              <strong className={availability.state === "waitlist" ? "text-orange" : "text-bone"}>
+                {statusText}
+              </strong>{" "}
+              {t.signup.details1}<a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.termsLabel}</a>{t.signup.details2}<a href="/andringsanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.changeLabel}</a>{t.signup.details3}
             </p>
           </div>
           <div className="flex-1">
@@ -119,12 +181,21 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
 
       {/* CTA */}
       <Reveal delay={0.15} className="mt-10">
-        <a
-          href="/anmalan"
-          className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
-        >
-          {t.cta} <span aria-hidden="true">→</span>
-        </a>
+        {signupAvailable ? (
+          <a
+            href="/anmalan"
+            className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
+          >
+            {ctaLabel} <span aria-hidden="true">→</span>
+          </a>
+        ) : (
+          <span
+            aria-disabled="true"
+            className="inline-flex min-h-[44px] items-center gap-2 border border-bone/20 px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-bone/45"
+          >
+            {ctaLabel}
+          </span>
+        )}
       </Reveal>
     </section>
   );
