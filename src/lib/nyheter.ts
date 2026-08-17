@@ -66,7 +66,8 @@ export const ARTICLES: Article[] = [
 
       { t: "h2", text: "Barn & ungdom" },
       { t: "p", text: "Planeringen inför terminsstarten pågår för fullt. Precis som tidigare gäller att man behåller sin plats tills man avanmäler sig. Det är många i kö — om du eller ditt barn inte önskar ha kvar platsen, maila mans@thebeach.one så går den vidare till nästa på tur." },
-      { t: "p", text: "Vill du eller ditt barn vara med? Fyll i formuläret på träningssidan — vi gör vårt bästa för att skapa plats för så många som möjligt. Ett tips: de mest populära tiderna är svårast att få plats på. Titta gärna på de tidigare tiderna på vardagar — där är chansen som störst." },
+      { t: "p", text: "Vill du eller ditt barn vara med? Fyll i anmälningsformuläret — vi gör vårt bästa för att skapa plats för så många som möjligt. Ett tips: de mest populära tiderna är svårast att få plats på. Titta gärna på de tidigare tiderna på vardagar — där är chansen som störst." },
+      { t: "cta", label: "Anmälan barn & ungdom HT26", href: "https://www.svenskalag.se/thebeach/formular/anmalan-till-barn-ungdomsgrupper-ht26/38601" },
 
       { t: "h2", text: "Klubblags-SM för ungdomar 5–6 september" },
       { t: "p", text: "Vi arrangerar Klubblags-SM för ungdomar hos oss helgen den 5–6 september, i fyra klasser: **U16F, U18F, U16P och U18P**. Vi är superpeppade att välkomna lirare från hela landet!" },
