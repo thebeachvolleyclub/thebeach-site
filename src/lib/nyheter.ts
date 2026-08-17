@@ -361,7 +361,13 @@ export async function allArticles(): Promise<Article[]> {
   for (const article of await resultArticles()) merged.set(article.slug, article);
   // Handredigerade artiklar win on slug collisions.
   for (const article of ARTICLES) merged.set(article.slug, article);
-  return [...merged.values()].sort((a, b) => b.datum.localeCompare(a.datum));
+  // Vid datum-lika: handredigerade artiklar före auto-genererade resultatartiklar.
+  const localSlugs = new Set(ARTICLES.map((a) => a.slug));
+  return [...merged.values()].sort(
+    (a, b) =>
+      b.datum.localeCompare(a.datum) ||
+      Number(localSlugs.has(b.slug)) - Number(localSlugs.has(a.slug))
+  );
 }
 
 export async function articleBySlug(slug: string): Promise<Article | undefined> {
