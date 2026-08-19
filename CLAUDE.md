@@ -1,40 +1,16 @@
 @AGENTS.md
 
-# Git-regler (obligatoriska — flera bidragsgivare)
+# Claude-Specific Instructions
 
-Det här repot är navet för thebeach.one. **GitHub `main` är hubben**: staging-
-workshoppen (beachinfo-azure) är EN bidragsgivare bland flera — Henric och
-Mattias pushar också från sina egna miljöer (t.ex. signupformulär, bansystem).
-Förvänta dig uppströmsändringar när som helst.
+De kanoniska instruktionerna för det här repot finns i `AGENTS.md` (importeras
+ovan): projektstruktur, kommandon, deployment, git-regler, appägarskap och
+plattformsgräns, miljöer, säkerhet och handoff-protokollet. De flyttades dit
+oförändrade från den här filen så att även Codex och andra leverantörer får
+samma regler. Lägg durabel projektkunskap i `AGENTS.md`, inte här.
 
-- **Pull FÖRE allt nytt arbete**: `git pull` (rebase är förkonfigurerat).
-- **Committa + pusha när ett moment är klart.** Lämna aldrig ocommittat arbete
-  — det blockerar andras pull och kan gå förlorat.
-- **Aldrig force-push. Aldrig `reset --hard`/`checkout --` över arbete du inte
-  själv gjort** — committa eller stash:a det i stället.
-- **Prod publiceras BARA från pushade commits på main** — publish-verktyget/
-  panelen vägrar vid smutsigt eller opushat träd.
-- Workshoppens standard-identitet är "The Beach Staging <github@thebeach.one>";
-  sätt gärna din egen: `git config --global user.name/user.email`.
-
-## Appägarskap och plattformsgräns
-
-Webbägaren och dennes agent får självständigt ändra och publicera layout,
-innehåll, intern implementation, affärslogik och buggrättningar inom sajtens
-befintliga API- och dataåtkomst. Henric eller Supervisor behöver inte godkänna
-vanlig sajtutveckling.
-
-Om arbetet kräver en delad tabell/kolumn/migrering, ny åtkomst till en annan
-tjänsts data, ändrat publikt API/MCP-kontrakt, identitet eller behörighet:
-skapa ett plattformsärende i Klubbhuset med Business MCP-verktyget
-`hq_create_platform_request` och `requesting_project="site"`. Fortsätt med det
-arbete som inte korsar gränsen medan Supervisor granskar ärendet.
-
-## Miljöer
-- **Workshop/staging (valfri)**: /work/thebeach-site i staging-containern,
-  `next dev` med hot reload på https://staging.thebeach.one
-  (Google-SSO-gated). Permanent staging är inte ett publiceringskrav och kan
-  avvecklas separat.
-- **Prod**: https://thebeach.one — publiceras via Site Deploy-panelen
-  (https://admin.thebeach.one/deploy) eller MCP-verktyget `publish_to_prod`.
-- Detaljer: [DEPLOY.md](DEPLOY.md).
+- Aktuellt uppgiftsläge hör hemma i `.agent/HANDOFF.md`, inte i den här filen.
+- `.claude/launch.json` definierar dev-servern (`npm run dev`, port 3000) för
+  Claude Code.
+- Visuella ändringar (layout, responsivt, styling) följer
+  `~/supervisor/platform/visual-change-workflow.md` — använd
+  `visual-review-loop`-skillen i stället för att godkänna dem själv.
