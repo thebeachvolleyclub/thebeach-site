@@ -148,6 +148,7 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     const date = new Date(); date.setDate(date.getDate() + index); date.setHours(12, 0, 0, 0); return date;
   }), []);
   const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [stripeEnabled, setStripeEnabled] = useState(false);
   const [venueId, setVenueId] = useState("");
   const [date, setDate] = useState(localDate(dates[0]));
   const [hideToday, setHideToday] = useState(false);
@@ -207,12 +208,13 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     (async () => {
       try {
         const [config, session] = await Promise.all([
-          api<{ enabled: boolean }>("/api/booking/config", undefined, t.genericError),
+          api<{ enabled: boolean; stripeEnabled?: boolean }>("/api/booking/config", undefined, t.genericError),
           api<{ authenticated: boolean; profile?: Profile }>("/api/account/session", undefined, t.genericError),
         ]);
         setProfile(session.authenticated ? session.profile ?? null : null);
         setAccountLoading(false);
         setEnabled(config.enabled);
+        setStripeEnabled(config.stripeEnabled === true);
         if (!config.enabled) { setLoading(false); return; }
         const venues = await api<Array<{ id: string }>>("/api/booking/venues", undefined, t.genericError);
         if (!venues[0]) throw new Error(t.noVenueError);
@@ -331,12 +333,14 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
       {selected?.cameraEnabled && profileReady ? <label className="mt-4 flex cursor-pointer items-start gap-3 border border-black/10 bg-white p-4"><input type="checkbox" checked={streamRequested} onChange={(event) => setStreamRequested(event.target.checked)} className="mt-0.5 h-5 w-5 accent-black" /><span className="text-sm"><strong className="flex items-center gap-2"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="2"><rect x="3" y="6" width="13" height="12" rx="2" /><path d="m16 10 5-3v10l-5-3" /></svg>{t.pay.streamTitle}</strong><span className="mt-1 block text-black/45">{t.pay.streamBody}</span></span></label> : null}
       {error ? <div role="alert" className="mt-4 border border-orange/25 bg-orange/10 p-4 text-sm font-semibold text-orange"><p>{error}</p>{error.toLowerCase().includes("profil") ? <Link href={accountHref} className="mt-3 inline-flex text-xs font-bold uppercase tracking-[0.08em] underline underline-offset-4">{t.pay.checkSwish}</Link> : null}</div> : null}
       <button type="button" disabled={!selected || submitting || !swishReady} onClick={() => checkout("SWISH")} className="mt-6 min-h-13 w-full cursor-pointer bg-black px-6 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:cursor-not-allowed disabled:opacity-35"><SwishButtonLabel>{submitting ? t.pay.submitting : selected && selectedPrice !== null ? `${t.pay.submitPrefix}${selectedPrice}${t.priceSuffix}` : t.pay.submitEmpty}</SwishButtonLabel></button>
-      <AlternativePaymentOption
-        busy={submitting}
-        disabled={!selected || submitting || !profileReady}
-        locale={locale}
-        onClick={() => checkout("STRIPE")}
-      />
+      {stripeEnabled ? (
+        <AlternativePaymentOption
+          busy={submitting}
+          disabled={!selected || submitting || !profileReady}
+          locale={locale}
+          onClick={() => checkout("STRIPE")}
+        />
+      ) : null}
       <p className="mt-3 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine1}</p><p className="mt-2 text-center text-[11px] leading-relaxed text-black/45">{t.pay.fine2}</p>
     </div>
   </div>;

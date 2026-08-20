@@ -129,7 +129,10 @@ export function courseStripeCheckoutUrl(payload: Record<string, unknown>): strin
       : "";
   try {
     const target = new URL(raw);
-    return target.protocol === "https:" && target.hostname === "checkout.stripe.com"
+    return target.protocol === "https:"
+      && target.hostname === "checkout.stripe.com"
+      && !target.username
+      && !target.password
       ? target.toString()
       : null;
   } catch {

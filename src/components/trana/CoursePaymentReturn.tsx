@@ -32,6 +32,9 @@ class ReturnStatusError extends Error {
 function cleanReturnUrl() {
   const target = new URL(window.location.href);
   target.searchParams.delete("swish-return");
+  target.searchParams.delete("payment-return");
+  target.searchParams.delete("provider");
+  target.searchParams.delete("cancelled");
   target.searchParams.delete("invoice");
   window.history.replaceState(window.history.state, "", target.toString());
 }
@@ -49,7 +52,10 @@ export default function CoursePaymentReturn({
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("swish-return") !== "course") return;
+    if (
+      params.get("swish-return") !== "course"
+      && params.get("payment-return") !== "course"
+    ) return;
 
     const controller = new AbortController();
     const ids = courseIdsKey.split(",").map(Number).filter(Number.isSafeInteger);
@@ -144,7 +150,7 @@ export default function CoursePaymentReturn({
           }`}
         >
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">
-            Swish
+            Betalning
           </p>
           <h3 className="font-display text-3xl uppercase leading-none text-black sm:text-4xl">
             {state.kind === "checking"
