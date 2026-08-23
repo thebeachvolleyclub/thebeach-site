@@ -262,8 +262,8 @@ export const tranaDict: Dict<TranaDict> = {
           ctas: [{ label: "Se träningsgrupperna", href: "#traningsgrupper" }],
         },
         adultRegularClosed: {
-          title: "Fortsättningskursen — hela hösten, platser kvar",
-          body: "Anmälan till höstens träningsgrupper är stängd. Vill du ändå träna strukturerat varje vecka? Fortsättningskursen är samma upplägg — 15 pass med coach, tisdagar 19:00 eller torsdagar 20:30 — och har platser kvar.",
+          title: "Missade du träningsgrupperna?",
+          body: "Anmälan till höstens träningsgrupper är stängd. Fortsättningskursen har fortfarande några platser kvar — 15 pass med coach, tisdagar 19:00 eller torsdagar 20:30.",
           ctas: [
             { label: "Se fortsättningskursen", href: "#kurser" },
             { label: "Träningsgrupperna", href: "#traningsgrupper" },
@@ -353,8 +353,8 @@ export const tranaDict: Dict<TranaDict> = {
         ctaClosed: "Anmälan stängd",
       },
       overflow: {
-        title: "Missade du anmälan?",
-        body: "Fortsättningskursen har platser kvar och är samma upplägg som en träningsgrupp: 15 pass med coach, hela hösten. Tisdagar 19:00 eller torsdagar 20:30.",
+        title: "Missade du träningsgrupperna?",
+        body: "Fortsättningskursen har fortfarande några platser kvar — 15 pass med coach, hela hösten. Tisdagar 19:00 eller torsdagar 20:30.",
         cta: "Se fortsättningskursen",
       },
       questionsTitle: "Frågor",
@@ -545,8 +545,8 @@ export const tranaDict: Dict<TranaDict> = {
           ctas: [{ label: "See the training groups", href: "#traningsgrupper" }],
         },
         adultRegularClosed: {
-          title: "The continuation course — all autumn, places left",
-          body: "Registration for this autumn's training groups is closed. Still want structured weekly training? The continuation course is the same set-up — 15 coached sessions, Tuesdays 19:00 or Thursdays 20:30 — and has places left.",
+          title: "Missed the training groups?",
+          body: "Registration for this autumn's training groups is closed. The continuation course still has a few places left — 15 coached sessions, Tuesdays 19:00 or Thursdays 20:30.",
           ctas: [
             { label: "See the continuation course", href: "#kurser" },
             { label: "The training groups", href: "#traningsgrupper" },
@@ -636,8 +636,8 @@ export const tranaDict: Dict<TranaDict> = {
         ctaClosed: "Registration closed",
       },
       overflow: {
-        title: "Missed the registration?",
-        body: "The continuation course has places left and is the same set-up as a training group: 15 coached sessions, all autumn. Tuesdays 19:00 or Thursdays 20:30.",
+        title: "Missed the training groups?",
+        body: "The continuation course still has a few places left — 15 coached sessions, all autumn. Tuesdays 19:00 or Thursdays 20:30.",
         cta: "See the continuation course",
       },
       questionsTitle: "Questions",

@@ -199,7 +199,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
       </Reveal>
 
       {/* Stängd eller väntelista ska inte vara en död ände: fortsättningskursen
-          är samma upplägg (15 pass, hela hösten) och har platser kvar. */}
+          har fortfarande några platser kvar (15 pass, hela hösten). */}
       {availability.state !== "open" && availability.state !== "before_open" && (
         <Reveal delay={0.2} className="mt-8">
           <div className="flex flex-col gap-4 border border-lime/50 bg-black p-6 sm:flex-row sm:items-center sm:justify-between lg:p-8">
