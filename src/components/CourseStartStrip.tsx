@@ -11,13 +11,13 @@ const SHOW_UNTIL = "2026-09-04"; // dagen efter torsdagskursernas start
 
 const COPY: Record<Locale, { kicker: string; text: string; cta: string; href: string }> = {
   sv: {
-    kicker: "Kursstart 1 & 3 sep",
+    kicker: "Säsongen startar 30 aug",
     text: "Grundkurs 795 kr · Fortsättningskurs 15 pass · Tisdagarna nästan fulla",
     cta: "Anmäl dig",
     href: "/trana#kurser",
   },
   en: {
-    kicker: "Courses start 1 & 3 Sep",
+    kicker: "Season starts 30 Aug",
     text: "Beginner course 795 kr · Continuation course 15 sessions · Tuesdays almost full",
     cta: "Sign up",
     href: "/trana#kurser",

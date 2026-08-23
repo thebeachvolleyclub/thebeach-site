@@ -201,7 +201,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beachvolley träning",
       intro:
         "~800 spelare tränar varje vecka på The Beach. Kurser och träningsgrupper för alla nivåer — sedan 2006. Ledda av coacher i världsklass på sanden i Huddinge.",
-      ctaCourses: "Kursstart 1 sep — se kurserna",
+      ctaCourses: "Säsongen startar 30 aug — se kurserna",
       ctaGroups: "Se träningsgrupperna",
       ctaEvents: "Boka event istället",
       ctaEventsHref: "/events",
@@ -484,7 +484,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beach volleyball training",
       intro:
         "~800 players train every week at The Beach. Courses and training groups for all levels — since 2006. Led by world-class coaches on the sand in Huddinge.",
-      ctaCourses: "Courses start 1 Sep — see the courses",
+      ctaCourses: "Season starts 30 Aug — see the courses",
       ctaGroups: "See the training groups",
       ctaEvents: "Book an event instead",
       ctaEventsHref: "/en/events",
