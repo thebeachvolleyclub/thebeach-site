@@ -197,6 +197,27 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
           </span>
         )}
       </Reveal>
+
+      {/* Stängd eller väntelista ska inte vara en död ände: fortsättningskursen
+          är samma upplägg (15 pass, hela hösten) och har platser kvar. */}
+      {availability.state !== "open" && availability.state !== "before_open" && (
+        <Reveal delay={0.2} className="mt-8">
+          <div className="flex flex-col gap-4 border border-lime/50 bg-black p-6 sm:flex-row sm:items-center sm:justify-between lg:p-8">
+            <div>
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-lime">
+                {t.overflow.title}
+              </p>
+              <p className="max-w-xl text-sm leading-relaxed text-bone/70">{t.overflow.body}</p>
+            </div>
+            <a
+              href="#kurser"
+              className="inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-2 bg-lime px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
+            >
+              {t.overflow.cta} <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </Reveal>
+      )}
     </section>
   );
 }

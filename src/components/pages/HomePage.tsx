@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Ticker from "@/components/Ticker";
+import CourseStartStrip from "@/components/CourseStartStrip";
 import QuickNav from "@/components/QuickNav";
 import Story from "@/components/Story";
 import PhotoBreak from "@/components/PhotoBreak";
@@ -23,6 +24,7 @@ export default function HomePage({ locale }: { locale: Locale }) {
       <Navbar locale={locale} />
       <main className="flex-1">
         <Hero locale={locale} />
+        <CourseStartStrip locale={locale} />
         <Ticker locale={locale} />
         <QuickNav locale={locale} />
         <Story locale={locale} />

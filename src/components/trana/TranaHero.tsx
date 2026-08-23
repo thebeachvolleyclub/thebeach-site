@@ -89,18 +89,28 @@ export default function TranaHero({ locale }: { locale: Locale }) {
 
           {/* CTAs */}
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+            {/* Kurserna är primära så länge gruppanmälan är stängd (HT26) —
+                grupperna ligger kvar som sekundär länk. */}
             <a
-              href="#traningsgrupper"
+              href="#kurser"
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              {t.ctaGroups} <span aria-hidden="true">→</span>
+              {t.ctaCourses} <span aria-hidden="true">→</span>
             </a>
-            <Link
-              href={t.ctaEventsHref}
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
-            >
-              {t.ctaEvents}
-            </Link>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 sm:justify-end">
+              <a
+                href="#traningsgrupper"
+                className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
+              >
+                {t.ctaGroups}
+              </a>
+              <Link
+                href={t.ctaEventsHref}
+                className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
+              >
+                {t.ctaEvents}
+              </Link>
+            </div>
           </div>
         </motion.div>
       </motion.div>

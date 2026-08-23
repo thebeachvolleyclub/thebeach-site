@@ -14,6 +14,7 @@ export type KurserDict = {
   weekdayTime: (day: string, start: string) => string;
   placesLeft: (n: number) => string;
   full: string;
+  fewLeft: string;
   waitlistCount: (n: number) => string;
   closed: string;
   signupCta: string;
@@ -141,6 +142,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     weekdayTime: (day, start) => `${day} ${start}`,
     placesLeft: (n) => (n === 1 ? "1 plats kvar" : `${n} platser kvar`),
     full: "Fullbokad",
+    fewLeft: "Få platser kvar",
     waitlistCount: (n) => (n === 1 ? "1 person i kö" : `${n} personer i kö`),
     closed: "Anmälan stängd",
     signupCta: "Anmäl dig",
@@ -257,6 +259,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     weekdayTime: (day, start) => `${day} ${start}`,
     placesLeft: (n) => (n === 1 ? "1 place left" : `${n} places left`),
     full: "Fully booked",
+    fewLeft: "Few places left",
     waitlistCount: (n) => (n === 1 ? "1 person waiting" : `${n} people waiting`),
     closed: "Registration closed",
     signupCta: "Sign up",

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { tranaDict, type PathRec } from "@/lib/i18n/trana";
+import { seasonSignupAvailability } from "@/lib/seasonSignupAvailability";
 
 /**
  * "Hitta din väg" — hjälper nya besökare direkt till rätt spår.
@@ -22,7 +23,27 @@ export default function PathFinder({ locale }: { locale: Locale }) {
   const t = tranaDict[locale].pathfinder;
   const [age, setAge] = useState<Age | null>(null);
   const [exp, setExp] = useState<Exp | null>(null);
-  const path: PathRec | null = age && exp ? t.paths[PATH_KEY[age][exp]] : null;
+  // Samma källa som träningsgruppssektionen: är gruppanmälan inte öppen
+  // pekar "spelar regelbundet" på fortsättningskursen i stället för en stängd dörr.
+  const [groupsOpen, setGroupsOpen] = useState(true);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/signup/config", { cache: "no-store", signal: controller.signal })
+      .then(async (r) => (r.ok ? r.json() : null))
+      .then((cfg) => {
+        if (controller.signal.aborted) return;
+        const state = seasonSignupAvailability(cfg).state;
+        setGroupsOpen(state === "open" || state === "before_open");
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+  const pathKey = age && exp ? PATH_KEY[age][exp] : null;
+  const path: PathRec | null = pathKey
+    ? pathKey === "adultRegular" && !groupsOpen
+      ? t.paths.adultRegularClosed
+      : t.paths[pathKey]
+    : null;
 
   const AGE_OPTIONS: { value: Age; label: string }[] = [
     { value: "under21", label: t.ageOptions.under21 },

@@ -26,6 +26,7 @@ export interface TranaDict {
     title1: string;
     titleAccent: string;
     intro: string;
+    ctaCourses: string;
     ctaGroups: string;
     ctaEvents: string;
     ctaEventsHref: string;
@@ -47,6 +48,8 @@ export interface TranaDict {
       adultNever: PathRec;
       adultComeback: PathRec;
       adultRegular: PathRec;
+      /** Visas i stället för adultRegular när gruppanmälan inte är öppen. */
+      adultRegularClosed: PathRec;
     };
   };
   courses: {
@@ -94,6 +97,8 @@ export interface TranaDict {
       ctaBeforeOpen: string;
       ctaClosed: string;
     };
+    /** Överflödet från stängd gruppanmälan styrs till fortsättningskursen. */
+    overflow: { title: string; body: string; cta: string };
     questionsTitle: string;
   };
   youth: {
@@ -196,6 +201,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beachvolley träning",
       intro:
         "~800 spelare tränar varje vecka på The Beach. Kurser och träningsgrupper för alla nivåer — sedan 2006. Ledda av coacher i världsklass på sanden i Huddinge.",
+      ctaCourses: "Kursstart 1 sep — se kurserna",
       ctaGroups: "Se träningsgrupperna",
       ctaEvents: "Boka event istället",
       ctaEventsHref: "/events",
@@ -255,6 +261,14 @@ export const tranaDict: Dict<TranaDict> = {
           body: "Spelar du regelbundet placeras du i en grupp som matchar din nivå — jämna grupper, 15 pass per säsong. Aktuell anmälningsstatus visas under träningsgrupperna.",
           ctas: [{ label: "Se träningsgrupperna", href: "#traningsgrupper" }],
         },
+        adultRegularClosed: {
+          title: "Fortsättningskursen — hela hösten, platser kvar",
+          body: "Anmälan till höstens träningsgrupper är stängd. Vill du ändå träna strukturerat varje vecka? Fortsättningskursen är samma upplägg — 15 pass med coach, tisdagar 19:00 eller torsdagar 20:30 — och har platser kvar.",
+          ctas: [
+            { label: "Se fortsättningskursen", href: "#kurser" },
+            { label: "Träningsgrupperna", href: "#traningsgrupper" },
+          ],
+        },
       },
     },
     courses: {
@@ -302,7 +316,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "För dig som gått fortsättningskursen eller har motsvarande vana. Huvudtränare Mattias Magnusson och tränarteamet sätter ihop jämna grupper — placeringen utgår främst från din nivå, och dina önskemål om dagar, tider och kompisar vägs in. Start: söndagar 30 aug, måndagar 31 aug och onsdagar vecka 36.",
       fakta: [
         { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
-        { v: "23 aug", d: "grupperna publiceras senast" },
+        { v: "24 aug", d: "grupperna publiceras måndag kväll" },
         { v: "−30 / −20 %", d: "ungdomsrabatt för födda {y20} resp. {y26} eller senare" },
       ],
       tableCaption: "Träningsgrupper höstsäsong 2026 — dag, tid och pris",
@@ -337,6 +351,11 @@ export const tranaDict: Dict<TranaDict> = {
         ctaWaitlist: "Till väntelistan",
         ctaBeforeOpen: "Anmälan öppnar senare",
         ctaClosed: "Anmälan stängd",
+      },
+      overflow: {
+        title: "Missade du anmälan?",
+        body: "Fortsättningskursen har platser kvar och är samma upplägg som en träningsgrupp: 15 pass med coach, hela hösten. Tisdagar 19:00 eller torsdagar 20:30.",
+        cta: "Se fortsättningskursen",
       },
       questionsTitle: "Frågor",
     },
@@ -465,6 +484,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beach volleyball training",
       intro:
         "~800 players train every week at The Beach. Courses and training groups for all levels — since 2006. Led by world-class coaches on the sand in Huddinge.",
+      ctaCourses: "Courses start 1 Sep — see the courses",
       ctaGroups: "See the training groups",
       ctaEvents: "Book an event instead",
       ctaEventsHref: "/en/events",
@@ -524,6 +544,14 @@ export const tranaDict: Dict<TranaDict> = {
           body: "If you play regularly you're placed in a group that matches your level — balanced groups, 15 sessions per season. The current registration status is shown with the training groups.",
           ctas: [{ label: "See the training groups", href: "#traningsgrupper" }],
         },
+        adultRegularClosed: {
+          title: "The continuation course — all autumn, places left",
+          body: "Registration for this autumn's training groups is closed. Still want structured weekly training? The continuation course is the same set-up — 15 coached sessions, Tuesdays 19:00 or Thursdays 20:30 — and has places left.",
+          ctas: [
+            { label: "See the continuation course", href: "#kurser" },
+            { label: "The training groups", href: "#traningsgrupper" },
+          ],
+        },
       },
     },
     courses: {
@@ -571,7 +599,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "For players who've completed the continuation course or have equivalent experience. Head coach Mattias Magnusson and the coaching team put together balanced groups — placement is based primarily on your level, and your preferences for days, times and friends are taken into account. Starts: Sundays 30 Aug, Mondays 31 Aug and Wednesdays week 36.",
       fakta: [
         { v: "15 sessions", d: "including one Gameday · last session 9 Dec" },
-        { v: "23 Aug", d: "groups published at the latest" },
+        { v: "24 Aug", d: "groups published Monday evening" },
         { v: "−30 / −20 %", d: "youth discount for those born {y20} and {y26} or later" },
       ],
       tableCaption: "Training groups autumn season 2026 — day, time and price",
@@ -606,6 +634,11 @@ export const tranaDict: Dict<TranaDict> = {
         ctaWaitlist: "Join the waiting list",
         ctaBeforeOpen: "Registration opens later",
         ctaClosed: "Registration closed",
+      },
+      overflow: {
+        title: "Missed the registration?",
+        body: "The continuation course has places left and is the same set-up as a training group: 15 coached sessions, all autumn. Tuesdays 19:00 or Thursdays 20:30.",
+        cta: "See the continuation course",
       },
       questionsTitle: "Questions",
     },

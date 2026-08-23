@@ -214,6 +214,9 @@ function CourseCard({
   );
 }
 
+/** Under så många lediga platser visas "Få platser kvar" på kortet. */
+const FEW_PLACES_THRESHOLD = 8;
+
 /** Platsstatus. Färgen bär betydelse men texten står på egna ben. */
 function PlaceStatus({ course, locale }: { course: Course; locale: Locale }) {
   const k = kurserDict[locale];
@@ -228,8 +231,10 @@ function PlaceStatus({ course, locale }: { course: Course; locale: Locale }) {
       </span>
     );
   }
-  // Antal lediga platser visas inte. Ett hogt tal ar ett negativt kopsignal, och
-  // banfordelningen mellan kurserna kan andras under sasongen. Fullbokat och stangd
-  // anmalan visas fortfarande — de sager nagot kunden behover veta.
+  // Exakt antal visas inte (ett högt tal är en negativ köpsignal och bantilldelningen
+  // kan ändras), men när det börjar bli trångt säger vi det — knapphet som är sann.
+  if (course.remainingPlaces <= FEW_PLACES_THRESHOLD) {
+    return <span className="text-orange">{k.fewLeft}</span>;
+  }
   return null;
 }
