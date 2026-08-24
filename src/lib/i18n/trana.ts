@@ -316,7 +316,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "För dig som gått fortsättningskursen eller har motsvarande vana. Huvudtränare Mattias Magnusson och tränarteamet sätter ihop jämna grupper — placeringen utgår främst från din nivå, och dina önskemål om dagar, tider och kompisar vägs in. Start: söndagar 30 aug, måndagar 31 aug och onsdagar vecka 36.",
       fakta: [
         { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
-        { v: "24 aug", d: "grupperna publiceras måndag kväll" },
+        { v: "Senast tis", d: "grupperna publiceras — avisering i appen" },
         { v: "−30 / −20 %", d: "ungdomsrabatt för födda {y20} resp. {y26} eller senare" },
       ],
       tableCaption: "Träningsgrupper höstsäsong 2026 — dag, tid och pris",
@@ -599,7 +599,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "For players who've completed the continuation course or have equivalent experience. Head coach Mattias Magnusson and the coaching team put together balanced groups — placement is based primarily on your level, and your preferences for days, times and friends are taken into account. Starts: Sundays 30 Aug, Mondays 31 Aug and Wednesdays week 36.",
       fakta: [
         { v: "15 sessions", d: "including one Gameday · last session 9 Dec" },
-        { v: "24 Aug", d: "groups published Monday evening" },
+        { v: "By Tue", d: "groups published — app notification" },
         { v: "−30 / −20 %", d: "youth discount for those born {y20} and {y26} or later" },
       ],
       tableCaption: "Training groups autumn season 2026 — day, time and price",
