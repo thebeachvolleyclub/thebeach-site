@@ -1,5 +1,7 @@
 import "server-only";
 
+import { appApiHeaders } from "@/lib/appApiHeaders.core";
+
 const APP_API_URL = (process.env.APP_API_URL ?? "https://api.beachtv.se").replace(/\/$/, "");
 const APP_API_KEY = process.env.APP_API_KEY ?? "thebeach-matchmaking-2026";
 
@@ -15,8 +17,7 @@ export async function appApi(
     signedClientIp?: { ip: string; sig: string };
   },
 ): Promise<Response> {
-  const headers = new Headers(init?.headers);
-  headers.set("X-API-Key", APP_API_KEY);
+  const headers = appApiHeaders(APP_API_KEY, init?.headers);
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);
   if (options?.userId) headers.set("X-User-Id", options.userId);
   if (options?.deviceId) headers.set("X-Device-Id", options.deviceId);

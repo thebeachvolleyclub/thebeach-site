@@ -11,6 +11,7 @@ const verifyRoute = readFileSync("src/app/api/account/auth/verify/route.ts", "ut
 const selectFamilyRoute = readFileSync("src/app/api/account/auth/select-family/route.ts", "utf8");
 const logoutRoute = readFileSync("src/app/api/account/auth/logout/route.ts", "utf8");
 const trainingRoute = readFileSync("src/app/api/account/training/route.ts", "utf8");
+const appApiClient = readFileSync("src/lib/appApi.ts", "utf8");
 const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
 const seasonSignup = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
 
@@ -97,6 +98,7 @@ test("account training lookup forwards the verified bearer without exposing iden
   assert.match(trainingRoute, /const token = await accountToken\(\)/);
   assert.match(trainingRoute, /appApi\("\/training\/lookup", undefined, \{ token \}\)/);
   assert.doesNotMatch(trainingRoute, /X-User-Id|userId:|\/matchmaking\/auth\/me/);
+  assert.match(appApiClient, /appApiHeaders\(APP_API_KEY/);
 });
 
 test("merge path stays blocked from redirect until profile matching finishes", () => {
