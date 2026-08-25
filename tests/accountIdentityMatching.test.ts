@@ -10,6 +10,7 @@ const decisionRoute = readFileSync("src/app/api/account/identity/[playerId]/rout
 const verifyRoute = readFileSync("src/app/api/account/auth/verify/route.ts", "utf8");
 const selectFamilyRoute = readFileSync("src/app/api/account/auth/select-family/route.ts", "utf8");
 const logoutRoute = readFileSync("src/app/api/account/auth/logout/route.ts", "utf8");
+const trainingRoute = readFileSync("src/app/api/account/training/route.ts", "utf8");
 const courseSignup = readFileSync("src/components/trana/CourseEnrolButton.tsx", "utf8");
 const seasonSignup = readFileSync("src/components/anmalan/SignupFormClient.tsx", "utf8");
 
@@ -90,6 +91,12 @@ test("server-side web matching uses trusted lookup then persists found data", ()
   assert.match(matchingRoute, /\/matchmaking\/users\/me\/apply-lookup/);
   assert.match(matchingRoute, /sameOrigin\(request\)/);
   assert.match(matchingRoute, /accountToken\(\)/);
+});
+
+test("account training lookup forwards the verified bearer without exposing identity headers", () => {
+  assert.match(trainingRoute, /const token = await accountToken\(\)/);
+  assert.match(trainingRoute, /appApi\("\/training\/lookup", undefined, \{ token \}\)/);
+  assert.doesNotMatch(trainingRoute, /X-User-Id|userId:|\/matchmaking\/auth\/me/);
 });
 
 test("merge path stays blocked from redirect until profile matching finishes", () => {
