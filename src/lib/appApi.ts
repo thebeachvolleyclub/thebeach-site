@@ -19,7 +19,7 @@ export async function appApi(
 ): Promise<Response> {
   const headers = appApiHeaders(
     APP_API_KEY,
-    process.env.CLIENT_IP_SECRET ?? "",
+    process.env.OPS_CALLER_SECRET ?? "",
     init?.headers,
   );
   if (options?.token) headers.set("Authorization", `Bearer ${options.token}`);

@@ -99,6 +99,7 @@ test("account training lookup forwards the verified bearer without exposing iden
   assert.match(trainingRoute, /appApi\("\/training\/lookup", undefined, \{ token \}\)/);
   assert.doesNotMatch(trainingRoute, /X-User-Id|userId:|\/matchmaking\/auth\/me/);
   assert.match(appApiClient, /appApiHeaders\(\s*APP_API_KEY/);
+  assert.match(appApiClient, /process\.env\.OPS_CALLER_SECRET/);
 });
 
 test("merge path stays blocked from redirect until profile matching finishes", () => {
