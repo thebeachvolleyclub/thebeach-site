@@ -15,7 +15,6 @@ const HIDDEN_EXACT = new Set([
   "/book",
   "/anmalan",
   "/avanmalan",
-  "/andringsanmalan",
   "/konto",
 ]);
 

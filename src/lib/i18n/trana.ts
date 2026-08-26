@@ -90,8 +90,6 @@ export interface TranaDict {
       details1: string;
       termsLabel: string;
       details2: string;
-      changeLabel: string;
-      details3: string;
       ctaOpen: string;
       ctaWaitlist: string;
       ctaBeforeOpen: string;
@@ -344,9 +342,7 @@ export const tranaDict: Dict<TranaDict> = {
         statusBeforeOpen: "Anmälan öppnar",
         details1: "Vill du träna med kompisar? Ni placeras i gruppen som matchar den i gänget med lägst nivå — nivån är alltid huvudregeln. Markera alla tider du kan i formuläret, så ökar chansen till två eller tre pass i veckan. Anmälan är bindande — läs ",
         termsLabel: "villkor & avanmälan",
-        details2: ". Redan med i en grupp och vill byta? Gör en ",
-        changeLabel: "ändringsanmälan",
-        details3: ".",
+        details2: ". Redan med i en grupp och vill ändra något? Logga in i appen och välj Profil → Inställningar → Allmänt → Ändringsförfrågan.",
         ctaOpen: "Till anmälan",
         ctaWaitlist: "Till väntelistan",
         ctaBeforeOpen: "Anmälan öppnar senare",
@@ -627,9 +623,7 @@ export const tranaDict: Dict<TranaDict> = {
         statusBeforeOpen: "Registration opens",
         details1: "Want to train with friends? You'll be placed in the group matching the lowest level in your crew — level is always the main rule. Tick every time you can make in the form to raise your chances of two or three sessions a week. Registration is binding — read the ",
         termsLabel: "terms & cancellation policy",
-        details2: " (in Swedish). Already in a group and want to switch? Submit a ",
-        changeLabel: "change request",
-        details3: " (in Swedish).",
+        details2: " (in Swedish). Already in a group and want to change something? Sign in to the app and choose Profil → Inställningar → Allmänt → Ändringsförfrågan.",
         ctaOpen: "Go to registration",
         ctaWaitlist: "Join the waiting list",
         ctaBeforeOpen: "Registration opens later",

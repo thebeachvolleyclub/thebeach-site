@@ -11,7 +11,7 @@ const base = "https://thebeach.one";
 const staticPaths = [
   "", "/boka", "/events", "/lokalen", "/trana", "/kalender", "/nyheter", "/foreningen", "/faq",
   "/skola", "/barnkalas", "/julbord", "/om-oss", "/om-beachvolley",
-  "/avanmalan", "/andringsanmalan",
+  "/avanmalan",
   "/hallbarhet", "/beachtravels", "/presentkort",
   "/jobb",
   "/events/planera", "/events/privat",

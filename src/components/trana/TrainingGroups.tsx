@@ -160,7 +160,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
               <strong className={availability.state === "waitlist" ? "text-orange" : "text-bone"}>
                 {statusText}
               </strong>{" "}
-              {t.signup.details1}<a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.termsLabel}</a>{t.signup.details2}<a href="/andringsanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.changeLabel}</a>{t.signup.details3}
+              {t.signup.details1}<a href="/avanmalan" className="text-bone underline underline-offset-4 transition-colors hover:text-lime">{t.signup.termsLabel}</a>{t.signup.details2}
             </p>
           </div>
           <div className="flex-1">
