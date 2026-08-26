@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
+import { isRetiredWebsiteForm } from "../src/lib/formSubmissionPolicy.ts";
 
 const sitemap = readFileSync("src/app/sitemap.ts", "utf8");
 const trainingGroups = readFileSync("src/components/trana/TrainingGroups.tsx", "utf8");
@@ -25,4 +26,17 @@ test("training-group change guidance points customers to the authenticated app f
 test("shared request-form infrastructure remains available to other website flows", () => {
   assert.equal(existsSync("src/components/trana/TrainingFormClient.tsx"), true);
   assert.match(sharedFormEndpoint, /export async function POST/);
+});
+
+test("the shared endpoint rejects exactly the retired form before any side effect", () => {
+  assert.equal(isRetiredWebsiteForm("andringsanmalan"), true);
+  assert.equal(isRetiredWebsiteForm("avanmalan"), false);
+  assert.equal(isRetiredWebsiteForm("eventplaneraren"), false);
+  assert.equal(isRetiredWebsiteForm("Andringsanmalan"), false);
+
+  const guardPosition = sharedFormEndpoint.indexOf("isRetiredWebsiteForm(body.form)");
+  const savePosition = sharedFormEndpoint.indexOf("await saveToDb(body)");
+  assert.ok(guardPosition >= 0);
+  assert.ok(savePosition > guardPosition);
+  assert.match(sharedFormEndpoint, /status: 410/);
 });

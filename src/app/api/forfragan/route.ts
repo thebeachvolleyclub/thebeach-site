@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveToDb, notifyByEmail, receiptByEmail, type Submission } from "@/lib/submit";
+import { isRetiredWebsiteForm } from "@/lib/formSubmissionPolicy";
 
 export async function POST(req: Request) {
   let body: Submission;
@@ -7,6 +8,12 @@ export async function POST(req: Request) {
     body = (await req.json()) as Submission;
   } catch {
     return NextResponse.json({ ok: false, error: "bad json" }, { status: 400 });
+  }
+  if (isRetiredWebsiteForm(body.form)) {
+    return NextResponse.json(
+      { ok: false, error: "form retired; use the authenticated app" },
+      { status: 410 },
+    );
   }
   if (!body.form || (!body.epost && !body.telefon)) {
     return NextResponse.json({ ok: false, error: "missing fields" }, { status: 400 });
