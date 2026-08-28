@@ -24,4 +24,14 @@ test("account shows the action only after server-verified eligibility and keeps 
   assert.match(portal, /Junior- eller Seniormedlemskap/);
   assert.match(portal, /crypto\.randomUUID\(\)/);
   assert.match(portal, /licenceIdempotencyKey\.current/);
+  assert.match(portal, /localStorage\.getItem\(storageKey\)/);
+  assert.match(portal, /await refreshMembershipLifecycle\(\)/);
+});
+
+test("terminal licence requests stop same-year retries and lead to human help", () => {
+  assert.match(portal, /state\.request\.status === "rejected" \|\| state\.request\.status === "cancelled"/);
+  assert.match(portal, /Du kan inte skicka en ny begäran för samma medlemsår/);
+  assert.match(portal, /mailto:rasmus\.boden@thebeach\.one/);
+  assert.match(portal, /Kontakta klubben/);
+  assert.match(portal, /Du behöver inte skicka den igen/);
 });
