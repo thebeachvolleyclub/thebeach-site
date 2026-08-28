@@ -17,6 +17,7 @@ import {
   hasActiveMembershipForYear,
   membershipFeedFromWire,
   membershipHistory,
+  membershipPurchaseCanRetry,
   membershipPurchaseFromWire,
   membershipPurchaseStorageKey,
   moneyFromOre,
@@ -479,9 +480,12 @@ export default function AccountPortal() {
   }, [profileId, refreshMembershipLifecycle]);
 
   const purchaseMembership = async (option: MembershipPurchaseOption, freshAttempt = false) => {
+    const retryingTerminalAttempt = freshAttempt
+      && membershipFeed.purchase?.productId === option.productId
+      && membershipPurchaseCanRetry(membershipFeed.purchase);
     if (
       membershipPurchaseBusy
-      || !option.available
+      || (!option.available && !retryingTerminalAttempt)
       || hasActiveMembershipForYear(membershipFeed, option.year)
     ) return;
     const payerAlias = membershipPayerAlias.trim();
@@ -1299,8 +1303,7 @@ function MembershipPurchaseState({ purchase, busy, onRetry }: {
   onRetry: () => void;
 }) {
   const swishLink = safeSwishDeepLink(purchase.deepLinkUrl);
-  const canRetry = purchase.status === "AWAITING_PAYMENT"
-    && ["DECLINED", "ERROR", "CANCELLED"].includes(purchase.attemptStatus || "");
+  const canRetry = membershipPurchaseCanRetry(purchase);
   return <article aria-live="polite" className="border-l-4 border-l-orange bg-black p-5 text-cream sm:p-6">
     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Medlemsköp · {purchase.year}</p>
     <h4 className="mt-3 font-display text-3xl">{purchaseStatusLabel(purchase)}</h4>

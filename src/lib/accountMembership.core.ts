@@ -218,6 +218,16 @@ export function hasActiveMembershipForYear(feed: MembershipFeed, year: number): 
     || feed.purchase?.status === "PAID" && feed.purchase.year === year;
 }
 
+export function membershipPurchaseCanRetry(
+  purchase: MembershipPurchase | null,
+): boolean {
+  return Boolean(
+    purchase
+    && purchase.status === "AWAITING_PAYMENT"
+    && ["DECLINED", "ERROR", "CANCELLED"].includes(purchase.attemptStatus ?? ""),
+  );
+}
+
 export function moneyFromOre(amountOre: number | null): string | null {
   if (amountOre === null) return null;
   return new Intl.NumberFormat("sv-SE", {

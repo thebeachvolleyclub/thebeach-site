@@ -6,6 +6,7 @@ import {
   hasActiveMembershipForYear,
   membershipFeedFromWire,
   membershipHistory,
+  membershipPurchaseCanRetry,
   membershipPurchaseFromWire,
   membershipPurchaseStorageKey,
   moneyFromOre,
@@ -143,6 +144,24 @@ test("Swish input and resumable attempt helpers fail closed", () => {
     membershipPurchaseStorageKey("account-two", option),
   );
   assert.throws(() => membershipPurchaseStorageKey("", option), /account identity/);
+  const terminal = membershipPurchaseFromWire({
+    id: "purchase-one",
+    productId: option.productId,
+    year: option.year,
+    status: "AWAITING_PAYMENT",
+    attemptStatus: "DECLINED",
+    amountOre: option.priceOre,
+    createdAt: "2026-08-28T12:00:00Z",
+  });
+  assert.equal(membershipPurchaseCanRetry(terminal), true);
+  assert.equal(
+    membershipPurchaseCanRetry(terminal && { ...terminal, attemptStatus: "CREATING" }),
+    false,
+  );
+  assert.equal(
+    membershipPurchaseCanRetry(terminal && { ...terminal, status: "PAID" }),
+    false,
+  );
 });
 
 test("account keeps membership as a permanent destination with history and accessible purchase", () => {
@@ -166,5 +185,7 @@ test("account keeps membership as a permanent destination with history and acces
   assert.match(portal, /localStorage\.getItem\(storageKey\)/);
   assert.match(portal, /membershipPurchaseStorageKey\(profileId, option\)/);
   assert.match(portal, /if \(freshAttempt\) localStorage\.removeItem\(storageKey\)/);
+  assert.match(portal, /retryingTerminalAttempt/);
+  assert.match(portal, /\(!option\.available && !retryingTerminalAttempt\)/);
   assert.match(portal, /Försök med Swish igen/);
 });
