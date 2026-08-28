@@ -478,7 +478,7 @@ export default function AccountPortal() {
     };
   }, [profileId, refreshMembershipLifecycle]);
 
-  const purchaseMembership = async (option: MembershipPurchaseOption) => {
+  const purchaseMembership = async (option: MembershipPurchaseOption, freshAttempt = false) => {
     if (
       membershipPurchaseBusy
       || !option.available
@@ -489,7 +489,12 @@ export default function AccountPortal() {
       setError("Ange ett giltigt Swish-nummer innan du fortsätter.");
       return;
     }
-    const storageKey = membershipPurchaseStorageKey(option);
+    if (!profileId) {
+      setError("Logga in igen innan du startar medlemsköpet.");
+      return;
+    }
+    const storageKey = membershipPurchaseStorageKey(profileId, option);
+    if (freshAttempt) localStorage.removeItem(storageKey);
     const idempotencyKey = localStorage.getItem(storageKey) || crypto.randomUUID();
     localStorage.setItem(storageKey, idempotencyKey);
     setMembershipPurchaseBusy(true);
@@ -1288,8 +1293,14 @@ function MembershipRecordCard({ item }: { item: MembershipRecord }) {
   </article>;
 }
 
-function MembershipPurchaseState({ purchase }: { purchase: MembershipPurchase }) {
+function MembershipPurchaseState({ purchase, busy, onRetry }: {
+  purchase: MembershipPurchase;
+  busy: boolean;
+  onRetry: () => void;
+}) {
   const swishLink = safeSwishDeepLink(purchase.deepLinkUrl);
+  const canRetry = purchase.status === "AWAITING_PAYMENT"
+    && ["DECLINED", "ERROR", "CANCELLED"].includes(purchase.attemptStatus || "");
   return <article aria-live="polite" className="border-l-4 border-l-orange bg-black p-5 text-cream sm:p-6">
     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Medlemsköp · {purchase.year}</p>
     <h4 className="mt-3 font-display text-3xl">{purchaseStatusLabel(purchase)}</h4>
@@ -1303,6 +1314,7 @@ function MembershipPurchaseState({ purchase }: { purchase: MembershipPurchase })
     </dl>
     {purchase.paymentVerificationPending ? <p className="mt-3 text-sm text-cream/75">Du behöver inte starta ett nytt köp. Sidan uppdateras när betalningen har verifierats.</p> : null}
     {swishLink && purchase.status === "AWAITING_PAYMENT" ? <a href={swishLink} className="mt-5 inline-flex min-h-11 items-center bg-lime px-5 text-xs font-bold uppercase tracking-[0.08em] text-black">Öppna Swish</a> : null}
+    {canRetry ? <button type="button" disabled={busy} onClick={onRetry} className="mt-5 inline-flex min-h-11 items-center bg-lime px-5 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:opacity-45">{busy ? "Startar Swish…" : "Försök med Swish igen"}</button> : null}
   </article>;
 }
 
@@ -1338,7 +1350,7 @@ function MembershipCentre({
   licenceBusy: boolean;
   onPayerAliasChange: (value: string) => void;
   onSelectProduct: (value: string) => void;
-  onPurchase: (option: MembershipPurchaseOption) => void | Promise<void>;
+  onPurchase: (option: MembershipPurchaseOption, freshAttempt?: boolean) => void | Promise<void>;
   onRequestCompetitionLicence: () => void;
 }) {
   if (loading) return <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina medlemskap</h3><OverviewLoading /></section>;
@@ -1359,6 +1371,9 @@ function MembershipCentre({
     ? feed.purchase
     : null;
   const payerValid = validSwishPayerAlias(payerAlias);
+  const retryOption = feed.purchase
+    ? feed.purchaseOptions.find((option) => option.productId === feed.purchase?.productId) ?? null
+    : null;
 
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
@@ -1380,7 +1395,7 @@ function MembershipCentre({
     <div className="mt-10 border-t border-black/10 pt-8">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Köp medlemskap</p>
       <h4 className="mt-2 font-display text-3xl">Medlemskap {purchaseYear}</h4>
-      {feed.purchase ? <div className="mt-5"><MembershipPurchaseState purchase={feed.purchase} /></div> : null}
+      {feed.purchase ? <div className="mt-5"><MembershipPurchaseState purchase={feed.purchase} busy={purchaseBusy} onRetry={() => { if (retryOption) void onPurchase(retryOption, true); }} /></div> : null}
       {activeForYear ? <p className="mt-5 border border-lime/60 bg-lime/30 p-5 text-sm font-semibold text-black">Du har redan ett aktivt medlemskap för {purchaseYear}. Inget nytt köp behövs.</p> : pendingPurchase ? null : feed.purchaseOptions.length ? <form className="mt-5 border border-black/10 bg-white p-5 sm:p-6" onSubmit={(event) => { event.preventDefault(); if (selected && payerValid && !purchaseBusy) void onPurchase(selected); }}>
         <fieldset>
           <legend className="text-sm font-bold">Välj medlemskap</legend>

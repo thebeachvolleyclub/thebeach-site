@@ -232,8 +232,10 @@ export function validSwishPayerAlias(value: string): boolean {
   return /^[+\d][\d ()-]{7,19}$/.test(candidate);
 }
 
-export function membershipPurchaseStorageKey(option: MembershipPurchaseOption): string {
-  return `tb-membership-purchase:${option.year}:${option.productId}`;
+export function membershipPurchaseStorageKey(accountId: string, option: MembershipPurchaseOption): string {
+  const identity = accountId.trim();
+  if (!identity) throw new Error("membership purchase storage requires account identity");
+  return `tb-membership-purchase:${encodeURIComponent(identity)}:${option.year}:${option.productId}`;
 }
 
 export function safeSwishDeepLink(value: string | null): string | null {

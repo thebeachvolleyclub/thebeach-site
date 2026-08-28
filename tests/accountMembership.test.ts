@@ -122,7 +122,7 @@ test("Swish input and resumable attempt helpers fail closed", () => {
   assert.equal(safeSwishDeepLink("swish://paymentrequest"), null);
   assert.equal(safeSwishDeepLink("swish://untrusted?token=ok"), null);
   assert.equal(safeSwishDeepLink("https://evil.example/payment"), null);
-  assert.equal(membershipPurchaseStorageKey({
+  const option = {
     productId: "junior-2026",
     typeName: "Junior 2026",
     category: "junior",
@@ -133,7 +133,16 @@ test("Swish input and resumable attempt helpers fail closed", () => {
     validTo: "2026-12-31",
     available: true,
     unavailableReason: null,
-  }), "tb-membership-purchase:2026:junior-2026");
+  } as const;
+  assert.equal(
+    membershipPurchaseStorageKey("account-one", option),
+    "tb-membership-purchase:account-one:2026:junior-2026",
+  );
+  assert.notEqual(
+    membershipPurchaseStorageKey("account-one", option),
+    membershipPurchaseStorageKey("account-two", option),
+  );
+  assert.throws(() => membershipPurchaseStorageKey("", option), /account identity/);
 });
 
 test("account keeps membership as a permanent destination with history and accessible purchase", () => {
@@ -155,4 +164,7 @@ test("account keeps membership as a permanent destination with history and acces
   assert.match(portal, /aria-describedby="membership-payer-hint membership-payer-error"/);
   assert.match(portal, /aria-live="polite"/);
   assert.match(portal, /localStorage\.getItem\(storageKey\)/);
+  assert.match(portal, /membershipPurchaseStorageKey\(profileId, option\)/);
+  assert.match(portal, /if \(freshAttempt\) localStorage\.removeItem\(storageKey\)/);
+  assert.match(portal, /Försök med Swish igen/);
 });
