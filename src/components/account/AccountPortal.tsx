@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlternativePaymentOption,
   SwishButtonLabel,
@@ -87,6 +87,22 @@ type Membership = {
   active: boolean;
 };
 type MembershipFeed = { memberships: Membership[]; activeCount: number };
+type LicenceRequest = {
+  id: number;
+  membership_type: string;
+  membership_year: number;
+  status: "pending" | "in_progress" | "completed" | "rejected" | "cancelled";
+  status_note?: string | null;
+  created_at: string;
+};
+type LicenceEligibility = {
+  available?: boolean;
+  eligible: boolean;
+  reason?: string | null;
+  message?: string | null;
+  membership?: { membershipType?: string; membershipYear?: number } | null;
+};
+type LicenceState = { request: LicenceRequest | null; eligibility: LicenceEligibility };
 type CourseEnrolment = {
   courseId: number;
   courseName: string | null;
@@ -129,7 +145,7 @@ function tabFromHash(): AccountTab {
   if (hash.startsWith("#faktura-") || hash.startsWith("#invoice-")) return "invoices";
   return HASH_TABS[hash] ?? "overview";
 }
-type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean; courses: boolean };
+type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean; courses: boolean; licence: boolean };
 type CancellationResult = {
   booking: Booking;
   refundAmountSek?: number | null;
@@ -247,9 +263,12 @@ export default function AccountPortal() {
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>({ memberships: [], activeCount: 0 });
+  const [licenceState, setLicenceState] = useState<LicenceState | null>(null);
+  const [licenceBusy, setLicenceBusy] = useState(false);
+  const licenceIdempotencyKey = useRef<string | null>(null);
   const [courseEnrolments, setCourseEnrolments] = useState<CourseEnrolment[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false });
+  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false, licence: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   // Signup status shared by the Träningsgrupper tab badge + status card.
   const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
@@ -376,7 +395,8 @@ export default function AccountPortal() {
       api<ActivityFeed>("/api/account/activity"),
       api<MembershipFeed>("/api/account/membership"),
       api<CourseFeed>("/api/courses/mine"),
-    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult]) => {
+      api<LicenceState>("/api/account/competition-licence"),
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult, licenceResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -402,6 +422,7 @@ export default function AccountPortal() {
       if (courseResult.status === "fulfilled") {
         setCourseEnrolments(courseResult.value.enrolments ?? []);
       }
+      if (licenceResult.status === "fulfilled") setLicenceState(licenceResult.value);
       setOverviewAvailability({
         bookings: bookingResult.status === "fulfilled",
         invoices: invoiceResult.status === "fulfilled",
@@ -409,12 +430,37 @@ export default function AccountPortal() {
         activity: activityResult.status === "fulfilled",
         membership: membershipResult.status === "fulfilled",
         courses: courseResult.status === "fulfilled",
+        licence: licenceResult.status === "fulfilled",
       });
       setOverviewLoading(false);
     });
 
     return () => { active = false; };
   }, [profileId]);
+
+  const requestCompetitionLicence = async () => {
+    if (licenceBusy || licenceState?.request || !licenceState?.eligibility.eligible) return;
+    const key = licenceIdempotencyKey.current ?? crypto.randomUUID();
+    licenceIdempotencyKey.current = key;
+    setLicenceBusy(true);
+    setError("");
+    try {
+      const result = await api<{ request: LicenceRequest }>("/api/account/competition-licence", {
+        method: "POST",
+        body: JSON.stringify({ idempotencyKey: key }),
+      });
+      setLicenceState((current) => ({
+        request: result.request,
+        eligibility: current?.eligibility ?? { eligible: true },
+      }));
+      licenceIdempotencyKey.current = null;
+      setMessage("Din begäran om tävlingslicens är skickad till Rasmus.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte skicka licensbegäran");
+    } finally {
+      setLicenceBusy(false);
+    }
+  };
 
   const requestCode = async () => {
     setBusy(true); setError(""); setMessage("");
@@ -669,11 +715,13 @@ export default function AccountPortal() {
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed({ memberships: [], activeCount: 0 });
+    setLicenceState(null);
+    licenceIdempotencyKey.current = null;
     setCourseEnrolments([]);
     setEmailsLoading(true);
     setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
-    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false });
+    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false, licence: false });
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -736,11 +784,14 @@ export default function AccountPortal() {
       trainingGroups={trainingGroups}
       activity={activity}
       membershipFeed={membershipFeed}
+      licenceState={licenceState}
+      licenceBusy={licenceBusy}
       activeInvoiceCount={activeInvoiceCount}
       availability={overviewAvailability}
       onOpenProfile={() => setTab("profile")}
       onOpenInvoices={() => setTab("invoices")}
       onCancelBooking={cancelBooking}
+      onRequestCompetitionLicence={requestCompetitionLicence}
       cancellingBookingId={cancellingBookingId}
     /> : null}
 
@@ -911,11 +962,14 @@ function AccountOverview({
   trainingGroups,
   activity,
   membershipFeed,
+  licenceState,
+  licenceBusy,
   activeInvoiceCount,
   availability,
   onOpenProfile,
   onOpenInvoices,
   onCancelBooking,
+  onRequestCompetitionLicence,
   cancellingBookingId,
 }: {
   profile: Profile;
@@ -926,11 +980,14 @@ function AccountOverview({
   trainingGroups: TrainingGroup[];
   activity: ActivityFeed;
   membershipFeed: MembershipFeed;
+  licenceState: LicenceState | null;
+  licenceBusy: boolean;
   activeInvoiceCount: number;
   availability: OverviewAvailability;
   onOpenProfile: () => void;
   onOpenInvoices: () => void;
   onCancelBooking: (booking: Booking) => void;
+  onRequestCompetitionLicence: () => void;
   cancellingBookingId: string | null;
 }) {
   const firstName = profile.name?.trim().split(/\s+/)[0] || "spelare";
@@ -960,6 +1017,13 @@ function AccountOverview({
       feed={membershipFeed}
       loading={loading}
       available={availability.membership}
+    />
+    <CompetitionLicenceCard
+      state={licenceState}
+      loading={loading}
+      available={availability.licence}
+      busy={licenceBusy}
+      onRequest={onRequestCompetitionLicence}
     />
 
     <div className="mt-px">
@@ -1050,6 +1114,64 @@ function MembershipStatusCard({
       <Link href="/foreningen" className={`inline-flex min-h-11 shrink-0 items-center justify-center border px-5 text-xs font-bold uppercase tracking-[0.09em] transition-colors ${active || currentUnpaid ? "border-white/30 text-cream hover:border-lime hover:text-lime" : "border-black/20 text-black hover:border-black"}`}>
         Om medlemskap <span className="ml-3" aria-hidden="true">→</span>
       </Link>
+    </div>
+  </article>;
+}
+
+function licenceStatusText(status: LicenceRequest["status"]) {
+  if (status === "pending") return "Väntar på hantering";
+  if (status === "in_progress") return "Registrering pågår";
+  if (status === "completed") return "Licensen är registrerad";
+  if (status === "rejected") return "Begäran kunde inte godkännas";
+  return "Begäran är avbruten";
+}
+
+function CompetitionLicenceCard({
+  state,
+  loading,
+  available,
+  busy,
+  onRequest,
+}: {
+  state: LicenceState | null;
+  loading: boolean;
+  available: boolean;
+  busy: boolean;
+  onRequest: () => void;
+}) {
+  if (loading) return null;
+  if (!available || !state) {
+    return <article className="mt-px border-l-4 border-l-black/20 bg-white p-6 sm:p-8">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">Tävlingslicens</p>
+      <p className="mt-3 text-sm text-black/55">Licensstatusen kunde inte hämtas just nu.</p>
+    </article>;
+  }
+  if (state.request) {
+    const completed = state.request.status === "completed";
+    return <article className={`mt-px border-l-4 p-6 sm:p-8 ${completed ? "border-l-lime bg-black text-cream" : "border-l-teal bg-white text-black"}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${completed ? "text-lime" : "text-teal"}`}>Tävlingslicens · {state.request.membership_year}</p>
+      <h4 className="mt-3 font-display text-3xl">{licenceStatusText(state.request.status)}</h4>
+      <p className={`mt-2 text-sm ${completed ? "text-cream/65" : "text-black/55"}`}>{state.request.membership_type}</p>
+      {state.request.status_note ? <p className={`mt-3 text-sm ${completed ? "text-cream/75" : "text-black/65"}`}>{state.request.status_note}</p> : null}
+    </article>;
+  }
+  if (!state.eligibility.eligible) {
+    return <article className="mt-px border-l-4 border-l-black/20 bg-white p-6 sm:p-8">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">Tävlingslicens</p>
+      <h4 className="mt-3 font-display text-3xl">Begäran öppnas efter betalning</h4>
+      <p className="mt-2 max-w-2xl text-sm text-black/55">{state.eligibility.message || "Du behöver ett betalt och aktivt Junior- eller Seniormedlemskap innan du kan begära tävlingslicens."}</p>
+    </article>;
+  }
+  return <article className="mt-px border-l-4 border-l-lime bg-black p-6 text-cream sm:p-8">
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Tävlingslicens</p>
+        <h4 className="mt-3 font-display text-3xl">Ditt medlemskap är verifierat</h4>
+        <p className="mt-2 max-w-2xl text-sm text-cream/65">Skicka en begäran så får Rasmus ett mejl och hanterar registreringen manuellt. Ingen extern licens beställs automatiskt.</p>
+      </div>
+      <button type="button" disabled={busy} onClick={onRequest} className="inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center bg-lime px-6 text-xs font-bold uppercase tracking-[0.09em] text-black disabled:opacity-45">
+        {busy ? "Skickar…" : "Begär tävlingslicens"}
+      </button>
     </div>
   </article>;
 }
