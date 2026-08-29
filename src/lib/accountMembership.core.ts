@@ -64,18 +64,40 @@ export type MembershipPurchase = {
   paidAt: string | null;
 };
 
+export type MembershipPurchaseEligibility = {
+  available: boolean;
+  reason: "birthdate_required" | null;
+};
+
 export type MembershipFeed = {
   memberships: MembershipRecord[];
   activeCount: number;
   purchaseOptions: MembershipPurchaseOption[];
+  purchases: MembershipPurchase[];
   purchase: MembershipPurchase | null;
+  currentYear: number;
+  purchaseEligibility: MembershipPurchaseEligibility | null;
+};
+
+export type MembershipYearSection = {
+  year: number;
+  membership: MembershipRecord | null;
+  purchaseOption: MembershipPurchaseOption | null;
+};
+
+export type MembershipOverview = {
+  yearSections: MembershipYearSection[];
+  history: MembershipRecord[];
 };
 
 export const EMPTY_MEMBERSHIP_FEED: MembershipFeed = {
   memberships: [],
   activeCount: 0,
   purchaseOptions: [],
+  purchases: [],
   purchase: null,
+  currentYear: stockholmYear(),
+  purchaseEligibility: null,
 };
 
 function object(value: unknown): Record<string, unknown> {
@@ -94,6 +116,14 @@ function nullableText(value: unknown): string | null {
 
 function number(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function stockholmYear(now = new Date()): number {
+  const value = Number(new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+  }).format(now));
+  return Number.isFinite(value) ? value : now.getFullYear();
 }
 
 function membership(value: unknown, index: number): MembershipRecord {
@@ -193,13 +223,29 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
   const purchaseOptions = Array.isArray(payload.purchaseOptions)
     ? payload.purchaseOptions.map(option).filter((item): item is MembershipPurchaseOption => item !== null)
     : [];
+  const purchase = membershipPurchaseFromWire(payload.purchase);
+  const purchases = Array.isArray(payload.purchases)
+    ? payload.purchases.map(membershipPurchaseFromWire).filter((item): item is MembershipPurchase => item !== null)
+    : (purchase ? [purchase] : []);
+  const rawEligibility = object(payload.purchaseEligibility);
+  const eligibilityReason = rawEligibility.reason === "birthdate_required"
+    ? "birthdate_required"
+    : null;
   return {
     memberships,
     activeCount: typeof payload.activeCount === "number"
       ? payload.activeCount
       : memberships.filter((item) => item.active).length,
     purchaseOptions,
-    purchase: membershipPurchaseFromWire(payload.purchase),
+    purchases,
+    purchase,
+    currentYear: number(payload.currentYear) ?? stockholmYear(),
+    purchaseEligibility: payload.purchaseEligibility === null || payload.purchaseEligibility === undefined
+      ? null
+      : {
+        available: rawEligibility.available === true,
+        reason: eligibilityReason,
+      },
   };
 }
 
@@ -215,7 +261,122 @@ export function membershipHistory(feed: MembershipFeed): MembershipRecord[] {
 
 export function hasActiveMembershipForYear(feed: MembershipFeed, year: number): boolean {
   return feed.memberships.some((item) => item.active && item.year === year)
+    || feed.purchases.some((purchase) => purchase.status === "PAID" && purchase.year === year)
     || feed.purchase?.status === "PAID" && feed.purchase.year === year;
+}
+
+function membershipRecordRank(record: MembershipRecord): number {
+  if (record.active) return 3;
+  if (record.current) return 2;
+  if (record.paid) return 1;
+  return 0;
+}
+
+export function membershipCategoryForYear(
+  birthdate: Date | null | undefined,
+  membershipYear: number,
+): Exclude<MembershipCategory, null> | null {
+  if (!birthdate || !Number.isFinite(birthdate.getTime())) return null;
+  return birthdate.getFullYear() >= membershipYear - 19 ? "junior" : "senior";
+}
+
+export function membershipPurchaseNeedsBirthdate(
+  feed: MembershipFeed,
+  birthdate: Date | null | undefined,
+): boolean {
+  if (feed.purchaseEligibility?.reason === "birthdate_required") return true;
+  return feed.purchaseEligibility === null
+    && feed.purchaseOptions.length > 0
+    && membershipCategoryForYear(birthdate, feed.purchaseOptions[0].year) === null;
+}
+
+function visiblePurchaseOptions(
+  feed: MembershipFeed,
+  birthdate: Date | null | undefined,
+): MembershipPurchaseOption[] {
+  if (feed.purchaseEligibility) {
+    return feed.purchaseEligibility.available ? feed.purchaseOptions : [];
+  }
+  return feed.purchaseOptions.filter((candidate) => (
+    membershipCategoryForYear(birthdate, candidate.year) === candidate.category
+  ));
+}
+
+/**
+ * Build the current and future annual sections used by both the app and web.
+ * One entitlement and one age-qualified purchase option may appear per year;
+ * older and unbounded imported records remain in history.
+ */
+export function buildMembershipOverview(
+  feed: MembershipFeed,
+  birthdate?: Date | null,
+): MembershipOverview {
+  const sortedRecords = [...feed.memberships].sort((left, right) => (
+    membershipRecordRank(right) - membershipRecordRank(left)
+    || (right.year ?? 0) - (left.year ?? 0)
+    || Number(right.source === "NATIVE") - Number(left.source === "NATIVE")
+    || (right.validTo ?? "").localeCompare(left.validTo ?? "")
+    || right.id.localeCompare(left.id)
+  ));
+  const annualRecords = new Map<number, MembershipRecord>();
+  const unboundedHistory: MembershipRecord[] = [];
+  const seenUnboundedIds = new Set<string>();
+
+  sortedRecords.forEach((record) => {
+    if (record.year === null) {
+      if (!seenUnboundedIds.has(record.id)) {
+        seenUnboundedIds.add(record.id);
+        unboundedHistory.push(record);
+      }
+      return;
+    }
+    if (!annualRecords.has(record.year)) annualRecords.set(record.year, record);
+  });
+
+  const blockedYears = new Set(
+    sortedRecords
+      .filter((record) => record.year !== null && (record.paid || record.active || record.current))
+      .map((record) => record.year as number),
+  );
+  feed.purchases
+    .filter((purchase) => purchase.status === "AWAITING_PAYMENT" || purchase.status === "PAID")
+    .forEach((purchase) => blockedYears.add(purchase.year));
+
+  const annualOptions = new Map<number, MembershipPurchaseOption>();
+  visiblePurchaseOptions(feed, birthdate)
+    .filter((candidate) => !blockedYears.has(candidate.year))
+    .sort((left, right) => (
+      Number(right.available) - Number(left.available)
+      || left.productId.localeCompare(right.productId)
+    ))
+    .forEach((candidate) => {
+      if (!annualOptions.has(candidate.year)) annualOptions.set(candidate.year, candidate);
+    });
+
+  const primaryYears = new Set([feed.currentYear]);
+  [...annualRecords.keys(), ...annualOptions.keys()]
+    .filter((year) => year >= feed.currentYear)
+    .forEach((year) => primaryYears.add(year));
+  feed.purchases
+    .filter((purchase) => purchase.year >= feed.currentYear)
+    .forEach((purchase) => primaryYears.add(purchase.year));
+
+  return {
+    yearSections: [...primaryYears]
+      .sort((left, right) => left - right)
+      .map((year) => ({
+        year,
+        membership: annualRecords.get(year) ?? null,
+        purchaseOption: annualOptions.get(year) ?? null,
+      })),
+    history: [
+      ...[...annualRecords.entries()]
+        .filter(([year]) => year < feed.currentYear)
+        .sort(([left], [right]) => right - left)
+        .map(([, record]) => record),
+      ...unboundedHistory,
+    ],
+  };
 }
 
 export function membershipPurchaseCanRetry(

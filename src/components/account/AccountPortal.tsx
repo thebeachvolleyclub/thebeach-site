@@ -13,10 +13,11 @@ import {
   safeAccountNext,
 } from "@/lib/accountReturn.core";
 import {
+  buildMembershipOverview,
   EMPTY_MEMBERSHIP_FEED,
-  hasActiveMembershipForYear,
   membershipFeedFromWire,
   membershipHistory,
+  membershipPurchaseNeedsBirthdate,
   membershipPurchaseCanRetry,
   membershipPurchaseFromWire,
   membershipPurchaseStorageKey,
@@ -28,6 +29,11 @@ import {
   type MembershipPurchaseOption,
   type MembershipRecord,
 } from "@/lib/accountMembership.core";
+import {
+  competitionLicenceContentForYear,
+  type LicenceRequest,
+  type LicenceState,
+} from "@/lib/accountCompetitionLicence.core";
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 
@@ -92,22 +98,6 @@ type EmailAddress = { email: string; is_primary: boolean };
 type EmailFeed = { addresses: EmailAddress[] };
 type ActivityEntry = { name: string; date: string | null; groups?: string[] };
 type ActivityFeed = { events: ActivityEntry[]; training_groups: ActivityEntry[] };
-type LicenceRequest = {
-  id: number;
-  membership_type: string;
-  membership_year: number;
-  status: "pending" | "in_progress" | "completed" | "rejected" | "cancelled";
-  status_note?: string | null;
-  created_at: string;
-};
-type LicenceEligibility = {
-  available?: boolean;
-  eligible: boolean;
-  reason?: string | null;
-  message?: string | null;
-  membership?: { membershipType?: string; membershipYear?: number } | null;
-};
-type LicenceState = { request: LicenceRequest | null; eligibility: LicenceEligibility };
 type CourseEnrolment = {
   courseId: number;
   courseName: string | null;
@@ -272,7 +262,6 @@ export default function AccountPortal() {
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>(EMPTY_MEMBERSHIP_FEED);
   const [membershipPurchaseBusy, setMembershipPurchaseBusy] = useState(false);
   const [membershipPayerAlias, setMembershipPayerAlias] = useState("");
-  const [selectedMembershipProductId, setSelectedMembershipProductId] = useState("");
   const [licenceState, setLicenceState] = useState<LicenceState | null>(null);
   const [licenceBusy, setLicenceBusy] = useState(false);
   const licenceIdempotencyKey = useRef<string | null>(null);
@@ -480,13 +469,19 @@ export default function AccountPortal() {
   }, [profileId, refreshMembershipLifecycle]);
 
   const purchaseMembership = async (option: MembershipPurchaseOption, freshAttempt = false) => {
+    const existingPurchase = membershipFeed.purchases.find((candidate) => (
+      candidate.productId === option.productId
+    )) ?? (membershipFeed.purchase?.productId === option.productId ? membershipFeed.purchase : null);
     const retryingTerminalAttempt = freshAttempt
-      && membershipFeed.purchase?.productId === option.productId
-      && membershipPurchaseCanRetry(membershipFeed.purchase);
+      && membershipPurchaseCanRetry(existingPurchase);
+    const visibleOption = buildMembershipOverview(
+      membershipFeed,
+      profileBirthdate(profile?.birthdate),
+    ).yearSections.find((section) => section.year === option.year)?.purchaseOption;
     if (
       membershipPurchaseBusy
       || (!option.available && !retryingTerminalAttempt)
-      || hasActiveMembershipForYear(membershipFeed, option.year)
+      || (!retryingTerminalAttempt && visibleOption?.productId !== option.productId)
     ) return;
     const payerAlias = membershipPayerAlias.trim();
     if (!validSwishPayerAlias(payerAlias)) {
@@ -516,7 +511,14 @@ export default function AccountPortal() {
       });
       const purchase = membershipPurchaseFromWire(result.purchase);
       if (!purchase) throw new Error("Medlemsköpet gav ett ogiltigt svar");
-      setMembershipFeed((current) => ({ ...current, purchase }));
+      setMembershipFeed((current) => ({
+        ...current,
+        purchase,
+        purchases: [
+          purchase,
+          ...current.purchases.filter((candidate) => candidate.year !== purchase.year),
+        ],
+      }));
       await refreshMembershipLifecycle();
       if (purchase.status === "PAID" || purchase.status === "CANCELLED") {
         localStorage.removeItem(storageKey);
@@ -532,9 +534,18 @@ export default function AccountPortal() {
   };
 
   const requestCompetitionLicence = async () => {
-    if (licenceBusy || licenceState?.request || !licenceState?.eligibility.eligible) return;
-    const membershipYear = licenceState.eligibility.membership?.membershipYear
-      ?? new Date().getFullYear();
+    const membershipYear = licenceState?.eligibility.membershipYear
+      ?? licenceState?.eligibility.membership?.membershipYear
+      ?? membershipFeed.currentYear;
+    if (
+      licenceBusy
+      || competitionLicenceContentForYear(
+        licenceState,
+        membershipFeed.currentYear,
+        membershipFeed.currentYear,
+      ) !== "request"
+      || membershipYear !== membershipFeed.currentYear
+    ) return;
     const storageKey = `tb-competition-licence:${membershipYear}`;
     const key = licenceIdempotencyKey.current
       ?? localStorage.getItem(storageKey)
@@ -817,7 +828,6 @@ export default function AccountPortal() {
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed(EMPTY_MEMBERSHIP_FEED);
     setMembershipPayerAlias("");
-    setSelectedMembershipProductId("");
     setLicenceState(null);
     licenceIdempotencyKey.current = null;
     setCourseEnrolments([]);
@@ -887,15 +897,12 @@ export default function AccountPortal() {
       trainingGroups={trainingGroups}
       activity={activity}
       membershipFeed={membershipFeed}
-      licenceState={licenceState}
-      licenceBusy={licenceBusy}
       activeInvoiceCount={activeInvoiceCount}
       availability={overviewAvailability}
       onOpenProfile={() => setTab("profile")}
       onOpenInvoices={() => setTab("invoices")}
       onOpenMembership={() => setTab("membership")}
       onCancelBooking={cancelBooking}
-      onRequestCompetitionLicence={requestCompetitionLicence}
       cancellingBookingId={cancellingBookingId}
     /> : null}
 
@@ -903,14 +910,14 @@ export default function AccountPortal() {
       feed={membershipFeed}
       loading={overviewLoading}
       available={overviewAvailability.membership}
+      birthdate={profile.birthdate}
       payerAlias={membershipPayerAlias}
-      selectedProductId={selectedMembershipProductId}
       purchaseBusy={membershipPurchaseBusy}
       licenceState={licenceState}
       licenceAvailable={overviewAvailability.licence}
       licenceBusy={licenceBusy}
+      onOpenProfile={() => setTab("profile")}
       onPayerAliasChange={setMembershipPayerAlias}
-      onSelectProduct={setSelectedMembershipProductId}
       onPurchase={purchaseMembership}
       onRequestCompetitionLicence={requestCompetitionLicence}
     /> : null}
@@ -1082,15 +1089,12 @@ function AccountOverview({
   trainingGroups,
   activity,
   membershipFeed,
-  licenceState,
-  licenceBusy,
   activeInvoiceCount,
   availability,
   onOpenProfile,
   onOpenInvoices,
   onOpenMembership,
   onCancelBooking,
-  onRequestCompetitionLicence,
   cancellingBookingId,
 }: {
   profile: Profile;
@@ -1101,15 +1105,12 @@ function AccountOverview({
   trainingGroups: TrainingGroup[];
   activity: ActivityFeed;
   membershipFeed: MembershipFeed;
-  licenceState: LicenceState | null;
-  licenceBusy: boolean;
   activeInvoiceCount: number;
   availability: OverviewAvailability;
   onOpenProfile: () => void;
   onOpenInvoices: () => void;
   onOpenMembership: () => void;
   onCancelBooking: (booking: Booking) => void;
-  onRequestCompetitionLicence: () => void;
   cancellingBookingId: string | null;
 }) {
   const firstName = profile.name?.trim().split(/\s+/)[0] || "spelare";
@@ -1140,13 +1141,6 @@ function AccountOverview({
       loading={loading}
       available={availability.membership}
       onOpen={onOpenMembership}
-    />
-    <CompetitionLicenceCard
-      state={licenceState}
-      loading={loading}
-      available={availability.licence}
-      busy={licenceBusy}
-      onRequest={onRequestCompetitionLicence}
     />
 
     <div className="mt-px">
@@ -1289,11 +1283,6 @@ function MembershipRecordCard({ item }: { item: MembershipRecord }) {
       <div><dt className="font-bold uppercase tracking-[0.08em]">Betalsätt</dt><dd className="mt-1">{item.paymentMethod || "Uppgift saknas"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Betalningsreferens</dt><dd className="mt-1 break-all">{item.paymentReference || "Uppgift saknas"}</dd></div>
     </dl>
-    <p className={`mt-4 text-xs ${item.active ? "text-cream/50" : "text-black/45"}`}>
-      {item.readOnly || item.source === "MATCHI"
-        ? "Historik från MATCHI · skrivskyddad"
-        : "Medlemskap köpt direkt hos The Beach"}
-    </p>
   </article>;
 }
 
@@ -1304,20 +1293,20 @@ function MembershipPurchaseState({ purchase, busy, onRetry }: {
 }) {
   const swishLink = safeSwishDeepLink(purchase.deepLinkUrl);
   const canRetry = membershipPurchaseCanRetry(purchase);
-  return <article aria-live="polite" className="border-l-4 border-l-orange bg-black p-5 text-cream sm:p-6">
+  return <article aria-live="polite" className="border-l-4 border-l-orange bg-white p-5 text-black sm:p-6">
     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Medlemsköp · {purchase.year}</p>
     <h4 className="mt-3 font-display text-3xl">{purchaseStatusLabel(purchase)}</h4>
-    <p className="mt-2 text-sm text-cream/65">{moneyFromOre(purchase.amountOre)} · Swish · startat {formatAccountDate(purchase.createdAt)}</p>
-    <dl className="mt-5 grid gap-3 border-t border-white/15 pt-4 text-xs text-cream/65 sm:grid-cols-2 lg:grid-cols-4">
+    <p className="mt-2 text-sm text-black/55">{moneyFromOre(purchase.amountOre)} · Swish · startat {formatAccountDate(purchase.createdAt)}</p>
+    <dl className="mt-5 grid gap-3 border-t border-black/10 pt-4 text-xs text-black/55 sm:grid-cols-2 lg:grid-cols-4">
       <div><dt className="font-bold uppercase tracking-[0.08em]">Produkt-ID</dt><dd className="mt-1 break-all">{purchase.productId}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Köpstatus</dt><dd className="mt-1">{purchase.status}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Swish-status</dt><dd className="mt-1">{purchase.attemptStatus || "Väntar"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Betald</dt><dd className="mt-1">{purchase.paidAt ? formatAccountDate(purchase.paidAt) : "Inte bekräftad"}</dd></div>
       {purchase.instructionUuid ? <div><dt className="font-bold uppercase tracking-[0.08em]">Swish-referens</dt><dd className="mt-1 break-all">{purchase.instructionUuid}</dd></div> : null}
     </dl>
-    {purchase.paymentVerificationPending ? <p className="mt-3 text-sm text-cream/75">Du behöver inte starta ett nytt köp. Sidan uppdateras när betalningen har verifierats.</p> : null}
-    {swishLink && purchase.status === "AWAITING_PAYMENT" ? <a href={swishLink} className="mt-5 inline-flex min-h-11 items-center bg-lime px-5 text-xs font-bold uppercase tracking-[0.08em] text-black">Öppna Swish</a> : null}
-    {canRetry ? <button type="button" disabled={busy} onClick={onRetry} className="mt-5 inline-flex min-h-11 items-center bg-lime px-5 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:opacity-45">{busy ? "Startar Swish…" : "Försök med Swish igen"}</button> : null}
+    {purchase.paymentVerificationPending ? <p className="mt-3 text-sm text-black/65">Du behöver inte starta ett nytt köp. Sidan uppdateras när betalningen har verifierats.</p> : null}
+    {swishLink && purchase.status === "AWAITING_PAYMENT" ? <a href={swishLink} className="mt-5 inline-flex min-h-11 items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white">Öppna Swish</a> : null}
+    {canRetry ? <button type="button" disabled={busy} onClick={onRetry} className="mt-5 inline-flex min-h-11 cursor-pointer items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:cursor-wait disabled:opacity-45">{busy ? "Startar Swish…" : "Försök med Swish igen"}</button> : null}
   </article>;
 }
 
@@ -1327,99 +1316,97 @@ function unavailableMembershipReason(option: MembershipPurchaseOption) {
   return "Produkten går inte att köpa just nu.";
 }
 
-function MembershipCentre({
+export function MembershipCentre({
   feed,
   loading,
   available,
+  birthdate,
   payerAlias,
-  selectedProductId,
   purchaseBusy,
   licenceState,
   licenceAvailable,
   licenceBusy,
+  onOpenProfile,
   onPayerAliasChange,
-  onSelectProduct,
   onPurchase,
   onRequestCompetitionLicence,
 }: {
   feed: MembershipFeed;
   loading: boolean;
   available: boolean;
+  birthdate: string | null;
   payerAlias: string;
-  selectedProductId: string;
   purchaseBusy: boolean;
   licenceState: LicenceState | null;
   licenceAvailable: boolean;
   licenceBusy: boolean;
+  onOpenProfile: () => void;
   onPayerAliasChange: (value: string) => void;
-  onSelectProduct: (value: string) => void;
   onPurchase: (option: MembershipPurchaseOption, freshAttempt?: boolean) => void | Promise<void>;
   onRequestCompetitionLicence: () => void;
 }) {
   if (loading) return <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina medlemskap</h3><OverviewLoading /></section>;
   if (!available) return <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina medlemskap</h3><OverviewUnavailable label="medlemskap" /></section>;
 
-  const records = membershipHistory(feed);
-  const current = records.filter((item) => item.current);
-  const previous = records.filter((item) => !item.current);
-  const selected = feed.purchaseOptions.find((item) => item.productId === selectedProductId && item.available)
-    ?? feed.purchaseOptions.find((item) => item.available)
-    ?? null;
-  const purchaseYear = selected?.year
-    ?? feed.purchase?.year
-    ?? feed.purchaseOptions[0]?.year
-    ?? new Date().getFullYear();
-  const activeForYear = hasActiveMembershipForYear(feed, purchaseYear);
-  const pendingPurchase = feed.purchase?.year === purchaseYear && feed.purchase.status === "AWAITING_PAYMENT"
-    ? feed.purchase
-    : null;
+  const accountBirthdate = profileBirthdate(birthdate);
+  const overview = buildMembershipOverview(feed, accountBirthdate);
+  const needsBirthdate = membershipPurchaseNeedsBirthdate(feed, accountBirthdate);
   const payerValid = validSwishPayerAlias(payerAlias);
-  const retryOption = feed.purchase
-    ? feed.purchaseOptions.find((option) => option.productId === feed.purchase?.productId) ?? null
-    : null;
 
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Medlemskap och tävlingslicens</p>
       <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Ditt medlemsår, samlat.</h3>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/55">Se aktuella medlemskap och hela historiken. Här kan du också köpa årets Junior- eller Seniormedlemskap och följa din licensbegäran.</p>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/55">Se medlemskap och licensstatus år för år. Vi visar bara det medlemskap som passar din ålder och döljer år som redan är betalda.</p>
     </div>
 
-    <div className="mt-8">
-      <div className="flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Nuvarande</p><h4 className="mt-2 font-display text-3xl">Aktuella medlemskap</h4></div><span className="text-sm text-black/45">{current.length} st</span></div>
-      <div className="mt-4 space-y-px">{current.length ? current.map((item) => <MembershipRecordCard key={item.id} item={item} />) : <p className="border border-dashed border-black/20 bg-white p-5 text-sm text-black/50">Inget aktuellt medlemskap är registrerat.</p>}</div>
+    <div className="mt-8 space-y-9">
+      {overview.yearSections.map((section) => {
+        const purchase = feed.purchases.find((candidate) => candidate.year === section.year)
+          ?? (feed.purchase?.year === section.year ? feed.purchase : null);
+        const retryOption = purchase
+          ? feed.purchaseOptions.find((option) => option.productId === purchase.productId) ?? null
+          : null;
+        const licenceContent = licenceAvailable
+          ? competitionLicenceContentForYear(licenceState, section.year, feed.currentYear)
+          : null;
+        const empty = !section.membership && !section.purchaseOption && !purchase && licenceContent === null;
+        if (empty && needsBirthdate) return null;
+
+        return <section key={section.year} aria-labelledby={`membership-year-${section.year}`}>
+          <div className="mb-3 flex items-end justify-between gap-4 border-b border-black/15 pb-2">
+            <h4 id={`membership-year-${section.year}`} className="font-display text-4xl">{section.year}</h4>
+            {section.year === feed.currentYear ? <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal">Nuvarande medlemsår</span> : null}
+          </div>
+          <div className="space-y-2">
+            {section.membership ? <MembershipRecordCard item={section.membership} /> : null}
+            {purchase ? <MembershipPurchaseState purchase={purchase} busy={purchaseBusy} onRetry={() => { if (retryOption) void onPurchase(retryOption, true); }} /> : null}
+            {licenceContent === "request" ? <CompetitionLicenceAction year={section.year} busy={licenceBusy} onRequest={onRequestCompetitionLicence} /> : null}
+            {licenceContent === "status" && licenceState?.request ? <CompetitionLicenceStatus request={licenceState.request} /> : null}
+            {section.purchaseOption ? <MembershipPurchaseOptionCard
+              option={section.purchaseOption}
+              payerAlias={payerAlias}
+              payerValid={payerValid}
+              busy={purchaseBusy}
+              onPayerAliasChange={onPayerAliasChange}
+              onPurchase={() => { void onPurchase(section.purchaseOption as MembershipPurchaseOption); }}
+            /> : null}
+            {empty ? <p className="border border-dashed border-black/20 bg-white p-5 text-sm text-black/50">Det finns inget medlemskap registrerat eller tillgängligt för {section.year}.</p> : null}
+          </div>
+        </section>;
+      })}
     </div>
 
-    <div className="mt-10 border-t border-black/10 pt-8">
-      <div className="flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/40">Historik</p><h4 className="mt-2 font-display text-3xl">Tidigare medlemskap</h4></div><span className="text-sm text-black/45">{previous.length} st</span></div>
-      <div className="mt-4 space-y-px">{previous.length ? previous.map((item) => <MembershipRecordCard key={item.id} item={item} />) : <p className="border border-dashed border-black/20 bg-white p-5 text-sm text-black/50">Ingen tidigare medlemshistorik ännu.</p>}</div>
-    </div>
+    {needsBirthdate ? <div className="mt-9 border-l-4 border-l-orange bg-white p-5 sm:p-6">
+      <h4 className="font-display text-3xl">Lägg till ditt födelsedatum</h4>
+      <p className="mt-2 text-sm leading-relaxed text-black/55">Vi behöver ditt födelsedatum för att visa rätt medlemskap.</p>
+      <button type="button" onClick={onOpenProfile} className="mt-5 inline-flex min-h-11 cursor-pointer items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white">Öppna profil</button>
+    </div> : null}
 
-    <div className="mt-10 border-t border-black/10 pt-8">
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Köp medlemskap</p>
-      <h4 className="mt-2 font-display text-3xl">Medlemskap {purchaseYear}</h4>
-      {feed.purchase ? <div className="mt-5"><MembershipPurchaseState purchase={feed.purchase} busy={purchaseBusy} onRetry={() => { if (retryOption) void onPurchase(retryOption, true); }} /></div> : null}
-      {activeForYear ? <p className="mt-5 border border-lime/60 bg-lime/30 p-5 text-sm font-semibold text-black">Du har redan ett aktivt medlemskap för {purchaseYear}. Inget nytt köp behövs.</p> : pendingPurchase ? null : feed.purchaseOptions.length ? <form className="mt-5 border border-black/10 bg-white p-5 sm:p-6" onSubmit={(event) => { event.preventDefault(); if (selected && payerValid && !purchaseBusy) void onPurchase(selected); }}>
-        <fieldset>
-          <legend className="text-sm font-bold">Välj medlemskap</legend>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">{feed.purchaseOptions.map((option) => <label key={option.productId} className={`flex min-h-24 items-start gap-3 border p-4 ${option.available ? "cursor-pointer border-black/15 hover:border-black" : "border-black/10 bg-black/[0.03] text-black/45"}`}>
-            <input type="radio" name="membership-product" value={option.productId} checked={selected?.productId === option.productId} onChange={() => onSelectProduct(option.productId)} disabled={!option.available} className="mt-1 h-5 w-5 accent-black" />
-            <span><strong className="block">{option.typeName} · {option.year}</strong><span className="mt-1 block text-sm">{moneyFromOre(option.priceOre)} · moms {option.vatBasisPoints / 100}% · {formatMembershipDate(option.validFrom)}–{formatMembershipDate(option.validTo)}</span><span className="mt-1 block text-[11px] text-black/40">Produkt-ID: {option.productId}</span>{!option.available ? <span className="mt-2 block text-xs text-orange">{unavailableMembershipReason(option)}</span> : null}</span>
-          </label>)}</div>
-        </fieldset>
-        {selected ? <div className="mt-6 max-w-xl">
-          <label htmlFor="membership-payer-alias" className="block text-xs font-bold uppercase tracking-[0.08em] text-black/55">Swish-nummer</label>
-          <input id="membership-payer-alias" value={payerAlias} onChange={(event) => onPayerAliasChange(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && payerValid && !purchaseBusy) { event.preventDefault(); void onPurchase(selected); } }} type="tel" inputMode="tel" enterKeyHint="send" autoComplete="tel" required pattern="[+\d][\d ()-]{7,19}" aria-describedby="membership-payer-hint membership-payer-error" className="mt-2 min-h-12 w-full border border-black/20 bg-cream px-4 text-base outline-none focus:border-black" />
-          <p id="membership-payer-hint" className="mt-2 text-xs leading-relaxed text-black/50">Swish skickar betalningsförfrågan till numret. Uppgiften är hämtad från din profil och kan ändras för detta köp.</p>
-          {!payerValid && payerAlias ? <p id="membership-payer-error" role="alert" className="mt-2 text-xs font-semibold text-orange">Ange ett giltigt Swish-nummer, till exempel 070-123 45 67.</p> : <span id="membership-payer-error" />}
-          <button type="submit" disabled={purchaseBusy || !payerValid} className="mt-5 inline-flex min-h-12 w-full cursor-pointer items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.09em] text-lime disabled:cursor-not-allowed disabled:opacity-35">{purchaseBusy ? "Startar Swish…" : `Köp ${selected.typeName} för ${moneyFromOre(selected.priceOre)}`}</button>
-        </div> : null}
-      </form> : <p className="mt-5 border border-black/10 bg-white p-5 text-sm text-black/50">Inga medlemsprodukter är öppna för köp just nu.</p>}
-    </div>
-
-    <div className="mt-10 border-t border-black/10 pt-8">
-      <CompetitionLicenceCard state={licenceState} loading={false} available={licenceAvailable} busy={licenceBusy} onRequest={onRequestCompetitionLicence} />
-    </div>
+    {overview.history.length ? <div className="mt-10 border-t border-black/10 pt-8">
+      <div className="flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/40">Historik</p><h4 className="mt-2 font-display text-3xl">Tidigare medlemskap</h4></div><span className="text-sm text-black/45">{overview.history.length} st</span></div>
+      <div className="mt-4 space-y-2">{overview.history.map((item) => <MembershipRecordCard key={item.id} item={item} />)}</div>
+    </div> : null}
   </section>;
 }
 
@@ -1431,56 +1418,64 @@ function licenceStatusText(status: LicenceRequest["status"]) {
   return "Begäran är avbruten";
 }
 
-function CompetitionLicenceCard({
-  state,
-  loading,
-  available,
+function CompetitionLicenceAction({
+  year,
   busy,
   onRequest,
 }: {
-  state: LicenceState | null;
-  loading: boolean;
-  available: boolean;
+  year: number;
   busy: boolean;
   onRequest: () => void;
 }) {
-  if (loading) return null;
-  if (!available || !state) {
-    return <article className="mt-px border-l-4 border-l-black/20 bg-white p-6 sm:p-8">
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">Tävlingslicens</p>
-      <p className="mt-3 text-sm text-black/55">Licensstatusen kunde inte hämtas just nu.</p>
-    </article>;
-  }
-  if (state.request) {
-    const completed = state.request.status === "completed";
-    const terminal = state.request.status === "rejected" || state.request.status === "cancelled";
-    return <article className={`mt-px border-l-4 p-6 sm:p-8 ${completed ? "border-l-lime bg-black text-cream" : terminal ? "border-l-orange bg-white text-black" : "border-l-teal bg-white text-black"}`}>
-      <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${completed ? "text-lime" : terminal ? "text-orange" : "text-teal"}`}>Tävlingslicens · {state.request.membership_year}</p>
-      <h4 className="mt-3 font-display text-3xl">{licenceStatusText(state.request.status)}</h4>
-      <p className={`mt-2 text-sm ${completed ? "text-cream/65" : "text-black/55"}`}>{state.request.membership_type}</p>
-      {state.request.status_note ? <p className={`mt-3 text-sm ${completed ? "text-cream/75" : "text-black/65"}`}>{state.request.status_note}</p> : null}
-      {terminal ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-black/65">Du kan inte skicka en ny begäran för samma medlemsår. Kontakta klubben så hjälper vi dig förstå beslutet och vad som behöver rättas. <a href="mailto:rasmus.boden@thebeach.one?subject=T%C3%A4vlingslicens" className="font-bold text-teal underline underline-offset-4">Kontakta klubben</a>.</p> : !completed ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-black/55">Din begäran är mottagen. Du behöver inte skicka den igen; statusen uppdateras här när klubben har hanterat den.</p> : null}
-    </article>;
-  }
-  if (!state.eligibility.eligible) {
-    return <article className="mt-px border-l-4 border-l-black/20 bg-white p-6 sm:p-8">
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">Tävlingslicens</p>
-      <h4 className="mt-3 font-display text-3xl">Begäran öppnas efter betalning</h4>
-      <p className="mt-2 max-w-2xl text-sm text-black/55">{state.eligibility.message || "Du behöver ett betalt och aktivt Junior- eller Seniormedlemskap innan du kan begära tävlingslicens."}</p>
-    </article>;
-  }
-  return <article className="mt-px border-l-4 border-l-lime bg-black p-6 text-cream sm:p-8">
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime">Tävlingslicens</p>
-        <h4 className="mt-3 font-display text-3xl">Ditt medlemskap är verifierat</h4>
-        <p className="mt-2 max-w-2xl text-sm text-cream/65">Skicka en begäran så får Rasmus ett mejl och hanterar registreringen manuellt. Ingen extern licens beställs automatiskt.</p>
-      </div>
-      <button type="button" disabled={busy} onClick={onRequest} className="inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center bg-lime px-6 text-xs font-bold uppercase tracking-[0.09em] text-black disabled:opacity-45">
-        {busy ? "Skickar…" : "Begär tävlingslicens"}
-      </button>
+  return <button type="button" disabled={busy} onClick={onRequest} aria-label={`Begär tävlingslicens ${year}`} className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.09em] text-white disabled:cursor-wait disabled:opacity-45">
+    {busy ? "Skickar…" : "Begär tävlingslicens"}
+  </button>;
+}
+
+function CompetitionLicenceStatus({ request }: { request: LicenceRequest }) {
+  const completed = request.status === "completed";
+  const terminal = request.status === "rejected" || request.status === "cancelled";
+  return <div className="px-1 py-3" aria-label={`Tävlingslicens ${request.membership_year}, ${licenceStatusText(request.status)}`}>
+    <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${completed ? "text-teal" : terminal ? "text-orange" : "text-black/45"}`}>Tävlingslicens</p>
+    <h5 className="mt-2 text-lg font-bold">{licenceStatusText(request.status)}</h5>
+    <p className="mt-1 text-sm text-black/55">{request.membership_type}</p>
+    {request.status_note ? <p className="mt-3 text-sm text-black/65">{request.status_note}</p> : null}
+    {terminal ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-black/65">Du kan inte skicka en ny begäran för samma medlemsår. <a href="mailto:rasmus.boden@thebeach.one?subject=T%C3%A4vlingslicens" className="font-bold text-teal underline underline-offset-4">Kontakta klubben</a> så hjälper vi dig.</p> : !completed ? <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/55">Din begäran är mottagen. Du behöver inte skicka den igen.</p> : null}
+  </div>;
+}
+
+function MembershipPurchaseOptionCard({
+  option,
+  payerAlias,
+  payerValid,
+  busy,
+  onPayerAliasChange,
+  onPurchase,
+}: {
+  option: MembershipPurchaseOption;
+  payerAlias: string;
+  payerValid: boolean;
+  busy: boolean;
+  onPayerAliasChange: (value: string) => void;
+  onPurchase: () => void;
+}) {
+  const inputId = `membership-payer-alias-${option.productId}`;
+  const hintId = `${inputId}-hint`;
+  const errorId = `${inputId}-error`;
+  return <form className="border border-black/10 bg-white p-5 sm:p-6" onSubmit={(event) => { event.preventDefault(); if (payerValid && !busy && option.available) onPurchase(); }}>
+    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Köp medlemskap</p>
+    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div><h5 className="font-display text-3xl">{option.typeName}</h5><p className="mt-2 text-sm text-black/55">Gäller {formatMembershipDate(option.validFrom)}–{formatMembershipDate(option.validTo)} · moms {option.vatBasisPoints / 100}%</p></div>
+      <strong className="text-2xl">{moneyFromOre(option.priceOre)}</strong>
     </div>
-  </article>;
+    {option.available ? <div className="mt-5 max-w-xl border-t border-black/10 pt-5">
+      <label htmlFor={inputId} className="block text-xs font-bold uppercase tracking-[0.08em] text-black/55">Swish-nummer</label>
+      <input id={inputId} value={payerAlias} onChange={(event) => onPayerAliasChange(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && payerValid && !busy) { event.preventDefault(); onPurchase(); } }} type="tel" inputMode="tel" enterKeyHint="send" autoComplete="tel" required pattern="[+\d][\d ()-]{7,19}" aria-describedby={`${hintId} ${errorId}`} className="mt-2 min-h-12 w-full border border-black/20 bg-cream px-4 text-base outline-none focus:border-black" />
+      <p id={hintId} className="mt-2 text-xs leading-relaxed text-black/50">Swish skickar betalningsförfrågan till numret. Du kan ändra numret för detta köp.</p>
+      {!payerValid && payerAlias ? <p id={errorId} role="alert" className="mt-2 text-xs font-semibold text-orange">Ange ett giltigt Swish-nummer, till exempel 070-123 45 67.</p> : <span id={errorId} />}
+      <button type="submit" disabled={busy || !payerValid} className="mt-5 inline-flex min-h-12 w-full cursor-pointer items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.09em] text-white disabled:cursor-not-allowed disabled:opacity-35">{busy ? "Startar Swish…" : "Betala med Swish"}</button>
+    </div> : <p className="mt-4 text-sm font-semibold text-orange">{unavailableMembershipReason(option)}</p>}
+  </form>;
 }
 
 // Dedicated Träningsgrupper tab (Henric, 2026-07-18): current groups + signup
@@ -1705,6 +1700,12 @@ function formatMembershipDate(date: string) {
     month: "short",
     year: "numeric",
   }).format(value);
+}
+
+function profileBirthdate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const parsed = new Date(`${value.slice(0, 10)}T12:00:00`);
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
 }
 
 function formatAccountDate(value: string) {
