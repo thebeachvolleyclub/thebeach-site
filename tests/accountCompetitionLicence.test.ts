@@ -77,7 +77,7 @@ test("licence content stays inside its membership year and future actions remain
   assert.equal(competitionLicenceContentForYear(existing, 2027, 2026), "status");
 });
 
-test("licence request is directly beneath the matching membership and uses the black action", () => {
+test("licence request is a compact black action directly beneath the matching membership", () => {
   const membershipPosition = portal.indexOf("<MembershipRecordCard item={section.membership}");
   const licencePosition = portal.indexOf('licenceContent === "request"');
   const purchaseOptionPosition = portal.indexOf("section.purchaseOption ? <MembershipPurchaseOptionCard");
@@ -85,5 +85,6 @@ test("licence request is directly beneath the matching membership and uses the b
   assert.ok(licencePosition > membershipPosition);
   assert.ok(purchaseOptionPosition > licencePosition);
   assert.match(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+bg-black[^>]+text-white/s);
+  assert.doesNotMatch(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+w-full/s);
   assert.doesNotMatch(portal, /function CompetitionLicenceCard/);
 });

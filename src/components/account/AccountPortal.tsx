@@ -1427,7 +1427,7 @@ function CompetitionLicenceAction({
   busy: boolean;
   onRequest: () => void;
 }) {
-  return <button type="button" disabled={busy} onClick={onRequest} aria-label={`Begär tävlingslicens ${year}`} className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center bg-black px-6 text-xs font-bold uppercase tracking-[0.09em] text-white disabled:cursor-wait disabled:opacity-45">
+  return <button type="button" disabled={busy} onClick={onRequest} aria-label={`Begär tävlingslicens ${year}`} className="inline-flex min-h-11 cursor-pointer items-center justify-center bg-black px-5 text-xs font-bold uppercase tracking-[0.09em] text-white disabled:cursor-wait disabled:opacity-45">
     {busy ? "Skickar…" : "Begär tävlingslicens"}
   </button>;
 }
