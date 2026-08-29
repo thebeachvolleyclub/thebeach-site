@@ -30,7 +30,9 @@ import {
   type MembershipRecord,
 } from "@/lib/accountMembership.core";
 import {
+  activeCompetitionLicencesForYear,
   competitionLicenceContentForYear,
+  type CompetitionLicence,
   type LicenceRequest,
   type LicenceState,
 } from "@/lib/accountCompetitionLicence.core";
@@ -1370,6 +1372,7 @@ export function MembershipCentre({
         const licenceContent = licenceAvailable
           ? competitionLicenceContentForYear(licenceState, section.year, feed.currentYear)
           : null;
+        const activeLicences = activeCompetitionLicencesForYear(licenceState, section.year);
         const empty = !section.membership && !section.purchaseOption && !purchase && licenceContent === null;
         if (empty && needsBirthdate) return null;
 
@@ -1383,6 +1386,7 @@ export function MembershipCentre({
             {purchase ? <MembershipPurchaseState purchase={purchase} busy={purchaseBusy} onRetry={() => { if (retryOption) void onPurchase(retryOption, true); }} /> : null}
             {licenceContent === "request" ? <CompetitionLicenceAction year={section.year} busy={licenceBusy} onRequest={onRequestCompetitionLicence} /> : null}
             {licenceContent === "status" && licenceState?.request ? <CompetitionLicenceStatus request={licenceState.request} /> : null}
+            {licenceContent === "licensed" ? <CompetitionLicenceCard year={section.year} licences={activeLicences} /> : null}
             {section.purchaseOption ? <MembershipPurchaseOptionCard
               option={section.purchaseOption}
               payerAlias={payerAlias}
@@ -1442,6 +1446,31 @@ function CompetitionLicenceStatus({ request }: { request: LicenceRequest }) {
     {request.status_note ? <p className="mt-3 text-sm text-black/65">{request.status_note}</p> : null}
     {terminal ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-black/65">Du kan inte skicka en ny begäran för samma medlemsår. <a href="mailto:rasmus.boden@thebeach.one?subject=T%C3%A4vlingslicens" className="font-bold text-teal underline underline-offset-4">Kontakta klubben</a> så hjälper vi dig.</p> : !completed ? <p className="mt-3 max-w-2xl text-sm leading-relaxed text-black/55">Din begäran är mottagen. Du behöver inte skicka den igen.</p> : null}
   </div>;
+}
+
+function CompetitionLicenceCard({
+  year,
+  licences,
+}: {
+  year: number;
+  licences: CompetitionLicence[];
+}) {
+  return <div className="border-l-4 border-l-teal bg-mint px-5 py-4" aria-label={`Du har tävlingslicens för ${year}`}>
+    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Tävlingslicens</p>
+    <h5 className="mt-2 text-lg font-bold">Du har tävlingslicens</h5>
+    <p className="mt-1 text-sm text-black/55">{year} · Svenska Volleybollförbundet</p>
+    {licences.map((licence) => <p key={`${licence.provider}:${licence.type}`} className="mt-2 text-sm text-black/65">
+      {licence.label || licence.type}
+      {licence.activated_on ? ` · Aktiverad ${formatLicenceDate(licence.activated_on)}` : ""}
+    </p>)}
+  </div>;
+}
+
+function formatLicenceDate(value: string) {
+  const parsed = new Date(value.length === 10 ? `${value}T12:00:00Z` : value);
+  return Number.isFinite(parsed.getTime())
+    ? parsed.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Stockholm" })
+    : value;
 }
 
 function MembershipPurchaseOptionCard({

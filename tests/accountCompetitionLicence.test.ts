@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  activeCompetitionLicencesForYear,
   competitionLicenceContentForYear,
   competitionLicenceDisplayYear,
   type LicenceState,
@@ -77,7 +78,33 @@ test("licence content stays inside its membership year and future actions remain
   assert.equal(competitionLicenceContentForYear(existing, 2027, 2026), "status");
 });
 
-test("licence request is a compact black action directly beneath the matching membership", () => {
+test("registered yearly licence replaces the request action with verified licence content", () => {
+  const licensed: LicenceState = {
+    request: null,
+    eligibility: {
+      eligible: true,
+      membershipYear: 2026,
+      membershipType: "Senior 2026",
+    },
+    has_active_competition_licence: true,
+    competition_licences: [{
+      provider: "profixio",
+      year: 2026,
+      type: "beachvolley",
+      label: "Beachvolley 2026",
+      status: "valid",
+      activated_on: "2026-05-14",
+    }],
+  };
+
+  assert.equal(competitionLicenceContentForYear(licensed, 2026, 2026), "licensed");
+  assert.equal(competitionLicenceContentForYear(licensed, 2027, 2026), null);
+  assert.equal(activeCompetitionLicencesForYear(licensed, 2026)[0]?.label, "Beachvolley 2026");
+  assert.match(portal, /Du har tävlingslicens/);
+  assert.match(portal, /licenceContent === "licensed"/);
+});
+
+test("licence request or verified card is rendered directly beneath the matching membership", () => {
   const membershipPosition = portal.indexOf("<MembershipRecordCard item={section.membership}");
   const licencePosition = portal.indexOf('licenceContent === "request"');
   const purchaseOptionPosition = portal.indexOf("section.purchaseOption ? <MembershipPurchaseOptionCard");
@@ -86,5 +113,6 @@ test("licence request is a compact black action directly beneath the matching me
   assert.ok(purchaseOptionPosition > licencePosition);
   assert.match(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+bg-black[^>]+text-white/s);
   assert.doesNotMatch(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+w-full/s);
-  assert.doesNotMatch(portal, /function CompetitionLicenceCard/);
+  assert.match(portal, /function CompetitionLicenceCard/);
+  assert.match(portal, /aria-label={`Du har tävlingslicens för \${year}`}/);
 });
