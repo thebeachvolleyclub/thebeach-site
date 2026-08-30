@@ -3,7 +3,13 @@ import "server-only";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
-export const ACCOUNT_COOKIE = "tb_account_session";
+import {
+  ACCOUNT_COOKIE,
+  TV_ACCOUNT_COOKIE,
+  TV_ACCOUNT_COOKIE_DOMAIN,
+} from "@/lib/accountCookies";
+
+export { ACCOUNT_COOKIE, TV_ACCOUNT_COOKIE } from "@/lib/accountCookies";
 export const DEVICE_COOKIE = "tb_account_device";
 export const IDENTITY_CHOICE_COOKIE = "tb_account_identity_choice";
 const YEAR = 60 * 60 * 24 * 365;
@@ -19,16 +25,34 @@ export async function accountToken(): Promise<string | null> {
   return (await cookies()).get(ACCOUNT_COOKIE)?.value ?? null;
 }
 
+export async function tvAccountToken(): Promise<string | null> {
+  return (await cookies()).get(TV_ACCOUNT_COOKIE)?.value ?? null;
+}
+
 export async function accountDeviceId(): Promise<string | null> {
   return (await cookies()).get(DEVICE_COOKIE)?.value ?? null;
 }
 
 export function setAccountSession(response: NextResponse, token: string) {
   response.cookies.set(ACCOUNT_COOKIE, token, { ...baseCookie, maxAge: YEAR });
+  if (process.env.NODE_ENV === "production") {
+    response.cookies.set(TV_ACCOUNT_COOKIE, token, {
+      ...baseCookie,
+      domain: TV_ACCOUNT_COOKIE_DOMAIN,
+      maxAge: YEAR,
+    });
+  }
 }
 
 export function clearAccountSession(response: NextResponse) {
   response.cookies.set(ACCOUNT_COOKIE, "", { ...baseCookie, maxAge: 0 });
+  if (process.env.NODE_ENV === "production") {
+    response.cookies.set(TV_ACCOUNT_COOKIE, "", {
+      ...baseCookie,
+      domain: TV_ACCOUNT_COOKIE_DOMAIN,
+      maxAge: 0,
+    });
+  }
 }
 
 export function setAccountDevice(response: NextResponse, deviceId: string) {
