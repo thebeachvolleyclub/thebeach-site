@@ -2,7 +2,9 @@ export const TV_ORIGIN = (process.env.TV_ORIGIN ?? "https://tv.thebeach.one").re
 export const CANONICAL_SITE_HOST = (process.env.CANONICAL_SITE_HOST ?? "thebeach.one").toLowerCase();
 
 export function requestHost(request: Request): string {
-  return (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "")
+  // Apache preserves the browser-visible Host header for this application.
+  // Do not let a client-supplied forwarding header override that boundary.
+  return (request.headers.get("host") ?? "")
     .split(",")[0]
     .trim()
     .toLowerCase();

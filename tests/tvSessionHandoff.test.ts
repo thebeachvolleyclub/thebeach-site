@@ -18,6 +18,26 @@ test("TV handoffs accept only the exact canonical host and TV browser origin", (
   const valid = request({ host: "thebeach.one", origin: "https://tv.thebeach.one" });
   assert.equal(isCanonicalSiteRequest(valid), true);
   assert.equal(isTvBrowserRequest(valid), true);
+  assert.equal(
+    isTvBrowserRequest(
+      request({
+        host: "thebeach.one",
+        "x-forwarded-host": "evil.example",
+        origin: "https://tv.thebeach.one",
+      }),
+    ),
+    true,
+  );
+  assert.equal(
+    isTvBrowserRequest(
+      request({
+        host: "evil.example",
+        "x-forwarded-host": "thebeach.one",
+        origin: "https://tv.thebeach.one",
+      }),
+    ),
+    false,
+  );
   assert.equal(isTvBrowserRequest(request({ host: "www.thebeach.one", origin: "https://tv.thebeach.one" })), false);
   assert.equal(isTvBrowserRequest(request({ host: "thebeach.one", origin: "https://evil.example" })), false);
   assert.equal(isTvBrowserRequest(request({ host: "thebeach.one" })), false);

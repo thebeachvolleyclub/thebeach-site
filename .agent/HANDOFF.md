@@ -10,8 +10,9 @@
   training BFF routes accept only the code or the separate narrow TV bearer;
   the App API key and broad account bearer remain server-side.
 - No cookie domain or sibling-session write was added. Credentialed CORS is
-  exact-origin, responses are private/no-store, and stale broad sessions are
-  cleared when handoff issuance receives a 401.
+  exact-origin, the browser-visible Host header cannot be overridden by an
+  untrusted forwarding header, responses are private/no-store, and stale broad
+  sessions are cleared when handoff issuance receives a 401.
 - All 139 unit tests pass, the production build passes, targeted ESLint and
   whitespace checks pass. Production deploy has not run.
 
@@ -19,4 +20,3 @@
 
 Push this branch and review it with the App API migration/contract and BeachTV
 consumer. Promote after App API migration 173 and code are live.
-
