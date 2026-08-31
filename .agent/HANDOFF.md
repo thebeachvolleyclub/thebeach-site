@@ -13,6 +13,9 @@
   A single `Hela videoarkivet` link appears after the complete group list and
   opens the existing authenticated `https://tv.thebeach.one/mina-traningar`
   archive. The profile never renders the semester archive itself.
+- Every thumbnail includes a high-contrast court overlay such as `Bana 9` or
+  `Bana 10`, allowing players to choose the correct recording without opening
+  each video. The overlay does not increase the 96 px thumbnail footprint.
 - The private/no-store BFF `GET /api/account/training-recordings` forwards only
   the existing host-only account bearer to the App API training-session
   endpoint. It reduces the response to per-group validated YouTube IDs, four
@@ -31,13 +34,13 @@
   still reports the repository's three pre-existing React effect lint errors.
 - Mobile browser verification at 390 px with three mocked authenticated groups
   confirms 3/3 group-specific strips, 96 px thumbnails, independent newest-week
-  dates, full court ranges, direct video links, and exactly one archive action
-  below the groups.
+  dates, visible per-video court labels, full court ranges, direct video links,
+  and exactly one archive action below the groups.
 
 ## Deployment
 
-- Functional commit `58cdc1e` was pushed to `main` and deployed to production
-  as `thebeach-site:58cdc1e` on 2026-08-31. The deploy health check and live
+- Functional commit `ec5f310` was pushed to `main` and deployed to production
+  as `thebeach-site:ec5f310` on 2026-08-31. The deploy health check and live
   `/konto` and BeachTV root both returned 200. Anonymous access to the private
   recordings BFF returned 401 with `Cache-Control: private, no-store`, as
   required.
