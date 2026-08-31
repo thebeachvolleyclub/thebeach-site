@@ -123,7 +123,7 @@ type CourseEnrolment = {
   createdAt: string;
 };
 type CourseFeed = { enrolments: CourseEnrolment[] };
-type AccountTab = "overview" | "membership" | "training" | "bookings" | "invoices" | "profile";
+type AccountTab = "overview" | "membership" | "training" | "courses" | "bookings" | "invoices" | "profile";
 
 /**
  * Djuplänkar öppnar rätt flik direkt: /konto#fakturor från kursanmälan,
@@ -135,8 +135,8 @@ const HASH_TABS: Record<string, AccountTab> = {
   "#invoices": "invoices",
   "#traningsgrupper": "training",
   "#training": "training",
-  "#kurser": "training",
-  "#courses": "training",
+  "#kurser": "courses",
+  "#courses": "courses",
   "#bokningar": "bookings",
   "#bookings": "bookings",
   "#medlemskap": "membership",
@@ -890,7 +890,7 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span>{membershipFeed.activeCount > 0 ? <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black">Medlem</span> : null}</div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["training", "Träningsgrupper"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["training", "Träningsgrupper"], ["courses", "Kurser"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
       {label}
       {value === "training" && signupMine?.submission ? (
         <span className="grid h-4 w-4 place-items-center rounded-full bg-lime text-[10px] font-bold text-black" aria-label="Anmäld" title="Anmäld">✓</span>
@@ -945,7 +945,12 @@ export default function AccountPortal() {
       availability={overviewAvailability}
       signupMine={signupMine}
       signupLoaded={signupLoaded}
+    /> : null}
+
+    {tab === "courses" ? <AccountCourses
+      loading={overviewLoading}
       courseEnrolments={courseEnrolments}
+      available={overviewAvailability.courses}
     /> : null}
 
     {tab === "profile" ? <>
@@ -1147,9 +1152,9 @@ function AccountOverview({
     </div>
 
     <div className="grid grid-cols-2 gap-px bg-black/10 lg:grid-cols-4">
+      <OverviewStat value={loading || !availability.training ? "—" : trainingGroups.length} label="Träningsgrupper" accent="text-black" />
       <OverviewStat value={loading || !availability.bookings ? "—" : confirmedBookingCount} label="Banor bokade" accent="text-teal" />
       <OverviewStat value={loading || !availability.bookings ? "—" : currentBookings.length} label="Kommande bantider" accent="text-orange" />
-      <OverviewStat value={loading || !availability.training ? "—" : trainingGroups.length} label="Träningsgrupper" accent="text-black" />
       <OverviewStat value={loading || !availability.invoices ? "—" : activeInvoiceCount} label="Fakturor att hantera" accent={activeInvoiceCount ? "text-orange" : "text-teal"} />
     </div>
 
@@ -1522,6 +1527,32 @@ function MembershipPurchaseOptionCard({
   </form>;
 }
 
+// Courses remain a separate product and account destination from recurring
+// training groups, matching the distinction used throughout the site and app.
+function AccountCourses({
+  loading,
+  courseEnrolments,
+  available,
+}: {
+  loading: boolean;
+  courseEnrolments: CourseEnrolment[];
+  available: boolean;
+}) {
+  return <section className="bg-cream p-5 sm:p-8 lg:p-10">
+    <div className="border-b border-black/10 pb-7">
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Kurser</p>
+      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Dina kurser</h3>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Köpta och aktuella kurser samlade på ett ställe.</p>
+    </div>
+
+    <CourseEnrolmentsCard
+      enrolments={courseEnrolments}
+      loading={loading}
+      available={available}
+    />
+  </section>;
+}
+
 // Dedicated Träningsgrupper tab (Henric, 2026-07-18): current groups + signup
 // status. (Training HISTORY lives with the rest of the player history on the
 // Översikt tab.)
@@ -1533,7 +1564,6 @@ function AccountTraining({
   availability,
   signupMine,
   signupLoaded,
-  courseEnrolments,
 }: {
   loading: boolean;
   trainingGroups: TrainingGroup[];
@@ -1542,22 +1572,15 @@ function AccountTraining({
   availability: OverviewAvailability;
   signupMine: SignupMine | null;
   signupLoaded: boolean;
-  courseEnrolments: CourseEnrolment[];
 }) {
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
     <div className="border-b border-black/10 pb-7">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal">Träning</p>
-      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träning och kurser</h3>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina köpta kurser, aktuella grupper och din anmälan.</p>
+      <h3 className="mt-3 font-display text-4xl leading-none sm:text-5xl">Träningsgrupper</h3>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-black/55">Dina aktuella träningsgrupper och din anmälan.</p>
     </div>
 
     <SignupStatusCard mine={signupMine} loaded={signupLoaded} />
-
-    <CourseEnrolmentsCard
-      enrolments={courseEnrolments}
-      loading={loading}
-      available={availability.courses}
-    />
 
     <div className="mt-px">
       <article className="bg-black p-6 text-cream sm:p-8">

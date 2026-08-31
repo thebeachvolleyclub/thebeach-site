@@ -69,10 +69,28 @@ test("booking configuration never invents a static base price", () => {
   assert.doesNotMatch(configRoute, /priceSek|slotLengthMinutes|\b400\b/);
 });
 
-test("account training renders purchased courses and invoice hand-off", () => {
+test("account keeps courses separate from training groups and preserves invoice hand-off", () => {
   assert.match(portal, /api<CourseFeed>\("\/api\/courses\/mine"\)/);
+  assert.match(portal, /\["training", "Träningsgrupper"\], \["courses", "Kurser"\], \["bookings", "Bokningar"\]/);
+  assert.match(portal, /"#kurser": "courses"/);
+  assert.match(portal, /tab === "courses" \? <AccountCourses/);
   assert.match(portal, /id="kurser"/);
   assert.match(portal, /Mina kurser/);
   assert.match(portal, /href="#fakturor"/);
   assert.match(portal, /status === "expired"/);
+  const coursesPanel = portal.slice(portal.indexOf("function AccountCourses"), portal.indexOf("function AccountTraining"));
+  const trainingPanel = portal.slice(portal.indexOf("function AccountTraining"), portal.indexOf("function TrainingGroupRecordingStrip"));
+  assert.match(coursesPanel, /<CourseEnrolmentsCard/);
+  assert.doesNotMatch(trainingPanel, /CourseEnrolmentsCard|köpta kurser|Träning och kurser/);
+});
+
+test("account overview stats follow the training, booking, invoice navigation order", () => {
+  const stats = portal.slice(portal.indexOf("function AccountOverview"), portal.indexOf("function MembershipStatusCard"));
+  const training = stats.indexOf('label="Träningsgrupper"');
+  const booked = stats.indexOf('label="Banor bokade"');
+  const upcoming = stats.indexOf('label="Kommande bantider"');
+  const invoices = stats.indexOf('label="Fakturor att hantera"');
+  assert.ok(training >= 0 && training < booked);
+  assert.ok(booked < upcoming);
+  assert.ok(upcoming < invoices);
 });
