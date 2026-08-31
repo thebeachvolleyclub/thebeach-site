@@ -40,8 +40,8 @@ export const foreningenDict: Dict<ForeningenDict> = {
     },
     medlem: {
       eyebrow: "Medlemskap", title1: "Därför ska du", title2: "bli medlem",
-      intro: "350 kr per kalenderår — 190 kr för juniorer. Alla är välkomna: nybörjare, motionär eller på väg mot toppen. Medlemskapet tecknas via MATCHi och gäller direkt.",
-      cta: "Bli medlem via MATCHi →",
+      intro: "350 kr per kalenderår — 190 kr för juniorer. Alla är välkomna: nybörjare, motionär eller på väg mot toppen. Medlemskapet tecknar du direkt på ditt The Beach-konto och det gäller från samma stund.",
+      cta: "Bli medlem →",
       fine1: "Klubbens Swish (endast när det anges): 123 351 1474 · Bankgiro: 5124-1545. Turneringsavgifter betalas via ",
       fine2: ". Klubben hette tidigare 08 Beachvolley Club — namnbytet till The Beach Volley Club är registrerat hos Svenska Volleybollförbundet och Riksidrottsförbundet.",
       formaner: [
@@ -102,8 +102,8 @@ export const foreningenDict: Dict<ForeningenDict> = {
     },
     medlem: {
       eyebrow: "Membership", title1: "Why you should", title2: "become a member",
-      intro: "SEK 350 per calendar year — SEK 190 for juniors. Everyone is welcome: beginner, casual player or on your way to the top. Membership is signed up via MATCHi (available in English) and is active immediately.",
-      cta: "Join via MATCHi →",
+      intro: "SEK 350 per calendar year — SEK 190 for juniors. Everyone is welcome: beginner, casual player or on your way to the top. Sign up directly in your The Beach account — membership is active immediately.",
+      cta: "Become a member →",
       fine1: "Club Swish (only when stated): 123 351 1474 · Bankgiro: 5124-1545. Tournament fees are paid via ",
       fine2: ". The club was previously named 08 Beachvolley Club — the name change to The Beach Volley Club is registered with the Swedish Volleyball Federation and the Swedish Sports Confederation.",
       formaner: [

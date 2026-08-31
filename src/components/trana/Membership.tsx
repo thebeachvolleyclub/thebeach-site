@@ -92,9 +92,7 @@ export default function Membership({ locale }: { locale: Locale }) {
               {t.panel.body}
             </p>
             <a
-              href="https://www.matchi.se/facilities/thebeach"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/konto#medlemskap"
               className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 bg-black px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors duration-300 hover:bg-black/80"
             >
               {t.panel.cta} <span aria-hidden="true">→</span>

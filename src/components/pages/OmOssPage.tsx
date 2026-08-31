@@ -27,8 +27,6 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
         />
 
         {/* Milstolpar */}
-        {/* Timeline dold under Ad Grants-granskning (3 dagar) — återställ: byt false→true */}
-        {false && (
         <section className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
           <Reveal className="mb-10 lg:mb-14">
             <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-black/40">
@@ -47,7 +45,6 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
             ))}
           </div>
         </section>
-        )}
 
         {/* Teamet */}
         <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-28">

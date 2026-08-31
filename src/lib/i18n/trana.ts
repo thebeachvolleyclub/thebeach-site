@@ -447,10 +447,10 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       panel: {
         eyebrow: "Redo att bli del av klubben?",
-        title1: "Anmäl dig via",
-        title2: "MATCHi",
-        body: "Snabbt och enkelt — klicka nedan och välj medlemskap på The Beach-sidan i MATCHi.",
-        cta: "Bli medlem via MATCHi",
+        title1: "Bli medlem på",
+        title2: "ditt konto",
+        body: "Snabbt och enkelt — logga in på ditt The Beach-konto, välj Medlemskap och betala direkt. Klart på en minut.",
+        cta: "Bli medlem",
       },
     },
     cta: {
@@ -728,10 +728,10 @@ export const tranaDict: Dict<TranaDict> = {
       ],
       panel: {
         eyebrow: "Ready to join the club?",
-        title1: "Sign up via",
-        title2: "MATCHi",
-        body: "Quick and easy — click below and choose membership on The Beach page in MATCHi (in Swedish).",
-        cta: "Become a member via MATCHi",
+        title1: "Join via",
+        title2: "your account",
+        body: "Quick and easy — sign in to your The Beach account, choose Membership and pay directly. Done in a minute.",
+        cta: "Become a member",
       },
     },
     cta: {

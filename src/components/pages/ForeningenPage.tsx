@@ -7,7 +7,7 @@ import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { foreningenDict } from "@/lib/i18n/foreningen";
 
-const MATCHI = "https://www.matchi.se/facilities/thebeach";
+const MEDLEMSKAP = "/konto#medlemskap";
 
 export default function ForeningenPage({ locale }: { locale: Locale }) {
   const t = foreningenDict[locale];
@@ -20,10 +20,10 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
           title={<>{t.hero.title1}{" "}<br /><span className="italic-accent">{t.hero.titleAccent}</span></>}
           intro={t.hero.intro}
           cta={
-            <a href={MATCHI} target="_blank" rel="noopener noreferrer"
+            <Link href={MEDLEMSKAP}
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright">
               {t.hero.cta} <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           }
         />
 
@@ -36,10 +36,10 @@ export default function ForeningenPage({ locale }: { locale: Locale }) {
               </h2>
               <p className="mb-6 max-w-md text-[15px] leading-relaxed text-black/55">{t.medlem.intro}</p>
               <div className="flex flex-wrap gap-3">
-                <a href={MATCHI} target="_blank" rel="noopener noreferrer"
+                <Link href={MEDLEMSKAP}
                   className="cursor-pointer bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.08em] text-lime transition-colors hover:bg-black/85">
                   {t.medlem.cta}
-                </a>
+                </Link>
               </div>
               <p className="mt-6 max-w-md text-[12px] leading-relaxed text-black/35">
                 {t.medlem.fine1}
