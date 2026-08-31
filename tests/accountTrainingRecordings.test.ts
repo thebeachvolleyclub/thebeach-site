@@ -70,8 +70,8 @@ test("each profile group keeps its own four videos from its latest recorded week
         court: 6,
         courts: "6, 7, 8, 9, 10",
         recordings: [
-          { broadcast_id: "siroccoNew1", court: 6 },
           { broadcast_id: "siroccoNew2", court: 10 },
+          { broadcast_id: "siroccoNew1", court: 6 },
         ],
       },
     ],
@@ -83,15 +83,16 @@ test("each profile group keeps its own four videos from its latest recorded week
   assert.equal(feed.groups.find((group) => group.groupName === "Sirocco")?.latestWeekStart, "2026-08-31");
   assert.deepEqual(borealis.map((recording) => recording.videoId), [
     "newVideo_1",
-    "newVideo_2",
     "newVideo_3",
+    "newVideo_2",
     "newVideo_4",
   ]);
   assert.equal(borealis.length, 4);
   assert.equal(borealis.some((recording) => recording.videoId === "oldVideo_1"), false);
   assert.equal(borealis[0].startTime, "18:30");
-  assert.deepEqual(borealis.slice(0, 2).map((recording) => recording.court), ["Bana 9", "Bana 10"]);
+  assert.deepEqual(borealis.map((recording) => recording.court), ["Bana 9", "Bana 9", "Bana 10", "Bana 10"]);
   assert.deepEqual(sirocco.map((recording) => recording.videoId), ["siroccoNew1", "siroccoNew2"]);
+  assert.deepEqual(sirocco.map((recording) => recording.court), ["Bana 6", "Bana 10"]);
   assert.equal(sirocco.some((recording) => recording.videoId === "siroccoOld1"), false);
 });
 

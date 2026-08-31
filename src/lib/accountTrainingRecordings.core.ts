@@ -155,13 +155,26 @@ export function trainingGroupCourtLabel(
   return formatTrainingCourts(group?.courts, group?.court ?? fallbackCourt);
 }
 
+function recordingCourtNumber(label: string): number {
+  const numbers = label.match(/\d{1,2}/g);
+  if (numbers?.length !== 1) return Number.MAX_SAFE_INTEGER;
+  const court = Number(numbers[0]);
+  return court > 0 && court < 100 ? court : Number.MAX_SAFE_INTEGER;
+}
+
 export function trainingGroupRecentRecordings(
   feed: TrainingRecordingFeed,
   groupName: string,
   dayTime: string,
   fallbackCourt: number | null,
 ): TrainingRecordingPreview[] {
-  return matchingTrainingGroup(feed, groupName, dayTime, fallbackCourt)?.recent ?? [];
+  const recent = matchingTrainingGroup(feed, groupName, dayTime, fallbackCourt)?.recent ?? [];
+  return [...recent].sort((a, b) => (
+    b.sessionDate.localeCompare(a.sessionDate)
+    || recordingCourtNumber(a.court) - recordingCourtNumber(b.court)
+    || (a.startTime || "99:99").localeCompare(b.startTime || "99:99")
+    || a.videoId.localeCompare(b.videoId)
+  ));
 }
 
 export function trainingRecordingFeedFromWire(payload: unknown): TrainingRecordingFeed {
