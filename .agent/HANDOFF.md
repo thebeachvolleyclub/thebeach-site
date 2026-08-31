@@ -31,7 +31,7 @@
 
 ## Deployment
 
-- Functional commit `6344fce` was pushed to `main` and deployed to production
-  as `thebeach-site:6344fce` on 2026-08-31. The deploy health check and live
+- Functional commit `598e7ff` was pushed to `main` and deployed to production
+  as `thebeach-site:598e7ff` on 2026-08-31. The deploy health check and live
   `/konto` both returned 200. Anonymous access to the new recordings BFF
   returned 401 with `Cache-Control: private, no-store`, as required.
