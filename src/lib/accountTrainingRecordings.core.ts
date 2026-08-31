@@ -128,12 +128,20 @@ export function formatTrainingCourts(courts: string | null | undefined, fallback
 export function trainingGroupCourtLabel(
   feed: TrainingRecordingFeed,
   groupName: string,
+  dayTime: string,
   fallbackCourt: number | null,
 ): string {
   const normalized = groupName.trim().toLocaleLowerCase("sv-SE");
-  const group = feed.groupCourts.find((candidate) => (
+  const exactGroup = feed.groupCourts.find((candidate) => (
     candidate.groupName.trim().toLocaleLowerCase("sv-SE") === normalized
   ));
+  const normalizedDayTime = dayTime.trim().toLocaleLowerCase("sv-SE");
+  const sameTime = feed.groupCourts.filter((candidate) => (
+    candidate.dayTime.trim().toLocaleLowerCase("sv-SE") === normalizedDayTime
+  ));
+  const group = exactGroup
+    ?? sameTime.find((candidate) => candidate.court === fallbackCourt)
+    ?? (sameTime.length === 1 ? sameTime[0] : undefined);
   return formatTrainingCourts(group?.courts, group?.court ?? fallbackCourt);
 }
 

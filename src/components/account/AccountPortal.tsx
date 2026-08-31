@@ -1571,7 +1571,7 @@ function AccountTraining({
                 {season ? <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-lime/80">{season}</p> : null}
                 <div className="space-y-2">
                   {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => {
-                    const courts = trainingGroupCourtLabel(trainingRecordings, group.group_name, group.court);
+                    const courts = trainingGroupCourtLabel(trainingRecordings, group.group_name, group.day_time, group.court);
                     return <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
                       <strong className="block text-base text-cream">{group.group_name}</strong>
                       <span className="mt-1 block text-sm text-cream/65">{group.day_time}{courts ? ` · ${courts}` : ""}</span>

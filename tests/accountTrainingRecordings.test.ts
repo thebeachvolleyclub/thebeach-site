@@ -77,9 +77,10 @@ test("training group court labels use complete compact ranges", () => {
     ],
   });
 
-  assert.equal(trainingGroupCourtLabel(feed, "Borealis", 9), "Banor 9–10");
-  assert.equal(trainingGroupCourtLabel(feed, "Sirocco", 6), "Banor 6–10");
-  assert.equal(trainingGroupCourtLabel(feed, "Annan grupp", 4), "Bana 4");
+  assert.equal(trainingGroupCourtLabel(feed, "Borealis", "Måndag 18.30", 9), "Banor 9–10");
+  assert.equal(trainingGroupCourtLabel(feed, "Sirocco", "Tisdag 17.00", 6), "Banor 6–10");
+  assert.equal(trainingGroupCourtLabel(feed, "Äldre visningsnamn", "Måndag 18.30", 9), "Banor 9–10");
+  assert.equal(trainingGroupCourtLabel(feed, "Annan grupp", "Onsdag 19.00", 4), "Bana 4");
   assert.equal(formatTrainingCourts("6-10", 6), "Banor 6–10");
   assert.equal(formatTrainingCourts("6, 8, 9, 10", 6), "Banor 6, 8–10");
 });
