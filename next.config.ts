@@ -7,6 +7,17 @@ const nextConfig: NextConfig = {
   // The staging workshop serves `next dev` through the Apache proxy on
   // staging.thebeach.one — allow that origin for dev assets/HMR.
   allowedDevOrigins: ["staging.thebeach.one"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+        port: "",
+        pathname: "/vi/**",
+        search: "",
+      },
+    ],
+  },
   // Gamla WordPress-adresser (thebeach.se) 301:as path-bevarande hit av
   // Loopia — mappa dem till rätt nya sidor så länkkraften inte dör i 404.
   // Säkerhetsheaders (granskningsfynd #19). Full CSP medvetet utelämnad —

@@ -1,22 +1,34 @@
 # Current Work State
 
-## BeachTV one-time account handoff (implementation complete; review pending)
+## Account training recordings and full court ranges
 
-- Objective: use the existing `thebeach.one` account session to bootstrap
-  BeachTV without a second login and without a parent-domain bearer cookie.
-- Exact-origin `POST /api/account/tv-handoff` is served only by the canonical
-  host to `https://tv.thebeach.one`, reads the existing host-only account
-  cookie, and asks the App API for a 60-second single-use code. Redeem and
-  training BFF routes accept only the code or the separate narrow TV bearer;
-  the App API key and broad account bearer remain server-side.
-- No cookie domain or sibling-session write was added. Credentialed CORS is
-  exact-origin, the browser-visible Host header cannot be overridden by an
-  untrusted forwarding header, responses are private/no-store, and stale broad
-  sessions are cleared when handoff issuance receives a 401.
-- All 139 unit tests pass, the production build passes, targeted ESLint and
-  whitespace checks pass. Production deploy has not run.
+- Branch: `codex/account-training-recordings-20260831`, based on website
+  production head `4ff3a75`.
+- The authenticated `Mina träningsgrupper` account section now shows a compact
+  shelf with at most four recordings from the newest recorded calendar week.
+  Thumbnails open the individual YouTube recording; `Hela videoarkivet` opens
+  the existing authenticated `https://tv.thebeach.one/mina-traningar` archive.
+- Mobile keeps the shelf to one horizontally scrollable row; wider screens use
+  a two/four-column grid. The profile never renders the semester archive.
+- New private/no-store BFF `GET /api/account/training-recordings` forwards only
+  the existing host-only account bearer to the App API training-session
+  endpoint. It reduces the response to validated YouTube IDs, four latest-week
+  previews, and court metadata; no browser-supplied identity is accepted.
+- The group summary now derives the complete court set from the existing
+  session contract and compacts consecutive courts: Borealis `9, 10` renders
+  `Banor 9–10`; Sirocco `6, 7, 8, 9, 10` renders `Banor 6–10`.
 
-### Exact next action
+## Verification
 
-Push this branch and review it with the App API migration/contract and BeachTV
-consumer. Promote after App API migration 173 and code are live.
+- `npm run test:unit`: 143/143 pass.
+- `npm run build`: pass; existing Profixio static-generation fallback warnings
+  remain non-fatal.
+- Targeted ESLint for new route/core/config/test: pass. `AccountPortal.tsx`
+  still reports the repository's three pre-existing React effect lint errors.
+- Mobile browser verification at 390 px with mocked authenticated data confirms
+  the compact shelf, partial next-card scroll affordance, full court ranges,
+  direct video links, and archive action.
+
+## Deployment
+
+- Not yet committed or deployed at the time of this handoff update.

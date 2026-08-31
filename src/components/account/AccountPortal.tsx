@@ -36,6 +36,12 @@ import {
   type LicenceRequest,
   type LicenceState,
 } from "@/lib/accountCompetitionLicence.core";
+import {
+  EMPTY_TRAINING_RECORDING_FEED,
+  trainingGroupCourtLabel,
+  type TrainingRecordingFeed,
+  type TrainingRecordingPreview,
+} from "@/lib/accountTrainingRecordings.core";
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 
@@ -260,6 +266,8 @@ export default function AccountPortal() {
   const [activeInvoiceCount, setActiveInvoiceCount] = useState(0);
   const [invoicePaymentHandoff, setInvoicePaymentHandoff] = useState<InvoicePaymentHandoff | null>(null);
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
+  const [trainingRecordings, setTrainingRecordings] = useState<TrainingRecordingFeed>(EMPTY_TRAINING_RECORDING_FEED);
+  const [trainingRecordingsAvailable, setTrainingRecordingsAvailable] = useState(true);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>(EMPTY_MEMBERSHIP_FEED);
   const [membershipPurchaseBusy, setMembershipPurchaseBusy] = useState(false);
@@ -417,7 +425,8 @@ export default function AccountPortal() {
       api<unknown>("/api/account/membership"),
       api<CourseFeed>("/api/courses/mine"),
       api<LicenceState>("/api/account/competition-licence"),
-    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult, licenceResult]) => {
+      api<TrainingRecordingFeed>("/api/account/training-recordings"),
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult, licenceResult, recordingResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -441,6 +450,8 @@ export default function AccountPortal() {
         setCourseEnrolments(courseResult.value.enrolments ?? []);
       }
       if (licenceResult.status === "fulfilled") setLicenceState(licenceResult.value);
+      if (recordingResult.status === "fulfilled") setTrainingRecordings(recordingResult.value);
+      setTrainingRecordingsAvailable(recordingResult.status === "fulfilled");
       setOverviewAvailability({
         bookings: bookingResult.status === "fulfilled",
         invoices: invoiceResult.status === "fulfilled",
@@ -827,6 +838,7 @@ export default function AccountPortal() {
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
     setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName("");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
+    setTrainingRecordings(EMPTY_TRAINING_RECORDING_FEED); setTrainingRecordingsAvailable(true);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed(EMPTY_MEMBERSHIP_FEED);
     setMembershipPayerAlias("");
@@ -927,6 +939,8 @@ export default function AccountPortal() {
     {tab === "training" ? <AccountTraining
       loading={overviewLoading}
       trainingGroups={trainingGroups}
+      trainingRecordings={trainingRecordings}
+      trainingRecordingsAvailable={trainingRecordingsAvailable}
       availability={overviewAvailability}
       signupMine={signupMine}
       signupLoaded={signupLoaded}
@@ -1513,6 +1527,8 @@ function MembershipPurchaseOptionCard({
 function AccountTraining({
   loading,
   trainingGroups,
+  trainingRecordings,
+  trainingRecordingsAvailable,
   availability,
   signupMine,
   signupLoaded,
@@ -1520,6 +1536,8 @@ function AccountTraining({
 }: {
   loading: boolean;
   trainingGroups: TrainingGroup[];
+  trainingRecordings: TrainingRecordingFeed;
+  trainingRecordingsAvailable: boolean;
   availability: OverviewAvailability;
   signupMine: SignupMine | null;
   signupLoaded: boolean;
@@ -1552,21 +1570,94 @@ function AccountTraining({
               <div key={season || "current"}>
                 {season ? <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-lime/80">{season}</p> : null}
                 <div className="space-y-2">
-                  {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => (
-                    <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
+                  {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => {
+                    const courts = trainingGroupCourtLabel(trainingRecordings, group.group_name, group.court);
+                    return <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
                       <strong className="block text-base text-cream">{group.group_name}</strong>
-                      <span className="mt-1 block text-sm text-cream/65">{group.day_time}{group.court ? ` · Bana ${group.court}` : ""}</span>
-                    </div>
-                  ))}
+                      <span className="mt-1 block text-sm text-cream/65">{group.day_time}{courts ? ` · ${courts}` : ""}</span>
+                    </div>;
+                  })}
                 </div>
               </div>
             ))}
           </div>
         ) : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
+        <TrainingRecordingShelf
+          recordings={trainingRecordings.recent}
+          loading={loading}
+          available={trainingRecordingsAvailable}
+        />
         <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
       </article>
     </div>
   </section>;
+}
+
+function TrainingRecordingShelf({
+  recordings,
+  loading,
+  available,
+}: {
+  recordings: TrainingRecordingPreview[];
+  loading: boolean;
+  available: boolean;
+}) {
+  return <section className="mt-7 border-t border-white/15 pt-6" aria-labelledby="training-recordings-title">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime/80">Senaste veckan</p>
+        <h5 id="training-recordings-title" className="mt-1 font-display text-2xl text-cream">Träningsfilmer</h5>
+      </div>
+      <a
+        href="https://tv.thebeach.one/mina-traningar"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex min-h-10 w-fit items-center justify-center border border-lime/70 px-4 text-[10px] font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:bg-lime hover:text-black"
+      >
+        Hela videoarkivet <span className="ml-2" aria-hidden="true">↗</span>
+      </a>
+    </div>
+    {loading ? <OverviewLoading /> : !available ? (
+      <p className="mt-4 text-sm text-cream/55">Förhandsvisningen kunde inte hämtas just nu. Hela arkivet finns fortfarande på BeachTV.</p>
+    ) : recordings.length ? (
+      <div className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
+        {recordings.map((recording) => <TrainingRecordingCard key={recording.videoId} recording={recording} />)}
+      </div>
+    ) : (
+      <p className="mt-4 text-sm text-cream/55">När en träning har streamats visas den senaste veckans filmer här.</p>
+    )}
+  </section>;
+}
+
+function TrainingRecordingCard({ recording }: { recording: TrainingRecordingPreview }) {
+  const date = new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(
+    new Date(`${recording.sessionDate}T12:00:00Z`),
+  );
+  return <a
+    href={`https://www.youtube.com/watch?v=${recording.videoId}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group w-44 shrink-0 snap-start overflow-hidden border border-white/15 bg-white/5 transition-colors hover:border-lime/70 hover:bg-white/10 sm:w-auto"
+    aria-label={`Se träningen för ${recording.groupName} den ${date}`}
+  >
+    <span className="relative block aspect-video overflow-hidden bg-black">
+      <Image
+        src={`https://i.ytimg.com/vi/${recording.videoId}/mqdefault.jpg`}
+        alt=""
+        width={320}
+        height={180}
+        unoptimized
+        className="h-full w-full object-cover opacity-80 transition duration-200 group-hover:scale-[1.03] group-hover:opacity-100"
+      />
+      <span className="absolute inset-0 grid place-items-center" aria-hidden="true">
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-lime pl-0.5 text-xs text-black">▶</span>
+      </span>
+    </span>
+    <span className="block min-w-0 p-3">
+      <strong className="block truncate text-sm text-cream">{recording.groupName}</strong>
+      <span className="mt-1 block truncate text-xs text-cream/55">{date}{recording.startTime ? ` · ${recording.startTime}` : ""}{recording.court ? ` · ${recording.court}` : ""}</span>
+    </span>
+  </a>;
 }
 
 function CourseEnrolmentsCard({
