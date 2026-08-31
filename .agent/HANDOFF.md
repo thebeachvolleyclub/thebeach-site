@@ -2,8 +2,8 @@
 
 ## Account training recordings and full court ranges
 
-- Branch: `codex/account-training-recordings-20260831`, based on website
-  production head `4ff3a75`.
+- Branch: `codex/account-training-recordings-20260831`, current with website
+  production `main` through the account information-architecture release.
 - The authenticated `Mina träningsgrupper` account section now puts a compact
   recording strip directly inside each corresponding training-group card.
   Every group independently shows at most four recordings from its own newest
@@ -25,9 +25,22 @@
   session contract and compacts consecutive courts: Borealis `9, 10` renders
   `Banor 9–10`; Sirocco `6, 7, 8, 9, 10` renders `Banor 6–10`.
 
+## Account navigation and overview
+
+- Courses are no longer folded into `Träningsgrupper`. The authenticated
+  account navigation now includes a distinct `Kurser` tab between
+  `Träningsgrupper` and `Bokningar`, and both `#kurser` and `#courses` deep
+  links open it.
+- Purchased/current course content and its invoice hand-off moved intact to
+  the new Courses tab. The Training Groups tab now contains only signup,
+  current-group, recording, and training-related content.
+- Overview stats now follow the applicable navigation order:
+  `Träningsgrupper`, `Banor bokade`, `Kommande bantider`, then
+  `Fakturor att hantera`.
+
 ## Verification
 
-- `npm run test:unit`: 143/143 pass.
+- `npm run test:unit`: 144/144 pass.
 - `npm run build`: pass; existing Profixio static-generation fallback warnings
   remain non-fatal.
 - Targeted ESLint for new route/core/config/test: pass. `AccountPortal.tsx`
@@ -36,11 +49,13 @@
   confirms 3/3 group-specific strips, 96 px thumbnails, independent newest-week
   dates, visible per-video court labels, full court ranges, direct video links,
   and exactly one archive action below the groups.
+- A second 390 px authenticated browser check confirms the complete tab order,
+  the overview stat order, the isolated course panel with a purchased course,
+  and the absence of training-group content from that panel.
 
 ## Deployment
 
-- Functional commit `ec5f310` was pushed to `main` and deployed to production
-  as `thebeach-site:ec5f310` on 2026-08-31. The deploy health check and live
-  `/konto` and BeachTV root both returned 200. Anonymous access to the private
-  recordings BFF returned 401 with `Cache-Control: private, no-store`, as
-  required.
+- Functional commit `e875afc` was pushed to `main` and deployed to production
+  as `thebeach-site:e875afc` on 2026-08-31. The deploy health check and live
+  `/konto` and `/konto#kurser` both returned 200. Anonymous access to the
+  private course endpoint returned 401, as required.
