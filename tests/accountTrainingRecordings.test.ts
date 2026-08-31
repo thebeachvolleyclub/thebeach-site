@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   formatTrainingCourts,
   trainingGroupCourtLabel,
+  trainingGroupRecentRecordings,
   trainingRecordingFeedFromWire,
 } from "../src/lib/accountTrainingRecordings.core.ts";
 
@@ -27,7 +28,7 @@ test("recording BFF uses the account identity and returns private, reduced train
   assert.doesNotMatch(route, /playerId|userId|email|X-User-Id/);
 });
 
-test("profile preview keeps only four videos from the latest recorded week", () => {
+test("each profile group keeps its own four videos from its latest recorded week", () => {
   const feed = trainingRecordingFeedFromWire({
     sessions: [
       {
@@ -54,19 +55,43 @@ test("profile preview keeps only four videos from the latest recorded week", () 
           { broadcast_id: "not a valid id" },
         ],
       },
+      {
+        group_name: "Sirocco",
+        day_time: "Tisdag 17.00",
+        session_date: "2026-08-18",
+        court: 6,
+        courts: "6, 7, 8, 9, 10",
+        recordings: [{ broadcast_id: "siroccoOld1", court: 6 }],
+      },
+      {
+        group_name: "Sirocco",
+        day_time: "Tisdag 17.00",
+        session_date: "2026-08-31",
+        court: 6,
+        courts: "6, 7, 8, 9, 10",
+        recordings: [
+          { broadcast_id: "siroccoNew1", court: 6 },
+          { broadcast_id: "siroccoNew2", court: 10 },
+        ],
+      },
     ],
   });
 
-  assert.equal(feed.latestWeekStart, "2026-08-24");
-  assert.deepEqual(feed.recent.map((recording) => recording.videoId), [
+  const borealis = trainingGroupRecentRecordings(feed, "Borealis", "Måndag 18.30", 9);
+  const sirocco = trainingGroupRecentRecordings(feed, "Sirocco", "Tisdag 17.00", 6);
+  assert.equal(feed.groups.find((group) => group.groupName === "Borealis")?.latestWeekStart, "2026-08-24");
+  assert.equal(feed.groups.find((group) => group.groupName === "Sirocco")?.latestWeekStart, "2026-08-31");
+  assert.deepEqual(borealis.map((recording) => recording.videoId), [
     "newVideo_1",
     "newVideo_2",
     "newVideo_3",
     "newVideo_4",
   ]);
-  assert.equal(feed.recent.length, 4);
-  assert.equal(feed.recent.some((recording) => recording.videoId === "oldVideo_1"), false);
-  assert.equal(feed.recent[0].startTime, "18:30");
+  assert.equal(borealis.length, 4);
+  assert.equal(borealis.some((recording) => recording.videoId === "oldVideo_1"), false);
+  assert.equal(borealis[0].startTime, "18:30");
+  assert.deepEqual(sirocco.map((recording) => recording.videoId), ["siroccoNew1", "siroccoNew2"]);
+  assert.equal(sirocco.some((recording) => recording.videoId === "siroccoOld1"), false);
 });
 
 test("training group court labels use complete compact ranges", () => {
@@ -85,13 +110,18 @@ test("training group court labels use complete compact ranges", () => {
   assert.equal(formatTrainingCourts("6, 8, 9, 10", 6), "Banor 6, 8–10");
 });
 
-test("account group section links recent thumbnails directly and delegates the long archive to BeachTV", () => {
+test("account nests small recording strips per group and keeps one archive link after the list", () => {
   assert.match(portal, /Mina träningsgrupper/);
-  assert.match(portal, /Senaste veckan/);
+  assert.match(portal, /trainingGroupRecentRecordings\(trainingRecordings, group\.group_name, group\.day_time, group\.court\)/);
+  assert.match(portal, /<TrainingGroupRecordingStrip recordings=\{recordings\} groupName=\{group\.group_name\} \/>/);
+  assert.match(portal, /Senaste filmerna/);
   assert.match(portal, /Hela videoarkivet/);
+  assert.equal(portal.match(/Hela videoarkivet/g)?.length, 1);
   assert.match(portal, /https:\/\/tv\.thebeach\.one\/mina-traningar/);
   assert.match(portal, /https:\/\/www\.youtube\.com\/watch\?v=\$\{recording\.videoId\}/);
   assert.match(portal, /https:\/\/i\.ytimg\.com\/vi\/\$\{recording\.videoId\}\/mqdefault\.jpg/);
   assert.match(portal, /overflow-x-auto/);
+  assert.match(portal, /w-24 shrink-0/);
+  assert.doesNotMatch(portal, /TrainingRecordingShelf|w-44 shrink-0/);
   assert.match(config, /hostname: "i\.ytimg\.com"/);
 });

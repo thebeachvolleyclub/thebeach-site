@@ -13,16 +13,17 @@ export type TrainingGroupCourts = {
   court: number | null;
 };
 
-export type TrainingRecordingFeed = {
+export type TrainingGroupRecordingFeed = TrainingGroupCourts & {
   latestWeekStart: string | null;
   recent: TrainingRecordingPreview[];
-  groupCourts: TrainingGroupCourts[];
+};
+
+export type TrainingRecordingFeed = {
+  groups: TrainingGroupRecordingFeed[];
 };
 
 export const EMPTY_TRAINING_RECORDING_FEED: TrainingRecordingFeed = {
-  latestWeekStart: null,
-  recent: [],
-  groupCourts: [],
+  groups: [],
 };
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{6,32}$/;
@@ -125,31 +126,51 @@ export function formatTrainingCourts(courts: string | null | undefined, fallback
   return fallbackCourt ? `Bana ${fallbackCourt}` : "";
 }
 
+function matchingTrainingGroup(
+  feed: TrainingRecordingFeed,
+  groupName: string,
+  dayTime: string,
+  fallbackCourt: number | null,
+): TrainingGroupRecordingFeed | undefined {
+  const normalized = groupName.trim().toLocaleLowerCase("sv-SE");
+  const exactGroup = feed.groups.find((candidate) => (
+    candidate.groupName.trim().toLocaleLowerCase("sv-SE") === normalized
+  ));
+  const normalizedDayTime = dayTime.trim().toLocaleLowerCase("sv-SE");
+  const sameTime = feed.groups.filter((candidate) => (
+    candidate.dayTime.trim().toLocaleLowerCase("sv-SE") === normalizedDayTime
+  ));
+  return exactGroup
+    ?? sameTime.find((candidate) => candidate.court === fallbackCourt)
+    ?? (sameTime.length === 1 ? sameTime[0] : undefined);
+}
+
 export function trainingGroupCourtLabel(
   feed: TrainingRecordingFeed,
   groupName: string,
   dayTime: string,
   fallbackCourt: number | null,
 ): string {
-  const normalized = groupName.trim().toLocaleLowerCase("sv-SE");
-  const exactGroup = feed.groupCourts.find((candidate) => (
-    candidate.groupName.trim().toLocaleLowerCase("sv-SE") === normalized
-  ));
-  const normalizedDayTime = dayTime.trim().toLocaleLowerCase("sv-SE");
-  const sameTime = feed.groupCourts.filter((candidate) => (
-    candidate.dayTime.trim().toLocaleLowerCase("sv-SE") === normalizedDayTime
-  ));
-  const group = exactGroup
-    ?? sameTime.find((candidate) => candidate.court === fallbackCourt)
-    ?? (sameTime.length === 1 ? sameTime[0] : undefined);
+  const group = matchingTrainingGroup(feed, groupName, dayTime, fallbackCourt);
   return formatTrainingCourts(group?.courts, group?.court ?? fallbackCourt);
+}
+
+export function trainingGroupRecentRecordings(
+  feed: TrainingRecordingFeed,
+  groupName: string,
+  dayTime: string,
+  fallbackCourt: number | null,
+): TrainingRecordingPreview[] {
+  return matchingTrainingGroup(feed, groupName, dayTime, fallbackCourt)?.recent ?? [];
 }
 
 export function trainingRecordingFeedFromWire(payload: unknown): TrainingRecordingFeed {
   const body = objectValue(payload);
   const sessions = Array.isArray(body?.sessions) ? body.sessions : [];
-  const candidates: Array<TrainingRecordingPreview & { week: string }> = [];
-  const groups = new Map<string, TrainingGroupCourts & { sessionDate: string }>();
+  const groups = new Map<string, TrainingGroupCourts & {
+    sessionDate: string;
+    recordings: Array<TrainingRecordingPreview & { week: string }>;
+  }>();
 
   for (const item of sessions) {
     const session = objectValue(item);
@@ -159,15 +180,22 @@ export function trainingRecordingFeedFromWire(payload: unknown): TrainingRecordi
     const sessionDate = safeDate(session.session_date);
     if (!groupName || !sessionDate) continue;
 
-    const existingGroup = groups.get(groupName);
-    if (!existingGroup || sessionDate >= existingGroup.sessionDate) {
-      groups.set(groupName, {
+    let group = groups.get(groupName);
+    if (!group) {
+      group = {
         groupName,
         dayTime,
         courts: shortText(session.courts, 40) || null,
         court: numericCourt(session.court),
         sessionDate,
-      });
+        recordings: [],
+      };
+      groups.set(groupName, group);
+    } else if (sessionDate >= group.sessionDate) {
+      group.dayTime = dayTime;
+      group.courts = shortText(session.courts, 40) || null;
+      group.court = numericCourt(session.court);
+      group.sessionDate = sessionDate;
     }
 
     if (!Array.isArray(session.recordings)) continue;
@@ -176,7 +204,7 @@ export function trainingRecordingFeedFromWire(payload: unknown): TrainingRecordi
       if (!recording) continue;
       const videoId = shortText(recording.broadcast_id, 32);
       if (!YOUTUBE_ID.test(videoId)) continue;
-      candidates.push({
+      group.recordings.push({
         videoId,
         groupName,
         sessionDate,
@@ -187,39 +215,40 @@ export function trainingRecordingFeedFromWire(payload: unknown): TrainingRecordi
     }
   }
 
-  const latestWeekStart = candidates.reduce<string | null>(
-    (latest, recording) => !latest || recording.week > latest ? recording.week : latest,
-    null,
-  );
-  const seenRecent = new Set<string>();
-  const recent = candidates
-    .filter((recording) => recording.week === latestWeekStart)
-    .sort((a, b) => (
-      b.sessionDate.localeCompare(a.sessionDate)
-      || (a.startTime || "99:99").localeCompare(b.startTime || "99:99")
-    ))
-    .filter((recording) => {
-      if (seenRecent.has(recording.videoId)) return false;
-      seenRecent.add(recording.videoId);
-      return true;
-    })
-    .slice(0, MAX_PROFILE_RECORDINGS)
-    .map((recording) => ({
-      videoId: recording.videoId,
-      groupName: recording.groupName,
-      sessionDate: recording.sessionDate,
-      court: recording.court,
-      startTime: recording.startTime,
-    }));
-
   return {
-    latestWeekStart,
-    recent,
-    groupCourts: [...groups.values()].map((group) => ({
-      groupName: group.groupName,
-      dayTime: group.dayTime,
-      courts: group.courts,
-      court: group.court,
-    })),
+    groups: [...groups.values()].map((group) => {
+      const latestWeekStart = group.recordings.reduce<string | null>(
+        (latest, recording) => !latest || recording.week > latest ? recording.week : latest,
+        null,
+      );
+      const seenRecent = new Set<string>();
+      const recent = group.recordings
+        .filter((recording) => recording.week === latestWeekStart)
+        .sort((a, b) => (
+          b.sessionDate.localeCompare(a.sessionDate)
+          || (a.startTime || "99:99").localeCompare(b.startTime || "99:99")
+        ))
+        .filter((recording) => {
+          if (seenRecent.has(recording.videoId)) return false;
+          seenRecent.add(recording.videoId);
+          return true;
+        })
+        .slice(0, MAX_PROFILE_RECORDINGS)
+        .map((recording) => ({
+          videoId: recording.videoId,
+          groupName: recording.groupName,
+          sessionDate: recording.sessionDate,
+          court: recording.court,
+          startTime: recording.startTime,
+        }));
+      return {
+        groupName: group.groupName,
+        dayTime: group.dayTime,
+        courts: group.courts,
+        court: group.court,
+        latestWeekStart,
+        recent,
+      };
+    }),
   };
 }

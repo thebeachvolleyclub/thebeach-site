@@ -39,6 +39,7 @@ import {
 import {
   EMPTY_TRAINING_RECORDING_FEED,
   trainingGroupCourtLabel,
+  trainingGroupRecentRecordings,
   type TrainingRecordingFeed,
   type TrainingRecordingPreview,
 } from "@/lib/accountTrainingRecordings.core";
@@ -1572,9 +1573,13 @@ function AccountTraining({
                 <div className="space-y-2">
                   {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => {
                     const courts = trainingGroupCourtLabel(trainingRecordings, group.group_name, group.day_time, group.court);
+                    const recordings = trainingGroupRecentRecordings(trainingRecordings, group.group_name, group.day_time, group.court);
                     return <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
                       <strong className="block text-base text-cream">{group.group_name}</strong>
                       <span className="mt-1 block text-sm text-cream/65">{group.day_time}{courts ? ` · ${courts}` : ""}</span>
+                      {trainingRecordingsAvailable && recordings.length ? (
+                        <TrainingGroupRecordingStrip recordings={recordings} groupName={group.group_name} />
+                      ) : null}
                     </div>;
                   })}
                 </div>
@@ -1582,54 +1587,42 @@ function AccountTraining({
             ))}
           </div>
         ) : <div className="mt-7 border border-white/15 bg-white/5 p-5 text-sm leading-relaxed text-white/60">Du är inte placerad i någon aktiv träningsgrupp just nu.</div>}
-        <TrainingRecordingShelf
-          recordings={trainingRecordings.recent}
-          loading={loading}
-          available={trainingRecordingsAvailable}
-        />
-        <Link href="/trana" className="mt-6 inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
+        <div className="mt-6 flex flex-col items-start gap-4 border-t border-white/15 pt-6 sm:flex-row sm:items-center">
+          <a
+            href="https://tv.thebeach.one/mina-traningar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-10 items-center justify-center border border-lime/70 px-4 text-[10px] font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:bg-lime hover:text-black"
+          >
+            Hela videoarkivet <span className="ml-2" aria-hidden="true">↗</span>
+          </a>
+          <Link href="/trana" className="inline-flex text-xs font-bold uppercase tracking-[0.1em] text-lime underline underline-offset-4">Läs om träning →</Link>
+          {!loading && !trainingRecordingsAvailable ? <span className="text-xs text-cream/45">Förhandsvisningarna kunde inte hämtas just nu.</span> : null}
+        </div>
       </article>
     </div>
   </section>;
 }
 
-function TrainingRecordingShelf({
+function TrainingGroupRecordingStrip({
   recordings,
-  loading,
-  available,
+  groupName,
 }: {
   recordings: TrainingRecordingPreview[];
-  loading: boolean;
-  available: boolean;
+  groupName: string;
 }) {
-  return <section className="mt-7 border-t border-white/15 pt-6" aria-labelledby="training-recordings-title">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-lime/80">Senaste veckan</p>
-        <h5 id="training-recordings-title" className="mt-1 font-display text-2xl text-cream">Träningsfilmer</h5>
-      </div>
-      <a
-        href="https://tv.thebeach.one/mina-traningar"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex min-h-10 w-fit items-center justify-center border border-lime/70 px-4 text-[10px] font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:bg-lime hover:text-black"
-      >
-        Hela videoarkivet <span className="ml-2" aria-hidden="true">↗</span>
-      </a>
+  const latestDate = new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(
+    new Date(`${recordings[0].sessionDate}T12:00:00Z`),
+  );
+  return <div className="mt-3 border-t border-white/10 pt-3">
+    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-lime/75">Senaste filmerna · {latestDate}</p>
+    <div className="mt-2 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1">
+      {recordings.map((recording) => <TrainingRecordingThumbnail key={recording.videoId} recording={recording} groupName={groupName} />)}
     </div>
-    {loading ? <OverviewLoading /> : !available ? (
-      <p className="mt-4 text-sm text-cream/55">Förhandsvisningen kunde inte hämtas just nu. Hela arkivet finns fortfarande på BeachTV.</p>
-    ) : recordings.length ? (
-      <div className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
-        {recordings.map((recording) => <TrainingRecordingCard key={recording.videoId} recording={recording} />)}
-      </div>
-    ) : (
-      <p className="mt-4 text-sm text-cream/55">När en träning har streamats visas den senaste veckans filmer här.</p>
-    )}
-  </section>;
+  </div>;
 }
 
-function TrainingRecordingCard({ recording }: { recording: TrainingRecordingPreview }) {
+function TrainingRecordingThumbnail({ recording, groupName }: { recording: TrainingRecordingPreview; groupName: string }) {
   const date = new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(
     new Date(`${recording.sessionDate}T12:00:00Z`),
   );
@@ -1637,25 +1630,22 @@ function TrainingRecordingCard({ recording }: { recording: TrainingRecordingPrev
     href={`https://www.youtube.com/watch?v=${recording.videoId}`}
     target="_blank"
     rel="noopener noreferrer"
-    className="group w-44 shrink-0 snap-start overflow-hidden border border-white/15 bg-white/5 transition-colors hover:border-lime/70 hover:bg-white/10 sm:w-auto"
-    aria-label={`Se träningen för ${recording.groupName} den ${date}`}
+    className="group relative block w-24 shrink-0 snap-start overflow-hidden border border-white/15 bg-black transition-colors hover:border-lime/70"
+    aria-label={`Se träningen för ${groupName} den ${date}${recording.court ? `, ${recording.court}` : ""}`}
+    title={`${date}${recording.startTime ? ` · ${recording.startTime}` : ""}${recording.court ? ` · ${recording.court}` : ""}`}
   >
-    <span className="relative block aspect-video overflow-hidden bg-black">
+    <span className="relative block aspect-video overflow-hidden">
       <Image
         src={`https://i.ytimg.com/vi/${recording.videoId}/mqdefault.jpg`}
         alt=""
         width={320}
         height={180}
         unoptimized
-        className="h-full w-full object-cover opacity-80 transition duration-200 group-hover:scale-[1.03] group-hover:opacity-100"
+        className="h-full w-full object-cover opacity-80 transition duration-200 group-hover:scale-[1.04] group-hover:opacity-100"
       />
       <span className="absolute inset-0 grid place-items-center" aria-hidden="true">
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-lime pl-0.5 text-xs text-black">▶</span>
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-lime pl-px text-[8px] text-black">▶</span>
       </span>
-    </span>
-    <span className="block min-w-0 p-3">
-      <strong className="block truncate text-sm text-cream">{recording.groupName}</strong>
-      <span className="mt-1 block truncate text-xs text-cream/55">{date}{recording.startTime ? ` · ${recording.startTime}` : ""}{recording.court ? ` · ${recording.court}` : ""}</span>
     </span>
   </a>;
 }
