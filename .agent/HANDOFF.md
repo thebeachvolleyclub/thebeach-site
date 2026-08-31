@@ -1,6 +1,6 @@
 # Current Work State
 
-## BeachTV one-time account handoff (implementation complete; review pending)
+## BeachTV one-time account handoff (production-verified 2026-08-31; HQ #103)
 
 - Objective: use the existing `thebeach.one` account session to bootstrap
   BeachTV without a second login and without a parent-domain bearer cookie.
@@ -14,9 +14,12 @@
   untrusted forwarding header, responses are private/no-store, and stale broad
   sessions are cleared when handoff issuance receives a 401.
 - All 139 unit tests pass, the production build passes, targeted ESLint and
-  whitespace checks pass. Production deploy has not run.
+  whitespace checks pass. Production commit `4ff3a75` is live and healthy.
+- Production verification passed exact CORS, canonical Host enforcement,
+  attacker-supplied forwarding-header rejection, one-time redemption and
+  replay rejection. The narrow token cannot access the broad App profile API
+  and becomes invalid as soon as the source website session is logged out.
 
 ### Exact next action
 
-Push this branch and review it with the App API migration/contract and BeachTV
-consumer. Promote after App API migration 173 and code are live.
+None.
