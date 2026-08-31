@@ -90,6 +90,7 @@ test("each profile group keeps its own four videos from its latest recorded week
   assert.equal(borealis.length, 4);
   assert.equal(borealis.some((recording) => recording.videoId === "oldVideo_1"), false);
   assert.equal(borealis[0].startTime, "18:30");
+  assert.deepEqual(borealis.slice(0, 2).map((recording) => recording.court), ["Bana 9", "Bana 10"]);
   assert.deepEqual(sirocco.map((recording) => recording.videoId), ["siroccoNew1", "siroccoNew2"]);
   assert.equal(sirocco.some((recording) => recording.videoId === "siroccoOld1"), false);
 });
@@ -122,6 +123,9 @@ test("account nests small recording strips per group and keeps one archive link 
   assert.match(portal, /https:\/\/i\.ytimg\.com\/vi\/\$\{recording\.videoId\}\/mqdefault\.jpg/);
   assert.match(portal, /overflow-x-auto/);
   assert.match(portal, /w-24 shrink-0/);
+  assert.match(portal, /recording\.court \? \(/);
+  assert.match(portal, /absolute bottom-1 left-1 bg-black\/85/);
+  assert.match(portal, /\{recording\.court\}/);
   assert.doesNotMatch(portal, /TrainingRecordingShelf|w-44 shrink-0/);
   assert.match(config, /hostname: "i\.ytimg\.com"/);
 });

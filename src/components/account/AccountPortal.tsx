@@ -1646,6 +1646,11 @@ function TrainingRecordingThumbnail({ recording, groupName }: { recording: Train
       <span className="absolute inset-0 grid place-items-center" aria-hidden="true">
         <span className="grid h-6 w-6 place-items-center rounded-full bg-lime pl-px text-[8px] text-black">▶</span>
       </span>
+      {recording.court ? (
+        <span className="absolute bottom-1 left-1 bg-black/85 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-white">
+          {recording.court}
+        </span>
+      ) : null}
     </span>
   </a>;
 }
