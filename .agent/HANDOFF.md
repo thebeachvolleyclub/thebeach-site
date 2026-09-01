@@ -13,17 +13,18 @@ on `origin/main` commit `3230ed2`. It has not been deployed or merged to `main`.
 `src/lib/beachtv-tournaments.ts` now shares in-flight lookups across concurrent
 calendar renders, caches positive and 404 results for the existing six-hour
 freshness period, and limits all lookups in the process to four simultaneous
-BeachTV requests. Transient failures remain uncached so a later render can
-recover immediately. The existing BeachTV URLs, four-second timeout and
-calendar fallback remain unchanged.
+BeachTV requests. The process cache prunes expired entries on every lookup and
+has a strict 256-entry cap with oldest-entry eviction. Transient failures remain
+uncached so a later render can recover immediately. The existing BeachTV URLs,
+four-second timeout and calendar fallback remain unchanged.
 
 `tests/beachtvTournamentLinks.test.ts` covers cross-render single-flight,
-process-wide bounded concurrency, negative-result caching and transient-error
-recovery.
+process-wide bounded concurrency, negative-result caching, strict cache-size
+eviction and transient-error recovery.
 
 ## Verification
 
-- `npm run test:unit`: pass, 147/147.
+- `npm run test:unit`: pass, 148/148.
 - `npx eslint src/lib/beachtv-tournaments.ts tests/beachtvTournamentLinks.test.ts`:
   pass.
 - `npm run build`: pass. The existing Profixio static-render fallback messages

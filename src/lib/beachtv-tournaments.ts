@@ -2,6 +2,7 @@ const BEACH_TV_ORIGIN = "https://tv.thebeach.one";
 const LOOKUP_REVALIDATE_SECONDS = 6 * 60 * 60;
 const LOOKUP_TIMEOUT_MS = 4_000;
 export const BEACH_TV_LOOKUP_CONCURRENCY = 4;
+export const BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES = 256;
 
 type BeachTvTournament = {
   id: string;
@@ -50,6 +51,36 @@ function getLookupState(fetcher: Fetcher): LookupState {
   return created;
 }
 
+function pruneLookupCache(state: LookupState, now: number): void {
+  for (const [invitationId, cached] of state.cache) {
+    if (cached.expiresAt <= now) state.cache.delete(invitationId);
+  }
+
+  while (state.cache.size > BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES) {
+    const oldestInvitationId = state.cache.keys().next().value;
+    if (oldestInvitationId === undefined) break;
+    state.cache.delete(oldestInvitationId);
+  }
+}
+
+function cacheLookup(
+  state: LookupState,
+  invitationId: string,
+  href: string | null,
+): void {
+  const now = Date.now();
+  pruneLookupCache(state, now);
+
+  // Reinsert an existing key so insertion order remains a useful eviction
+  // order even if a value is refreshed after its six-hour lifetime.
+  state.cache.delete(invitationId);
+  state.cache.set(invitationId, {
+    expiresAt: now + LOOKUP_REVALIDATE_SECONDS * 1_000,
+    href,
+  });
+  pruneLookupCache(state, now);
+}
+
 async function withLookupPermit<T>(state: LookupState, task: () => Promise<T>): Promise<T> {
   if (state.availablePermits > 0) {
     state.availablePermits -= 1;
@@ -89,9 +120,9 @@ export async function resolveBeachTvTournament(
   if (!invitationId) return null;
 
   const state = getLookupState(fetcher);
+  pruneLookupCache(state, Date.now());
   const cached = state.cache.get(invitationId);
-  if (cached && cached.expiresAt > Date.now()) return cached.href;
-  if (cached) state.cache.delete(invitationId);
+  if (cached) return cached.href;
 
   const pending = state.inFlight.get(invitationId);
   if (pending) return pending;
@@ -122,10 +153,7 @@ export async function resolveBeachTvTournament(
     }
   }).then((result) => {
     if (result.cacheable) {
-      state.cache.set(invitationId, {
-        expiresAt: Date.now() + LOOKUP_REVALIDATE_SECONDS * 1_000,
-        href: result.href,
-      });
+      cacheLookup(state, invitationId, result.href);
     }
     return result.href;
   });

@@ -3,6 +3,7 @@ import test from "node:test";
 
 // @ts-expect-error Node's native TS test runner needs the explicit extension.
 import {
+  BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES,
   BEACH_TV_LOOKUP_CONCURRENCY,
   resolveBeachTvTournament,
   resolveBeachTvTournaments,
@@ -153,6 +154,35 @@ test("bounds shared downstream concurrency and caches unresolved invitations", a
 
   await resolveBeachTvTournaments(invitationIds, fetcher);
   assert.ok([...callsByInvitation.values()].every((calls) => calls === 1));
+});
+
+test("strictly bounds cached invitation results across non-revisited IDs", async () => {
+  const callsByInvitation = new Map<string, number>();
+  const fetcher = async (url: string) => {
+    const invitationId = url.split("/").at(-1)!;
+    callsByInvitation.set(invitationId, (callsByInvitation.get(invitationId) ?? 0) + 1);
+    return jsonResponse(404, { detail: "tournament not found" });
+  };
+  const invitationIds = Array.from(
+    { length: BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES + 1 },
+    (_, index) => String(13000 + index),
+  );
+
+  for (const invitationId of invitationIds) {
+    await resolveBeachTvTournament(invitationId, fetcher);
+  }
+
+  // The newest negative result is retained, while the oldest has been evicted
+  // once the strict process-cache limit is crossed.
+  await resolveBeachTvTournament(invitationIds.at(-1)!, fetcher);
+  await resolveBeachTvTournament(invitationIds[0], fetcher);
+
+  assert.equal(callsByInvitation.get(invitationIds.at(-1)!), 1);
+  assert.equal(callsByInvitation.get(invitationIds[0]), 2);
+  assert.equal(
+    [...callsByInvitation.values()].reduce((total, calls) => total + calls, 0),
+    BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES + 2,
+  );
 });
 
 test("does not cache transient BeachTV failures", async () => {
