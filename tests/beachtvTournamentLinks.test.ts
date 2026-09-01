@@ -3,6 +3,7 @@ import test from "node:test";
 
 // @ts-expect-error Node's native TS test runner needs the explicit extension.
 import {
+  BEACH_TV_LOOKUP_CONCURRENCY,
   resolveBeachTvTournament,
   resolveBeachTvTournaments,
 } from "../src/lib/beachtv-tournaments.ts";
@@ -96,6 +97,86 @@ test("deduplicates identical ibIds within a calendar render", async () => {
   assert.equal(calls.length, 2);
   assert.equal(resolved.get("11039"), "https://tv.thebeach.one/turnering/by-ibid/11039");
   assert.equal(resolved.get("11040"), "https://tv.thebeach.one/turnering/by-ibid/11040");
+});
+
+test("single-flights the same lookup across simultaneous calendar renders", async () => {
+  let calls = 0;
+  let releaseLookup!: () => void;
+  const lookupGate = new Promise<void>((resolve) => {
+    releaseLookup = resolve;
+  });
+  const fetcher = async () => {
+    calls += 1;
+    await lookupGate;
+    return jsonResponse(200, {
+      id: "53981",
+      profixio_invitation_id: "11041",
+    });
+  };
+
+  const first = resolveBeachTvTournaments(["11041"], fetcher);
+  const second = resolveBeachTvTournaments(["11041"], fetcher);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+
+  assert.equal(calls, 1);
+  releaseLookup();
+  const [firstResult, secondResult] = await Promise.all([first, second]);
+  assert.deepEqual(firstResult, secondResult);
+  assert.equal(calls, 1);
+});
+
+test("bounds shared downstream concurrency and caches unresolved invitations", async () => {
+  const invitationIds = Array.from({ length: 17 }, (_, index) => String(12000 + index));
+  const callsByInvitation = new Map<string, number>();
+  let active = 0;
+  let maxActive = 0;
+  const fetcher = async (url: string) => {
+    const invitationId = url.split("/").at(-1)!;
+    callsByInvitation.set(invitationId, (callsByInvitation.get(invitationId) ?? 0) + 1);
+    active += 1;
+    maxActive = Math.max(maxActive, active);
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    active -= 1;
+    return jsonResponse(404, { detail: "tournament not found" });
+  };
+
+  const results = await Promise.all([
+    resolveBeachTvTournaments(invitationIds, fetcher),
+    resolveBeachTvTournaments([...invitationIds].reverse(), fetcher),
+    resolveBeachTvTournaments(invitationIds.slice(0, 8), fetcher),
+  ]);
+
+  assert.ok(results.every((result) => result.size === 0));
+  assert.equal(callsByInvitation.size, invitationIds.length);
+  assert.ok([...callsByInvitation.values()].every((calls) => calls === 1));
+  assert.equal(maxActive, BEACH_TV_LOOKUP_CONCURRENCY);
+
+  await resolveBeachTvTournaments(invitationIds, fetcher);
+  assert.ok([...callsByInvitation.values()].every((calls) => calls === 1));
+});
+
+test("does not cache transient BeachTV failures", async () => {
+  let calls = 0;
+  const fetcher = async () => {
+    calls += 1;
+    if (calls === 1) return jsonResponse(503, {});
+    return jsonResponse(200, {
+      id: "53982",
+      profixio_invitation_id: "11042",
+    });
+  };
+  const logged: string[] = [];
+
+  assert.equal(
+    await resolveBeachTvTournament("11042", fetcher, (message) => logged.push(message)),
+    null,
+  );
+  assert.equal(
+    await resolveBeachTvTournament("11042", fetcher, (message) => logged.push(message)),
+    "https://tv.thebeach.one/turnering/by-ibid/11042",
+  );
+  assert.equal(calls, 2);
+  assert.equal(logged.length, 1);
 });
 
 test("a snapshot ibId enriches only an already-rendered manual tournament", () => {
