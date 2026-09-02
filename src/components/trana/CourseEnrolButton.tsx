@@ -25,6 +25,7 @@ import {
   clearCourseAttempt,
   courseAttemptKey,
   courseInvoiceId,
+  coursePaymentStartedAt,
   courseSwishLaunchUrl,
   courseSwishMobileDevice,
   courseSwishQrCode,
@@ -480,9 +481,15 @@ export default function CourseEnrolButton({
         setResult({ ok: false, message: t.missingInvoice });
         return;
       }
-      const invoiceCreatedAt = Date.now();
+      const invoiceCreatedAt = coursePaymentStartedAt(data);
       setInvoiceStartedAt(invoiceCreatedAt);
       rememberCourseInvoice(courseId, invoiceId, storage, invoiceCreatedAt, { amountSek: netAmountSek });
+
+      if (remainingCoursePaymentTimeout(invoiceCreatedAt) <= 0) {
+        clearCourseAttempt(courseId, storage);
+        setResult({ ok: false, message: t.paymentTimeout });
+        return;
+      }
 
       if (paymentProvider === "STRIPE") {
         await startStripeCheckout(invoiceId, controller);

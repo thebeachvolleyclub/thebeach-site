@@ -2,39 +2,36 @@
 
 ## Objective
 
-Prevent concurrent website calendar renders from stampeding BeachTV tournament
-lookups and exhausting BeachTV's database connection pool (HQ incident #227).
+Preserve the original server-side course-payment deadline when App API safely
+recovers an unexpired enrolment after the browser loses session storage (HQ
+mention 591 / message 83).
 
 ## Current Status
 
-Implementation is complete on `codex/hq227-beachtv-calendar-singleflight`, based
-on `origin/main` commit `3230ed2`. It has not been deployed or merged to `main`.
+Implementation is complete on `codex/hq591-course-hold-retry-site`, based on
+canonical `origin/main` `59c552c913a6e4f7e07a8e738944c365cebcc8c1`.
 
-`src/lib/beachtv-tournaments.ts` now shares in-flight lookups across concurrent
-calendar renders, caches positive and 404 results for the existing six-hour
-freshness period, and limits all lookups in the process to four simultaneous
-BeachTV requests. The process cache prunes expired entries on every lookup and
-has a strict 256-entry cap with oldest-entry eviction. Transient failures remain
-uncached so a later render can recover immediately. The existing BeachTV URLs,
-four-second timeout and calendar fallback remain unchanged.
-
-`tests/beachtvTournamentLinks.test.ts` covers cross-render single-flight,
-process-wide bounded concurrency, negative-result caching, strict cache-size
-eviction and transient-error recovery.
+`coursePaymentStartedAt` derives a bounded client timer from the App API's
+`createdAt` and `holdExpiresAt` fields. `CourseEnrolButton` persists that
+original deadline instead of resetting it to `Date.now()` after a recovered
+enrolment, and it will not start a payment whose server-derived window has
+already elapsed.
 
 ## Verification
 
-- `npm run test:unit`: pass, 148/148.
-- `npx eslint src/lib/beachtv-tournaments.ts tests/beachtvTournamentLinks.test.ts`:
-  pass.
-- `npm run build`: pass. The existing Profixio static-render fallback messages
-  and NFT tracing warning were emitted but did not fail the build.
-- Full `npm run lint`: still fails on eight pre-existing errors outside the
-  changed files (CookieConsent, DesktopStickies, RichText, AccountPortal,
-  EventPhotoMarquee and EventRequestFormClient).
+- `node --test --experimental-strip-types tests/coursePayment.test.ts`: 22 passed.
+- `npm run test:unit`: 150 passed.
+- `npx eslint src/lib/coursePayment.core.ts src/components/trana/CourseEnrolButton.tsx tests/coursePayment.test.ts`: passed.
+- `npm run build`: passed. The existing Turbopack NFT warning and expected
+  Profixio static-render fallbacks were emitted; neither failed the build.
+
+## Related API Candidate
+
+The App API candidate is on `codex/hq591-course-hold-retry`; it owns exact
+customer/fingerprint hold recovery and fail-closed Swish transaction replay.
+Neither repository has been deployed.
 
 ## Next Action
 
-Review the bounded change, promote it through the normal Site release flow if
-accepted, and verify concurrent `/kalender` renders plus BeachTV pool/502
-telemetry in production before resolving HQ incident #227.
+Commit and push this Site branch, then hand both exact revisions to independent
+review before guarded production promotion.

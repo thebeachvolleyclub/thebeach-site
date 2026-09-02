@@ -75,6 +75,37 @@ export function remainingCoursePaymentTimeout(
   return Math.max(0, COURSE_PAYMENT_WINDOW_MS - Math.max(0, now - createdAt));
 }
 
+/**
+ * Preserve the server-side reservation deadline when an enrolment is recovered
+ * after browser storage was lost.  The returned value can be passed through the
+ * existing `remainingCoursePaymentTimeout`/storage flow without granting a new
+ * client-side payment window.  Invalid metadata falls back to the previous
+ * behavior, while every valid deadline is bounded to at most one normal window.
+ */
+export function coursePaymentStartedAt(
+  payload: unknown,
+  now = Date.now(),
+): number {
+  const root = record(payload);
+  if (!root) return now;
+
+  const createdAt = stringValue(root.createdAt) ?? stringValue(root.created_at);
+  const holdExpiresAt = stringValue(root.holdExpiresAt) ?? stringValue(root.hold_expires_at);
+  const created = createdAt ? Date.parse(createdAt) : Number.NaN;
+  const holdExpires = holdExpiresAt ? Date.parse(holdExpiresAt) : Number.NaN;
+  const deadlines = [
+    ...(Number.isFinite(created) ? [created + COURSE_PAYMENT_WINDOW_MS] : []),
+    ...(Number.isFinite(holdExpires) ? [holdExpires] : []),
+  ];
+  if (!deadlines.length) return now;
+
+  const remaining = Math.max(
+    0,
+    Math.min(COURSE_PAYMENT_WINDOW_MS, Math.min(...deadlines) - now),
+  );
+  return now - (COURSE_PAYMENT_WINDOW_MS - remaining);
+}
+
 function validAttemptKey(value: unknown): value is string {
   return typeof value === "string" && /^[\w-]{8,64}$/.test(value);
 }

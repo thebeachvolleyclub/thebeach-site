@@ -8,6 +8,7 @@ import {
   clearCourseAttempt,
   courseAttemptKey,
   courseInvoiceId,
+  coursePaymentStartedAt,
   courseSwishLaunchUrl,
   courseSwishMobileDevice,
   courseSwishQrCode,
@@ -264,6 +265,34 @@ test("reload keeps the original payment deadline", () => {
   assert.equal(remainingCoursePaymentTimeout(createdAt, createdAt), 14.5 * 60_000);
   assert.equal(remainingCoursePaymentTimeout(createdAt, createdAt + 10 * 60_000), 4.5 * 60_000);
   assert.equal(remainingCoursePaymentTimeout(createdAt, createdAt + 16 * 60_000), 0);
+});
+
+test("recovered enrolment keeps the server reservation deadline", () => {
+  const now = Date.parse("2026-09-02T12:06:00Z");
+  const startedAt = coursePaymentStartedAt({
+    createdAt: "2026-09-02T12:00:00Z",
+    holdExpiresAt: "2026-09-02T12:15:00Z",
+  }, now);
+
+  assert.equal(startedAt, Date.parse("2026-09-02T12:00:00Z"));
+  assert.equal(remainingCoursePaymentTimeout(startedAt, now), 8.5 * 60_000);
+});
+
+test("recovered enrolment never extends or revives an expired server deadline", () => {
+  const now = Date.parse("2026-09-02T12:16:00Z");
+
+  const expired = coursePaymentStartedAt({
+    createdAt: "2026-09-02T12:00:00Z",
+    holdExpiresAt: "2026-09-02T12:15:00Z",
+  }, now);
+  const future = coursePaymentStartedAt({
+    createdAt: "2026-09-02T13:00:00Z",
+    holdExpiresAt: "2026-09-02T13:15:00Z",
+  }, now);
+
+  assert.equal(remainingCoursePaymentTimeout(expired, now), 0);
+  assert.equal(remainingCoursePaymentTimeout(future, now), 14.5 * 60_000);
+  assert.equal(coursePaymentStartedAt({}, now), now);
 });
 
 test("charge handler rejects cross origin, missing session, and invalid invoice before upstream", async () => {
@@ -546,6 +575,8 @@ test("course payment routes keep credentials and invoice details on the server",
   assert.match(component, /pendingCourseInvoice\(courseId, storage\)/);
   assert.match(component, /if \(priceStatus !== "resolved"\) return null/);
   assert.match(component, /rememberCourseInvoice\(courseId, invoiceId, storage, invoiceCreatedAt, \{ amountSek: netAmountSek \}\)/);
+  assert.match(component, /const invoiceCreatedAt = coursePaymentStartedAt\(data\)/);
+  assert.match(component, /if \(remainingCoursePaymentTimeout\(invoiceCreatedAt\) <= 0\)/);
   assert.match(component, /await finishPayment\(invoiceId, controller, storage, invoiceCreatedAt\)/);
   assert.match(component, /aria-live="polite"/);
   const swishChargeSection = component.split('setPhase("startingSwish")').at(-1) ?? "";
