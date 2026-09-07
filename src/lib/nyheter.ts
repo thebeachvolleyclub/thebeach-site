@@ -52,7 +52,7 @@ export const ARTICLES: Article[] = [
       src: "/media/nyheter/ksm26/ksm26-hero.webp",
       alt: "Alla medaljörer i Klubblags-SM för ungdomar 2026 samlade framför solnedgångsväggen på The Beach.",
       caption: "Alla medaljörer samlade efter söndagens finaler.",
-      credit: "Måns Björn",
+      credit: "Mathias Dahlin",
     },
     body: [
       { t: "p", text: "I helgen blev The Beach Sveriges beachvolleyhuvudstad för ett par dagar. 41 lag, över 200 ungdomar, föräldrar, ledare och funktionärer fyllde hallen och utebanorna när **Klubblags-SM för ungdomar** avgjordes hos oss för andra året i rad. Vi vill börja med det viktigaste: tack. Tack till alla som reste hit – från Malmö BC i söder till Vännäs i norr – och gjorde helgen till exakt det vi hoppades på." },
@@ -74,7 +74,7 @@ export const ARTICLES: Article[] = [
         note: "Fullständiga resultat finns på volleyboll.se.",
       },
       { t: "p", text: "**Habo Wolley** åkte hem som helgens stora guldsamlare med dubbla guld på killsidan. **Sollentuna VK** tog medalj i samtliga fyra klasser – imponerande bredd. Och **Göteborg BC** skrev in sig i historieböckerna som den allra första svenska klubblagsmästaren i U16. Grattis till alla fyra mästarlag, och till alla som stod på pallen." },
-      { t: "img", src: "/media/nyheter/ksm26/ksm26-70.webp", alt: "Prispallen i U18 killar: Habo Wolley, Sollentuna VK och The Beach.", caption: "Pallen i U18 killar – med våra egna på bronsplats.", credit: "Måns Björn" },
+      { t: "img", src: "/media/nyheter/ksm26/ksm26-70.webp", alt: "Prispallen i U18 killar: Habo Wolley, Sollentuna VK och The Beach.", caption: "Pallen i U18 killar – med våra egna på bronsplats.", credit: "Mathias Dahlin" },
 
       { t: "h2", text: "Ett brons som betyder mer än ett brons" },
       { t: "p", text: "Vi hade flest lag i hela tävlingen – två i varje klass – och det säger något om hur bred vår ungdomsverksamhet har blivit. Att våra U18-killar dessutom tog brons på hemmasand, framför sina egna kompisar och familjer, är en av helgens finaste stunder för oss. Men vi är lika stolta över alla åtta lag. Att ställa upp, spela för klubben och representera The Beach på ett SM är en stor grej oavsett placering." },
@@ -82,7 +82,7 @@ export const ARTICLES: Article[] = [
       { t: "h2", text: "Till er som gjorde det möjligt" },
       { t: "p", text: "Ett SM med 41 lag är inget som bara händer. Vi är en liten organisation, och vi gjorde det här med väldigt små resurser. Sponsorer till 2027 är välkomna :-)" },
       { t: "p", text: "Tack till alla funktionärer som stod på banorna från tidig morgon till sen kväll, till alla som skötte sekretariat, streaming, café och allt det som ingen ser förrän det saknas. Tack till ledarna som höll ihop sina lag genom långa dagar, till föräldrarna som skjutsade, hejade och fyllde läktaren, och till Svenska Volleybollförbundet för samarbetet och förtroendet att få arrangera igen." },
-      { t: "img", src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "Funktionärerna samlade på utebanorna.", caption: "Gänget som fick helgen att gå ihop.", credit: "Måns Björn" },
+      { t: "img", src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "Funktionärerna samlade på utebanorna.", caption: "Gänget som fick helgen att gå ihop.", credit: "Ingrid Axland" },
       { t: "callout", title: "Särskilt tack till Måns Björn", text: "Huvudansvarig för hela arrangemanget. Det mesta av det ni såg i helgen har gått genom Måns – utan honom hade det inte blivit något Klubblags-SM i Huddinge." },
       { t: "p", text: "Och tack till spelarna." },
 
@@ -90,7 +90,7 @@ export const ARTICLES: Article[] = [
       { t: "p", text: "Här är alla bilder från prisutdelningen. Hitta ditt lag, spara och dela." },
       {
         t: "gallery",
-        credit: "Måns Björn",
+        credit: "Mathias Dahlin (inomhus) och Ingrid Axland (utomhus)",
         images: [
         { src: "/media/nyheter/ksm26/ksm26-01.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 1." },
         { src: "/media/nyheter/ksm26/ksm26-02.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 2." },
