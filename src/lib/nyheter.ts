@@ -82,7 +82,7 @@ export const ARTICLES: Article[] = [
       { t: "h2", text: "Till er som gjorde det möjligt" },
       { t: "p", text: "Ett SM med 41 lag är inget som bara händer. Vi är en liten organisation, och vi gjorde det här med väldigt små resurser. Sponsorer till 2027 är välkomna :-)" },
       { t: "p", text: "Tack till alla funktionärer som stod på banorna från tidig morgon till sen kväll, till alla som skötte sekretariat, streaming, café och allt det som ingen ser förrän det saknas. Tack till ledarna som höll ihop sina lag genom långa dagar, till föräldrarna som skjutsade, hejade och fyllde läktaren, och till Svenska Volleybollförbundet för samarbetet och förtroendet att få arrangera igen." },
-      { t: "img", src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "Funktionärerna samlade på utebanorna.", caption: "Gänget som fick helgen att gå ihop.", credit: "Ingrid Axland" },
+      { t: "img", src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "The Beach-spelarna samlade på utebanorna.", caption: "Hemmaklubbens lirare.", credit: "Ingrid Axland" },
       { t: "callout", title: "Särskilt tack till Måns Björn", text: "Huvudansvarig för hela arrangemanget. Det mesta av det ni såg i helgen har gått genom Måns – utan honom hade det inte blivit något Klubblags-SM i Huddinge." },
       { t: "p", text: "Och tack till spelarna." },
 
