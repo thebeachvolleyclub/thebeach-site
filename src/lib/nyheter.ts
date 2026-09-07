@@ -21,7 +21,8 @@ export type Block =
   | { t: "img"; src: string; alt: string; caption?: string; credit?: string }
   | { t: "table"; head: string[]; rows: string[][]; note?: string; highlightFirstRow?: boolean }
   | { t: "cta"; label: string; href: string; secondary?: boolean }
-  | { t: "callout"; title: string; text: string };
+  | { t: "callout"; title: string; text: string }
+  | { t: "gallery"; images: { src: string; alt: string }[]; credit?: string };
 
 export type Article = {
   slug: string;
@@ -39,6 +40,137 @@ const RESULT_ARTICLES_URL =
   process.env.RESULT_ARTICLES_URL ?? "https://api.beachtv.se/results/articles";
 
 export const ARTICLES: Article[] = [
+  {
+    slug: "klubblags-sm-ungdom-2026",
+    datum: "2026-09-07",
+    kicker: "Klubblags-SM för ungdomar 2026",
+    title: "Tack för en helg vi sent kommer glömma",
+    ingress:
+      "41 lag, fyra SM-titlar och en hall full av ungdomar från hela landet. Klubblags-SM för ungdomar avgjordes hos oss i Huddinge för andra året i rad – och vi vill börja med det viktigaste: tack.",
+    taggar: ["SM", "Tävling", "Barn & ungdom", "Föreningen"],
+    hero: {
+      src: "/media/nyheter/ksm26/ksm26-hero.webp",
+      alt: "Alla medaljörer i Klubblags-SM för ungdomar 2026 samlade framför solnedgångsväggen på The Beach.",
+      caption: "Alla medaljörer samlade efter söndagens finaler.",
+      credit: "Måns Björn",
+    },
+    body: [
+      { t: "p", text: "I helgen blev The Beach Sveriges beachvolleyhuvudstad för ett par dagar. 41 lag, över 200 ungdomar, föräldrar, ledare och funktionärer fyllde hallen och utebanorna när **Klubblags-SM för ungdomar** avgjordes hos oss för andra året i rad. Vi vill börja med det viktigaste: tack. Tack till alla som reste hit – från Malmö BC i söder till Vännäs i norr – och gjorde helgen till exakt det vi hoppades på." },
+
+      { t: "h2", text: "Från 32 lag till 41 – och två nya klasser" },
+      { t: "p", text: "När vi arrangerade premiären förra året var det 32 lag och bara U18. I år sa vi tillsammans med Svenska Volleybollförbundet: vi kör U16 också. Resultatet blev 22 lag i U18 och 19 lag i U16, fyra SM-titlar att spela om och matcher på både inne- och utebanorna från lördag morgon till söndagens finaler. Fem banor sändes live på Volleytv.se, så de som inte fick plats på läktaren kunde följa sina lag hemifrån." },
+      { t: "p", text: "Det som gör Klubblags-SM till något eget är formatet. Varje klubbmatch spelas som två beachmatcher, och står det 1–1 avgörs allt i ett **Golden Set till 15**. Beachvolley är oftast två spelare mot två – här står plötsligt hela klubben på sidlinjen och skriker. Det märks. Stämningen på ett Golden Set en söndagseftermiddag är svår att beskriva för den som inte var där." },
+
+      { t: "h2", text: "Pallen" },
+      {
+        t: "table",
+        head: ["Klass", "Guld", "Silver", "Brons"],
+        rows: [
+          ["U18 tjejer", "Kronan VBK", "Lunds VK", "Sollentuna VK"],
+          ["U18 killar", "Habo Wolley", "Sollentuna VK", "The Beach"],
+          ["U16 tjejer", "Göteborg BC", "Habo Wolley", "Sollentuna VK"],
+          ["U16 killar", "Habo Wolley", "Sollentuna VK", "Solna VBK"],
+        ],
+        note: "Fullständiga resultat finns på volleyboll.se.",
+      },
+      { t: "p", text: "**Habo Wolley** åkte hem som helgens stora guldsamlare med dubbla guld på killsidan. **Sollentuna VK** tog medalj i samtliga fyra klasser – imponerande bredd. Och **Göteborg BC** skrev in sig i historieböckerna som den allra första svenska klubblagsmästaren i U16. Grattis till alla fyra mästarlag, och till alla som stod på pallen." },
+      { t: "img", src: "/media/nyheter/ksm26/ksm26-70.webp", alt: "Prispallen i U18 killar: Habo Wolley, Sollentuna VK och The Beach.", caption: "Pallen i U18 killar – med våra egna på bronsplats.", credit: "Måns Björn" },
+
+      { t: "h2", text: "Ett brons som betyder mer än ett brons" },
+      { t: "p", text: "Vi hade flest lag i hela tävlingen – två i varje klass – och det säger något om hur bred vår ungdomsverksamhet har blivit. Att våra U18-killar dessutom tog brons på hemmasand, framför sina egna kompisar och familjer, är en av helgens finaste stunder för oss. Men vi är lika stolta över alla åtta lag. Att ställa upp, spela för klubben och representera The Beach på ett SM är en stor grej oavsett placering." },
+
+      { t: "h2", text: "Till er som gjorde det möjligt" },
+      { t: "p", text: "Ett SM med 41 lag är inget som bara händer. Vi är en liten organisation, och vi gjorde det här med väldigt små resurser – ingen stor eventbyrå, inga extra händer att ringa in, bara människor som brinner för sporten och som ställde upp. Att det ändå blev något så fint är, ärligt talat, imponerande. Det är vi stolta över." },
+      { t: "p", text: "Tack till alla funktionärer som stod på banorna från tidig morgon till sen kväll, till alla som skötte sekretariat, streaming, café och allt det som ingen ser förrän det saknas. Tack till ledarna som höll ihop sina lag genom långa dagar, till föräldrarna som skjutsade, hejade och fyllde läktaren, och till Svenska Volleybollförbundet för samarbetet och förtroendet att få arrangera igen." },
+      { t: "img", src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "Funktionärerna samlade på utebanorna.", caption: "Gänget som fick helgen att gå ihop.", credit: "Måns Björn" },
+      { t: "callout", title: "Särskilt tack till Måns Björn", text: "Huvudansvarig för hela arrangemanget. Det mesta av det ni såg i helgen har gått genom Måns – utan honom hade det inte blivit något Klubblags-SM i Huddinge." },
+      { t: "p", text: "Och tack till spelarna." },
+
+      { t: "h2", text: "Bildregn" },
+      { t: "p", text: "Här är alla bilder från prisutdelningen. Hitta ditt lag, spara och dela." },
+      {
+        t: "gallery",
+        credit: "Måns Björn",
+        images: [
+        { src: "/media/nyheter/ksm26/ksm26-01.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 1." },
+        { src: "/media/nyheter/ksm26/ksm26-02.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 2." },
+        { src: "/media/nyheter/ksm26/ksm26-03.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 3." },
+        { src: "/media/nyheter/ksm26/ksm26-04.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 4." },
+        { src: "/media/nyheter/ksm26/ksm26-05.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 5." },
+        { src: "/media/nyheter/ksm26/ksm26-06.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 6." },
+        { src: "/media/nyheter/ksm26/ksm26-07.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 7." },
+        { src: "/media/nyheter/ksm26/ksm26-08.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 8." },
+        { src: "/media/nyheter/ksm26/ksm26-09.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 9." },
+        { src: "/media/nyheter/ksm26/ksm26-10.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 10." },
+        { src: "/media/nyheter/ksm26/ksm26-11.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 11." },
+        { src: "/media/nyheter/ksm26/ksm26-12.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 12." },
+        { src: "/media/nyheter/ksm26/ksm26-13.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 13." },
+        { src: "/media/nyheter/ksm26/ksm26-14.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 14." },
+        { src: "/media/nyheter/ksm26/ksm26-15.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 15." },
+        { src: "/media/nyheter/ksm26/ksm26-16.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 16." },
+        { src: "/media/nyheter/ksm26/ksm26-17.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 17." },
+        { src: "/media/nyheter/ksm26/ksm26-18.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 18." },
+        { src: "/media/nyheter/ksm26/ksm26-19.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 19." },
+        { src: "/media/nyheter/ksm26/ksm26-20.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 20." },
+        { src: "/media/nyheter/ksm26/ksm26-21.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 21." },
+        { src: "/media/nyheter/ksm26/ksm26-22.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 22." },
+        { src: "/media/nyheter/ksm26/ksm26-23.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 23." },
+        { src: "/media/nyheter/ksm26/ksm26-24.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 24." },
+        { src: "/media/nyheter/ksm26/ksm26-25.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 25." },
+        { src: "/media/nyheter/ksm26/ksm26-26.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 26." },
+        { src: "/media/nyheter/ksm26/ksm26-27.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 27." },
+        { src: "/media/nyheter/ksm26/ksm26-28.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 28." },
+        { src: "/media/nyheter/ksm26/ksm26-29.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 29." },
+        { src: "/media/nyheter/ksm26/ksm26-30.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 30." },
+        { src: "/media/nyheter/ksm26/ksm26-31.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 31." },
+        { src: "/media/nyheter/ksm26/ksm26-32.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 32." },
+        { src: "/media/nyheter/ksm26/ksm26-33.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 33." },
+        { src: "/media/nyheter/ksm26/ksm26-34.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 34." },
+        { src: "/media/nyheter/ksm26/ksm26-35.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 35." },
+        { src: "/media/nyheter/ksm26/ksm26-36.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 36." },
+        { src: "/media/nyheter/ksm26/ksm26-37.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 37." },
+        { src: "/media/nyheter/ksm26/ksm26-38.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 38." },
+        { src: "/media/nyheter/ksm26/ksm26-39.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 39." },
+        { src: "/media/nyheter/ksm26/ksm26-40.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 40." },
+        { src: "/media/nyheter/ksm26/ksm26-41.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 41." },
+        { src: "/media/nyheter/ksm26/ksm26-42.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 42." },
+        { src: "/media/nyheter/ksm26/ksm26-43.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 43." },
+        { src: "/media/nyheter/ksm26/ksm26-44.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 44." },
+        { src: "/media/nyheter/ksm26/ksm26-45.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 45." },
+        { src: "/media/nyheter/ksm26/ksm26-46.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 46." },
+        { src: "/media/nyheter/ksm26/ksm26-47.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 47." },
+        { src: "/media/nyheter/ksm26/ksm26-48.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 48." },
+        { src: "/media/nyheter/ksm26/ksm26-49.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 49." },
+        { src: "/media/nyheter/ksm26/ksm26-50.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 50." },
+        { src: "/media/nyheter/ksm26/ksm26-51.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 51." },
+        { src: "/media/nyheter/ksm26/ksm26-52.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 52." },
+        { src: "/media/nyheter/ksm26/ksm26-53.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 53." },
+        { src: "/media/nyheter/ksm26/ksm26-54.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 54." },
+        { src: "/media/nyheter/ksm26/ksm26-55.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 55." },
+        { src: "/media/nyheter/ksm26/ksm26-56.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 56." },
+        { src: "/media/nyheter/ksm26/ksm26-57.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 57." },
+        { src: "/media/nyheter/ksm26/ksm26-58.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 58." },
+        { src: "/media/nyheter/ksm26/ksm26-59.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 59." },
+        { src: "/media/nyheter/ksm26/ksm26-60.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 60." },
+        { src: "/media/nyheter/ksm26/ksm26-61.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 61." },
+        { src: "/media/nyheter/ksm26/ksm26-62.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 62." },
+        { src: "/media/nyheter/ksm26/ksm26-63.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 63." },
+        { src: "/media/nyheter/ksm26/ksm26-64.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 64." },
+        { src: "/media/nyheter/ksm26/ksm26-65.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 65." },
+        { src: "/media/nyheter/ksm26/ksm26-66.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 66." },
+        { src: "/media/nyheter/ksm26/ksm26-67.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 67." },
+        { src: "/media/nyheter/ksm26/ksm26-68.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 68." },
+        { src: "/media/nyheter/ksm26/ksm26-69.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 69." },
+        { src: "/media/nyheter/ksm26/ksm26-70.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 70." },
+        { src: "/media/nyheter/ksm26/ksm26-71.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 71." },
+        { src: "/media/nyheter/ksm26/ksm26-72.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 72." },
+        { src: "/media/nyheter/ksm26/ksm26-73.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 73." },
+        { src: "/media/nyheter/ksm26/ksm26-74.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 74." },
+        { src: "/media/nyheter/ksm26/ksm26-75.webp", alt: "Klubblags-SM för ungdomar 2026 på The Beach, bild 75." }
+        ],
+      },
+    ],
+  },
   {
     slug: "hostens-traningar-2026",
     datum: "2026-08-17",

@@ -70,6 +70,20 @@ export default function ArticleBody({ body }: { body: Block[] }) {
           case "img":
             return <Figure key={i} {...b} />;
 
+          case "gallery":
+            return (
+              <div key={i} className="mt-8">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                  {b.images.map((im, j) => (
+                    <a key={j} href={im.src} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-md bg-black/5">
+                      <img src={im.src} alt={im.alt} loading="lazy" decoding="async" className="aspect-[2000/924] h-auto w-full object-cover transition-transform duration-300 hover:scale-[1.03]" />
+                    </a>
+                  ))}
+                </div>
+                {b.credit && <p className="mt-3 text-[13px] leading-relaxed text-black/45">Foto: {b.credit}.</p>}
+              </div>
+            );
+
           case "table":
             return (
               <div key={i} className="mt-7">
