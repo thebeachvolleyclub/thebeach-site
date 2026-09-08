@@ -4,9 +4,10 @@ const nextConfig: NextConfig = {
   // Standalone output for the Docker runtime image (see Dockerfile):
   // `next build` emits .next/standalone/server.js with only the needed files.
   output: "standalone",
-  // The staging workshop serves `next dev` through the Apache proxy on
-  // staging.thebeach.one — allow that origin for dev assets/HMR.
-  allowedDevOrigins: ["staging.thebeach.one"],
+  // Both development workshops serve `next dev` behind authenticated proxies.
+  // Next 16 also sends hydration debug data over HMR. These exact hostnames
+  // permit that development transport; production `next start` is unchanged.
+  allowedDevOrigins: ["staging.thebeach.one", "arena.dev.thebeach.one"],
   images: {
     remotePatterns: [
       {
