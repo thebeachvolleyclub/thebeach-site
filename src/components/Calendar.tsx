@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Reveal from "./Reveal";
-import { type Ev } from "@/lib/kalender";
+import { type Ev, pruneExpired } from "@/lib/kalender";
 import { getMergedMonths } from "@/lib/profixio";
 import type { Locale } from "@/lib/i18n";
 import { homeDict } from "@/lib/i18n/home";
@@ -23,7 +23,7 @@ const TONE: Record<NonNullable<Ev["badgeTone"]>, string> = {
  *  är svenska i båda språkversionerna. */
 export default async function Calendar({ locale = "sv" }: { locale?: Locale }) {
   const t = homeDict[locale].calendar;
-  const MONTHS = await getMergedMonths();
+  const MONTHS = pruneExpired(await getMergedMonths());
   return (
     <section id="calendar" className="bg-cream px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
       <Reveal>

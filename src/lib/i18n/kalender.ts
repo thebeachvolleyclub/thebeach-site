@@ -102,7 +102,7 @@ export const kalenderDict: Dict<KalenderDict> = {
     meta: {
       title: "Kalender — The Beach | Schema & händelser i Stockholm",
       description:
-        "Träningsgrupper, seriespel, turneringar och event — allt som händer på The Beach i Huddinge, året runt. Boka bana via MATCHi eller prenumerera på kalendern.",
+        "Träningsgrupper, seriespel, turneringar och event — allt som händer på The Beach i Huddinge, året runt. Boka bana direkt på sajten eller prenumerera på kalendern.",
       ogTitle: "Kalender — The Beach",
       ogDescription:
         "Se kommande träningsgrupper, seriespel, SBT-turneringar och Mixed på The Beach, Novavägen 35, Huddinge.",
@@ -121,7 +121,7 @@ export const kalenderDict: Dict<KalenderDict> = {
       eyebrow: "Kommande",
       title1: "Vad väntar",
       title2: "på The Beach",
-      lead: "Turneringar, kurser, seriespel och event — hela schemat, alltid uppdaterat. Bana bokar du via MATCHi.",
+      lead: "Turneringar, kurser, seriespel och event — hela schemat, alltid uppdaterat. Bana bokar du direkt här på sajten.",
     },
     types: {
       eyebrow: "Så funkar det",
@@ -132,7 +132,7 @@ export const kalenderDict: Dict<KalenderDict> = {
         {
           no: "01",
           title: "Träningsgrupper",
-          body: "Två säsonger per år: Sommarsäsong (måndagar & onsdagar, maj–början av juli, 7 pass) och Höstsäsong (söndagar, måndagar & onsdagar, sena augusti–december, 15 pass). Anmälan till höstens grupper öppnar 1 augusti kl 20:00 — efterfrågan är hög och platserna brukar fyllas snabbt.",
+          body: "Två säsonger per år: Sommarsäsong (måndagar & onsdagar, maj–början av juli, 7 pass) och Höstsäsong (söndagar, måndagar & onsdagar, sena augusti–december, 15 pass). Anmälan öppnar i april (sommar) respektive början av augusti (höst) — efterfrågan är hög och platserna brukar fyllas snabbt.",
           note: "Frågor om träning: traning@thebeach.one",
           linkLabel: "Läs mer om träning →",
           linkHref: "/trana",
@@ -141,10 +141,8 @@ export const kalenderDict: Dict<KalenderDict> = {
           no: "02",
           title: "Seriespel",
           body: "Sommarens tävlingsform: strukturerade matcher med garanterat spel varje omgång — Seriespel Sommar körs i 6 omgångar med start i maj. Under höst och vår går bantiden till kurser och träningsgrupper.",
-          note: "\"Oavsett om det är din första turnering eller om du jagar rankingpoäng till de stora scenerna är vårt mål att du ska få en riktigt bra turneringsupplevelse hos oss.\"",
           linkLabel: "Se kalender →",
-          linkHref: "https://kalendern på denna sida",
-          external: true,
+          linkHref: "#kommande",
         },
         {
           no: "03",
@@ -167,8 +165,8 @@ export const kalenderDict: Dict<KalenderDict> = {
       eyebrow: "Träningsgrupper",
       title1: "Sommar &",
       title2: "höst",
-      lead1: "Träningsgrupperna löper i två säsonger. Anmälan till höstens grupper öppnar ",
-      leadStrong: "1 aug kl 20:00",
+      lead1: "Träningsgrupperna löper i två säsonger. Anmälan öppnar ",
+      leadStrong: "i april (sommar) och början av augusti (höst)",
       lead2: " — platserna brukar gå snabbt.",
       daysLabel: "Dagar:",
       passesLabel: "Antal pass:",
@@ -230,8 +228,8 @@ export const kalenderDict: Dict<KalenderDict> = {
     },
     booking: {
       eyebrow: "Boka bana",
-      title1: "Boka via",
-      title2: "MATCHi",
+      title1: "Boka direkt",
+      title2: "hos oss",
       lead: "Snabb, enkel bokning — se lediga tider och boka direkt online. Inomhusbana, upp till 8 spelare, 1,5 h per pass.",
       bookLabel: "Boka bana",
       bookHref: "/boka",
@@ -248,7 +246,7 @@ export const kalenderDict: Dict<KalenderDict> = {
       standard: {
         title: "Vanlig bokning",
         items: [
-          "Bokas via MATCHi — max 7 dagar i förväg",
+          "Bokas på boka-sidan eller i appen — max 7 dagar i förväg",
           "1,5 h per pass, upp till 8 spelare per bana",
           "Avbokning senast 24 h före start",
         ],
@@ -257,7 +255,7 @@ export const kalenderDict: Dict<KalenderDict> = {
         title: "Förbokning",
         pre: "Behöver du boka bana längre fram än 7 dagar? Mejla ",
         email: "boka@thebeach.one",
-        post: " med önskad tid. Förbokning kostar 2 000 kr/bana/pass, är ej av- eller ombokningsbar, och kräver förskottsbetalning — du får en betallänk via MATCHi för att bekräfta.",
+        post: " med önskad tid. Förbokning kostar 2 000 kr/bana/pass, är ej av- eller ombokningsbar, och kräver förskottsbetalning — du får en betallänk för att bekräfta.",
       },
       subscription: {
         title: "Abonnemang",
@@ -293,7 +291,7 @@ export const kalenderDict: Dict<KalenderDict> = {
     meta: {
       title: "Calendar — The Beach | Schedule & events in Stockholm",
       description:
-        "Training groups, series play, tournaments and events — everything happening at The Beach in Huddinge, all year round. Book a court via MATCHi or subscribe to the calendar.",
+        "Training groups, series play, tournaments and events — everything happening at The Beach in Huddinge, all year round. Book a court directly on the site or subscribe to the calendar.",
       ogTitle: "Calendar — The Beach",
       ogDescription:
         "See upcoming training groups, series play, SBT tournaments and Mixed at The Beach, Novavägen 35, Huddinge.",
@@ -312,7 +310,7 @@ export const kalenderDict: Dict<KalenderDict> = {
       eyebrow: "Upcoming",
       title1: "What's ahead",
       title2: "at The Beach",
-      lead: "Tournaments, courses, series play and events — the whole schedule, always up to date. Event details are in Swedish. Courts are booked via MATCHi.",
+      lead: "Tournaments, courses, series play and events — the whole schedule, always up to date. Event details are in Swedish. Courts are booked directly on the site.",
     },
     types: {
       eyebrow: "How it works",
@@ -323,7 +321,7 @@ export const kalenderDict: Dict<KalenderDict> = {
         {
           no: "01",
           title: "Training groups",
-          body: "Two seasons per year: the Summer season (Mondays & Wednesdays, May–early July, 7 sessions) and the Autumn season (Sundays, Mondays & Wednesdays, late August–December, 15 sessions). Registration for the autumn groups opens 1 August at 20:00 — demand is high and spots tend to fill up fast.",
+          body: "Two seasons per year: the Summer season (Mondays & Wednesdays, May–early July, 7 sessions) and the Autumn season (Sundays, Mondays & Wednesdays, late August–December, 15 sessions). Registration opens in April (summer) and early August (autumn) — demand is high and spots tend to fill up fast.",
           note: "Questions about training: traning@thebeach.one",
           linkLabel: "More about training →",
           linkHref: "/en/training",
@@ -332,10 +330,8 @@ export const kalenderDict: Dict<KalenderDict> = {
           no: "02",
           title: "Series play",
           body: "The summer competition format: structured matches with guaranteed play every round — Seriespel Sommar runs over 6 rounds starting in May. During autumn and spring, court time goes to courses and training groups.",
-          note: "\"Whether it's your first tournament or you're chasing ranking points for the big stages, our goal is for you to have a really good tournament experience with us.\"",
           linkLabel: "See the calendar →",
-          linkHref: "https://kalendern på denna sida",
-          external: true,
+          linkHref: "#kommande",
         },
         {
           no: "03",
@@ -358,8 +354,8 @@ export const kalenderDict: Dict<KalenderDict> = {
       eyebrow: "Training groups",
       title1: "Summer &",
       title2: "autumn",
-      lead1: "The training groups run in two seasons. Registration for the autumn groups opens ",
-      leadStrong: "1 Aug at 20:00",
+      lead1: "The training groups run in two seasons. Registration opens ",
+      leadStrong: "in April (summer) and early August (autumn)",
       lead2: " — spots tend to go fast.",
       daysLabel: "Days:",
       passesLabel: "Sessions:",
@@ -421,8 +417,8 @@ export const kalenderDict: Dict<KalenderDict> = {
     },
     booking: {
       eyebrow: "Book a court",
-      title1: "Book via",
-      title2: "MATCHi",
+      title1: "Book directly",
+      title2: "with us",
       lead: "Quick, easy booking — see available times and book directly online. Indoor court, up to 8 players, 1.5 h per session.",
       bookLabel: "Book a court",
       bookHref: "/en/book",
@@ -439,7 +435,7 @@ export const kalenderDict: Dict<KalenderDict> = {
       standard: {
         title: "Standard booking",
         items: [
-          "Booked via MATCHi — max 7 days in advance",
+          "Booked on the booking page or in the app — max 7 days in advance",
           "1.5 h per session, up to 8 players per court",
           "Cancellation no later than 24 h before start",
         ],
@@ -448,7 +444,7 @@ export const kalenderDict: Dict<KalenderDict> = {
         title: "Advance booking",
         pre: "Need a court more than 7 days ahead? Email ",
         email: "boka@thebeach.one",
-        post: " with your preferred time. Advance booking costs 2 000 kr/court/session, cannot be cancelled or rebooked, and requires prepayment — you'll get a payment link via MATCHi to confirm.",
+        post: " with your preferred time. Advance booking costs 2 000 kr/court/session, cannot be cancelled or rebooked, and requires prepayment — you'll get a payment link to confirm.",
       },
       subscription: {
         title: "Season slot",

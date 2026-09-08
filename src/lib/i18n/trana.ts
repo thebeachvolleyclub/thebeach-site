@@ -191,7 +191,7 @@ export const tranaDict: Dict<TranaDict> = {
         "~800 spelare tränar varje vecka. Kurser och träningsgrupper för alla nivåer — nybörjare till avancerad, barn & ungdom, PT-grupp och skolor. Ledda av landslagscoacher på The Beach i Huddinge sedan 2006.",
       ogTitle: "Träna — The Beach",
       ogDescription:
-        "Kurser och träningsgrupper för alla nivåer. Grundkurs 795 kr. Höstsäsong 2026 start 30 aug. The Beach, Novavägen 35, Huddinge.",
+        "Kurser och träningsgrupper för alla nivåer. Grundkurs 795 kr. The Beach, Novavägen 35, Huddinge.",
     },
     hero: {
       eyebrow: "Träna",
@@ -199,7 +199,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beachvolley träning",
       intro:
         "~800 spelare tränar varje vecka på The Beach. Kurser och träningsgrupper för alla nivåer — sedan 2006. Ledda av coacher i världsklass på sanden i Huddinge.",
-      ctaCourses: "Säsongen startar 30 aug — se kurserna",
+      ctaCourses: "Se kurserna",
       ctaGroups: "Se träningsgrupperna",
       ctaEvents: "Boka event istället",
       ctaEventsHref: "/events",
@@ -314,7 +314,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "För dig som gått fortsättningskursen eller har motsvarande vana. Huvudtränare Mattias Magnusson och tränarteamet sätter ihop jämna grupper — placeringen utgår främst från din nivå, och dina önskemål om dagar, tider och kompisar vägs in. Start: söndagar 30 aug, måndagar 31 aug och onsdagar vecka 36.",
       fakta: [
         { v: "15 pass", d: "varav en Gameday · sista pass 9 dec" },
-        { v: "Senast tis", d: "grupperna publiceras — avisering i appen" },
+        { v: "I appen", d: "gruppindelning, schema och aviseringar" },
         { v: "−30 / −20 %", d: "ungdomsrabatt för födda {y20} resp. {y26} eller senare" },
       ],
       tableCaption: "Träningsgrupper höstsäsong 2026 — dag, tid och pris",
@@ -472,7 +472,7 @@ export const tranaDict: Dict<TranaDict> = {
         "~800 players train every week. Courses and training groups for all levels — beginner to advanced, kids & youth, PT groups and schools. Led by national-team coaches at The Beach in Huddinge since 2006.",
       ogTitle: "Training — The Beach",
       ogDescription:
-        "Courses and training groups for all levels. Beginner course 795 kr. Autumn season 2026 starts 30 Aug. The Beach, Novavägen 35, Huddinge.",
+        "Courses and training groups for all levels. Beginner course 795 kr. The Beach, Novavägen 35, Huddinge.",
     },
     hero: {
       eyebrow: "Training",
@@ -480,7 +480,7 @@ export const tranaDict: Dict<TranaDict> = {
       titleAccent: "beach volleyball training",
       intro:
         "~800 players train every week at The Beach. Courses and training groups for all levels — since 2006. Led by world-class coaches on the sand in Huddinge.",
-      ctaCourses: "Season starts 30 Aug — see the courses",
+      ctaCourses: "See the courses",
       ctaGroups: "See the training groups",
       ctaEvents: "Book an event instead",
       ctaEventsHref: "/en/events",
@@ -595,7 +595,7 @@ export const tranaDict: Dict<TranaDict> = {
       lead: "For players who've completed the continuation course or have equivalent experience. Head coach Mattias Magnusson and the coaching team put together balanced groups — placement is based primarily on your level, and your preferences for days, times and friends are taken into account. Starts: Sundays 30 Aug, Mondays 31 Aug and Wednesdays week 36.",
       fakta: [
         { v: "15 sessions", d: "including one Gameday · last session 9 Dec" },
-        { v: "By Tue", d: "groups published — app notification" },
+        { v: "In the app", d: "group placement, schedule and notifications" },
         { v: "−30 / −20 %", d: "youth discount for those born {y20} and {y26} or later" },
       ],
       tableCaption: "Training groups autumn season 2026 — day, time and price",

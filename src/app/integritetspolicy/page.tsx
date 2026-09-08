@@ -32,9 +32,10 @@ export default function IntegritetsPage() {
               annan lagstiftning kräver.
             </p>
             <p>
-              Bokning av bana och kurser sker via MATCHi, som är
-              personuppgiftsansvarig för behandlingen i sin tjänst. Vi säljer
-              aldrig dina uppgifter vidare.
+              Bokning av bana och kurser sker i vårt eget bokningssystem.
+              Betalningar hanteras av Swish och Stripe, som är självständigt
+              personuppgiftsansvariga för sina betaltjänster. Vi säljer aldrig
+              dina uppgifter vidare.
             </p>
             <p>
               Du har rätt att begära registerutdrag, rättelse eller radering av

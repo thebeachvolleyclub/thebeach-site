@@ -4,7 +4,6 @@ import Ticker from "@/components/Ticker";
 import KalenderHero from "@/components/kalender/KalenderHero";
 import UpcomingEvents from "@/components/kalender/UpcomingEvents";
 import EventTypes from "@/components/kalender/EventTypes";
-import SeasonRhythm from "@/components/kalender/SeasonRhythm";
 import Tournaments from "@/components/kalender/Tournaments";
 import CourtBooking from "@/components/kalender/CourtBooking";
 import KalenderCTA from "@/components/kalender/KalenderCTA";
@@ -17,7 +16,6 @@ import type { Locale } from "@/lib/i18n";
  * 2. Ticker          — accent strip
  * 3. UpcomingEvents  — bg-cream (light)
  * 4. EventTypes      — bg-panel (dark)
- * 5. SeasonRhythm    — bg-cream (light)
  * 6. Tournaments     — bg-black (dark)
  * 7. CourtBooking    — bg-cream (light)
  * 8. SubscribeCalendar — bg-panel (dark)
@@ -33,7 +31,6 @@ export default function KalenderPage({ locale }: { locale: Locale }) {
         <Ticker locale={locale} />
         <UpcomingEvents locale={locale} />
         <EventTypes locale={locale} />
-        <SeasonRhythm locale={locale} />
         <Tournaments locale={locale} />
         <CourtBooking locale={locale} />
         <Newsletter locale={locale} />
