@@ -35,6 +35,8 @@ const EVENT_PAGES = new Set([
   "/team-building",
   "/barnkalas",
   "/kids-party",
+  "/teneriffa",
+  "/tenerife",
   "/mohippa",
   "/svensexa",
   "/skola",

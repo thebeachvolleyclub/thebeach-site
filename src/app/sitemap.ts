@@ -10,7 +10,7 @@ export const revalidate = 21600;
 const base = "https://thebeach.one";
 const staticPaths = [
   "", "/boka", "/events", "/lokalen", "/trana", "/kalender", "/nyheter", "/foreningen", "/faq",
-  "/skola", "/barnkalas", "/julbord", "/om-oss", "/om-beachvolley",
+  "/skola", "/barnkalas", "/teneriffa", "/julbord", "/om-oss", "/om-beachvolley",
   "/avanmalan",
   "/hallbarhet", "/beachtravels", "/presentkort",
   "/jobb",
@@ -18,7 +18,7 @@ const staticPaths = [
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
   "/firmafest", "/svensexa", "/mohippa",
   "/en", "/en/events", "/en/events/plan", "/en/membership", "/en/book", "/en/training", "/en/calendar", "/en/school", "/en/about", "/en/faq",
-  "/en/venue", "/en/christmas-party", "/en/kids-party", "/en/sustainability",
+  "/en/venue", "/en/christmas-party", "/en/kids-party", "/en/tenerife", "/en/sustainability",
   "/en/conference", "/en/kickoff", "/en/team-building", "/en/corporate-events", "/en/company-party",
 ];
 

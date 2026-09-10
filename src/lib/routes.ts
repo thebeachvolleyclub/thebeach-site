@@ -16,6 +16,7 @@ export const SV_TO_EN: Record<string, string> = {
   "/faq": "/en/faq",
   "/julbord": "/en/christmas-party",
   "/barnkalas": "/en/kids-party",
+  "/teneriffa": "/en/tenerife",
   "/hallbarhet": "/en/sustainability",
   "/konferens": "/en/conference",
   "/kickoff": "/en/kickoff",

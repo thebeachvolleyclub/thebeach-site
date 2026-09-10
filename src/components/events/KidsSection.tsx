@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { eventsDict } from "@/lib/i18n/events";
@@ -63,12 +64,22 @@ export default function KidsSection({ locale }: { locale: Locale }) {
               ))}
             </ul>
             {/* CTA — min 44px tap height per WCAG 2.5.8 */}
-            <a
-              href={`#${t.cta.sectionId}`}
-              className="mt-6 inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
-            >
-              {t.kids.cta}
-            </a>
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-1">
+              <a
+                href={`#${t.cta.sectionId}`}
+                className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-black transition-colors hover:text-black/60"
+              >
+                {t.kids.cta}
+              </a>
+              {card.more && (
+                <Link
+                  href={card.more.href}
+                  className="inline-flex min-h-[44px] items-center py-3 text-xs font-bold uppercase tracking-[0.1em] text-black/45 underline-offset-4 transition-colors hover:text-black hover:underline"
+                >
+                  {card.more.label} <span aria-hidden="true">→</span>
+                </Link>
+              )}
+            </div>
           </Reveal>
         ))}
       </div>

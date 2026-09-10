@@ -77,7 +77,7 @@ export interface EventsDict {
     eyebrow: string;
     title: string;
     lead: string;
-    cards: { tag: string; name: string; price: string; unit: string; desc: string; features: string[] }[];
+    cards: { tag: string; name: string; price: string; unit: string; desc: string; features: string[]; more?: { label: string; href: string } }[];
     cta: string;
   };
   privat: {
@@ -309,6 +309,7 @@ export const eventsDict: Dict<EventsDict> = {
             "450 kr/barn med instruktör · 350 kr utan",
             "Helger — i mån av plats på söndagar",
           ],
+          more: { label: "Läs mer om barnkalas", href: "/barnkalas" },
         },
         {
           tag: "Ungdomslag",
@@ -322,6 +323,7 @@ export const eventsDict: Dict<EventsDict> = {
             "10–250 personer",
             "Söndagar i mån av plats",
           ],
+          more: { label: "Läs mer om Teneriffa", href: "/teneriffa" },
         },
       ],
       cta: "Skicka förfrågan →",
@@ -565,6 +567,7 @@ export const eventsDict: Dict<EventsDict> = {
             "SEK 450/child with instructor · SEK 350 without",
             "Weekends — Sundays subject to availability",
           ],
+          more: { label: "More about kids parties", href: "/en/kids-party" },
         },
         {
           tag: "Youth teams",
@@ -578,6 +581,7 @@ export const eventsDict: Dict<EventsDict> = {
             "10–250 people",
             "Sundays subject to availability",
           ],
+          more: { label: "More about Teneriffa", href: "/en/tenerife" },
         },
       ],
       cta: "Send a request →",
