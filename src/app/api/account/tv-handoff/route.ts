@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { accountToken, clearAccountSession } from "@/lib/accountSession";
+import { accountToken } from "@/lib/accountSession";
 import { appApi } from "@/lib/appApi";
 import { isTvBrowserRequest, tvCorsHeaders } from "@/lib/tvSessionHandoff.core";
 
@@ -31,6 +31,5 @@ export async function POST(request: Request) {
   const upstream = await appApi("/tv/session-handoffs", { method: "POST", body: "{}" }, { token });
   const payload = await upstream.text();
   const response = browserResponse(payload || "{}", upstream.status);
-  if (upstream.status === 401) clearAccountSession(response);
   return response;
 }

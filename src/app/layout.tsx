@@ -10,6 +10,7 @@ import JsonLd from "@/components/JsonLd";
 import DesktopStickies from "@/components/DesktopStickies";
 import Script from "next/script";
 import CookieConsent from "@/components/CookieConsent";
+import AccountContextBoundary from "@/components/account/AccountContextBoundary";
 
 // Display: Acorn — the brand's bold athletic display face (self-hosted)
 const acorn = localFont({
@@ -123,7 +124,7 @@ try{if(localStorage.getItem('cookie_consent')==='granted'){gtag('consent','updat
         <JsonLd data={SITE_LD} />
         <SmoothScroll />
         <ScrollProgress />
-        {children}
+        <AccountContextBoundary>{children}</AccountContextBoundary>
         <MobileBookingBar />
         <DesktopStickies />
         <CookieConsent />

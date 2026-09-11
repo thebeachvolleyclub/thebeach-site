@@ -1,5 +1,7 @@
 "use client";
 
+import { accountFetch as fetch } from "@/lib/accountClient";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";

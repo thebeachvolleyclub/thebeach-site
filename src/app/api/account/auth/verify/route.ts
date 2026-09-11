@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   accountDeviceId,
+  accountRequestContextChanged,
+  unauthorized,
   sameOrigin,
   setAccountSession,
   setIdentityChoice,
@@ -19,6 +21,7 @@ type VerifyPayload = {
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
+  if (await accountRequestContextChanged()) return unauthorized();
   const body = await request.json().catch(() => ({})) as { email?: string; code?: string };
   const email = (body.email ?? "").trim().toLowerCase();
   const code = (body.code ?? "").trim();

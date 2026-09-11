@@ -1,5 +1,7 @@
 "use client";
 
+import { accountFetch as fetch } from "@/lib/accountClient";
+
 import { useEffect, useState } from "react";
 import {
   stripeBookingIsClosed,

@@ -1,5 +1,8 @@
 "use client";
 
+import { accountFetch as fetch } from "@/lib/accountClient";
+import FamilyProfiles from "@/components/account/FamilyProfiles";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -113,7 +116,7 @@ type InvoicePaymentHandoff = { invoiceId: string; deepLinkUrl: string; qrCodeDat
 type InvoiceFeed = { invoices: Invoice[]; active_count?: number };
 type TrainingGroup = { group_name: string; day_time: string; court: number | null; season?: string | null };
 type TrainingLookup = { found: boolean; groups: TrainingGroup[]; message?: string | null };
-type EmailAddress = { email: string; is_primary: boolean };
+type EmailAddress = { email: string; is_primary: boolean; email_type?: "personal" | "parent"; can_retire?: boolean };
 type EmailFeed = { addresses: EmailAddress[] };
 type ActivityEntry = { name: string; date: string | null; groups?: string[] };
 type ActivityFeed = { events: ActivityEntry[]; training_groups: ActivityEntry[] };
@@ -293,6 +296,7 @@ export default function AccountPortal() {
   // Signup status shared by the Träningsgrupper tab badge + status card.
   const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
   const [signupLoaded, setSignupLoaded] = useState(false);
+  const usesParentContact = emailAddresses.some((address) => address.email_type === "parent");
 
   useEffect(() => {
     const syncTabToHash = () => setTab(tabFromHash());
@@ -570,7 +574,7 @@ export default function AccountPortal() {
       ) !== "request"
       || membershipYear !== membershipFeed.currentYear
     ) return;
-    const storageKey = `tb-competition-licence:${membershipYear}`;
+    const storageKey = `tb-competition-licence:${profileId}:${membershipYear}`;
     const key = licenceIdempotencyKey.current
       ?? localStorage.getItem(storageKey)
       ?? crypto.randomUUID();
@@ -998,6 +1002,7 @@ export default function AccountPortal() {
     /> : null}
 
     {tab === "profile" ? <>
+    <FamilyProfiles key={profile.id} currentProfileId={profile.canonical_player_id} />
     {identityRequired && identityState?.identity_status === "duplicate_review" && identityState.candidates[0] ? <div className="border-x border-b border-orange/40 bg-orange/10 p-6">
       <p className="font-display text-2xl uppercase text-black">Är detta du?</p>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
@@ -1073,8 +1078,8 @@ export default function AccountPortal() {
         <div className="flex flex-col gap-3 border-b border-black/10 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-black/45">Identitet och inloggning</p><h3 className="mt-2 font-display text-3xl">Mina e-postadresser</h3></div><div className="shrink-0 border border-black/10 bg-cream px-4 py-3"><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-black/40">BeachID</span><strong className="font-display text-2xl">{profile.canonical_player_id ?? "Ej tilldelat"}</strong></div></div>
         <p className="mt-5 max-w-2xl text-sm leading-relaxed text-black/55">Alla adresser kan användas för inloggning. När du väljer en ny primär adress verifierar vi den med en kod och behåller den gamla som sekundär.</p>
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>{emailsLoading ? <OverviewLoading /> : emailsAvailable ? <div className="space-y-2">{emailAddresses.map((address) => <div key={address.email} className="flex flex-col gap-3 border border-black/10 bg-cream p-4 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><span className="break-all text-sm font-semibold">{address.email}</span>{address.is_primary ? <span className="ml-2 inline-flex rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-lime">Primär</span> : <span className="ml-2 inline-flex rounded-full border border-black/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-black/45">Sekundär</span>}</div>{!address.is_primary ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => requestEmailCode(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-black px-3 text-[10px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-black hover:text-lime disabled:opacity-35">Gör primär</button><button type="button" onClick={() => removeSecondaryEmail(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-orange px-3 text-[10px] font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:opacity-35">Ta bort</button></div> : null}</div>)}</div> : <p className="border border-orange/20 bg-orange/5 p-4 text-sm text-black/55">Kunde inte hämta e-postadresserna just nu.</p>}</div>
-          <div className="border border-black/10 p-5"><strong className="block text-sm">Lägg till ny primär adress</strong><p className="mt-1 text-xs leading-relaxed text-black/45">{profile.canonical_player_id ? "En verifieringskod skickas till den nya adressen." : "Spara ditt namn först så att kontot får ett BeachID."}</p><div className="mt-4 flex flex-col gap-2 sm:flex-row"><input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} type="email" autoComplete="email" placeholder="namn@exempel.se" disabled={!profile.canonical_player_id} className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 outline-none focus:border-black disabled:bg-black/5" /><button type="button" onClick={() => requestEmailCode()} disabled={busy || !profile.canonical_player_id || !newEmail.trim() || newEmail.trim().toLowerCase() === profile.email.toLowerCase()} className="min-h-11 cursor-pointer bg-black px-4 text-xs font-bold uppercase text-lime disabled:opacity-35">Verifiera</button></div>
+          <div>{emailsLoading ? <OverviewLoading /> : emailsAvailable ? <div className="space-y-2">{emailAddresses.map((address) => <div key={address.email} className="flex flex-col gap-3 border border-black/10 bg-cream p-4 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><span className="break-all text-sm font-semibold">{address.email}</span>{address.email_type === "parent" ? <span className="ml-2 text-xs font-semibold text-teal">Föräldrakontakt</span> : null}{address.is_primary ? <span className="ml-2 inline-flex rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-lime">Primär</span> : <span className="ml-2 inline-flex rounded-full border border-black/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-black/45">Sekundär</span>}</div>{!address.is_primary && address.email_type !== "parent" ? <div className="flex flex-wrap gap-2"><button type="button" onClick={() => requestEmailCode(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-black px-3 text-[10px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-black hover:text-lime disabled:opacity-35">Gör primär</button><button type="button" onClick={() => removeSecondaryEmail(address.email)} disabled={busy} className="min-h-10 cursor-pointer border border-orange px-3 text-[10px] font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:opacity-35">Ta bort</button></div> : null}</div>)}</div> : <p className="border border-orange/20 bg-orange/5 p-4 text-sm text-black/55">Kunde inte hämta e-postadresserna just nu.</p>}</div>
+          <div className="border border-black/10 p-5"><strong className="block text-sm">Lägg till ny primär adress</strong><p className="mt-1 text-xs leading-relaxed text-black/45">{usesParentContact ? "Använd ”Egen e-post när barnet tar över” under Familjeprofiler ovan för att verifiera en egen adress och ta bort föräldrakontakten." : profile.canonical_player_id ? "En verifieringskod skickas till den nya adressen." : "Spara ditt namn först så att kontot får ett BeachID."}</p><div className="mt-4 flex flex-col gap-2 sm:flex-row"><input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} type="email" autoComplete="email" placeholder="namn@exempel.se" disabled={!profile.canonical_player_id || usesParentContact} className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 outline-none focus:border-black disabled:bg-black/5" /><button type="button" onClick={() => requestEmailCode()} disabled={busy || usesParentContact || !profile.canonical_player_id || !newEmail.trim() || newEmail.trim().toLowerCase() === profile.email.toLowerCase()} className="min-h-11 cursor-pointer bg-black px-4 text-xs font-bold uppercase text-lime disabled:opacity-35">Verifiera</button></div>
             {emailCodeSent ? <div className="mt-4 border-t border-black/10 pt-4"><p className="mb-2 text-xs text-black/55">Kod skickad till <strong className="break-all text-black">{pendingEmail}</strong></p><div className="flex flex-col gap-2 sm:flex-row"><input value={emailCode} onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="Sexsiffrig kod" className="min-h-11 min-w-0 flex-1 border border-black/20 bg-white px-3 text-center tracking-[0.2em] outline-none" /><button type="button" onClick={confirmEmail} disabled={emailCode.length !== 6 || busy} className="min-h-11 bg-teal px-4 text-xs font-bold uppercase text-white disabled:opacity-35">Bekräfta</button><button type="button" onClick={() => { setEmailCodeSent(false); setEmailCode(""); setPendingEmail(""); }} className="min-h-11 px-3 text-xs font-bold uppercase text-black/45">Avbryt</button></div></div> : null}
           </div>
         </div>

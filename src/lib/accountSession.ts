@@ -1,7 +1,8 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { NextResponse } from "next/server";
+import { ACCOUNT_CONTEXT_HEADER, accountContextFingerprint, accountContextMatches } from "./accountContext.core";
 
 export const ACCOUNT_COOKIE = "tb_account_session";
 export const DEVICE_COOKIE = "tb_account_device";
@@ -16,7 +17,18 @@ const baseCookie = {
 };
 
 export async function accountToken(): Promise<string | null> {
-  return (await cookies()).get(ACCOUNT_COOKIE)?.value ?? null;
+  const token = (await cookies()).get(ACCOUNT_COOKIE)?.value ?? null;
+  const expected = (await headers()).get(ACCOUNT_CONTEXT_HEADER);
+  return accountContextMatches(expected, await accountContextFingerprint(token)) ? token : null;
+}
+
+export async function accountContext() {
+  const token = (await cookies()).get(ACCOUNT_COOKIE)?.value ?? null;
+  return accountContextFingerprint(token);
+}
+
+export async function accountRequestContextChanged(): Promise<boolean> {
+  return !accountContextMatches((await headers()).get(ACCOUNT_CONTEXT_HEADER), await accountContext());
 }
 
 export async function accountDeviceId(): Promise<string | null> {
@@ -65,5 +77,8 @@ export function sameOrigin(request: Request): boolean {
 }
 
 export function unauthorized(): Response {
-  return Response.json({ detail: "Logga in för att fortsätta" }, { status: 401 });
+  return Response.json({ detail: "Logga in för att fortsätta" }, {
+    status: 401,
+    headers: { "Cache-Control": "no-store" },
+  });
 }

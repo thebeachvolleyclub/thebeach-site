@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   accountDeviceId,
+  accountRequestContextChanged,
+  unauthorized,
   clearIdentityChoice,
   IDENTITY_CHOICE_COOKIE,
   sameOrigin,
@@ -15,6 +17,7 @@ const PLAYER_ID = /^\d{1,10}$/;
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
+  if (await accountRequestContextChanged()) return unauthorized();
   const body = await request.json().catch(() => ({})) as { userId?: string };
   const playerId = body.userId ?? "";
   if (!PLAYER_ID.test(playerId)) return NextResponse.json({ detail: "Ogiltig användare" }, { status: 422 });

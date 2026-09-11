@@ -1,5 +1,7 @@
 "use client";
 
+import { accountFetch as fetch } from "@/lib/accountClient";
+
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
