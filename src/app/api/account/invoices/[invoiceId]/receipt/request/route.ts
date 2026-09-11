@@ -1,13 +1,16 @@
-import { accountToken, unauthorized } from "@/lib/accountSession";
+import { accountToken, sameOrigin, unauthorized } from "@/lib/accountSession";
 import { appApi, proxyAppJson } from "@/lib/appApi";
 import { validInvoiceId } from "@/lib/coursePayment.core";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ invoiceId: string }> },
 ) {
+  if (!sameOrigin(request)) {
+    return Response.json({ detail: "Ogiltig förfrågan" }, { status: 403 });
+  }
   const token = await accountToken();
   if (!token) return unauthorized();
   const { invoiceId } = await context.params;

@@ -23,6 +23,7 @@ test("authenticated account receipt routes proxy only the existing owned-invoice
     assert.match(source, /\{ token \}/);
   }
   assert.match(requestRoute, /request-friskvard/);
+  assert.match(requestRoute, /sameOrigin\(request\)/);
   assert.match(linkRoute, /friskvard-link/);
 });
 
