@@ -11,6 +11,11 @@
 - `npm run test:unit`: 152 passed. `npm run build`: passed with the established
   NFT warning and expected external Profixio/BeachTV build fallbacks. No schema,
   mobile or OTA change. Root deploys only after the paired App API route is live.
+- A temporary local production build plus in-memory App API verified the actual
+  HTTP BFF boundary: an authenticated synthetic cookie forwarded its bearer and
+  returned the generated receipt state and signed link; the same link request
+  without the cookie returned 401. No customer data or external service was
+  touched, and both temporary listeners were stopped afterward.
 
 ## Objective
 
