@@ -98,7 +98,17 @@ type Booking = {
   streamRequested: boolean;
 };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
-type Invoice = { id: string; amount_sek: number; status: string; paid_at?: string | null; created_at?: string | null; lines?: InvoiceLine[] };
+type Invoice = {
+  id: string;
+  amount_sek: number;
+  status: string;
+  paid_at?: string | null;
+  created_at?: string | null;
+  friskvard_requested?: boolean;
+  friskvard_generated?: boolean;
+  friskvard_receipt_number?: string | null;
+  lines?: InvoiceLine[];
+};
 type InvoicePaymentHandoff = { invoiceId: string; deepLinkUrl: string; qrCodeDataUrl: string | null };
 type InvoiceFeed = { invoices: Invoice[]; active_count?: number };
 type TrainingGroup = { group_name: string; day_time: string; court: number | null; season?: string | null };
@@ -834,6 +844,40 @@ export default function AccountPortal() {
     }
   };
 
+  const requestInvoiceReceipt = async (invoice: Invoice) => {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const updated = await api<Invoice>(
+        `/api/account/invoices/${encodeURIComponent(invoice.id)}/receipt/request`,
+        { method: "POST" },
+      );
+      setInvoices((current) => current.map((item) => item.id === invoice.id ? updated : item));
+      setMessage(
+        updated.friskvard_generated
+          ? "Ditt friskvårdskvitto är klart att ladda ner."
+          : "Din begäran om friskvårdskvitto är registrerad.",
+      );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte begära friskvårdskvittot");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openInvoiceReceipt = async (invoice: Invoice) => {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const result = await api<{ url: string }>(
+        `/api/account/invoices/${encodeURIComponent(invoice.id)}/receipt`,
+      );
+      window.location.assign(result.url);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte öppna friskvårdskvittot");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const logout = async () => {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
@@ -1093,6 +1137,34 @@ export default function AccountPortal() {
                     <a href={invoicePaymentHandoff.deepLinkUrl} className="mt-3 inline-flex text-xs font-bold uppercase underline underline-offset-4">Öppna Swish</a>
                   </div>
                 ) : null}
+                <div className="mt-4 border-t border-black/10 pt-4">
+                  {invoice.friskvard_generated ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-sm text-black/55">
+                        Friskvårdskvitto{invoice.friskvard_receipt_number ? ` ${invoice.friskvard_receipt_number}` : ""}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => openInvoiceReceipt(invoice)}
+                        className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35"
+                      >
+                        Ladda ner kvitto (PDF)
+                      </button>
+                    </div>
+                  ) : invoice.friskvard_requested ? (
+                    <p className="text-sm text-black/55">Friskvårdskvitto begärt – du kan ladda ner det här när det är klart.</p>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => requestInvoiceReceipt(invoice)}
+                      className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35"
+                    >
+                      Begär friskvårdskvitto
+                    </button>
+                  )}
+                </div>
               </article>
             ))}
           </div>

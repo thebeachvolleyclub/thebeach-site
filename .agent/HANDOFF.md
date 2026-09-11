@@ -1,5 +1,17 @@
 # Current Work State
 
+## HQ #281 Fenix receipts in authenticated website account (candidate, 2026-09-11)
+
+- Branch `codex/hq281-receipt-site-20260911` starts from current
+  `origin/main` `9dcdb84`. It preserves the existing invoice/payment UI.
+- Authenticated BFF routes now proxy the existing owner-scoped App API receipt
+  request and signed-link endpoints. Invoice cards show request, pending, or
+  generated state and download the existing PDF; bearer credentials stay on
+  the server and invoice IDs are UUID-validated.
+- `npm run test:unit`: 152 passed. `npm run build`: passed with the established
+  NFT warning and expected external Profixio/BeachTV build fallbacks. No schema,
+  mobile or OTA change. Root deploys only after the paired App API route is live.
+
 ## Objective
 
 Preserve the original server-side course-payment deadline when App API safely
