@@ -43,7 +43,7 @@ export const teneriffaDict: Dict<TeneriffaDict> = {
     photo1: {
       kicker: "Säsongsstart · säsongsavslut · lagaktivitet",
       caption: "Ingen behöver kunna beachvolley. Alla är med från första bollen.",
-      alt: "Ungdomslag samlat med coach i sanden efter turnering",
+      alt: "Ungdomar spelar beachvolley i sanden framför solnedgångsväggen på The Beach",
     },
     ingar: {
       eyebrow: "Det här ingår",
@@ -78,9 +78,9 @@ export const teneriffaDict: Dict<TeneriffaDict> = {
       ],
     },
     bilder: [
-      { alt: "Ungdomar firar en vunnen boll i sanden" },
-      { alt: "Träningsgrupp med coach på banan" },
-      { alt: "Laget samlat i sanden i dagsljus" },
+      { alt: "Laget kramas i sanden efter en vunnen match" },
+      { alt: "Två spelare i matchande lagkläder jagar bollen" },
+      { alt: "Spelare fingerslår bollen vid nätet i solnedgången" },
     ],
     faq: {
       rubrik: "Vanliga frågor",
@@ -119,7 +119,7 @@ export const teneriffaDict: Dict<TeneriffaDict> = {
     photo1: {
       kicker: "Season kick-off · season finale · team day",
       caption: "Nobody needs to know beach volleyball. Everyone's in from the first ball.",
-      alt: "Youth team gathered with their coach in the sand after a tournament",
+      alt: "Young players playing beach volleyball in the sand in front of the sunset wall at The Beach",
     },
     ingar: {
       eyebrow: "What's included",
@@ -154,9 +154,9 @@ export const teneriffaDict: Dict<TeneriffaDict> = {
       ],
     },
     bilder: [
-      { alt: "Young players celebrating a won rally in the sand" },
-      { alt: "Training group with coach on the court" },
-      { alt: "The team gathered in the sand in daylight" },
+      { alt: "The team hugging in the sand after a won match" },
+      { alt: "Two players in matching team kit chasing the ball" },
+      { alt: "A player setting the ball at the net at sunset" },
     ],
     faq: {
       rubrik: "Common questions",

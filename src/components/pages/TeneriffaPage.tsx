@@ -8,12 +8,10 @@ import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { teneriffaDict } from "@/lib/i18n/teneriffa";
 
-/**
- * Bilder — PLACEHOLDERS från /media/trana och /media/lokalen tills
- * David levererar riktiga ungdomslagsbilder (byt här, inte i ordboken).
- */
-const PHOTO_BREAK = "/media/trana/trana-11.webp";
-const GRID = ["/media/trana/trana-03.webp", "/media/trana/trana-06.webp", "/media/lokalen/b-lagbild-dagsljus.webp"];
+/** Teneriffa-bilder (Davids urval, sep 2026). Byt här, inte i ordboken. */
+const U = "/media/uploads/2026/09/";
+const PHOTO_BREAK = U + "teneriffa-hall-75f5453207.webp";
+const GRID = [U + "teneriffa-laget-1f218dad8a.webp", U + "teneriffa-duo-c289a4e42a.webp", U + "teneriffa-set-e4b9fbe7f1.webp"];
 
 const ctaLime =
   "inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright";
