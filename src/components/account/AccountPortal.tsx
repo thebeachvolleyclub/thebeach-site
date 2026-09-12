@@ -95,8 +95,15 @@ type Booking = {
   status: string;
   priceSek: number;
   priceKnown?: boolean;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  vatBasisPoints?: number;
+  receiptEligible?: boolean;
+  receiptNumber?: string | null;
+  receiptIssuedAt?: string | null;
   streamRequested: boolean;
 };
+type CourtReceipt = { bookingId: string; receiptNumber: string; downloadUrl: string };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
 type Invoice = {
   id: string;
@@ -290,6 +297,7 @@ export default function AccountPortal() {
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false, licence: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
+  const [courtReceiptBusyId, setCourtReceiptBusyId] = useState<string | null>(null);
   // Signup status shared by the Träningsgrupper tab badge + status card.
   const [signupMine, setSignupMine] = useState<SignupMine | null>(null);
   const [signupLoaded, setSignupLoaded] = useState(false);
@@ -878,6 +886,26 @@ export default function AccountPortal() {
     }
   };
 
+  const openCourtReceipt = async (booking: Booking) => {
+    if (courtReceiptBusyId) return;
+    setCourtReceiptBusyId(booking.id); setError(""); setMessage("");
+    try {
+      const receipt = await api<CourtReceipt>(
+        `/api/booking/${encodeURIComponent(booking.id)}/receipt`,
+        { method: "POST" },
+      );
+      setBookings((current) => current.map((item) => item.id === booking.id
+        ? { ...item, receiptNumber: receipt.receiptNumber, receiptEligible: true }
+        : item));
+      if (!receipt.downloadUrl) throw new Error("Kvittolänken saknas");
+      window.location.assign(receipt.downloadUrl);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte öppna kvittot");
+    } finally {
+      setCourtReceiptBusyId(null);
+    }
+  };
+
   const logout = async () => {
     await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
@@ -906,6 +934,9 @@ export default function AccountPortal() {
     .filter((item) => !currentBookings.includes(item))
     .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`)), [visibleBookings, currentBookings]);
   const confirmedBookingCount = useMemo(() => visibleBookings.filter((item) => item.status === "CONFIRMED").length, [visibleBookings]);
+  const courtReceiptBookings = useMemo(() => bookings
+    .filter((item) => item.receiptEligible || item.receiptNumber)
+    .sort((a, b) => `${b.date}T${b.startTime}`.localeCompare(`${a.date}T${a.startTime}`)), [bookings]);
 
   if (loading) return <div className="min-h-80 border border-white/10 bg-white/[0.03] p-8 text-bone/55">Hämtar ditt konto…</div>;
 
@@ -1084,16 +1115,47 @@ export default function AccountPortal() {
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
     {tab === "invoices" ? (
       <section className="bg-white p-6 sm:p-8">
-        <h3 className="font-display text-3xl">Mina fakturor</h3>
-        {invoices.length === 0 ? (
-          <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga genererade fakturor.</p>
-        ) : (
+        <h3 className="font-display text-3xl">Mina fakturor och kvitton</h3>
+        {courtReceiptBookings.length ? (
+          <div className="mt-7">
+            <h4 className="font-display text-2xl">Banbokningskvitton</h4>
+            <div className="mt-3 space-y-3">
+              {courtReceiptBookings.map((booking) => {
+                const vatBasisPoints = booking.vatBasisPoints ?? 600;
+                const vatSek = Math.round(booking.priceSek * 100 * vatBasisPoints / (10000 + vatBasisPoints)) / 100;
+                return <article key={`court-${booking.id}`} className="border border-black/10 p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <strong className="block">Banbokning · {booking.courtName}</strong>
+                      <span className="text-sm text-black/45">{booking.date} · {booking.startTime}–{booking.endTime}</span>
+                      <p className="mt-2 text-xs text-black/50">Vanligt kvitto från Beachhallen Tropical AB, org.nr 556699-2839. Inget personnummer behövs.</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <strong className="block text-xl">{booking.priceSek} kr</strong>
+                      <span className="text-xs text-black/45">varav moms {vatBasisPoints / 100}%: {vatSek.toLocaleString("sv-SE")} kr</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-4">
+                    <span className="text-sm text-black/55">{booking.receiptNumber ? `Kvittonummer ${booking.receiptNumber}` : "Kvitto kan skapas nu"}</span>
+                    <button type="button" disabled={Boolean(courtReceiptBusyId)} onClick={() => openCourtReceipt(booking)} className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35">
+                      {courtReceiptBusyId === booking.id ? "Skapar…" : booking.receiptNumber ? "Ladda ner kvitto (PDF)" : "Skapa och ladda ner kvitto"}
+                    </button>
+                  </div>
+                </article>;
+              })}
+            </div>
+          </div>
+        ) : null}
+        {invoices.length === 0 && courtReceiptBookings.length === 0 ? (
+          <p className="mt-8 border border-black/10 bg-cream p-5 text-sm text-black/50">Inga fakturor eller kvitton.</p>
+        ) : invoices.length ? (
           <div className="mt-7 space-y-3">
+            <h4 className="font-display text-2xl">Tränings- och kursfakturor</h4>
             {invoices.map((invoice) => (
               <article key={invoice.id} className="border border-black/10 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <strong className="block">Träningsfaktura</strong>
+                    <strong className="block">Tränings- eller kursfaktura</strong>
                     <span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span>
                   </div>
                   <div className="text-right">
@@ -1168,7 +1230,7 @@ export default function AccountPortal() {
               </article>
             ))}
           </div>
-        )}
+        ) : null}
       </section>
     ) : null}
   </div>;

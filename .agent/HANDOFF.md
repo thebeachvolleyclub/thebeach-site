@@ -1,5 +1,17 @@
 # Current Work State
 
+## HQ #281 court-booking receipts — website candidate (2026-09-13)
+
+- The authenticated invoice area now includes paid native court bookings and
+  creates/downloads their ordinary PDF receipts. Cards show the legal seller and
+  org.nr, booking, amount and included VAT; they do not collect personnummer.
+- The same-origin authenticated BFF keeps the account bearer server-side and
+  proxies only `POST /booking/bookings/{id}/receipt` to the App API.
+- Existing training/course invoice and friskvård behavior is unchanged.
+- All 155 unit tests and the Next production build pass. The build emitted the
+  established NFT warning and expected Profixio static-render fallbacks. Release
+  only after the paired App API migration/routes are live.
+
 ## HQ #281 Fenix receipts in authenticated website account (candidate, 2026-09-11)
 
 - Branch `codex/hq281-receipt-site-20260911` starts from current
