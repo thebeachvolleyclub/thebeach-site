@@ -10,7 +10,7 @@ import { teneriffaDict } from "@/lib/i18n/teneriffa";
 
 /** Teneriffa-bilder (Davids urval, sep 2026). Byt här, inte i ordboken. */
 const U = "/media/uploads/2026/09/";
-const PHOTO_BREAK = U + "teneriffa-hall-75f5453207.webp";
+const PHOTO_BREAK = U + "teneriffa-hall-orig-ef4292f9a5.webp";
 const GRID = [U + "teneriffa-laget-1f218dad8a.webp", U + "teneriffa-duo-c289a4e42a.webp", U + "teneriffa-set-e4b9fbe7f1.webp"];
 
 const ctaLime =
