@@ -169,10 +169,10 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
             </p>
             <p className="text-sm leading-relaxed text-bone/60">
               <a
-                href="mailto:traning@thebeach.one"
+                href="mailto:trana@thebeach.one"
                 className="text-bone underline underline-offset-4 transition-colors hover:text-lime"
               >
-                traning@thebeach.one
+                trana@thebeach.one
               </a>
             </p>
           </div>

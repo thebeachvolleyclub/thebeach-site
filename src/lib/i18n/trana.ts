@@ -252,7 +252,7 @@ export const tranaDict: Dict<TranaDict> = {
           title: "Fortsättningskursen — perfekt för comeback",
           body: "Spelat förr men det var länge sen? Du behöver inte börja om från noll. Fortsättningskursen fräschar upp grunderna och tar dig vidare i matchtempo — de flesta comeback-spelare landar rätt här.",
           ctas: [{ label: "Se fortsättningskursen", href: "#kurser" }],
-          note: "Osäker på nivån? Mejla traning@thebeach.one så hjälper vi dig välja.",
+          note: "Osäker på nivån? Mejla trana@thebeach.one så hjälper vi dig välja.",
         },
         adultRegular: {
           title: "Träningsgrupperna är nästa steg",
@@ -533,7 +533,7 @@ export const tranaDict: Dict<TranaDict> = {
           title: "The continuation course — perfect for a comeback",
           body: "Played before, but it was a long time ago? You don't need to start over from zero. The continuation course refreshes the basics and takes you onward at match tempo — most comeback players land right here.",
           ctas: [{ label: "See the continuation course", href: "#kurser" }],
-          note: "Not sure about your level? Email traning@thebeach.one and we'll help you choose.",
+          note: "Not sure about your level? Email trana@thebeach.one and we'll help you choose.",
         },
         adultRegular: {
           title: "The training groups are your next step",

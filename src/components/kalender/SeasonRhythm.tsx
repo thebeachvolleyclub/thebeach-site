@@ -98,10 +98,10 @@ export default function SeasonRhythm({ locale }: { locale: Locale }) {
             <p className="text-[13px] text-black/50">
               {t.contactPre}
               <a
-                href="mailto:traning@thebeach.one"
+                href="mailto:trana@thebeach.one"
                 className="font-semibold text-black underline underline-offset-2 hover:text-black/60"
               >
-                traning@thebeach.one
+                trana@thebeach.one
               </a>
             </p>
           </div>
