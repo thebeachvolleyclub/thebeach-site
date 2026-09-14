@@ -1,5 +1,23 @@
 # Current Work State
 
+## HQ #285 private course placement — website compatibility candidate (2026-09-14)
+
+- Branch `codex/hq285-private-course-access-20260914` starts from Site
+  `1c4f76a`. The website already has the required customer surface: its
+  authenticated account proxies App API `courses/mine`, shows a durable
+  `held`/`sent` course with the exact amount, links it to `Dina fakturor`, and
+  uses the existing Swish/Stripe invoice flow.
+- A focused regression fixture now proves an admin-source null-expiry placement
+  remains visible with its individual amount while private upstream fields are
+  stripped. Public course discovery remains server-filtered by App API; this
+  branch contains no website runtime change, new route, auth token or payment
+  provider.
+- No standalone Site publication is required for HQ #285. Release the paired
+  App API, Unified and Business MCP candidates; retain this pushed test-only
+  commit as consumer evidence. The focused invoice/account suite passes 23
+  tests and the complete Site unit suite passes all 156 tests. Whitespace checks
+  pass. No production data was changed.
+
 ## HQ #281 court-booking receipts — website candidate (2026-09-13)
 
 - The authenticated invoice area now includes paid native court bookings and

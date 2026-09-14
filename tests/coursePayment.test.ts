@@ -535,6 +535,57 @@ test("my course handler returns only customer-safe receipt and profile fields", 
   assert.equal(response.headers.get("cache-control"), "private, no-store");
 });
 
+test("durable private course place remains visible with its payable amount", async () => {
+  const handler = createMyCourseEnrolmentsGet({
+    accountToken: async () => "account-token",
+    unauthorized: () => Response.json({}, { status: 401 }),
+    appApi: async () => Response.json({
+      enrolments: [{
+        courseId: 285,
+        courseName: "Privat kursplats",
+        invoiceId,
+        status: "held",
+        holdExpiresAt: null,
+        paymentStatus: "sent",
+        paymentMethod: "Faktura",
+        grossAmountSek: 3695,
+        discountAmountSek: 1195,
+        netAmountSek: 2500,
+        waitlistPosition: null,
+        confirmedAt: null,
+        cancelledAt: null,
+        createdAt: "2026-09-14T09:00:00Z",
+        source: "admin",
+      }],
+    }),
+  });
+
+  const response = await handler();
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    enrolments: [{
+      courseId: 285,
+      courseName: "Privat kursplats",
+      invoiceId,
+      status: "held",
+      paymentStatus: "sent",
+      paymentMethod: "Faktura",
+      grossAmountSek: 3695,
+      discountAmountSek: 1195,
+      netAmountSek: 2500,
+      waitlistPosition: null,
+      confirmedAt: null,
+      cancelledAt: null,
+      createdAt: "2026-09-14T09:00:00Z",
+    }],
+  });
+
+  const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
+  assert.match(portal, /status === "held"/);
+  assert.match(portal, /enrolment\.netAmountSek \?\? enrolment\.grossAmountSek/);
+  assert.match(portal, /Visa faktura/);
+});
+
 test("course payment routes keep credentials and invoice details on the server", () => {
   const charge = readFileSync(
     "src/app/api/courses/invoices/[invoiceId]/swish/route.ts",
