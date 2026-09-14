@@ -223,6 +223,26 @@ test("paid and in-progress annual purchases prevent duplicate purchase options",
   }
 });
 
+test("a future membership year stays hidden until the API publishes a sales option", () => {
+  const feed = membershipFeedFromWire({
+    memberships: [],
+    purchaseOptions: [{
+      productId: "senior-2026",
+      typeName: "Senior 2026",
+      category: "senior",
+      year: 2026,
+      priceOre: 35000,
+      available: true,
+    }],
+    currentYear: 2026,
+    purchaseEligibility: { available: true, reason: null },
+  });
+
+  const overview = buildMembershipOverview(feed, new Date("1988-06-04T12:00:00Z"));
+  assert.deepEqual(overview.yearSections.map((section) => section.year), [2026]);
+  assert.equal(overview.yearSections[0].purchaseOption?.productId, "senior-2026");
+});
+
 test("missing birthdate follows server eligibility and fails closed for legacy feeds", () => {
   const legacyFeed = membershipFeedFromWire({
     purchaseOptions: [{
