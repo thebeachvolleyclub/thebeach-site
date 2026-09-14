@@ -1,5 +1,23 @@
 # Current Work State
 
+## HQ #283 annual memberships — website compatibility evidence (2026-09-14)
+
+- Commit `c4e409ea538b94757ef2b93a875e901071436db9` on
+  `codex/hq283-membership-lifecycle-site-20260914` adds regression evidence for
+  the existing authenticated account view: an empty future year stays hidden
+  until the API publishes an open purchase option. No website runtime source,
+  route, BFF, schema or configuration changed.
+- All 156 unit tests pass. A Next production build passed with webpack; it emitted
+  only the established NFT warning and expected Profixio static-render fallbacks.
+  The initial Turbopack attempt could not follow the temporary external
+  `node_modules` symlink in this isolated worktree; this was an environment
+  limitation, not a source failure, and no build process or generated directory
+  remains.
+- No Site deployment is needed. After the App API release, verify a signed-in
+  2026-eligible synthetic account sees the 2026 purchase card and no closed 2027
+  card. Do not start a payment for smoke testing. Existing mobile consumers use
+  the same additive response and require no App/OTA change.
+
 ## HQ #281 court-booking receipts — website candidate (2026-09-13)
 
 - The authenticated invoice area now includes paid native court bookings and
