@@ -54,7 +54,7 @@ function courseSwishReturnUrl(request: Request, invoiceId: string): string | nul
   const target = new URL(safeCourseReturnPath(params.get("returnPath")) ?? fallback, origin);
   target.searchParams.set("swish-return", "course");
   target.searchParams.set("invoice", invoiceId);
-  target.hash = "kursbetalning";
+  target.hash = target.pathname === "/konto" ? `faktura-${invoiceId}` : "kursbetalning";
   return target.toString();
 }
 

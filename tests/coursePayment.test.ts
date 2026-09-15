@@ -396,6 +396,15 @@ test("charge handler returns validated mobile and desktop handoffs with a same-s
   }]);
   assert.deepEqual(qrTokens, ["provider-token"]);
 
+  const accountResponse = await handler(
+    new Request("https://site.test/api?returnPath=%2Fkonto", {
+      method: "POST", headers: { Origin: "https://site.test" },
+    }),
+    { params: Promise.resolve({ invoiceId }) },
+  );
+  const accountHandoff = new URL((await accountResponse.json()).deepLinkUrl);
+  assert.equal(new URL(accountHandoff.searchParams.get("callbackurl")!).hash, `#faktura-${invoiceId}`);
+
   const failing = createCourseSwishPost({
     accountToken: async () => "account-token",
     courseInvoiceStatus: () => "",

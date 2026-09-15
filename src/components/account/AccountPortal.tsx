@@ -45,6 +45,7 @@ import {
 } from "@/lib/accountTrainingRecordings.core";
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
+import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from "@/lib/accountInvoice.core";
 
 type Profile = {
   id: string;
@@ -104,13 +105,21 @@ type Booking = {
   streamRequested: boolean;
 };
 type CourtReceipt = { bookingId: string; receiptNumber: string; downloadUrl: string };
-type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number };
+type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number; base_cost_sek?: number; discount_sek?: number };
 type Invoice = {
   id: string;
   amount_sek: number;
   status: string;
   paid_at?: string | null;
   created_at?: string | null;
+  payment_due_on?: string | null;
+  amount_due_sek?: number;
+  admin_discount_sek?: number;
+  vat_rate?: number;
+  vat_amount_sek?: number;
+  traditional_requested?: boolean;
+  traditional_fee_sek?: number;
+  payment_error?: string | null;
   friskvard_requested?: boolean;
   friskvard_generated?: boolean;
   friskvard_receipt_number?: string | null;
@@ -205,7 +214,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 function statusText(status: string) {
-  return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på betalning", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
+  return ({ CONFIRMED: "Bekräftad", PENDING_PAYMENT: "Väntar på betalning", REFUND_PENDING: "Återbetalning pågår", CANCELLED: "Avbokad", EXPIRED: "Utgången", sent: "Att betala", paid: "Betald", cancelled: "Makulerad", refunded: "Återbetald" } as Record<string, string>)[status] ?? status;
 }
 
 function courseStatusText(enrolment: CourseEnrolment) {
@@ -283,6 +292,8 @@ export default function AccountPortal() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeInvoiceCount, setActiveInvoiceCount] = useState(0);
   const [invoicePaymentHandoff, setInvoicePaymentHandoff] = useState<InvoicePaymentHandoff | null>(null);
+  const [invoiceReceiptOpen, setInvoiceReceiptOpen] = useState<Record<string, boolean>>({});
+  const [invoicePersonnummer, setInvoicePersonnummer] = useState<Record<string, string>>({});
   const [trainingGroups, setTrainingGroups] = useState<TrainingGroup[]>([]);
   const [trainingRecordings, setTrainingRecordings] = useState<TrainingRecordingFeed>(EMPTY_TRAINING_RECORDING_FEED);
   const [trainingRecordingsAvailable, setTrainingRecordingsAvailable] = useState(true);
@@ -499,6 +510,46 @@ export default function AccountPortal() {
       window.removeEventListener("focus", refreshOnFocus);
     };
   }, [profileId, refreshMembershipLifecycle]);
+
+  // Refresh when returning from a payment app/browser, and while a Swish QR
+  // handoff is visible. Every refresh reads the same owner-scoped invoice feed.
+  useEffect(() => {
+    if (!profileId || tab !== "invoices") return;
+    let disposed = false;
+    let fetching = false;
+    let attempts = 0;
+    const refresh = async () => {
+      if (fetching || document.visibilityState !== "visible") return;
+      fetching = true;
+      try {
+        const feed = await api<InvoiceFeed>("/api/account/invoices");
+        if (disposed) return;
+        setInvoices(feed.invoices ?? []);
+        setActiveInvoiceCount(feed.active_count ?? 0);
+        const paying = feed.invoices?.find((invoice) => invoice.id === invoicePaymentHandoff?.invoiceId);
+        if (paying && (paying.status !== "sent" || paying.payment_error || paying.traditional_requested)) {
+          setInvoicePaymentHandoff(null);
+          if (paying.payment_error) setError(paying.payment_error);
+          else if (paying.status === "paid") setMessage("Tack! Betalningen är registrerad.");
+        }
+      } catch {
+        // Keep the loaded invoice visible; the explicit refresh reports errors.
+      } finally { fetching = false; }
+    };
+    void refresh();
+    const onFocus = () => { void refresh(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    const timer = invoicePaymentHandoff ? window.setInterval(() => {
+      if (++attempts <= 40) void refresh();
+    }, 3000) : null;
+    return () => {
+      disposed = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+      if (timer !== null) window.clearInterval(timer);
+    };
+  }, [profileId, tab, invoicePaymentHandoff]);
 
   const purchaseMembership = async (option: MembershipPurchaseOption, freshAttempt = false) => {
     const existingPurchase = membershipFeed.purchases.find((candidate) => (
@@ -857,9 +908,11 @@ export default function AccountPortal() {
     try {
       const updated = await api<Invoice>(
         `/api/account/invoices/${encodeURIComponent(invoice.id)}/receipt/request`,
-        { method: "POST" },
+        { method: "POST", body: JSON.stringify({ personnummer: invoicePersonnummer[invoice.id]?.trim() || null }) },
       );
       setInvoices((current) => current.map((item) => item.id === invoice.id ? updated : item));
+      setInvoiceReceiptOpen((current) => ({ ...current, [invoice.id]: false }));
+      setInvoicePersonnummer((current) => ({ ...current, [invoice.id]: "" }));
       setMessage(
         updated.friskvard_generated
           ? "Ditt friskvårdskvitto är klart att ladda ner."
@@ -870,6 +923,34 @@ export default function AccountPortal() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const requestEmailInvoice = async (invoice: Invoice) => {
+    const confirmation = invoiceEmailRequestConfirmation(invoice);
+    if (!confirmation || !window.confirm(confirmation)) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const updated = await api<Invoice>(
+        `/api/account/invoices/${encodeURIComponent(invoice.id)}/email/request`,
+        { method: "POST" },
+      );
+      setInvoices((current) => current.map((item) => item.id === invoice.id ? updated : item));
+      setInvoicePaymentHandoff(null);
+      setMessage("Din begäran om e-postfaktura är registrerad. Vi hanterar den och skickar fakturan via e-post.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte begära e-postfaktura");
+    } finally { setBusy(false); }
+  };
+
+  const refreshInvoices = async () => {
+    setBusy(true); setError("");
+    try {
+      const feed = await api<InvoiceFeed>("/api/account/invoices");
+      setInvoices(feed.invoices ?? []);
+      setActiveInvoiceCount(feed.active_count ?? 0);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte uppdatera fakturorna");
+    } finally { setBusy(false); }
   };
 
   const openInvoiceReceipt = async (invoice: Invoice) => {
@@ -911,6 +992,7 @@ export default function AccountPortal() {
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
     setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName("");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
+    setInvoicePaymentHandoff(null); setInvoiceReceiptOpen({}); setInvoicePersonnummer({});
     setTrainingRecordings(EMPTY_TRAINING_RECORDING_FEED); setTrainingRecordingsAvailable(true);
     setEmailAddresses([]); setActivity({ events: [], training_groups: [] });
     setMembershipFeed(EMPTY_MEMBERSHIP_FEED);
@@ -1115,7 +1197,10 @@ export default function AccountPortal() {
     {tab === "bookings" ? <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina bokningar</h3><BookingList title="Kommande" items={currentBookings} empty="Du har inga kommande bokningar." onCancel={cancelBooking} cancellingBookingId={cancellingBookingId} /><BookingList title="Tidigare" items={previousBookings} empty="Du har inga tidigare bokningar." /></section> : null}
     {tab === "invoices" ? (
       <section className="bg-white p-6 sm:p-8">
-        <h3 className="font-display text-3xl">Mina fakturor och kvitton</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-display text-3xl">Mina fakturor och kvitton</h3>
+          <button type="button" disabled={busy} onClick={refreshInvoices} className="min-h-11 cursor-pointer px-3 text-xs font-bold uppercase underline underline-offset-4 disabled:opacity-35">Uppdatera fakturor</button>
+        </div>
         {courtReceiptBookings.length ? (
           <div className="mt-7">
             <h4 className="font-display text-2xl">Banbokningskvitton</h4>
@@ -1152,28 +1237,39 @@ export default function AccountPortal() {
           <div className="mt-7 space-y-3">
             <h4 className="font-display text-2xl">Tränings- och kursfakturor</h4>
             {invoices.map((invoice) => (
-              <article key={invoice.id} className="border border-black/10 p-5">
-                <div className="flex items-start justify-between gap-4">
+              <article key={invoice.id} id={`faktura-${invoice.id}`} className="border border-black/10 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <strong className="block">Tränings- eller kursfaktura</strong>
-                    <span className="text-sm text-black/45">{invoice.created_at?.slice(0, 10) || invoice.id.slice(0, 8)}</span>
+                    <span className="text-sm text-black/45">Fakturadatum: {invoice.created_at?.slice(0, 10) || "—"}</span>
+                    {invoice.payment_due_on ? <p className="mt-1 text-sm font-semibold">Sista betalningsdag: {invoice.payment_due_on}</p> : null}
+                    {invoice.paid_at ? <p className="mt-1 text-sm text-black/55">Betald: {invoice.paid_at.slice(0, 10)}</p> : null}
                   </div>
                   <div className="text-right">
-                    <strong className="block text-xl">{invoice.amount_sek} kr</strong>
-                    <span className="text-xs font-bold uppercase text-teal">{statusText(invoice.status)}</span>
+                    <strong className="block text-xl">{invoiceMoney(invoiceAmountDue(invoice))}</strong>
+                    <span className="text-xs font-bold uppercase text-teal">{invoice.status === "sent" && invoice.traditional_requested ? "E-postfaktura begärd" : statusText(invoice.status)}</span>
                   </div>
                 </div>
                 {invoice.lines?.length ? (
                   <ul className="mt-4 border-t border-black/10 pt-3 text-sm text-black/60">
                     {invoice.lines.map((line, index) => (
                       <li key={`${invoice.id}-${index}`} className="flex justify-between gap-4 py-1">
-                        <span>{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}</span>
-                        <span>{line.amount_sek} kr</span>
+                        <span className="min-w-0">{line.group_name}{line.day_time ? ` · ${line.day_time}` : ""}
+                          {(line.discount_sek ?? 0) > 0 ? <small className="mt-1 block text-teal">Rabatt {invoiceMoney(line.discount_sek!)}{line.base_cost_sek != null ? ` (ord. ${invoiceMoney(line.base_cost_sek)})` : ""}</small> : null}
+                        </span>
+                        <span className="shrink-0">{invoiceMoney(line.amount_sek)}</span>
                       </li>
                     ))}
                   </ul>
                 ) : null}
-                {invoice.status === "sent" ? (
+                <div className="mt-4 border-t border-black/10 pt-3 text-sm">
+                  {(invoice.admin_discount_sek ?? 0) > 0 ? <p className="mb-2 flex justify-between gap-4 text-teal"><span>Rabatt på fakturan</span><span className="shrink-0">−{invoiceMoney(invoice.admin_discount_sek!)}</span></p> : null}
+                  {invoice.traditional_requested ? <p className="mb-2 flex justify-between gap-4"><span>Fakturaavgift för e-postfaktura</span><span className="shrink-0">{invoiceMoney(invoice.traditional_fee_sek ?? 0)}</span></p> : null}
+                  <p className="flex justify-between gap-4 font-bold"><span>Totalt</span><span className="shrink-0">{invoiceMoney(invoiceAmountDue(invoice))}</span></p>
+                  {invoice.vat_amount_sek != null && invoice.vat_rate != null ? <p className="mt-1 text-xs text-black/50">{invoice.traditional_requested ? "Moms på tränings-/kursavgiften" : "Varav moms"} ({invoice.vat_rate}%): {invoiceMoney(invoice.vat_amount_sek)}</p> : null}
+                </div>
+                {invoice.status === "sent" && invoice.payment_error ? <p role="alert" className="mt-3 text-sm text-orange">Betalningen misslyckades: {invoice.payment_error}</p> : null}
+                {invoice.status === "sent" && !invoice.traditional_requested && invoiceAmountDue(invoice) > 0 ? (
                   <div className="mt-4 border-t border-black/10 pt-4 text-center">
                     <button
                       type="button"
@@ -1188,9 +1284,18 @@ export default function AccountPortal() {
                       disabled={busy}
                       onClick={() => startInvoicePayment(invoice, "STRIPE")}
                     />
+                    {invoiceEmailRequestConfirmation(invoice) ? <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => requestEmailInvoice(invoice)}
+                      className="mt-4 min-h-11 w-full cursor-pointer border border-black/20 px-4 py-3 text-xs font-bold uppercase tracking-[0.04em] disabled:opacity-35"
+                    >Begär e-postfaktura (+{invoiceMoney(invoice.traditional_fee_sek!)} avgift)</button> : null}
                   </div>
                 ) : null}
-                {invoicePaymentHandoff?.invoiceId === invoice.id ? (
+                {invoice.status === "sent" && invoice.traditional_requested ? <p className="mt-4 border border-black/10 bg-cream p-4 text-sm">E-postfaktura begärd. Vi hanterar din begäran och skickar fakturan via e-post. Betala enligt instruktionerna på den fakturan.</p> : null}
+                {invoice.status === "paid" ? <p className="mt-4 text-sm font-semibold text-teal">Tack! Betalningen är registrerad.</p> : null}
+                {invoice.status === "sent" && invoiceAmountDue(invoice) <= 0 ? <p className="mt-4 text-sm font-semibold text-teal">Ingen betalning behövs.</p> : null}
+                {invoice.status === "sent" && !invoice.traditional_requested && invoicePaymentHandoff?.invoiceId === invoice.id ? (
                   <div className="mt-4 border border-black/10 bg-cream p-4 text-center">
                     <strong className="block">Betala med Swish</strong>
                     {invoicePaymentHandoff.qrCodeDataUrl ? (
@@ -1216,11 +1321,23 @@ export default function AccountPortal() {
                     </div>
                   ) : invoice.friskvard_requested ? (
                     <p className="text-sm text-black/55">Friskvårdskvitto begärt – du kan ladda ner det här när det är klart.</p>
+                  ) : !["sent", "paid"].includes(invoice.status) ? (
+                    <p className="text-sm text-black/55">Friskvårdskvitto kan inte begäras för en makulerad eller återbetald faktura.</p>
+                  ) : invoiceReceiptOpen[invoice.id] ? (
+                    <div className="space-y-3">
+                      <label className="block text-sm font-semibold" htmlFor={`receipt-personnummer-${invoice.id}`}>Personnummer (valfritt)</label>
+                      <p className="text-xs text-black/55">Personnummer behövs ofta för friskvårdskvitton. Det är valfritt här.</p>
+                      <input id={`receipt-personnummer-${invoice.id}`} value={invoicePersonnummer[invoice.id] ?? ""} onChange={(event) => setInvoicePersonnummer((current) => ({ ...current, [invoice.id]: event.target.value }))} maxLength={13} inputMode="numeric" autoComplete="off" placeholder="ÅÅÅÅMMDD-XXXX" className="min-h-11 w-full border border-black/20 px-3" />
+                      <div className="flex flex-wrap gap-3">
+                        <button type="button" disabled={busy} onClick={() => requestInvoiceReceipt(invoice)} className="min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase text-lime disabled:opacity-35">Skicka begäran</button>
+                        <button type="button" disabled={busy} onClick={() => setInvoiceReceiptOpen((current) => ({ ...current, [invoice.id]: false }))} className="min-h-11 cursor-pointer px-3 text-xs font-bold uppercase">Avbryt</button>
+                      </div>
+                    </div>
                   ) : (
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => requestInvoiceReceipt(invoice)}
+                      onClick={() => setInvoiceReceiptOpen((current) => ({ ...current, [invoice.id]: true }))}
                       className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] disabled:opacity-35"
                     >
                       Begär friskvårdskvitto

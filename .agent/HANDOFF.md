@@ -1,5 +1,39 @@
 # Current Work State
 
+## Training/course invoice parity — 2026-09-15
+
+- Candidate branch `codex/invoice-parity-20260915`, based on current Site main
+  `eb2b111`. Henric directly requested due date, email invoice request and
+  payment/receipt parity with the mobile app. Supervisor owns promotion.
+- Invoice cards consume API `payment_due_on` (HT26: 2026-09-28),
+  `amount_due_sek`, `admin_discount_sek`, `traditional_requested` and
+  `traditional_fee_sek`. They display line discounts, invoice-level discount,
+  payable total, base training/course VAT, payment date and provider failures.
+- The email invoice action clearly discloses the server fee (150 SEK for
+  HT26) and resulting total before confirmation. The authenticated BFF calls
+  `/training/invoices/{id}/request-traditional`; this records the staff/Fortnox
+  handling queue, not an immediate email. Once requested, online payment
+  buttons disappear to prevent double payment. Zero, paid and refunded
+  invoices cannot create a new fee request.
+- Swish and Stripe retain their shared App API owner-scoped charge endpoints.
+  Swish callbacks from the account now open the invoice tab; the invoice feed
+  refreshes on return/focus and for up to two minutes during a visible QR
+  handoff. Stripe uses `{channel: "WEB"}` and the existing allowlisted Checkout
+  handoff.
+- The website now offers the same optional personnummer field when requesting
+  a friskvård receipt. Only this field is forwarded, and it is never persisted
+  in browser storage. Sent/paid invoices may request receipts; existing
+  generated receipt downloads remain available in history.
+- Verification: 163 unit tests pass, including BFF session/origin/ID rejection,
+  deliberate client identity/fee spoofing, exact fee/total consent and Swish
+  account return routing. Production build passes with the existing NFT and
+  Profixio static-render warnings. Synthetic-backend browser checks exercise
+  the real Next BFF, mobile/desktop presentation, request/receipt handling,
+  Stripe handoff and Swish polling; no real payments or messages are sent.
+- Remaining action: root verifies exact paired API release is live, promotes
+  this candidate to pushed main and publishes through the existing Site Deploy
+  panel or documented production `deploy.sh`. This worktree does not deploy.
+
 ## HQ #281 court-booking receipts — website candidate (2026-09-13)
 
 - The authenticated invoice area now includes paid native court bookings and

@@ -17,9 +17,14 @@ export async function POST(
   if (!validInvoiceId(invoiceId)) {
     return Response.json({ detail: "Ogiltigt faktura-id" }, { status: 400 });
   }
+  const body = await request.json().catch(() => ({}));
+  const personnummer = body?.personnummer;
+  if (personnummer != null && (typeof personnummer !== "string" || personnummer.length > 13)) {
+    return Response.json({ detail: "Ogiltigt personnummer" }, { status: 400 });
+  }
   return proxyAppJson(await appApi(
     `/training/invoices/${encodeURIComponent(invoiceId)}/request-friskvard`,
-    { method: "POST", body: JSON.stringify({}) },
+    { method: "POST", body: JSON.stringify({ personnummer: personnummer?.trim() || null }) },
     { token },
   ));
 }
