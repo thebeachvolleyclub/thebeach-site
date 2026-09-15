@@ -27,6 +27,26 @@ export type Ev = {
 
 export type Month = { month: string; events: Ev[] };
 
+/**
+ * Fredagsmys — barn & familj, fredagar 17:30–19:00 under höstterminen 2026.
+ * Bokas via Svenska Lag (inte i appen). En post per fredag; alla delar slug
+ * "fredagsmys" så händelsesidan alltid pekar på nästa tillfälle.
+ */
+export const FREDAGSMYS_URL =
+  "https://www.svenskalag.se/thebeach/formular/fredagsmys-hostterminen-2026/40310?teamid=124515&userid=null&code=#step2";
+
+function fredagsmys(day: string): Ev {
+  return {
+    day, wd: "Fre", title: "Fredagsmys — barn & familj", meta: "17:30–19:00 · Bokas via Svenska Lag", badge: "Familj", type: "event",
+    slug: "fredagsmys",
+    beskrivning: "Fredagsmys för barn och familjer — beachvolley, lek och en mysig start på helgen i sanden. Fredagar 17:30–19:00 under hela höstterminen 2026. Bokning sker via Svenska Lag, inte i The Beach-appen.",
+    stycken: [
+      "Anmäl er via [Svenska Lag](" + FREDAGSMYS_URL + "). Frågor? Mejla [boka@thebeach.one](mailto:boka@thebeach.one).",
+    ],
+    cta: { label: "Boka via Svenska Lag", href: FREDAGSMYS_URL },
+  };
+}
+
 export const MONTHS: Month[] = [
   {
     month: "Juli 2026",
@@ -117,10 +137,39 @@ export const MONTHS: Month[] = [
         beskrivning: "Höstens kurser drar igång: grundkurs för dig som är ny och fortsättningskurs för dig som vill ta nästa steg. Båda kurserna går både tisdagar och torsdagar. Anmälan sker direkt här på sajten — se [kursstegen](/trana#kurser)." },
       { day: "3", wd: "Tor", title: "Kursstart — grund- & fortsättningskurs", meta: "Båda kurserna, torsdagar · Anmälan på thebeach.one", badge: "Kurs", type: "training" },
       { day: "2", wd: "Ons", title: "Träningsgrupper startar — onsdagar", meta: "Höstsäsongen drar igång · 15 pass", badge: "Träning", type: "training" },
+      fredagsmys("18"),
+      fredagsmys("25"),
       { day: "26", wd: "Lör", title: "BeachTravels — Träningsresa Sperlonga", meta: "26 sep–3 okt · Arrangeras av BeachTravels", badge: "BeachTravels", type: "event",
         slug: "sperlonga-2026", skarm: true,
         beskrivning: "BeachTravels träningsresa till Sperlonga, Italien — en vecka av sol, sand och beachvolley för spelare som vill ta med sig träningen på semestern.",
         cta: { label: "Läs mer & boka", href: "https://beachtravels.se/sperlonga/" } },
+    ],
+  },
+  {
+    month: "Oktober 2026",
+    events: [
+      fredagsmys("2"),
+      fredagsmys("9"),
+      fredagsmys("16"),
+      fredagsmys("23"),
+      fredagsmys("30"),
+    ],
+  },
+  {
+    month: "November 2026",
+    events: [
+      fredagsmys("6"),
+      fredagsmys("13"),
+      fredagsmys("20"),
+      fredagsmys("27"),
+    ],
+  },
+  {
+    month: "December 2026",
+    events: [
+      fredagsmys("4"),
+      fredagsmys("11"),
+      fredagsmys("18"),
     ],
   },
 ];
