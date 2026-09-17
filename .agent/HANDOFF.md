@@ -1,5 +1,24 @@
 # Current Work State
 
+## HQ #289 court-subscription customer payment — website candidate 17 September 2026
+
+- Branch `codex/hq289-subscription-payment-20260917` starts from current main
+  `32fd67e`. The authenticated account now has a dedicated Banabonnemang view
+  showing the fixed slot, occurrence count, frozen total and explicit due date.
+- A customer must explicitly accept the personal-use/member/noncommercial terms
+  before entering a Swish number. Same-origin BFF routes keep the broad bearer
+  server-side, derive ownership in App API and forward neither customer identity
+  nor amount. Active requests are visibly polled; expiry, terminal provider
+  errors and reconciliation holds remain visible.
+- All 168 unit tests pass. A Next 16 production build passes with webpack; the
+  expected external Profixio/BeachTV fallback warnings remain. The default
+  Turbopack build cannot follow the temporary cross-worktree `node_modules`
+  symlink, so webpack was used only for isolated validation. No website deploy,
+  App OTA, native build, payment or production mutation was performed.
+- Release only after App API/Booking migration 044 and paired source are live.
+  Then perform an approved isolated provider/customer demo and root-controlled
+  website promotion.
+
 ## Training/course invoice parity — 2026-09-15
 
 - Candidate branch `codex/invoice-parity-20260915`, based on current Site main
