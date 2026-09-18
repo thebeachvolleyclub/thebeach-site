@@ -46,6 +46,15 @@ import {
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from "@/lib/accountInvoice.core";
+import {
+  subscriptionCanAccept,
+  subscriptionCanPay,
+  subscriptionPaymentFromWire,
+  subscriptionPaymentNeedsPolling,
+  subscriptionSwishAttemptFromWire,
+  subscriptionsFromWire,
+  type CourtSubscription,
+} from "@/lib/accountSubscription.core";
 
 type Profile = {
   id: string;
@@ -149,7 +158,7 @@ type CourseEnrolment = {
   createdAt: string;
 };
 type CourseFeed = { enrolments: CourseEnrolment[] };
-type AccountTab = "overview" | "membership" | "training" | "courses" | "bookings" | "invoices" | "profile";
+type AccountTab = "overview" | "membership" | "subscriptions" | "training" | "courses" | "bookings" | "invoices" | "profile";
 
 /**
  * Djuplänkar öppnar rätt flik direkt: /konto#fakturor från kursanmälan,
@@ -167,6 +176,8 @@ const HASH_TABS: Record<string, AccountTab> = {
   "#bookings": "bookings",
   "#medlemskap": "membership",
   "#membership": "membership",
+  "#abonnemang": "subscriptions",
+  "#subscriptions": "subscriptions",
   "#profil": "profile",
   "#profile": "profile",
 };
@@ -177,7 +188,7 @@ function tabFromHash(): AccountTab {
   if (hash.startsWith("#faktura-") || hash.startsWith("#invoice-")) return "invoices";
   return HASH_TABS[hash] ?? "overview";
 }
-type OverviewAvailability = { bookings: boolean; invoices: boolean; training: boolean; activity: boolean; membership: boolean; courses: boolean; licence: boolean };
+type OverviewAvailability = { bookings: boolean; invoices: boolean; subscriptions: boolean; training: boolean; activity: boolean; membership: boolean; courses: boolean; licence: boolean };
 type CancellationResult = {
   booking: Booking;
   refundAmountSek?: number | null;
@@ -299,6 +310,8 @@ export default function AccountPortal() {
   const [trainingRecordingsAvailable, setTrainingRecordingsAvailable] = useState(true);
   const [activity, setActivity] = useState<ActivityFeed>({ events: [], training_groups: [] });
   const [membershipFeed, setMembershipFeed] = useState<MembershipFeed>(EMPTY_MEMBERSHIP_FEED);
+  const [subscriptions, setSubscriptions] = useState<CourtSubscription[]>([]);
+  const [subscriptionBusyId, setSubscriptionBusyId] = useState<string | null>(null);
   const [membershipPurchaseBusy, setMembershipPurchaseBusy] = useState(false);
   const [membershipPayerAlias, setMembershipPayerAlias] = useState("");
   const [licenceState, setLicenceState] = useState<LicenceState | null>(null);
@@ -306,7 +319,7 @@ export default function AccountPortal() {
   const licenceIdempotencyKey = useRef<string | null>(null);
   const [courseEnrolments, setCourseEnrolments] = useState<CourseEnrolment[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false, licence: false });
+  const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, subscriptions: false, training: false, activity: false, membership: false, courses: false, licence: false });
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [courtReceiptBusyId, setCourtReceiptBusyId] = useState<string | null>(null);
   // Signup status shared by the Träningsgrupper tab badge + status card.
@@ -440,6 +453,69 @@ export default function AccountPortal() {
     }));
   }, []);
 
+  const refreshSubscriptions = useCallback(async () => {
+    const result = await api<unknown>("/api/account/subscriptions");
+    setSubscriptions(subscriptionsFromWire(result));
+    setOverviewAvailability((current) => ({ ...current, subscriptions: true }));
+  }, []);
+
+  const acceptSubscription = useCallback(async (item: CourtSubscription) => {
+    setSubscriptionBusyId(item.id);
+    setError("");
+    try {
+      await api(`/api/account/subscriptions/${encodeURIComponent(item.id)}/accept`, {
+        method: "POST",
+        body: JSON.stringify({ termsVersion: item.termsVersion, personalUseAccepted: true }),
+      });
+      setSubscriptions((current) => current.map((candidate) => candidate.id === item.id
+        ? {
+            ...candidate,
+            status: "AWAITING_PAYMENT",
+            personalUseAccepted: true,
+            payment: { ...candidate.payment, subscriptionStatus: "AWAITING_PAYMENT" },
+          }
+        : candidate));
+      setMessage("Abonnemanget är accepterat. Du kan nu betala med Swish.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte acceptera abonnemanget");
+    } finally {
+      setSubscriptionBusyId(null);
+    }
+  }, []);
+
+  const paySubscription = useCallback(async (item: CourtSubscription, payerAlias: string) => {
+    setSubscriptionBusyId(item.id);
+    setError("");
+    const storageKey = `tb-subscription-swish:${profile?.id ?? "account"}:${item.id}`;
+    try {
+      if (["DECLINED", "ERROR", "CANCELLED"].includes(item.payment.swish?.status ?? "")) {
+        try { window.sessionStorage.removeItem(storageKey); } catch { /* optional */ }
+      }
+      let idempotencyKey = "";
+      try { idempotencyKey = window.sessionStorage.getItem(storageKey) ?? ""; } catch { /* optional */ }
+      if (!idempotencyKey) {
+        idempotencyKey = `subscription-${window.crypto.randomUUID()}`;
+        try { window.sessionStorage.setItem(storageKey, idempotencyKey); } catch { /* optional */ }
+      }
+      const started = await api<{ payment?: unknown }>(`/api/account/subscriptions/${encodeURIComponent(item.id)}/swish`, {
+        method: "POST",
+        body: JSON.stringify({ payerAlias, idempotencyKey }),
+      });
+      const swish = subscriptionSwishAttemptFromWire(started.payment);
+      if (swish) {
+        setSubscriptions((current) => current.map((candidate) => candidate.id === item.id
+          ? { ...candidate, payment: { ...candidate.payment, swish } }
+          : candidate));
+      }
+      setMessage("Swish-förfrågan är skickad. Godkänn betalningen i Swish.");
+    } catch (cause) {
+      try { window.sessionStorage.removeItem(storageKey); } catch { /* optional */ }
+      setError(cause instanceof Error ? cause.message : "Kunde inte starta Swish");
+    } finally {
+      setSubscriptionBusyId(null);
+    }
+  }, [profile?.id]);
+
   useEffect(() => {
     if (!profileId) return;
     let active = true;
@@ -453,10 +529,11 @@ export default function AccountPortal() {
       api<EmailFeed>("/api/account/profile/emails"),
       api<ActivityFeed>("/api/account/activity"),
       api<unknown>("/api/account/membership"),
+      api<unknown>("/api/account/subscriptions"),
       api<CourseFeed>("/api/courses/mine"),
       api<LicenceState>("/api/account/competition-licence"),
       api<TrainingRecordingFeed>("/api/account/training-recordings"),
-    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, courseResult, licenceResult, recordingResult]) => {
+    ]).then(([bookingResult, invoiceResult, trainingResult, emailResult, activityResult, membershipResult, subscriptionResult, courseResult, licenceResult, recordingResult]) => {
       if (!active) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (invoiceResult.status === "fulfilled") {
@@ -476,6 +553,9 @@ export default function AccountPortal() {
       if (membershipResult.status === "fulfilled") {
         setMembershipFeed(membershipFeedFromWire(membershipResult.value));
       }
+      if (subscriptionResult.status === "fulfilled") {
+        setSubscriptions(subscriptionsFromWire(subscriptionResult.value));
+      }
       if (courseResult.status === "fulfilled") {
         setCourseEnrolments(courseResult.value.enrolments ?? []);
       }
@@ -488,6 +568,7 @@ export default function AccountPortal() {
         training: trainingResult.status === "fulfilled",
         activity: activityResult.status === "fulfilled",
         membership: membershipResult.status === "fulfilled",
+        subscriptions: subscriptionResult.status === "fulfilled",
         courses: courseResult.status === "fulfilled",
         licence: licenceResult.status === "fulfilled",
       });
@@ -510,6 +591,33 @@ export default function AccountPortal() {
       window.removeEventListener("focus", refreshOnFocus);
     };
   }, [profileId, refreshMembershipLifecycle]);
+
+  useEffect(() => {
+    if (!profileId || tab !== "subscriptions"
+      || !subscriptions.some(subscriptionPaymentNeedsPolling)) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      const pending = subscriptions.filter(subscriptionPaymentNeedsPolling);
+      void Promise.allSettled(pending.map(async (item) => ({
+        id: item.id,
+        payment: subscriptionPaymentFromWire(
+          await api<unknown>(`/api/account/subscriptions/${encodeURIComponent(item.id)}/payment`),
+          item.id,
+          item.totalPriceOre,
+        ),
+      }))).then((results) => {
+        const updates = new Map(results.flatMap((result) => result.status === "fulfilled"
+          ? [[result.value.id, result.value.payment] as const]
+          : []));
+        if (!updates.size) return;
+        setSubscriptions((current) => current.map((item) => {
+          const payment = updates.get(item.id);
+          return payment ? { ...item, status: payment.subscriptionStatus, payment } : item;
+        }));
+      });
+    }, 3_000);
+    return () => window.clearInterval(timer);
+  }, [profileId, subscriptions, tab]);
 
   // Refresh when returning from a payment app/browser, and while a Swish QR
   // handoff is visible. Every refresh reads the same owner-scoped invoice feed.
@@ -1003,7 +1111,7 @@ export default function AccountPortal() {
     setEmailsLoading(true);
     setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
-    setOverviewAvailability({ bookings: false, invoices: false, training: false, activity: false, membership: false, courses: false, licence: false });
+    setOverviewAvailability({ bookings: false, invoices: false, subscriptions: false, training: false, activity: false, membership: false, courses: false, licence: false });
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -1047,7 +1155,7 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span>{membershipFeed.activeCount > 0 ? <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black">Medlem</span> : null}</div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["training", "Träningsgrupper"], ["courses", "Kurser"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["subscriptions", "Banabonnemang"], ["training", "Träningsgrupper"], ["courses", "Kurser"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
       {label}
       {value === "training" && signupMine?.submission ? (
         <span className="grid h-4 w-4 place-items-center rounded-full bg-lime text-[10px] font-bold text-black" aria-label="Anmäld" title="Anmäld">✓</span>
@@ -1092,6 +1200,17 @@ export default function AccountPortal() {
       onPayerAliasChange={setMembershipPayerAlias}
       onPurchase={purchaseMembership}
       onRequestCompetitionLicence={requestCompetitionLicence}
+    /> : null}
+
+    {tab === "subscriptions" ? <SubscriptionCentre
+      items={subscriptions}
+      available={overviewAvailability.subscriptions}
+      loading={overviewLoading}
+      defaultPayerAlias={profile.swish_phone ?? ""}
+      busyId={subscriptionBusyId}
+      onAccept={acceptSubscription}
+      onPay={paySubscription}
+      onRefresh={refreshSubscriptions}
     /> : null}
 
     {tab === "training" ? <AccountTraining
@@ -1351,6 +1470,86 @@ export default function AccountPortal() {
       </section>
     ) : null}
   </div>;
+}
+
+function SubscriptionCentre({
+  items,
+  available,
+  loading,
+  defaultPayerAlias,
+  busyId,
+  onAccept,
+  onPay,
+  onRefresh,
+}: {
+  items: CourtSubscription[];
+  available: boolean;
+  loading: boolean;
+  defaultPayerAlias: string;
+  busyId: string | null;
+  onAccept: (item: CourtSubscription) => Promise<void>;
+  onPay: (item: CourtSubscription, payerAlias: string) => Promise<void>;
+  onRefresh: () => Promise<void>;
+}) {
+  const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+  const [payerAliases, setPayerAliases] = useState<Record<string, string>>({});
+  const statusLabel = (item: CourtSubscription) => ({
+    OFFERED: "Erbjudande att acceptera",
+    AWAITING_PAYMENT: "Väntar på betalning",
+    ACTIVE: "Aktivt",
+    COMPLETED: "Avslutat",
+    CANCELLED: "Avbrutet",
+    DECLINED: "Avböjt",
+  } as Record<string, string>)[item.status] ?? item.status;
+  const attemptLabel = (item: CourtSubscription) => ({
+    CREATING: "Swish verifieras",
+    CREATED: "Swish-förfrågan skickad",
+    PAID: "Betalning mottagen",
+    DECLINED: "Swish avböjdes",
+    ERROR: "Swish kunde inte genomföras",
+    CANCELLED: "Swish avbröts",
+    RECONCILIATION_REQUIRED: "Betalningen kontrolleras manuellt",
+  } as Record<string, string>)[item.payment.swish?.status ?? ""] ?? null;
+
+  if (loading) return <section className="border-x border-b border-black/10 bg-white p-6">Hämtar banabonnemang…</section>;
+  if (!available) return <section className="border-x border-b border-black/10 bg-white p-6 text-sm text-black/55">Banabonnemang kunde inte hämtas just nu.</section>;
+  return <section className="border-x border-b border-black/10 bg-white p-6 sm:p-8">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-teal">Banabonnemang</p><h3 className="mt-2 font-display text-3xl">Mina fasta tider</h3></div>
+      <button type="button" onClick={() => void onRefresh()} className="min-h-11 cursor-pointer px-3 text-xs font-bold uppercase underline underline-offset-4">Uppdatera</button>
+    </div>
+    {!items.length ? <p className="mt-7 border border-black/10 bg-cream p-5 text-sm text-black/55">Du har inga banabonnemang eller erbjudanden.</p> : <div className="mt-7 grid gap-5">
+      {items.map((item) => {
+        const canAccept = subscriptionCanAccept(item);
+        const canPay = subscriptionCanPay(item);
+        const payerAlias = payerAliases[item.id] ?? defaultPayerAlias;
+        const attempt = attemptLabel(item);
+        return <article key={item.id} className="border border-black/15 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div><h4 className="font-display text-2xl">{item.termName}</h4><p className="mt-1 text-sm text-black/60">{item.seriesName} · {item.courtName} · {item.startTime}</p></div>
+            <span className="rounded-full bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-lime">{statusLabel(item)}</span>
+          </div>
+          <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+            <div><dt className="text-black/45">Period</dt><dd className="font-semibold">{formatBookingDate(item.startsOn)}–{formatBookingDate(item.endsOn)}</dd></div>
+            <div><dt className="text-black/45">Tillfällen</dt><dd className="font-semibold">{item.occurrences.length}</dd></div>
+            <div><dt className="text-black/45">Totalt</dt><dd className="font-semibold">{moneyFromOre(item.totalPriceOre)}</dd></div>
+            <div><dt className="text-black/45">Sista betalningsdag</dt><dd className="font-semibold">{item.paymentDueOn ? formatBookingDate(item.paymentDueOn) : "Inte angiven"}</dd></div>
+          </dl>
+          {item.payment.paymentExpired ? <p className="mt-5 border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">Sista betalningsdagen har passerat. Kontakta The Beach.</p> : null}
+          {attempt ? <p className="mt-5 border border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{attempt}</p> : null}
+          {canAccept ? <div className="mt-5 border-t border-black/10 pt-5">
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={accepted[item.id] === true} onChange={(event) => setAccepted((current) => ({ ...current, [item.id]: event.target.checked }))} className="mt-1 h-5 w-5" /><span>Jag är medlem, deltar själv, använder inte tiden kommersiellt och accepterar villkor {item.termsVersion}.</span></label>
+            <button type="button" disabled={!accepted[item.id] || busyId === item.id} onClick={() => void onAccept(item)} className="mt-4 min-h-12 cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busyId === item.id ? "Sparar…" : "Acceptera erbjudandet"}</button>
+          </div> : null}
+          {item.status === "OFFERED" && !canAccept && !item.payment.paymentExpired ? <p className="mt-5 text-sm text-orange">Erbjudandet saknar ett betalningsdatum. Kontakta The Beach.</p> : null}
+          {canPay ? <form className="mt-5 border-t border-black/10 pt-5" onSubmit={(event) => { event.preventDefault(); void onPay(item, payerAlias); }}>
+            <label className="block max-w-sm"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Swish-nummer</span><input value={payerAlias} onChange={(event) => setPayerAliases((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
+            <button type="submit" disabled={busyId === item.id || !validSwishPayerAlias(payerAlias)} className="mt-4 min-h-12 cursor-pointer bg-[#00a98f] px-6 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-35"><SwishButtonLabel>Betala med Swish</SwishButtonLabel></button>
+          </form> : null}
+        </article>;
+      })}
+    </div>}
+  </section>;
 }
 
 function AccountOverview({
