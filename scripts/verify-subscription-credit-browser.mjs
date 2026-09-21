@@ -12,11 +12,11 @@ async function click(page, text) {
   await page.waitForFunction((needle) => [...document.querySelectorAll('button,summary')].some((node) => node.textContent.trim().includes(needle) && !node.disabled), {}, text);
   await page.evaluate((needle) => [...document.querySelectorAll('button,summary')].find((node) => node.textContent.trim().includes(needle) && !node.disabled).click(), text);
 }
-async function fixture({ balance = 70200, phone = '+46701234567', failCredit = false, conflict = false, lostResponse = false } = {}) {
+async function fixture({ balance = 70200, phone = '+46701234567', failCredit = false, conflict = false, lostResponse = false, authRetry = false } = {}) {
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 844 });
   const calls = [], quotes = [];
-  let released = false, paid = false, conflicted = false, lost = false;
+  let released = false, paid = false, conflicted = false, lost = false, authExpired = false;
   const booking = { id: 'booking-1', courtName: 'Bana 1', date: today, startTime: '18:00', endTime: '19:00', priceSek: 780, status: 'CONFIRMED' };
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('dialog', (dialog) => dialog.accept());
@@ -45,6 +45,7 @@ async function fixture({ balance = 70200, phone = '+46701234567', failCredit = f
     }
     if (path === '/api/booking/checkout') {
       if (lostResponse && !lost) { lost = true; paid = true; return request.abort('failed'); }
+      if (authRetry && !authExpired) { authExpired = true; return json({ detail: 'Logga in igen' }, Number(authRetry) || 401); }
       if (conflict && !conflicted) { conflicted = true; balance = 60000; return json({ detail: { message: 'Tillgodohavandet har ändrats. Kontrollera beloppen igen.', code: 'SUBSCRIPTION_CREDIT_CHANGED' } }, 409); }
       paid = true;
       const quote = quotes.find((entry) => entry.quote.quoteId === payload.quoteId)?.quote;
@@ -72,6 +73,7 @@ async function useCredit(page) {
   await page.click('input[type=checkbox]');
 }
 try {
+  if (!process.env.SITE_CREDIT_AUTH_ONLY) {
   {
     const { page, calls, released } = await fixture();
     await page.goto(`${origin}/konto#abonnemang`, { waitUntil: 'networkidle0' });
@@ -110,17 +112,25 @@ try {
     assert.equal(final.paymentProvider, 'STRIPE'); assert.equal(final.expectedStoredValueAppliedOre, 77700); assert.equal(final.expectedRemainingAmountOre, 300);
     await page.close(); console.log('PASS Stripe remainder and minimum charge quote');
   }
-  {
-    const { page, calls } = await fixture({ lostResponse: true }); await choose(page); await useCredit(page); await click(page, '78 kr');
+  }
+  for (const authRetry of process.env.SITE_CREDIT_AUTH_ONLY ? [401, 403] : [false, 401, 403]) {
+    const { page, calls } = await fixture({ lostResponse: true, authRetry }); await choose(page); await useCredit(page); await click(page, '78 kr');
     await page.waitForFunction(() => document.body.textContent.includes('Kontrollera din bokning'));
     const original = calls.find((call) => call.path.endsWith('/checkout')).payload;
     // Recovery survives reload and blocks changed slot/payment choices.
     await page.reload({ waitUntil: 'networkidle0' });
     await click(page, 'Kontrollera bokningsförsöket');
+    if (authRetry) {
+      await page.waitForFunction(() => document.body.textContent.includes('Logga in igen för att kontrollera'));
+      assert.equal(await page.evaluate(() => !!sessionStorage.getItem('tb-booking-attempt:synthetic-owner')), true);
+      // A new authenticated session for the same owner must resume the old attempt.
+      await page.reload({ waitUntil: 'networkidle0' });
+      await click(page, 'Kontrollera bokningsförsöket');
+    }
     await page.waitForFunction(() => document.body.textContent.includes('Vi ses i sanden!'));
     const attempts = calls.filter((call) => call.path.endsWith('/checkout'));
-    assert.equal(attempts.length, 2); assert.deepEqual(attempts[1].payload, original);
-    await page.close(); console.log('PASS lost response and reload retry exact original attempt');
+    assert.equal(attempts.length, authRetry ? 3 : 2); for (const attempt of attempts) assert.deepEqual(attempt.payload, original);
+    await page.close(); console.log(authRetry ? `PASS ${authRetry} auth preserves original attempt for sign-in recovery` : 'PASS lost response and reload retry exact original attempt');
   }
   assert.deepEqual(errors, []);
 } finally { await browser.close(); }

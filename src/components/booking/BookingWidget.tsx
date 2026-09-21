@@ -391,8 +391,10 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
       setSubmitting(false);
       // A lost response may follow a committed reservation. Only replay the
       // exact original submission until the backend gives a definitive answer.
-      if (!(cause instanceof BookingApiError) || cause.status >= 500 || cause.status === 408) {
+      const authRequired = cause instanceof BookingApiError && [401, 403].includes(cause.status);
+      if (!(cause instanceof BookingApiError) || cause.status >= 500 || cause.status === 408 || authRequired) {
         setUncertainAttempt(attempt);
+        if (authRequired) setError(locale === "sv" ? "Logga in igen för att kontrollera bokningsförsöket. Om åtkomsten fortfarande saknas, kontakta The Beach." : "Sign in again to check this booking attempt. If access is still unavailable, contact The Beach.");
         return;
       }
       clearAttempt();
@@ -443,6 +445,7 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     <p className="mt-4 text-sm">{locale === "sv" ? "Vi fick inget säkert svar. Kontrollera samma bokningsförsök innan du väljer en annan tid eller betalning." : "We did not receive a confirmed response. Check the same booking attempt before choosing a different time or payment."}</p>
     <p className="mt-3 font-semibold">{uncertainAttempt.courtName} · {uncertainAttempt.body.date} · {uncertainAttempt.body.startTime}</p>
     <p className="mt-2 text-sm">{t.pay.creditApplied}: {money(uncertainAttempt.body.expectedStoredValueAppliedOre)} · {t.pay.creditRemaining}: {money(uncertainAttempt.body.expectedRemainingAmountOre)}</p>
+    {error ? <div role="alert" className="mt-4 text-sm text-orange"><p>{error}</p><Link href={accountHref} className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{t.pay.loginCta}</Link></div> : null}
     <button type="button" disabled={submitting} onClick={() => void submitAttempt(uncertainAttempt)} className="mt-5 min-h-12 cursor-pointer bg-black px-6 text-xs font-bold uppercase text-lime disabled:opacity-40">{submitting ? t.pay.submitting : locale === "sv" ? "Kontrollera bokningsförsöket" : "Check booking attempt"}</button>
   </section>;
 
