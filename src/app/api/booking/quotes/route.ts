@@ -20,10 +20,11 @@ export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Invalid body");
   } catch {
     return NextResponse.json({ detail: "Ogiltiga uppgifter" }, { status: 400 });
   }
-  // Only slot identity crosses the browser boundary. Entitlements, price and
+  // Only slot identity and payment choices cross the browser boundary. Price and
   // account identity are resolved from the signed-in App API session.
   const allowed = {
     venueId: body.venueId,
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
     date: body.date,
     startTime: body.startTime,
     productId: body.productId,
+    useStoredValue: body.useStoredValue === true,
+    paymentProvider: body.paymentProvider === "STRIPE" ? "STRIPE" : "SWISH",
   };
   return proxyJson(await appApi("/booking/quotes", {
     method: "POST",
