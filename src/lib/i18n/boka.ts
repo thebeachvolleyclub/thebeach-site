@@ -69,6 +69,16 @@ export interface BokaWidgetDict {
     submitEmpty: string;
     fine1: string;
     fine2: string;
+    credit: string;
+    creditLoading: string;
+    creditUnavailable: string;
+    creditRetry: string;
+    creditUse: string;
+    creditApplied: string;
+    creditRemaining: string;
+    creditPay: string;
+    creditDetails: string;
+    creditCardMinimum: string;
   };
 }
 
@@ -202,6 +212,16 @@ export const bokaDict: Dict<BokaDict> = {
         submitting: "Godkänn betalningen i Swish…",
         submitPrefix: "Boka och betala ",
         submitEmpty: "Välj tid och bana",
+        credit: "Ditt tillgodohavande",
+        creditLoading: "Hämtar tillgodohavande…",
+        creditUnavailable: "Ditt tillgodohavande kunde inte hämtas. Du kan fortfarande betala med Swish eller kort.",
+        creditRetry: "Försök igen",
+        creditUse: "Använd tillgodohavande",
+        creditApplied: "Tillgodohavande",
+        creditRemaining: "Kvar att betala",
+        creditPay: "Boka med tillgodohavande",
+        creditDetails: "Se saldo och giltighetstid",
+        creditCardMinimum: "Vid kortbetalning debiteras minst 3 kr. Den extra krediten sparas på ditt konto.",
         fine1: "Tiden hålls i 10 minuter medan du slutför betalningen.",
         fine2: "Avboka inom en timme för full återbetalning. Därefter återbetalas beloppet minus 20 kr fram till 24 timmar före start.",
       },
@@ -326,6 +346,16 @@ export const bokaDict: Dict<BokaDict> = {
         submitting: "Approve the payment in Swish…",
         submitPrefix: "Book and pay ",
         submitEmpty: "Pick a time and court",
+        credit: "Your account credit",
+        creditLoading: "Loading account credit…",
+        creditUnavailable: "Your credit could not be loaded. You can still pay with Swish or card.",
+        creditRetry: "Try again",
+        creditUse: "Use account credit",
+        creditApplied: "Account credit",
+        creditRemaining: "Left to pay",
+        creditPay: "Book with account credit",
+        creditDetails: "View balance and expiry dates",
+        creditCardMinimum: "Card payments have a minimum charge of SEK 3. The extra credit stays in your account.",
         fine1: "The slot is held for 10 minutes while you complete payment.",
         fine2: "Cancel within one hour for a full refund. After that, the amount minus SEK 20 is refunded up to 24 hours before start.",
       },

@@ -82,6 +82,25 @@ docker ps --format '{{.Names}}  {{.Ports}}  {{.Status}}'  # loopback publish onl
 
 Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
 
+### Subscription credit checkout
+
+Publish the coordinated Booking/App API release before the site change. The
+account credit feed must return server-evaluated `availableOre` per credit and
+`totalAvailableOre`; price quotes must include `storedValueAppliedOre` and
+`remainingAmountOre` for the chosen `useStoredValue` / `paymentProvider`.
+Checkout receives both `expectedStoredValueAppliedOre` and
+`expectedRemainingAmountOre` so a changed balance requires a fresh confirmation.
+Full credit payment returns `CONFIRMED` without a provider handoff. Partial
+payment follows the existing Swish or Stripe flow for the quoted remainder.
+
+Verify `/konto#abonnemang` shows personal balance, expiry and eligible
+`Frigör tiden` actions. Verify `/boka` and `/en/book` show the quoted credit/cash
+split, preserve ordinary payments, and recover an uncertain payment response
+using the original `clientReference`. Anonymous credit access must return 401.
+The synthetic browser check in `scripts/verify-subscription-credit-browser.mjs`
+intercepts every API call and does not write to production. Its header documents
+the local preview and browser executable settings.
+
 ## Notes
 
 - The site has server-side API routes under `src/app/api/*` (account/session,

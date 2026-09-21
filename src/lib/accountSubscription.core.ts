@@ -36,7 +36,7 @@ export type CourtSubscription = {
   termsVersion: string;
   personalUseAccepted: boolean;
   payment: SubscriptionPayment;
-  occurrences: Array<{ id: string; date: string; startTime: string; courtName: string; status: string }>;
+  occurrences: Array<{ id: string; bookingId: string; date: string; startTime: string; courtName: string; status: string; creditAmountOre: number }>;
 };
 
 function record(value: unknown): Record<string, unknown> {
@@ -118,10 +118,12 @@ export function subscriptionsFromWire(value: unknown): CourtSubscription[] {
         const occurrence = record(raw);
         return typeof occurrence.id === "string" ? [{
           id: occurrence.id,
+          bookingId: text(occurrence.bookingId),
           date: text(occurrence.date),
           startTime: text(occurrence.startTime),
           courtName: text(occurrence.courtName),
           status: text(occurrence.status),
+          creditAmountOre: finite(occurrence.creditAmountOre),
         }] : [];
       }) : [],
     }];
@@ -147,4 +149,22 @@ export function subscriptionPaymentNeedsPolling(item: CourtSubscription): boolea
 
 export function validSubscriptionId(value: string): boolean {
   return /^[A-Za-z0-9_-]{1,25}$/.test(value);
+}
+
+export function subscriptionOccurrenceCanRelease(
+  item: CourtSubscription,
+  occurrence: CourtSubscription["occurrences"][number],
+  now = new Date(),
+): boolean {
+  if (item.status !== "ACTIVE" || occurrence.status !== "SCHEDULED") return false;
+  // Court dates are Swedish wall time, regardless of the browser's timezone.
+  const parts = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Stockholm", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(now);
+  const part = (name: string) => parts.find((value) => value.type === name)?.value ?? "";
+  const localNow = `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+  return /^\d{4}-\d{2}-\d{2}$/.test(occurrence.date)
+    && /^\d{2}:\d{2}$/.test(occurrence.startTime)
+    && `${occurrence.date}T${occurrence.startTime}` > localNow;
 }

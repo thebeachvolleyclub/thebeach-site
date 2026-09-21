@@ -21,6 +21,7 @@ export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Invalid body");
   } catch {
     return NextResponse.json({ detail: "Ogiltiga uppgifter" }, { status: 400 });
   }
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
     productId: body.productId,
     quoteId: body.quoteId,
     streamRequested: body.streamRequested === true,
+    useStoredValue: body.useStoredValue === true,
+    expectedStoredValueAppliedOre: body.useStoredValue === true ? body.expectedStoredValueAppliedOre : undefined,
+    expectedRemainingAmountOre: body.useStoredValue === true ? body.expectedRemainingAmountOre : undefined,
     clientReference: body.clientReference,
     paymentProvider: body.paymentProvider === "STRIPE" ? "STRIPE" : "SWISH",
     channel: "WEB",
@@ -48,7 +52,7 @@ export async function POST(request: Request) {
     return NextResponse.json(payload, { status: upstream.status });
   }
   if (!payload.bookingId) return NextResponse.json({ detail: "Bokningssvaret var ofullständigt" }, { status: 502 });
-  if (allowed.paymentProvider === "STRIPE") {
+  if (allowed.paymentProvider === "STRIPE" && payload.status !== "CONFIRMED") {
     const checkoutUrl = courseStripeCheckoutUrl(payload);
     if (!checkoutUrl) {
       return NextResponse.json({ detail: "Betalsidan kunde inte öppnas" }, { status: 502 });

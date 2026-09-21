@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import SubscriptionCreditPanel from "@/components/account/SubscriptionCreditPanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlternativePaymentOption,
@@ -49,6 +50,7 @@ import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from 
 import {
   subscriptionCanAccept,
   subscriptionCanPay,
+  subscriptionOccurrenceCanRelease,
   subscriptionPaymentFromWire,
   subscriptionPaymentNeedsPolling,
   subscriptionSwishAttemptFromWire,
@@ -457,6 +459,24 @@ export default function AccountPortal() {
     const result = await api<unknown>("/api/account/subscriptions");
     setSubscriptions(subscriptionsFromWire(result));
     setOverviewAvailability((current) => ({ ...current, subscriptions: true }));
+  }, []);
+
+  const releaseSubscriptionOccurrence = useCallback(async (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => {
+    if (!window.confirm(`Frigöra ${occurrence.courtName} den ${occurrence.date} kl. ${occurrence.startTime}? Tiden blir tillgänglig för andra. Om den säljs och betalas får du 90 % av försäljningspriset i personlig kredit, minst 50 % och högst 100 % av ditt ursprungliga pris. Krediten gäller i 12 månader.`)) return;
+    setSubscriptionBusyId(occurrence.id);
+    setError(""); setMessage("");
+    try {
+      await api(`/api/account/subscriptions/occurrences/${encodeURIComponent(occurrence.id)}/release`, { method: "POST" });
+      setSubscriptions((current) => current.map((candidate) => candidate.id === item.id
+        ? { ...candidate, occurrences: candidate.occurrences.map((entry) => entry.id === occurrence.id ? { ...entry, status: "RELEASED" } : entry) }
+        : candidate));
+      setBookings((current) => current.map((booking) => booking.id === occurrence.bookingId ? { ...booking, status: "CANCELLED" } : booking));
+      setMessage("Tiden är frigjord. Du får tillgodohavandet automatiskt när tiden har sålts och betalats.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte frigöra tiden");
+    } finally {
+      setSubscriptionBusyId(null);
+    }
   }, []);
 
   const acceptSubscription = useCallback(async (item: CourtSubscription) => {
@@ -1202,7 +1222,7 @@ export default function AccountPortal() {
       onRequestCompetitionLicence={requestCompetitionLicence}
     /> : null}
 
-    {tab === "subscriptions" ? <SubscriptionCentre
+    {tab === "subscriptions" ? <><SubscriptionCreditPanel key={profile.id} /><SubscriptionCentre
       items={subscriptions}
       available={overviewAvailability.subscriptions}
       loading={overviewLoading}
@@ -1210,8 +1230,9 @@ export default function AccountPortal() {
       busyId={subscriptionBusyId}
       onAccept={acceptSubscription}
       onPay={paySubscription}
+      onRelease={releaseSubscriptionOccurrence}
       onRefresh={refreshSubscriptions}
-    /> : null}
+    /></> : null}
 
     {tab === "training" ? <AccountTraining
       loading={overviewLoading}
@@ -1480,6 +1501,7 @@ function SubscriptionCentre({
   busyId,
   onAccept,
   onPay,
+  onRelease,
   onRefresh,
 }: {
   items: CourtSubscription[];
@@ -1489,6 +1511,7 @@ function SubscriptionCentre({
   busyId: string | null;
   onAccept: (item: CourtSubscription) => Promise<void>;
   onPay: (item: CourtSubscription, payerAlias: string) => Promise<void>;
+  onRelease: (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => Promise<void>;
   onRefresh: () => Promise<void>;
 }) {
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
@@ -1535,6 +1558,15 @@ function SubscriptionCentre({
             <div><dt className="text-black/45">Totalt</dt><dd className="font-semibold">{moneyFromOre(item.totalPriceOre)}</dd></div>
             <div><dt className="text-black/45">Sista betalningsdag</dt><dd className="font-semibold">{item.paymentDueOn ? formatBookingDate(item.paymentDueOn) : "Inte angiven"}</dd></div>
           </dl>
+          {item.occurrences.length ? <details className="mt-5 border-t border-black/10 pt-4">
+            <summary className="min-h-11 cursor-pointer text-sm font-semibold">Visa och hantera mina tider</summary>
+            <ul className="divide-y divide-black/10">{item.occurrences.map((occurrence) => <li key={occurrence.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <div className="text-sm"><strong>{formatBookingDate(occurrence.date)} · {occurrence.startTime}</strong><p className="text-black/55">{occurrence.courtName}</p>
+                <p className="mt-1 text-xs font-semibold text-teal">{occurrence.status === "RELEASED" ? "Frigjord · väntar på återförsäljning" : occurrence.status === "CREDITED" ? `Tillgodohavande utfärdat: ${moneyFromOre(occurrence.creditAmountOre)}` : occurrence.status === "SCHEDULED" ? "Bokad" : occurrence.status === "RECLAIMED" ? "Återtagen av The Beach" : occurrence.status}</p>
+              </div>
+              {subscriptionOccurrenceCanRelease(item, occurrence) ? <button type="button" disabled={busyId !== null} onClick={() => void onRelease(item, occurrence)} className="min-h-11 cursor-pointer border border-teal px-4 text-xs font-bold uppercase text-teal disabled:opacity-40">{busyId === occurrence.id ? "Frigör…" : "Frigör tiden"}</button> : null}
+            </li>)}</ul>
+          </details> : null}
           {item.payment.paymentExpired ? <p className="mt-5 border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">Sista betalningsdagen har passerat. Kontakta The Beach.</p> : null}
           {attempt ? <p className="mt-5 border border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{attempt}</p> : null}
           {canAccept ? <div className="mt-5 border-t border-black/10 pt-5">
