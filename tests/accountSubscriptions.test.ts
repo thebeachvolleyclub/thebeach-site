@@ -87,3 +87,82 @@ test("account portal exposes the dedicated subscription customer flow", () => {
   assert.match(portal, /Betala med Swish/);
   assert.match(portal, /subscriptionPaymentNeedsPolling/);
 });
+
+test("HQ #295: booking owner action distinguishes cancel, release and pending subscription", async () => {
+  const { bookingOwnerAction } = await import("../src/lib/accountSubscription.core.ts");
+  assert.deepEqual(bookingOwnerAction({ status: "CONFIRMED" }), { kind: "cancel" });
+  assert.deepEqual(bookingOwnerAction({ status: "PENDING_PAYMENT" }), { kind: "none" });
+  assert.deepEqual(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "ACTIVE", subscriptionOccurrenceStatus: "SCHEDULED" }),
+    { kind: "release", occurrenceId: "o1", subscriptionId: "s1" },
+  );
+  assert.equal(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "ACTIVE", subscriptionOccurrenceStatus: "RELEASED" }).kind,
+    "none",
+  );
+  for (const status of ["OFFERED", "AWAITING_PAYMENT"]) {
+    const action = bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: status, subscriptionOccurrenceStatus: "SCHEDULED" });
+    assert.equal(action.kind, "subscription-pending");
+  }
+  // A subscription time is never a regular cancel, whatever its state.
+  assert.notEqual(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "TERMINATED", subscriptionOccurrenceStatus: "SCHEDULED" }).kind,
+    "cancel",
+  );
+});
+
+test("HQ #296: card is a secondary option with the same gates as Swish, and an open link can be resumed", async () => {
+  const { subscriptionCanPay, subscriptionCanPayByCard, subscriptionOpenCardCheckoutUrl, subscriptionsFromWire } = await import("../src/lib/accountSubscription.core.ts");
+  const base = {
+    id: "sub-2", status: "AWAITING_PAYMENT", termName: "HT 2026", totalPriceOre: 300000, paymentDueOn: "2026-10-05", termsVersion: "HT2026-v1",
+    payment: { subscriptionId: "sub-2", subscriptionStatus: "AWAITING_PAYMENT", orderStatus: "PENDING", paymentDueOn: "2026-10-05", paymentExpired: false, paymentMethod: "SWISH", paymentStatus: "SELECTED", amountOre: 300000, swish: null, card: null },
+  };
+  const wire = (payment: Record<string, unknown>) => subscriptionsFromWire({ subscriptions: [{ ...base, payment: { ...base.payment, ...payment } }] })[0];
+
+  const fresh = wire({});
+  assert.equal(subscriptionCanPay(fresh), true);
+  assert.equal(subscriptionCanPayByCard(fresh), true);
+  assert.equal(subscriptionOpenCardCheckoutUrl(fresh), null);
+
+  const cardChosen = wire({ paymentMethod: "CARD", paymentStatus: "SELECTED" });
+  assert.equal(subscriptionCanPay(cardChosen), true, "an uncompleted card choice can still go Swish");
+  assert.equal(subscriptionCanPayByCard(cardChosen), true);
+
+  const cardOpen = wire({ paymentMethod: "CARD", paymentStatus: "EXTERNAL_CREATED", card: { transactionId: "tx", status: "CREATED", checkoutUrl: "https://checkout.stripe.com/c/pay/cs_1" } });
+  assert.equal(subscriptionCanPay(cardOpen), false, "Swish waits while a Checkout link is open");
+  assert.equal(subscriptionCanPayByCard(cardOpen), true);
+  assert.equal(subscriptionOpenCardCheckoutUrl(cardOpen), "https://checkout.stripe.com/c/pay/cs_1");
+
+  const badUrl = wire({ paymentMethod: "CARD", paymentStatus: "EXTERNAL_CREATED", card: { transactionId: "tx", status: "CREATED", checkoutUrl: "https://evil.example/pay" } });
+  assert.equal(subscriptionOpenCardCheckoutUrl(badUrl), null, "only Stripe or our own hosts are followed");
+  const { trustedCheckoutUrl } = await import("../src/lib/accountSubscription.core.ts");
+  assert.equal(trustedCheckoutUrl("https://checkout.stripe.com/c/pay/cs_1"), "https://checkout.stripe.com/c/pay/cs_1");
+  assert.equal(trustedCheckoutUrl("https://api.dev.thebeach.one/booking/payments/stripe/demo/cs_test_x"), "https://api.dev.thebeach.one/booking/payments/stripe/demo/cs_test_x");
+  assert.equal(trustedCheckoutUrl("http://checkout.stripe.com/c/pay/cs_1"), null);
+  assert.equal(trustedCheckoutUrl("https://evil.example/thebeach.one"), null);
+  assert.equal(trustedCheckoutUrl("https://notthebeach.one/x"), null);
+
+  const swishPending = wire({ swish: { id: "a", status: "CREATED", amountOre: 300000 } });
+  assert.equal(subscriptionCanPayByCard(swishPending), false, "card hides while a Swish request is pending");
+
+  const expired = wire({ paymentExpired: true });
+  assert.equal(subscriptionCanPayByCard(expired), false);
+  const olderMotor = subscriptionsFromWire({ subscriptions: [{ ...base, payment: { ...base.payment, card: undefined } }] })[0];
+  assert.equal(subscriptionCanPayByCard(olderMotor), false, "no card option until Motor exposes the card route");
+  assert.equal(subscriptionCanPay(olderMotor), true);
+  const fortnox = wire({ paymentMethod: "FORTNOX" });
+  assert.equal(subscriptionCanPay(fortnox), false);
+  assert.equal(subscriptionCanPayByCard(fortnox), false);
+});
+
+test("HQ #296: card BFF route keeps identity server-side and only forwards the idempotency key", () => {
+  const route = readFileSync("src/app/api/account/subscriptions/[subscriptionId]/card/route.ts", "utf8");
+  assert.match(route, /sameOrigin\(request\)/);
+  assert.match(route, /accountToken\(\)/);
+  assert.match(route, /validSubscriptionId\(subscriptionId\)/);
+  assert.match(route, /\/booking\/subscriptions\/\$\{encodeURIComponent\(subscriptionId\)\}\/card/);
+  assert.doesNotMatch(route, /customerId|playerId/);
+  const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
+  assert.match(portal, /AlternativePaymentOption busy=\{busyId === item.id\}/);
+  assert.match(portal, /trustedCheckoutUrl\(started\.checkoutUrl\)/);
+});

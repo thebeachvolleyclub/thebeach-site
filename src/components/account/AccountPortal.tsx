@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SubscriptionCreditPanel from "@/components/account/SubscriptionCreditPanel";
+import BookingOwnerControl from "@/components/account/BookingOwnerControl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlternativePaymentOption,
@@ -48,9 +49,14 @@ import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birth
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from "@/lib/accountInvoice.core";
 import {
+  SUBSCRIPTION_RELEASE_CONFIRM_TEXT,
+  bookingOwnerAction,
   subscriptionCanAccept,
   subscriptionCanPay,
+  subscriptionCanPayByCard,
   subscriptionOccurrenceCanRelease,
+  subscriptionOpenCardCheckoutUrl,
+  trustedCheckoutUrl,
   subscriptionPaymentFromWire,
   subscriptionPaymentNeedsPolling,
   subscriptionSwishAttemptFromWire,
@@ -114,6 +120,11 @@ type Booking = {
   receiptNumber?: string | null;
   receiptIssuedAt?: string | null;
   streamRequested: boolean;
+  // HQ #295: set when the booking is a court-subscription time.
+  subscriptionId?: string | null;
+  subscriptionOccurrenceId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionOccurrenceStatus?: string | null;
 };
 type CourtReceipt = { bookingId: string; receiptNumber: string; downloadUrl: string };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number; base_cost_sek?: number; discount_sek?: number };
@@ -462,7 +473,7 @@ export default function AccountPortal() {
   }, []);
 
   const releaseSubscriptionOccurrence = useCallback(async (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => {
-    if (!window.confirm(`Frigöra ${occurrence.courtName} den ${occurrence.date} kl. ${occurrence.startTime}? Tiden blir tillgänglig för andra. Om den säljs och betalas får du 90 % av försäljningspriset i personlig kredit, minst 50 % och högst 100 % av ditt ursprungliga pris. Krediten gäller i 12 månader.`)) return;
+    if (!window.confirm(SUBSCRIPTION_RELEASE_CONFIRM_TEXT(occurrence.courtName, occurrence.date, occurrence.startTime))) return;
     setSubscriptionBusyId(occurrence.id);
     setError(""); setMessage("");
     try {
@@ -535,6 +546,27 @@ export default function AccountPortal() {
       setSubscriptionBusyId(null);
     }
   }, [profile?.id]);
+
+  // HQ #296: card via Stripe hosted Checkout, secondary to Swish. Motor owns the
+  // method switch and the attempt; we only follow the returned checkout URL.
+  const paySubscriptionByCard = useCallback(async (item: CourtSubscription) => {
+    const openUrl = subscriptionOpenCardCheckoutUrl(item);
+    if (openUrl) { window.location.assign(openUrl); return; }
+    setSubscriptionBusyId(item.id);
+    setError("");
+    try {
+      const started = await api<{ checkoutUrl?: unknown }>(`/api/account/subscriptions/${encodeURIComponent(item.id)}/card`, {
+        method: "POST",
+        body: JSON.stringify({ idempotencyKey: `subscription-card-${window.crypto.randomUUID()}` }),
+      });
+      const url = trustedCheckoutUrl(started.checkoutUrl);
+      if (!url) throw new Error("Kunde inte öppna kortbetalningen. Betala gärna med Swish.");
+      window.location.assign(url);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte starta kortbetalning");
+      setSubscriptionBusyId(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (!profileId) return;
@@ -987,7 +1019,28 @@ export default function AccountPortal() {
     finally { setBusy(false); }
   };
 
+  const releaseBookingTime = async (booking: Booking, occurrenceId: string, subscriptionId: string) => {
+    if (!window.confirm(SUBSCRIPTION_RELEASE_CONFIRM_TEXT(booking.courtName, booking.date, booking.startTime))) return;
+    setCancellingBookingId(booking.id); setError(""); setMessage("");
+    try {
+      await api(`/api/account/subscriptions/occurrences/${encodeURIComponent(occurrenceId)}/release`, { method: "POST" });
+      setBookings((current) => current.map((item) => item.id === booking.id ? { ...item, status: "CANCELLED", subscriptionOccurrenceStatus: "RELEASED" } : item));
+      setSubscriptions((current) => current.map((candidate) => candidate.id === subscriptionId
+        ? { ...candidate, occurrences: candidate.occurrences.map((entry) => entry.id === occurrenceId ? { ...entry, status: "RELEASED" } : entry) }
+        : candidate));
+      setMessage("Tiden är släppt. Du får tillgodohavandet automatiskt när tiden har sålts och betalats.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte släppa tiden");
+    } finally {
+      setCancellingBookingId(null);
+    }
+  };
+
   const cancelBooking = async (booking: Booking) => {
+    const action = bookingOwnerAction(booking);
+    if (action.kind === "release") return releaseBookingTime(booking, action.occurrenceId, action.subscriptionId);
+    if (action.kind === "subscription-pending") { setTab("subscriptions"); setError(""); setMessage(""); return; }
+    if (action.kind !== "cancel") return;
     if (!window.confirm("Avboka banan? Inom en timme efter bokning återbetalas hela beloppet. Minst 24 timmar före start återbetalas beloppet minus 20 kr. Senare sker ingen återbetalning.")) return;
     setCancellingBookingId(booking.id); setError(""); setMessage("");
     try {
@@ -1230,6 +1283,7 @@ export default function AccountPortal() {
       busyId={subscriptionBusyId}
       onAccept={acceptSubscription}
       onPay={paySubscription}
+      onPayByCard={paySubscriptionByCard}
       onRelease={releaseSubscriptionOccurrence}
       onRefresh={refreshSubscriptions}
     /></> : null}
@@ -1501,6 +1555,7 @@ function SubscriptionCentre({
   busyId,
   onAccept,
   onPay,
+  onPayByCard,
   onRelease,
   onRefresh,
 }: {
@@ -1511,6 +1566,7 @@ function SubscriptionCentre({
   busyId: string | null;
   onAccept: (item: CourtSubscription) => Promise<void>;
   onPay: (item: CourtSubscription, payerAlias: string) => Promise<void>;
+  onPayByCard: (item: CourtSubscription) => Promise<void>;
   onRelease: (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => Promise<void>;
   onRefresh: () => Promise<void>;
 }) {
@@ -1545,6 +1601,8 @@ function SubscriptionCentre({
       {items.map((item) => {
         const canAccept = subscriptionCanAccept(item);
         const canPay = subscriptionCanPay(item);
+        const canPayByCard = subscriptionCanPayByCard(item);
+        const openCardUrl = subscriptionOpenCardCheckoutUrl(item);
         const payerAlias = payerAliases[item.id] ?? defaultPayerAlias;
         const attempt = attemptLabel(item);
         return <article key={item.id} className="border border-black/15 p-5 sm:p-6">
@@ -1570,14 +1628,19 @@ function SubscriptionCentre({
           {item.payment.paymentExpired ? <p className="mt-5 border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">Sista betalningsdagen har passerat. Kontakta The Beach.</p> : null}
           {attempt ? <p className="mt-5 border border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{attempt}</p> : null}
           {canAccept ? <div className="mt-5 border-t border-black/10 pt-5">
-            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={accepted[item.id] === true} onChange={(event) => setAccepted((current) => ({ ...current, [item.id]: event.target.checked }))} className="mt-1 h-5 w-5" /><span>Jag är medlem, deltar själv, använder inte tiden kommersiellt och accepterar villkor {item.termsVersion}.</span></label>
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={accepted[item.id] === true} onChange={(event) => setAccepted((current) => ({ ...current, [item.id]: event.target.checked }))} className="mt-1 h-5 w-5" /><span>Jag är medlem, deltar själv, använder inte tiden kommersiellt och accepterar <Link href="/villkor/banabonnemang" target="_blank" rel="noopener" className="underline underline-offset-4 hover:text-black">villkoren för banabonnemang</Link> ({item.termsVersion}).</span></label>
             <button type="button" disabled={!accepted[item.id] || busyId === item.id} onClick={() => void onAccept(item)} className="mt-4 min-h-12 cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busyId === item.id ? "Sparar…" : "Acceptera erbjudandet"}</button>
           </div> : null}
           {item.status === "OFFERED" && !canAccept && !item.payment.paymentExpired ? <p className="mt-5 text-sm text-orange">Erbjudandet saknar ett betalningsdatum. Kontakta The Beach.</p> : null}
           {canPay ? <form className="mt-5 border-t border-black/10 pt-5" onSubmit={(event) => { event.preventDefault(); void onPay(item, payerAlias); }}>
             <label className="block max-w-sm"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Swish-nummer</span><input value={payerAlias} onChange={(event) => setPayerAliases((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
             <button type="submit" disabled={busyId === item.id || !validSwishPayerAlias(payerAlias)} className="mt-4 min-h-12 cursor-pointer bg-[#00a98f] px-6 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-35"><SwishButtonLabel>Betala med Swish</SwishButtonLabel></button>
+            {canPayByCard ? <div className="max-w-sm"><AlternativePaymentOption busy={busyId === item.id} disabled={busyId === item.id} onClick={() => void onPayByCard(item)} /></div> : null}
           </form> : null}
+          {!canPay && openCardUrl ? <div className="mt-5 border-t border-black/10 pt-5">
+            <p className="text-sm text-black/60">En kortbetalning är påbörjad. Slutför den hos Stripe, eller vänta ungefär 30 minuter så kan du välja Swish igen.</p>
+            <a href={openCardUrl} className="mt-3 inline-flex min-h-12 items-center bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime">Fortsätt kortbetalningen</a>
+          </div> : null}
         </article>;
       })}
     </div>}
@@ -1665,7 +1728,7 @@ function AccountOverview({
             <span className="text-black/45">{bookingPriceText(featuredBooking)}</span>
             {featuredBooking.streamRequested ? <span className="text-black/45">BeachTV-stream beställd</span> : null}
           </div>
-          {featuredIsUpcoming && featuredBooking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancelBooking(featuredBooking)} disabled={cancellingBookingId === featuredBooking.id} className="mt-4 min-h-10 cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50">{cancellingBookingId === featuredBooking.id ? "Avbokar…" : "Avboka bokning"}</button> : null}
+          {featuredIsUpcoming ? <BookingOwnerControl booking={featuredBooking} onAction={onCancelBooking} busy={cancellingBookingId === featuredBooking.id} className="mt-4" longLabel /> : null}
         </div> : <div className="mt-8 border border-dashed border-black/20 bg-cream p-6">
           <strong className="block">Ingen bana bokad ännu</strong>
           <p className="mt-2 text-sm leading-relaxed text-black/50">Hitta en ledig 90-minuterstid och boka direkt med Swish.</p>
@@ -2339,5 +2402,6 @@ function formatAccountDate(value: string) {
 }
 
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
-  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel && booking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancel(booking)} disabled={cancellingBookingId === booking.id} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{cancellingBookingId === booking.id ? "Avbokar…" : "Avboka"}</button> : null}</article>)}</div>}</div>;
+  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel ? <BookingOwnerControl booking={booking} onAction={onCancel} busy={cancellingBookingId === booking.id} className="w-full sm:w-auto" /> : null}</article>)}</div>}</div>;
 }
+
