@@ -141,6 +141,9 @@ test("HQ #296: card is a secondary option with the same gates as Swish, and an o
 
   const expired = wire({ paymentExpired: true });
   assert.equal(subscriptionCanPayByCard(expired), false);
+  const olderMotor = subscriptionsFromWire({ subscriptions: [{ ...base, payment: { ...base.payment, card: undefined } }] })[0];
+  assert.equal(subscriptionCanPayByCard(olderMotor), false, "no card option until Motor exposes the card route");
+  assert.equal(subscriptionCanPay(olderMotor), true);
   const fortnox = wire({ paymentMethod: "FORTNOX" });
   assert.equal(subscriptionCanPay(fortnox), false);
   assert.equal(subscriptionCanPayByCard(fortnox), false);

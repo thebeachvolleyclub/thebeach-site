@@ -18,6 +18,8 @@ export type SubscriptionPayment = {
   swish: SubscriptionSwishAttempt | null;
   /** HQ #296: latest Stripe hosted Checkout attempt (secondary to Swish). */
   card: SubscriptionCardAttempt | null;
+  /** True when Motor answered with a `card` key at all — i.e. the card route exists on this server. */
+  cardSupported: boolean;
 };
 
 export type SubscriptionCardAttempt = {
@@ -107,6 +109,7 @@ export function subscriptionPaymentFromWire(
     amountOre: finite(item.amountOre) || fallbackAmount,
     swish: subscriptionSwishAttemptFromWire(item.swish),
     card: subscriptionCardAttemptFromWire(item.card),
+    cardSupported: item.card !== undefined,
   };
 }
 
@@ -170,7 +173,7 @@ export function subscriptionCanPay(item: CourtSubscription): boolean {
 
 /** HQ #296: card via Stripe hosted Checkout (secondary). Same gates as Swish, plus an open link may be resumed. */
 export function subscriptionCanPayByCard(item: CourtSubscription): boolean {
-  if (!subscriptionPaymentOpen(item)) return false;
+  if (!item.payment.cardSupported || !subscriptionPaymentOpen(item)) return false;
   if (subscriptionOpenCardCheckoutUrl(item)) return true;
   return item.payment.paymentStatus === "SELECTED" && ["SWISH", "CARD"].includes(item.payment.paymentMethod);
 }
