@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SubscriptionCreditPanel from "@/components/account/SubscriptionCreditPanel";
+import BookingOwnerControl from "@/components/account/BookingOwnerControl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlternativePaymentOption,
@@ -1598,7 +1599,7 @@ function SubscriptionCentre({
           {item.payment.paymentExpired ? <p className="mt-5 border border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">Sista betalningsdagen har passerat. Kontakta The Beach.</p> : null}
           {attempt ? <p className="mt-5 border border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{attempt}</p> : null}
           {canAccept ? <div className="mt-5 border-t border-black/10 pt-5">
-            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={accepted[item.id] === true} onChange={(event) => setAccepted((current) => ({ ...current, [item.id]: event.target.checked }))} className="mt-1 h-5 w-5" /><span>Jag är medlem, deltar själv, använder inte tiden kommersiellt och accepterar villkor {item.termsVersion}.</span></label>
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={accepted[item.id] === true} onChange={(event) => setAccepted((current) => ({ ...current, [item.id]: event.target.checked }))} className="mt-1 h-5 w-5" /><span>Jag är medlem, deltar själv, använder inte tiden kommersiellt och accepterar <Link href="/villkor/banabonnemang" target="_blank" rel="noopener" className="underline underline-offset-4 hover:text-black">villkoren för banabonnemang</Link> ({item.termsVersion}).</span></label>
             <button type="button" disabled={!accepted[item.id] || busyId === item.id} onClick={() => void onAccept(item)} className="mt-4 min-h-12 cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">{busyId === item.id ? "Sparar…" : "Acceptera erbjudandet"}</button>
           </div> : null}
           {item.status === "OFFERED" && !canAccept && !item.payment.paymentExpired ? <p className="mt-5 text-sm text-orange">Erbjudandet saknar ett betalningsdatum. Kontakta The Beach.</p> : null}
@@ -2370,18 +2371,3 @@ function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { t
   return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel ? <BookingOwnerControl booking={booking} onAction={onCancel} busy={cancellingBookingId === booking.id} className="w-full sm:w-auto" /> : null}</article>)}</div>}</div>;
 }
 
-/** HQ #295: "Avboka" for regular bookings, "Släpp tiden" for paid subscription times, a hint for unpaid ones. */
-function BookingOwnerControl({ booking, onAction, busy, className, longLabel }: { booking: Booking; onAction: (booking: Booking) => void; busy: boolean; className?: string; longLabel?: boolean }) {
-  const action = bookingOwnerAction(booking);
-  if (action.kind === "none") return null;
-  if (action.kind === "subscription-pending") {
-    return <div className={`text-xs ${className ?? ""}`}><span className="block font-bold uppercase tracking-[0.08em] text-teal">{action.label}</span><button type="button" onClick={() => onAction(booking)} className="mt-1 cursor-pointer underline underline-offset-4 text-black/60 hover:text-black">Öppna abonnemanget</button></div>;
-  }
-  const label = action.kind === "release"
-    ? (busy ? "Släpper…" : "Släpp tiden")
-    : (busy ? "Avbokar…" : longLabel ? "Avboka bokning" : "Avboka");
-  return <div className={className}>
-    <button type="button" onClick={() => onAction(booking)} disabled={busy} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{label}</button>
-    {action.kind === "release" ? <span className="mt-1 block text-xs text-black/45">Abonnemangstid · släpps med tillgodo, avbokas inte</span> : null}
-  </div>;
-}
