@@ -134,7 +134,13 @@ test("HQ #296: card is a secondary option with the same gates as Swish, and an o
   assert.equal(subscriptionOpenCardCheckoutUrl(cardOpen), "https://checkout.stripe.com/c/pay/cs_1");
 
   const badUrl = wire({ paymentMethod: "CARD", paymentStatus: "EXTERNAL_CREATED", card: { transactionId: "tx", status: "CREATED", checkoutUrl: "https://evil.example/pay" } });
-  assert.equal(subscriptionOpenCardCheckoutUrl(badUrl), null, "only checkout.stripe.com links are followed");
+  assert.equal(subscriptionOpenCardCheckoutUrl(badUrl), null, "only Stripe or our own hosts are followed");
+  const { trustedCheckoutUrl } = await import("../src/lib/accountSubscription.core.ts");
+  assert.equal(trustedCheckoutUrl("https://checkout.stripe.com/c/pay/cs_1"), "https://checkout.stripe.com/c/pay/cs_1");
+  assert.equal(trustedCheckoutUrl("https://api.dev.thebeach.one/booking/payments/stripe/demo/cs_test_x"), "https://api.dev.thebeach.one/booking/payments/stripe/demo/cs_test_x");
+  assert.equal(trustedCheckoutUrl("http://checkout.stripe.com/c/pay/cs_1"), null);
+  assert.equal(trustedCheckoutUrl("https://evil.example/thebeach.one"), null);
+  assert.equal(trustedCheckoutUrl("https://notthebeach.one/x"), null);
 
   const swishPending = wire({ swish: { id: "a", status: "CREATED", amountOre: 300000 } });
   assert.equal(subscriptionCanPayByCard(swishPending), false, "card hides while a Swish request is pending");
@@ -158,5 +164,5 @@ test("HQ #296: card BFF route keeps identity server-side and only forwards the i
   assert.doesNotMatch(route, /customerId|playerId/);
   const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
   assert.match(portal, /AlternativePaymentOption busy=\{busyId === item.id\}/);
-  assert.match(portal, /checkout\\\.stripe\\\.com/);
+  assert.match(portal, /trustedCheckoutUrl\(started\.checkoutUrl\)/);
 });

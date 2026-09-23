@@ -56,6 +56,7 @@ import {
   subscriptionCanPayByCard,
   subscriptionOccurrenceCanRelease,
   subscriptionOpenCardCheckoutUrl,
+  trustedCheckoutUrl,
   subscriptionPaymentFromWire,
   subscriptionPaymentNeedsPolling,
   subscriptionSwishAttemptFromWire,
@@ -558,7 +559,7 @@ export default function AccountPortal() {
         method: "POST",
         body: JSON.stringify({ idempotencyKey: `subscription-card-${window.crypto.randomUUID()}` }),
       });
-      const url = typeof started.checkoutUrl === "string" && /^https:\/\/checkout\.stripe\.com\//.test(started.checkoutUrl) ? started.checkoutUrl : null;
+      const url = trustedCheckoutUrl(started.checkoutUrl);
       if (!url) throw new Error("Kunde inte öppna kortbetalningen. Betala gärna med Swish.");
       window.location.assign(url);
     } catch (cause) {

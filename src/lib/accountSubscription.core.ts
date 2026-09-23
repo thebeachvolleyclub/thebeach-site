@@ -28,15 +28,26 @@ export type SubscriptionCardAttempt = {
   checkoutUrl: string | null;
 };
 
+/** Only Stripe's hosted Checkout or our own hosts (the isolated workshop's Stripe simulator) may be followed. */
+export function trustedCheckoutUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  let url: URL;
+  try { url = new URL(value); } catch { return null; }
+  if (url.protocol !== "https:") return null;
+  const host = url.hostname.toLowerCase();
+  if (host === "checkout.stripe.com") return url.toString();
+  if (host === "thebeach.one" || host.endsWith(".thebeach.one")) return url.toString();
+  return null;
+}
+
 export function subscriptionCardAttemptFromWire(value: unknown): SubscriptionCardAttempt | null {
   const item = record(value);
   const statuses = ["CREATING", "CREATED", "PAID", "FAILED", "EXPIRED"] as const;
   if (!statuses.includes(item.status as typeof statuses[number]) || typeof item.transactionId !== "string") return null;
-  const checkoutUrl = nullableText(item.checkoutUrl);
   return {
     transactionId: item.transactionId,
     status: item.status as SubscriptionCardAttempt["status"],
-    checkoutUrl: checkoutUrl && /^https:\/\/checkout\.stripe\.com\//.test(checkoutUrl) ? checkoutUrl : null,
+    checkoutUrl: trustedCheckoutUrl(item.checkoutUrl),
   };
 }
 
