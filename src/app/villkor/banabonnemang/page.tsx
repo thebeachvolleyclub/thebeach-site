@@ -20,13 +20,13 @@ const sections: Array<{ heading: string; paragraphs: string[] }> = [
   {
     heading: "Medlemskap",
     paragraphs: [
-      "Abonnemanget förutsätter att du är medlem i The Beach Volley Club under hela perioden. Utan giltigt medlemskap kan abonnemanget inte aktiveras.",
+      "Abonnemanget är en förmån för medlemmar. Det förutsätter att du är medlem i The Beach Volley Club under hela perioden. Utan giltigt medlemskap kan abonnemanget inte aktiveras.",
     ],
   },
   {
     heading: "Personligt bruk",
     paragraphs: [
-      "Abonnemanget är personligt. Du som tecknar det är bokare och deltar själv på tiden. Tiden får inte användas för kurser, föreningsverksamhet, företag eller annan organiserad eller kommersiell verksamhet.",
+      "Abonnemanget är personligt. Du som tecknar det är bokare och deltar själv på tiden. Tiden får inte användas för kurser, föreningsverksamhet, företag eller annan organiserad eller kommersiell verksamhet. Juridisk person är inte aktuellt — de går på en annan taxa.",
     ],
   },
   {
