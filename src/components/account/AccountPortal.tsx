@@ -53,7 +53,9 @@ import {
   bookingOwnerAction,
   subscriptionCanAccept,
   subscriptionCanPay,
+  subscriptionCanPayByCard,
   subscriptionOccurrenceCanRelease,
+  subscriptionOpenCardCheckoutUrl,
   subscriptionPaymentFromWire,
   subscriptionPaymentNeedsPolling,
   subscriptionSwishAttemptFromWire,
@@ -543,6 +545,27 @@ export default function AccountPortal() {
       setSubscriptionBusyId(null);
     }
   }, [profile?.id]);
+
+  // HQ #296: card via Stripe hosted Checkout, secondary to Swish. Motor owns the
+  // method switch and the attempt; we only follow the returned checkout URL.
+  const paySubscriptionByCard = useCallback(async (item: CourtSubscription) => {
+    const openUrl = subscriptionOpenCardCheckoutUrl(item);
+    if (openUrl) { window.location.assign(openUrl); return; }
+    setSubscriptionBusyId(item.id);
+    setError("");
+    try {
+      const started = await api<{ checkoutUrl?: unknown }>(`/api/account/subscriptions/${encodeURIComponent(item.id)}/card`, {
+        method: "POST",
+        body: JSON.stringify({ idempotencyKey: `subscription-card-${window.crypto.randomUUID()}` }),
+      });
+      const url = typeof started.checkoutUrl === "string" && /^https:\/\/checkout\.stripe\.com\//.test(started.checkoutUrl) ? started.checkoutUrl : null;
+      if (!url) throw new Error("Kunde inte öppna kortbetalningen. Betala gärna med Swish.");
+      window.location.assign(url);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte starta kortbetalning");
+      setSubscriptionBusyId(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (!profileId) return;
@@ -1259,6 +1282,7 @@ export default function AccountPortal() {
       busyId={subscriptionBusyId}
       onAccept={acceptSubscription}
       onPay={paySubscription}
+      onPayByCard={paySubscriptionByCard}
       onRelease={releaseSubscriptionOccurrence}
       onRefresh={refreshSubscriptions}
     /></> : null}
@@ -1530,6 +1554,7 @@ function SubscriptionCentre({
   busyId,
   onAccept,
   onPay,
+  onPayByCard,
   onRelease,
   onRefresh,
 }: {
@@ -1540,6 +1565,7 @@ function SubscriptionCentre({
   busyId: string | null;
   onAccept: (item: CourtSubscription) => Promise<void>;
   onPay: (item: CourtSubscription, payerAlias: string) => Promise<void>;
+  onPayByCard: (item: CourtSubscription) => Promise<void>;
   onRelease: (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => Promise<void>;
   onRefresh: () => Promise<void>;
 }) {
@@ -1574,6 +1600,8 @@ function SubscriptionCentre({
       {items.map((item) => {
         const canAccept = subscriptionCanAccept(item);
         const canPay = subscriptionCanPay(item);
+        const canPayByCard = subscriptionCanPayByCard(item);
+        const openCardUrl = subscriptionOpenCardCheckoutUrl(item);
         const payerAlias = payerAliases[item.id] ?? defaultPayerAlias;
         const attempt = attemptLabel(item);
         return <article key={item.id} className="border border-black/15 p-5 sm:p-6">
@@ -1606,7 +1634,12 @@ function SubscriptionCentre({
           {canPay ? <form className="mt-5 border-t border-black/10 pt-5" onSubmit={(event) => { event.preventDefault(); void onPay(item, payerAlias); }}>
             <label className="block max-w-sm"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-black/55">Swish-nummer</span><input value={payerAlias} onChange={(event) => setPayerAliases((current) => ({ ...current, [item.id]: event.target.value }))} inputMode="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
             <button type="submit" disabled={busyId === item.id || !validSwishPayerAlias(payerAlias)} className="mt-4 min-h-12 cursor-pointer bg-[#00a98f] px-6 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:opacity-35"><SwishButtonLabel>Betala med Swish</SwishButtonLabel></button>
+            {canPayByCard ? <div className="max-w-sm"><AlternativePaymentOption busy={busyId === item.id} disabled={busyId === item.id} onClick={() => void onPayByCard(item)} /></div> : null}
           </form> : null}
+          {!canPay && openCardUrl ? <div className="mt-5 border-t border-black/10 pt-5">
+            <p className="text-sm text-black/60">En kortbetalning är påbörjad. Slutför den hos Stripe, eller vänta ungefär 30 minuter så kan du välja Swish igen.</p>
+            <a href={openCardUrl} className="mt-3 inline-flex min-h-12 items-center bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime">Fortsätt kortbetalningen</a>
+          </div> : null}
         </article>;
       })}
     </div>}

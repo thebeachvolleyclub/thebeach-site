@@ -16,7 +16,27 @@ export type SubscriptionPayment = {
   paymentStatus: string;
   amountOre: number;
   swish: SubscriptionSwishAttempt | null;
+  /** HQ #296: latest Stripe hosted Checkout attempt (secondary to Swish). */
+  card: SubscriptionCardAttempt | null;
 };
+
+export type SubscriptionCardAttempt = {
+  transactionId: string;
+  status: "CREATING" | "CREATED" | "PAID" | "FAILED" | "EXPIRED";
+  checkoutUrl: string | null;
+};
+
+export function subscriptionCardAttemptFromWire(value: unknown): SubscriptionCardAttempt | null {
+  const item = record(value);
+  const statuses = ["CREATING", "CREATED", "PAID", "FAILED", "EXPIRED"] as const;
+  if (!statuses.includes(item.status as typeof statuses[number]) || typeof item.transactionId !== "string") return null;
+  const checkoutUrl = nullableText(item.checkoutUrl);
+  return {
+    transactionId: item.transactionId,
+    status: item.status as SubscriptionCardAttempt["status"],
+    checkoutUrl: checkoutUrl && /^https:\/\/checkout\.stripe\.com\//.test(checkoutUrl) ? checkoutUrl : null,
+  };
+}
 
 export type CourtSubscription = {
   id: string;
@@ -86,6 +106,7 @@ export function subscriptionPaymentFromWire(
     paymentStatus: text(item.paymentStatus, "SELECTED"),
     amountOre: finite(item.amountOre) || fallbackAmount,
     swish: subscriptionSwishAttemptFromWire(item.swish),
+    card: subscriptionCardAttemptFromWire(item.card),
   };
 }
 
@@ -134,12 +155,30 @@ export function subscriptionCanAccept(item: CourtSubscription): boolean {
   return item.status === "OFFERED" && Boolean(item.paymentDueOn) && !item.payment.paymentExpired;
 }
 
-export function subscriptionCanPay(item: CourtSubscription): boolean {
+function subscriptionPaymentOpen(item: CourtSubscription): boolean {
   return item.status === "AWAITING_PAYMENT"
-    && item.payment.paymentMethod === "SWISH"
-    && item.payment.paymentStatus === "SELECTED"
     && !item.payment.paymentExpired
     && !["CREATING", "CREATED", "PAID", "RECONCILIATION_REQUIRED"].includes(item.payment.swish?.status ?? "");
+}
+
+/** Swish (primary). A card choice the customer never completed is switched back server-side. */
+export function subscriptionCanPay(item: CourtSubscription): boolean {
+  return subscriptionPaymentOpen(item)
+    && item.payment.paymentStatus === "SELECTED"
+    && ["SWISH", "CARD"].includes(item.payment.paymentMethod);
+}
+
+/** HQ #296: card via Stripe hosted Checkout (secondary). Same gates as Swish, plus an open link may be resumed. */
+export function subscriptionCanPayByCard(item: CourtSubscription): boolean {
+  if (!subscriptionPaymentOpen(item)) return false;
+  if (subscriptionOpenCardCheckoutUrl(item)) return true;
+  return item.payment.paymentStatus === "SELECTED" && ["SWISH", "CARD"].includes(item.payment.paymentMethod);
+}
+
+export function subscriptionOpenCardCheckoutUrl(item: CourtSubscription): string | null {
+  const card = item.payment.card;
+  if (!card || card.status !== "CREATED" || !card.checkoutUrl) return null;
+  return item.payment.paymentMethod === "CARD" && item.payment.paymentStatus === "EXTERNAL_CREATED" ? card.checkoutUrl : null;
 }
 
 export function subscriptionPaymentNeedsPolling(item: CourtSubscription): boolean {
