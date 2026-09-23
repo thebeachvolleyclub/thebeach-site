@@ -55,7 +55,7 @@ export default function SubscriptionCardReturnPanel() {
     : phase === "unknown" ? "Hittar inte abonnemanget"
     : "Vi bekräftar betalningen";
   const body = phase === "paid" && item
-    ? `${item.termName}: ${item.seriesName || item.courtName} kl. ${item.startTime} är betalt. Dina tider finns under Mina bokningar.`
+    ? `${item.termName}: ${item.seriesName || `${item.courtName} kl. ${item.startTime}`} är betalt. Dina tider finns under Mina bokningar.`
     : phase === "paid" ? "Abonnemanget är betalt och aktivt."
     : phase === "cancelled" ? "Inget har dragits. Du kan betala med Swish eller försöka med kort igen från Mitt konto."
     : phase === "pending" ? "Betalningen är mottagen men inte bekräftad ännu. Det brukar ta någon minut — abonnemanget visas som aktivt i Mitt konto så snart bekräftelsen kommit."
