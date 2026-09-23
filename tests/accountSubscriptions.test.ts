@@ -87,3 +87,26 @@ test("account portal exposes the dedicated subscription customer flow", () => {
   assert.match(portal, /Betala med Swish/);
   assert.match(portal, /subscriptionPaymentNeedsPolling/);
 });
+
+test("HQ #295: booking owner action distinguishes cancel, release and pending subscription", async () => {
+  const { bookingOwnerAction } = await import("../src/lib/accountSubscription.core.ts");
+  assert.deepEqual(bookingOwnerAction({ status: "CONFIRMED" }), { kind: "cancel" });
+  assert.deepEqual(bookingOwnerAction({ status: "PENDING_PAYMENT" }), { kind: "none" });
+  assert.deepEqual(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "ACTIVE", subscriptionOccurrenceStatus: "SCHEDULED" }),
+    { kind: "release", occurrenceId: "o1", subscriptionId: "s1" },
+  );
+  assert.equal(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "ACTIVE", subscriptionOccurrenceStatus: "RELEASED" }).kind,
+    "none",
+  );
+  for (const status of ["OFFERED", "AWAITING_PAYMENT"]) {
+    const action = bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: status, subscriptionOccurrenceStatus: "SCHEDULED" });
+    assert.equal(action.kind, "subscription-pending");
+  }
+  // A subscription time is never a regular cancel, whatever its state.
+  assert.notEqual(
+    bookingOwnerAction({ status: "CONFIRMED", subscriptionId: "s1", subscriptionOccurrenceId: "o1", subscriptionStatus: "TERMINATED", subscriptionOccurrenceStatus: "SCHEDULED" }).kind,
+    "cancel",
+  );
+});

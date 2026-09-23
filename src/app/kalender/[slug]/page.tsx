@@ -26,11 +26,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!hit) return {};
   const title = `${hit.ev.title} — ${hit.month} | The Beach`;
   const description = hit.ev.beskrivning ?? hit.ev.meta;
+  const b = hit.ev.bild;
   return {
     title,
     description,
     alternates: { canonical: `/kalender/${slug}` },
-    openGraph: og(`/kalender/${slug}`, `${hit.ev.title} · ${hit.month}`, description, { type: "article" }),
+    openGraph: og(`/kalender/${slug}`, `${hit.ev.title} · ${hit.month}`, description, {
+      type: "article",
+      ...(b ? { image: b.src, imageWidth: b.width, imageHeight: b.height, imageAlt: b.alt } : {}),
+    }),
   };
 }
 
@@ -72,7 +76,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     description: ev.beskrivning ?? ev.meta,
-    image: "https://thebeach.one/opengraph-image.png",
+    image: ev.bild ? `https://thebeach.one${ev.bild.src}` : "https://thebeach.one/opengraph-image.png",
     location: {
       "@type": "Place",
       name: "The Beach",
@@ -108,6 +112,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
 
         <section className="bg-cream px-5 py-14 sm:px-8 lg:px-14 lg:py-20">
           <div className="mx-auto max-w-3xl">
+            {ev.bild && (
+              <Reveal>
+                <img src={ev.bild.src} alt={ev.bild.alt} width={ev.bild.width} height={ev.bild.height} className="mb-10 h-auto w-full" />
+              </Reveal>
+            )}
             <Reveal>
               <p className="text-[17px] leading-relaxed text-black/70">
                 <RichText text={ev.beskrivning ?? ev.meta} />

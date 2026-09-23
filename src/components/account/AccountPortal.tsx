@@ -48,6 +48,8 @@ import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birth
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
 import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from "@/lib/accountInvoice.core";
 import {
+  SUBSCRIPTION_RELEASE_CONFIRM_TEXT,
+  bookingOwnerAction,
   subscriptionCanAccept,
   subscriptionCanPay,
   subscriptionOccurrenceCanRelease,
@@ -114,6 +116,11 @@ type Booking = {
   receiptNumber?: string | null;
   receiptIssuedAt?: string | null;
   streamRequested: boolean;
+  // HQ #295: set when the booking is a court-subscription time.
+  subscriptionId?: string | null;
+  subscriptionOccurrenceId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionOccurrenceStatus?: string | null;
 };
 type CourtReceipt = { bookingId: string; receiptNumber: string; downloadUrl: string };
 type InvoiceLine = { group_name: string; day_time?: string | null; amount_sek: number; base_cost_sek?: number; discount_sek?: number };
@@ -462,7 +469,7 @@ export default function AccountPortal() {
   }, []);
 
   const releaseSubscriptionOccurrence = useCallback(async (item: CourtSubscription, occurrence: CourtSubscription["occurrences"][number]) => {
-    if (!window.confirm(`Frigöra ${occurrence.courtName} den ${occurrence.date} kl. ${occurrence.startTime}? Tiden blir tillgänglig för andra. Om den säljs och betalas får du 90 % av försäljningspriset i personlig kredit, minst 50 % och högst 100 % av ditt ursprungliga pris. Krediten gäller i 12 månader.`)) return;
+    if (!window.confirm(SUBSCRIPTION_RELEASE_CONFIRM_TEXT(occurrence.courtName, occurrence.date, occurrence.startTime))) return;
     setSubscriptionBusyId(occurrence.id);
     setError(""); setMessage("");
     try {
@@ -987,7 +994,28 @@ export default function AccountPortal() {
     finally { setBusy(false); }
   };
 
+  const releaseBookingTime = async (booking: Booking, occurrenceId: string, subscriptionId: string) => {
+    if (!window.confirm(SUBSCRIPTION_RELEASE_CONFIRM_TEXT(booking.courtName, booking.date, booking.startTime))) return;
+    setCancellingBookingId(booking.id); setError(""); setMessage("");
+    try {
+      await api(`/api/account/subscriptions/occurrences/${encodeURIComponent(occurrenceId)}/release`, { method: "POST" });
+      setBookings((current) => current.map((item) => item.id === booking.id ? { ...item, status: "CANCELLED", subscriptionOccurrenceStatus: "RELEASED" } : item));
+      setSubscriptions((current) => current.map((candidate) => candidate.id === subscriptionId
+        ? { ...candidate, occurrences: candidate.occurrences.map((entry) => entry.id === occurrenceId ? { ...entry, status: "RELEASED" } : entry) }
+        : candidate));
+      setMessage("Tiden är släppt. Du får tillgodohavandet automatiskt när tiden har sålts och betalats.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Kunde inte släppa tiden");
+    } finally {
+      setCancellingBookingId(null);
+    }
+  };
+
   const cancelBooking = async (booking: Booking) => {
+    const action = bookingOwnerAction(booking);
+    if (action.kind === "release") return releaseBookingTime(booking, action.occurrenceId, action.subscriptionId);
+    if (action.kind === "subscription-pending") { setTab("subscriptions"); setError(""); setMessage(""); return; }
+    if (action.kind !== "cancel") return;
     if (!window.confirm("Avboka banan? Inom en timme efter bokning återbetalas hela beloppet. Minst 24 timmar före start återbetalas beloppet minus 20 kr. Senare sker ingen återbetalning.")) return;
     setCancellingBookingId(booking.id); setError(""); setMessage("");
     try {
@@ -1665,7 +1693,7 @@ function AccountOverview({
             <span className="text-black/45">{bookingPriceText(featuredBooking)}</span>
             {featuredBooking.streamRequested ? <span className="text-black/45">BeachTV-stream beställd</span> : null}
           </div>
-          {featuredIsUpcoming && featuredBooking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancelBooking(featuredBooking)} disabled={cancellingBookingId === featuredBooking.id} className="mt-4 min-h-10 cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50">{cancellingBookingId === featuredBooking.id ? "Avbokar…" : "Avboka bokning"}</button> : null}
+          {featuredIsUpcoming ? <BookingOwnerControl booking={featuredBooking} onAction={onCancelBooking} busy={cancellingBookingId === featuredBooking.id} className="mt-4" longLabel /> : null}
         </div> : <div className="mt-8 border border-dashed border-black/20 bg-cream p-6">
           <strong className="block">Ingen bana bokad ännu</strong>
           <p className="mt-2 text-sm leading-relaxed text-black/50">Hitta en ledig 90-minuterstid och boka direkt med Swish.</p>
@@ -2339,5 +2367,21 @@ function formatAccountDate(value: string) {
 }
 
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
-  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel && booking.status === "CONFIRMED" ? <button type="button" onClick={() => onCancel(booking)} disabled={cancellingBookingId === booking.id} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{cancellingBookingId === booking.id ? "Avbokar…" : "Avboka"}</button> : null}</article>)}</div>}</div>;
+  return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel ? <BookingOwnerControl booking={booking} onAction={onCancel} busy={cancellingBookingId === booking.id} className="w-full sm:w-auto" /> : null}</article>)}</div>}</div>;
+}
+
+/** HQ #295: "Avboka" for regular bookings, "Släpp tiden" for paid subscription times, a hint for unpaid ones. */
+function BookingOwnerControl({ booking, onAction, busy, className, longLabel }: { booking: Booking; onAction: (booking: Booking) => void; busy: boolean; className?: string; longLabel?: boolean }) {
+  const action = bookingOwnerAction(booking);
+  if (action.kind === "none") return null;
+  if (action.kind === "subscription-pending") {
+    return <div className={`text-xs ${className ?? ""}`}><span className="block font-bold uppercase tracking-[0.08em] text-teal">{action.label}</span><button type="button" onClick={() => onAction(booking)} className="mt-1 cursor-pointer underline underline-offset-4 text-black/60 hover:text-black">Öppna abonnemanget</button></div>;
+  }
+  const label = action.kind === "release"
+    ? (busy ? "Släpper…" : "Släpp tiden")
+    : (busy ? "Avbokar…" : longLabel ? "Avboka bokning" : "Avboka");
+  return <div className={className}>
+    <button type="button" onClick={() => onAction(booking)} disabled={busy} className="min-h-10 w-full cursor-pointer border border-orange px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-orange transition-colors hover:bg-orange hover:text-white disabled:cursor-wait disabled:opacity-50 sm:w-auto">{label}</button>
+    {action.kind === "release" ? <span className="mt-1 block text-xs text-black/45">Abonnemangstid · släpps med tillgodo, avbokas inte</span> : null}
+  </div>;
 }

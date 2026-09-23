@@ -23,6 +23,8 @@ export type Ev = {
   schema?: { tid: string; vad: string }[];
   appCta?: boolean;
   skarm?: boolean;
+  /** Omslagsbild för händelsesidan + delning (sökväg under /public). */
+  bild?: { src: string; alt: string; width: number; height: number };
 };
 
 export type Month = { month: string; events: Ev[] };
@@ -143,11 +145,32 @@ export const MONTHS: Month[] = [
         slug: "sperlonga-2026", skarm: true,
         beskrivning: "BeachTravels träningsresa till Sperlonga, Italien — en vecka av sol, sand och beachvolley för spelare som vill ta med sig träningen på semestern.",
         cta: { label: "Läs mer & boka", href: "https://beachtravels.se/sperlonga/" } },
+      { day: "27", wd: "Sön", title: "Gameday – träningsgrupper vuxna", meta: "Matchspel istället för träning · Samma tid och plats", badge: "Gameday", type: "training",
+        slug: "gameday-vecka-2026",
+        beskrivning: "Sista veckan i september byter vi ut den vanliga träningen mot matchspel. Samma tid och plats som vanligt – kom redo att spela. Gameday betyder att vi spelar matcher istället för vanlig träning: turneringsledaren bestämmer spelformat och regler, oftast vinnarbana – vinner du går du upp en bana, förlorar du går du ner. Turneringsledaren avgör på plats om grupper slås ihop.",
+        stycken: [
+          "Gameday-veckan 27 september–1 oktober: söndag, måndag och onsdag spelar träningsgrupperna vuxna matcher. Tisdag avslutar grundkursen med turnering och fortsättningskursen kör Gameday. Torsdag avslutar grundkursen med turnering och fortsättningskursen kör ordinarie träning.",
+          "Till er på grundkursen: sista passet avslutas med en turnering. Ta med tävlingshumöret – och tack för den här omgången!",
+        ] },
+      { day: "28", wd: "Mån", title: "Gameday – träningsgrupper vuxna", meta: "Matchspel istället för träning · Samma tid och plats", badge: "Gameday", type: "training" },
+      { day: "29", wd: "Tis", title: "Grundkurs: avslutningsturnering · Fortsättningskurs: Gameday", meta: "Sista passet för grundkursen · Samma tid och plats", badge: "Gameday", type: "training" },
+      { day: "30", wd: "Ons", title: "Gameday – träningsgrupper vuxna", meta: "Matchspel istället för träning · Samma tid och plats", badge: "Gameday", type: "training" },
     ],
   },
   {
     month: "Oktober 2026",
     events: [
+      { day: "1", wd: "Tor", title: "Grundkurs: avslutningsturnering · Fortsättningskurs: ordinarie träning", meta: "Sista passet för grundkursen · Samma tid och plats", badge: "Gameday", type: "training" },
+      { day: "23", wd: "Fre", title: "Beachklivet – prova beachvolley gratis", meta: "10–19 år · 15.45–17.30 · Gratis · Anmälan via Svenska Lag", badge: "Ungdom", type: "free",
+        slug: "beachklivet", skarm: true,
+        bild: { src: "/media/uploads/2026/09/beachklivet-omslag-923e027e33.webp", alt: "Beachklivet – prova beachvolley, gratis för 10–19 år, fredag 23 oktober 15.45–17.30 på The Beach", width: 1920, height: 1005 },
+        beskrivning: "The Beach öppnar hallen för alla mellan 10 och 19 år som vill testa beachvolley. Det är gratis, ingen förkunskap behövs, och du behöver inte ha någon att komma med – vi delar in alla i grupper på plats. Ledare från klubben håller i hela passet.",
+        stycken: [
+          "Vi lär ut serve, bagger och smash, går igenom grundläggande positionering och avslutar med King of the Court.",
+          "Ankomst från 15.45, vi drar igång 16.00 och håller på till 17.30. Ta med träningskläder och en vattenflaska – vi spelar barfota i uppvärmd sand. Omklädningsrum och dusch finns.",
+          "Anmälan görs i förväg via Svenska Lag, en person i taget. Fler tillfällen: 29 december under jullovet, och ett till i januari eller februari. Beachklivet genomförs med stöd från RF-SISU Stockholm.",
+        ],
+        cta: { label: "Anmäl dig gratis", href: "https://www.svenskalag.se/thebeach/formular/prova-pa-beach-23-oktober-1545-1730/42228" } },
       fredagsmys("2"),
       fredagsmys("9"),
       fredagsmys("16"),

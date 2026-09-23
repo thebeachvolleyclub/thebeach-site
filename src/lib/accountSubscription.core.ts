@@ -168,3 +168,43 @@ export function subscriptionOccurrenceCanRelease(
     && /^\d{2}:\d{2}$/.test(occurrence.startTime)
     && `${occurrence.date}T${occurrence.startTime}` > localNow;
 }
+
+// --- HQ #295: subscription times inside "Mina bokningar" ---
+
+export type SubscriptionLinkedBooking = {
+  status: string;
+  subscriptionId?: string | null;
+  subscriptionOccurrenceId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionOccurrenceStatus?: string | null;
+};
+
+export type BookingOwnerAction =
+  | { kind: "cancel" }
+  | { kind: "release"; occurrenceId: string; subscriptionId: string }
+  | { kind: "subscription-pending"; subscriptionId: string; label: string }
+  | { kind: "none" };
+
+/**
+ * Decide what the owner may do with a booking row. Regular confirmed bookings
+ * are cancelled; court-subscription times are never cancelled — they are
+ * released via the subscription (credit rule) once the subscription is paid.
+ */
+export function bookingOwnerAction(booking: SubscriptionLinkedBooking): BookingOwnerAction {
+  if (booking.status !== "CONFIRMED") return { kind: "none" };
+  const subscriptionId = booking.subscriptionId ?? null;
+  const occurrenceId = booking.subscriptionOccurrenceId ?? null;
+  if (!subscriptionId || !occurrenceId) return { kind: "cancel" };
+  if (booking.subscriptionStatus === "ACTIVE") {
+    return booking.subscriptionOccurrenceStatus === "SCHEDULED"
+      ? { kind: "release", occurrenceId, subscriptionId }
+      : { kind: "none" };
+  }
+  if (booking.subscriptionStatus === "OFFERED" || booking.subscriptionStatus === "AWAITING_PAYMENT") {
+    return { kind: "subscription-pending", subscriptionId, label: "Ingår i banabonnemang · väntar på betalning" };
+  }
+  return { kind: "none" };
+}
+
+export const SUBSCRIPTION_RELEASE_CONFIRM_TEXT = (courtName: string, date: string, startTime: string) =>
+  `Släppa ${courtName} den ${date} kl. ${startTime}? Tiden blir tillgänglig för andra. Om den säljs och betalas får du 90 % av försäljningspriset i personlig kredit, minst 50 % och högst 100 % av ditt ursprungliga pris. Krediten gäller i 12 månader.`;
