@@ -15,7 +15,7 @@
  */
 
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
-import { getAppCalendarEvents } from "./app-events";
+import { getAppCalendarEvents, removeSupersededFredagsmys } from "./app-events";
 import { resolveBeachTvTournaments } from "./beachtv-tournaments";
 import {
   attachBeachTvLinksToRenderedManualRows,
@@ -248,7 +248,8 @@ export async function getMergedMonths(): Promise<Month[]> {
 
   try {
     const appEvents = await getAppCalendarEvents();
-    for (const { date, event } of appEvents) {
+    for (const appEvent of appEvents) {
+      const { date, event } = appEvent;
       if (date < today) continue;
 
       const [year, monthNumber, dayNumber] = date.split("-").map(Number);
@@ -261,6 +262,7 @@ export async function getMergedMonths(): Promise<Month[]> {
 
       const day = String(dayNumber);
       const normalizedTitle = event.title.trim().toLocaleLowerCase("sv-SE");
+      month.events = removeSupersededFredagsmys(month.events, day, appEvent);
       const duplicate = month.events.some(
         (existing) =>
           existing.day === day &&

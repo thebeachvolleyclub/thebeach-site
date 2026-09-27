@@ -20,6 +20,8 @@ type AppFeedEvent = {
   title: string;
   subtitle: string | null;
   type: "seriespel" | "event";
+  event_type?: string | null;
+  junior_audience?: "family" | "children_youth" | null;
   start_at: string;
   end_at: string;
   all_day: boolean;
@@ -40,6 +42,7 @@ type FeedEnvelope = {
 export type AppCalendarEvent = {
   date: string;
   event: Omit<Ev, "day" | "wd">;
+  isJuniorEvent: boolean;
 };
 
 let lastSuccess: { at: number; events: AppFeedEvent[] } | null = null;
@@ -61,6 +64,9 @@ function isAppFeedEvent(value: unknown): value is AppFeedEvent {
     typeof value.title === "string" &&
     isNullableString(value.subtitle) &&
     (value.type === "seriespel" || value.type === "event") &&
+    (value.event_type === undefined || isNullableString(value.event_type)) &&
+    (value.junior_audience === undefined || value.junior_audience === null ||
+      value.junior_audience === "family" || value.junior_audience === "children_youth") &&
     typeof value.start_at === "string" &&
     Number.isFinite(Date.parse(value.start_at)) &&
     typeof value.end_at === "string" &&
@@ -170,13 +176,19 @@ function presentation(source: AppFeedEvent): AppCalendarEvent {
     .filter((part): part is string => Boolean(part))
     .join(" · ");
   const isSeriespel = source.type === "seriespel";
+  const isJuniorEvent = source.type === "event" && source.event_type === "junior";
 
   return {
     date: start.date,
+    isJuniorEvent,
     event: {
       title: source.title,
       meta,
-      badge: isSeriespel ? "Seriespel" : "Event",
+      badge: isSeriespel
+        ? "Seriespel"
+        : isJuniorEvent
+          ? source.junior_audience === "children_youth" ? "Barn & ungdom" : "Familj"
+          : "Event",
       badgeTone: "teal",
       type: "event",
       slug: slugFor(source.source_id),
@@ -196,4 +208,16 @@ function presentation(source: AppFeedEvent): AppCalendarEvent {
 
 export async function getAppCalendarEvents(): Promise<AppCalendarEvent[]> {
   return (await fetchAppEvents()).map(presentation);
+}
+
+/** A published app occurrence replaces only the same day's old recurring listing. */
+export function removeSupersededFredagsmys(
+  events: Ev[],
+  day: string,
+  incoming: AppCalendarEvent,
+): Ev[] {
+  if (!incoming.isJuniorEvent || incoming.event.title.trim().toLocaleLowerCase("sv-SE") !== "fredagsmys") {
+    return events;
+  }
+  return events.filter((event) => !(event.day === day && event.slug === "fredagsmys"));
 }
