@@ -1,5 +1,21 @@
 # Current Work State
 
+## My Practices training-group disclosure — 2026-10-01
+
+- Objective: when an account has multiple active training groups, keep each
+  group collapsed by default so the group names form a compact overview; an
+  account with exactly one group remains expanded by default.
+- Implementation on current `main` replaces each group card in
+  `AccountPortal.tsx` with an accessible native `details`/`summary`. The
+  collapsed row shows the group name and expand indicator. Schedule, courts,
+  and that group's latest video thumbnails remain inside the expanded panel.
+- Contract coverage in `tests/accountTrainingRecordings.test.ts` verifies the
+  conditional default-open rule and disclosure markup. Full unit suite: 183
+  passed. Lint/build/visual review and production publication are still pending.
+- Exact next action: run lint and production build, visually inspect collapsed
+  and expanded states, then pull/rebase if necessary, commit, push `main`, and
+  publish the pushed commit to production via the documented deployment flow.
+
 ## HQ #289 court-subscription customer payment — website candidate 17 September 2026
 
 - Branch `codex/hq289-subscription-payment-20260917` starts from current main

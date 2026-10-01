@@ -2142,13 +2142,22 @@ function AccountTraining({
                   {trainingGroups.filter((g) => (g.season ?? "") === season).map((group) => {
                     const courts = trainingGroupCourtLabel(trainingRecordings, group.group_name, group.day_time, group.court);
                     const recordings = trainingGroupRecentRecordings(trainingRecordings, group.group_name, group.day_time, group.court);
-                    return <div key={`${group.group_name}-${group.day_time}`} className="border border-white/15 bg-white/5 p-4">
-                      <strong className="block text-base text-cream">{group.group_name}</strong>
-                      <span className="mt-1 block text-sm text-cream/65">{group.day_time}{courts ? ` · ${courts}` : ""}</span>
-                      {trainingRecordingsAvailable && recordings.length ? (
-                        <TrainingGroupRecordingStrip recordings={recordings} groupName={group.group_name} />
-                      ) : null}
-                    </div>;
+                    return <details
+                      key={`${group.group_name}-${group.day_time}`}
+                      className="group border border-white/15 bg-white/5"
+                      open={trainingGroups.length === 1}
+                    >
+                      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 p-4 transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime [&::-webkit-details-marker]:hidden">
+                        <strong className="text-base text-cream">{group.group_name}</strong>
+                        <span className="shrink-0 text-xl leading-none text-lime transition-transform duration-200 group-open:rotate-45" aria-hidden="true">+</span>
+                      </summary>
+                      <div className="border-t border-white/10 px-4 pb-4 pt-3">
+                        <span className="block text-sm text-cream/65">{group.day_time}{courts ? ` · ${courts}` : ""}</span>
+                        {trainingRecordingsAvailable && recordings.length ? (
+                          <TrainingGroupRecordingStrip recordings={recordings} groupName={group.group_name} />
+                        ) : null}
+                      </div>
+                    </details>;
                   })}
                 </div>
               </div>

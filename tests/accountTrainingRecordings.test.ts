@@ -112,9 +112,11 @@ test("training group court labels use complete compact ranges", () => {
   assert.equal(formatTrainingCourts("6, 8, 9, 10", 6), "Banor 6, 8–10");
 });
 
-test("account nests small recording strips per group and keeps one archive link after the list", () => {
+test("account collapses multiple training groups and keeps one archive link after the list", () => {
   assert.match(portal, /Mina träningsgrupper/);
   assert.match(portal, /trainingGroupRecentRecordings\(trainingRecordings, group\.group_name, group\.day_time, group\.court\)/);
+  assert.match(portal, /<details[\s\S]*open=\{trainingGroups\.length === 1\}/);
+  assert.match(portal, /<summary[\s\S]*\{group\.group_name\}[\s\S]*group-open:rotate-45/);
   assert.match(portal, /<TrainingGroupRecordingStrip recordings=\{recordings\} groupName=\{group\.group_name\} \/>/);
   assert.match(portal, /Senaste filmerna/);
   assert.match(portal, /Hela videoarkivet/);
