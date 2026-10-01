@@ -11,10 +11,16 @@
   and that group's latest video thumbnails remain inside the expanded panel.
 - Contract coverage in `tests/accountTrainingRecordings.test.ts` verifies the
   conditional default-open rule and disclosure markup. Full unit suite: 183
-  passed. Lint/build/visual review and production publication are still pending.
-- Exact next action: run lint and production build, visually inspect collapsed
-  and expanded states, then pull/rebase if necessary, commit, push `main`, and
-  publish the pushed commit to production via the documented deployment flow.
+  passed. `npm run build` passed with only the established NFT/Profixio fallback
+  warnings. Desktop and 375px mobile browser checks confirm all multi-group
+  panels start closed, an opened group reveals schedule/videos, the indicator
+  rotates, and there is no horizontal page overflow.
+- Repository-wide `npm run lint` remains red on the existing baseline (13
+  unrelated errors in legacy effect/script code); no diagnostic points at the
+  changed lines.
+- Exact next action: pull/rebase if necessary, commit, push `main`, publish the
+  pushed commit to production via the documented deployment flow, and verify
+  production health.
 
 ## HQ #289 court-subscription customer payment — website candidate 17 September 2026
 
