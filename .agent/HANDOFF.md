@@ -18,9 +18,11 @@
 - Repository-wide `npm run lint` remains red on the existing baseline (13
   unrelated errors in legacy effect/script code); no diagnostic points at the
   changed lines.
-- Exact next action: pull/rebase if necessary, commit, push `main`, publish the
-  pushed commit to production via the documented deployment flow, and verify
-  production health.
+- Released to production from pushed commit
+  `f76e4d730a1b09356aab97a1804f4b0d21b56802` (implementation in `4d1a5b9`).
+  The prod container reports healthy on loopback-only port 3000; `/`, `/konto`,
+  `/trana`, `/events`, `/kalender`, and `/om-oss` all returned HTTP 200 through
+  the public Apache/TLS endpoint. No follow-up work remains for this objective.
 
 ## HQ #289 court-subscription customer payment — website candidate 17 September 2026
 
