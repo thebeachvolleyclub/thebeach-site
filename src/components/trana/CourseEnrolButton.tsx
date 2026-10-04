@@ -290,6 +290,8 @@ export default function CourseEnrolButton({
       requestController: AbortController,
     ) => {
       setPhase("startingStripe");
+      setSwishHandoff(null);
+      setShowDesktopSwish(false);
       const chargeResponse = await fetch(
         `/api/courses/invoices/${encodeURIComponent(invoiceId)}/stripe`,
         { method: "POST", signal: requestController.signal },
@@ -368,6 +370,11 @@ export default function CourseEnrolButton({
           paymentPriceRef.current = savedInvoice.amountSek;
           setPaymentPriceSek(savedInvoice.amountSek);
         }
+        setInvoiceStartedAt(savedInvoice.createdAt);
+        if (paymentProvider === "STRIPE") {
+          await startStripeCheckout(savedInvoice.invoiceId, controller);
+          return;
+        }
         if (savedInvoice.deepLinkUrl) {
           setSwishHandoff({
             deepLinkUrl: savedInvoice.deepLinkUrl,
@@ -377,11 +384,6 @@ export default function CourseEnrolButton({
             window.navigator.userAgent,
             window.navigator.maxTouchPoints,
           ));
-        }
-        setInvoiceStartedAt(savedInvoice.createdAt);
-        if (paymentProvider === "STRIPE") {
-          await startStripeCheckout(savedInvoice.invoiceId, controller);
-          return;
         }
         if (!savedInvoice.deepLinkUrl) {
           await startSwishCheckout(
@@ -513,9 +515,11 @@ export default function CourseEnrolButton({
         message: cause instanceof PaymentStatusError ? cause.message : t.errorGeneric,
       });
     } finally {
-      inFlight.current = false;
-      if (activeRequest.current === controller) activeRequest.current = null;
-      setPhase("idle");
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        inFlight.current = false;
+        setPhase("idle");
+      }
     }
 
     async function finishPayment(
@@ -570,6 +574,21 @@ export default function CourseEnrolButton({
         setResult({ ok: false, message: t.paymentTimeout });
       }
     }
+  }
+
+  /**
+   * Kunden tryckte "Anmäl dig" (Swish) men vill betala med kort. Tidigare var
+   * kortvalet avstängt så länge sidan väntade på Swish (upp till 14,5 min), så
+   * sidan upplevdes som hängd. Avbryt Swish-väntan och starta kort på samma
+   * faktura/reservation istället.
+   */
+  async function switchToCard() {
+    if (phase === "waitingForSwish") {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+      inFlight.current = false;
+    }
+    await submit("STRIPE");
   }
 
   const validPromotion = promotionLookup.kind === "valid" ? promotionLookup.preview : null;
@@ -822,6 +841,15 @@ export default function CourseEnrolButton({
           >
             {t.openSwishCta}
           </a>
+          {phase === "waitingForSwish" && (
+            <button
+              type="button"
+              onClick={() => void switchToCard()}
+              className="mt-3 block w-full border border-black/15 px-4 py-2 text-[12px] font-bold text-black transition-opacity hover:opacity-70"
+            >
+              {t.switchToCardCta}
+            </button>
+          )}
           <p className="mt-3 border-t border-black/10 pt-3 text-[11px] leading-snug text-black/45">
             {t.afterPayment}
           </p>
@@ -867,9 +895,9 @@ export default function CourseEnrolButton({
       </button>
       {!waitlist && (
         <AlternativePaymentOption
-          busy={busy}
-          disabled={!accepted || busy || promotionNeedsValidation}
-          onClick={() => submit("STRIPE")}
+          busy={busy && phase !== "waitingForSwish"}
+          disabled={!accepted || (busy && phase !== "waitingForSwish") || promotionNeedsValidation}
+          onClick={() => void switchToCard()}
           locale={locale}
         />
       )}

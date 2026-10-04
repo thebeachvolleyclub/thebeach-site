@@ -32,6 +32,7 @@ export type KurserDict = {
   holdNotice: (clock: string) => string;
   holdExpired: string;
   afterPayment: string;
+  switchToCardCta: string;
   swishSecurity: string;
   sellerLabel: string;
   paymentHelp: (email: string) => string;
@@ -145,7 +146,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     fewLeft: "Få platser kvar",
     waitlistCount: (n) => (n === 1 ? "1 person i kö" : `${n} personer i kö`),
     closed: "Anmälan stängd",
-    signupCta: "Anmäl dig",
+    signupCta: "Anmäl dig med Swish",
     waitlistCta: "Ställ dig i kö",
     closedCta: "Anmälan stängd",
     coachLabel: "Tränare",
@@ -157,6 +158,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     amountLabel: (amount) => `Att betala: ${amount}`,
     holdNotice: (clock) => `Platsen är reserverad åt dig ${clock} till.`,
     holdExpired: "Reservationen gick ut. Klicka på Anmäl dig igen så startar vi en ny betalning — platsen finns kvar så länge kursen har plats.",
+    switchToCardCta: "Betala med kort istället",
     afterPayment: "När betalningen gått igenom är platsen din direkt. Bekräftelse och kvitto mejlas till adressen på ditt konto.",
     swishSecurity: "Swish sker i Swish-appen och kortbetalning på Stripes betalsida. Vi ser aldrig dina bank- eller kortuppgifter.",
     sellerLabel: "Säljare",
@@ -262,7 +264,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     fewLeft: "Few places left",
     waitlistCount: (n) => (n === 1 ? "1 person waiting" : `${n} people waiting`),
     closed: "Registration closed",
-    signupCta: "Sign up",
+    signupCta: "Sign up with Swish",
     waitlistCta: "Join the waitlist",
     closedCta: "Registration closed",
     coachLabel: "Coach",
@@ -274,6 +276,7 @@ export const kurserDict: Record<Locale, KurserDict> = {
     amountLabel: (amount) => `To pay: ${amount}`,
     holdNotice: (clock) => `Your place is reserved for another ${clock}.`,
     holdExpired: "The reservation ran out. Press Sign up again to start a new payment — the place is still there as long as the course has room.",
+    switchToCardCta: "Pay by card instead",
     afterPayment: "The moment the payment clears, the place is yours. We email the confirmation and receipt to the address on your account.",
     swishSecurity: "Swish opens in the Swish app and card payment opens on Stripe Checkout. We never see your bank or card details.",
     sellerLabel: "Seller",
