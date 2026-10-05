@@ -12,7 +12,7 @@ const staticPaths = [
   "", "/boka", "/events", "/lokalen", "/trana", "/kalender", "/nyheter", "/foreningen", "/faq",
   "/skola", "/barnkalas", "/teneriffa", "/julbord", "/om-oss", "/om-beachvolley",
   "/avanmalan",
-  "/hallbarhet", "/beachtravels", "/presentkort",
+  "/hallbarhet", "/beachtravels", "/presentkort", "/abonnemang",
   "/jobb",
   "/events/planera", "/events/privat",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",

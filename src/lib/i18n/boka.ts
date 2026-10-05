@@ -89,6 +89,8 @@ export interface BokaDict {
   steps: { eyebrow: string; title: string; items: { title: string; text: string }[] };
   /** /trana och /konto saknar engelska rutter — de svenska URL:erna används även på /en. */
   mint: { title: string; lead: string; ctaTrain: string; ctaTrainHref: string; ctaEvents: string; ctaEventsHref: string };
+  /** Diskret rad under bokningswidgeten som pekar på /abonnemang. Saknas → ingen rad. */
+  subscriptionHint?: { text: string; link: string; href: string };
   widget: BokaWidgetDict;
 }
 
@@ -128,6 +130,11 @@ export const bokaDict: Dict<BokaDict> = {
       ctaTrainHref: "/trana",
       ctaEvents: "Boka event →",
       ctaEventsHref: "/events",
+    },
+    subscriptionHint: {
+      text: "Vill du ha en fast tid varje vecka?",
+      link: "Läs om banabonnemang",
+      href: "/abonnemang",
     },
     widget: {
       weekdays: ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"],

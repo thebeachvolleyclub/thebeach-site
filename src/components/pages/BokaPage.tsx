@@ -21,6 +21,14 @@ export default function BokaPage({ locale }: { locale: Locale }) {
           <p className="mt-5 max-w-2xl text-sm leading-relaxed text-black/55">{t.direct.lead}</p>
         </Reveal>
         <BookingWidget locale={locale} />
+        {t.subscriptionHint ? (
+          <Reveal delay={0.04} className="mt-8 text-sm text-black/45">
+            {t.subscriptionHint.text}{" "}
+            <Link href={t.subscriptionHint.href} className="font-semibold text-black underline underline-offset-4 transition-colors hover:text-black/60">
+              {t.subscriptionHint.link}
+            </Link>
+          </Reveal>
+        ) : null}
       </section>
 
       <section className="bg-black px-5 py-16 sm:px-8 lg:px-14 lg:py-24">

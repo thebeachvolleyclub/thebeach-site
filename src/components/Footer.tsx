@@ -8,6 +8,7 @@ const COLS: { title: string; links: FLink[] }[] = [
     title: "Spela",
     links: [
       { label: "Boka bana", href: "/boka" },
+      { label: "Banabonnemang", href: "/abonnemang" },
       { label: "Träna", href: "/trana" },
       { label: "Kalender", href: "/kalender" },
       { label: "Nyheter", href: "/nyheter" },
