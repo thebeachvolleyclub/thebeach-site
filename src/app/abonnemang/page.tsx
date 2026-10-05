@@ -67,7 +67,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: "Kan jag börja mitt i terminen?",
-    a: "Absolut. Start och slut kan vara vilken vecka som helst inom terminen, och priset blir antalet tillfällen gånger priset för tidsklassen. Det enda kravet är att tillfällena ligger i en följd utan luckor mellan första och sista.",
+    a: "Ett abonnemang gäller en hel termin. Har terminen redan börjat? Hör av dig så kan du ansöka om att hoppa på från en senare vecka – priset räknas på de tillfällen som är kvar fram till terminens slut.",
   },
   {
     q: "Vad händer om jag inte kan en vecka?",
@@ -134,15 +134,16 @@ export default function AbonnemangPage() {
                 klar i din bokningslista, så det enda du behöver göra är att komma och spela.
               </p>
               <p className="max-w-md text-[15px] leading-relaxed text-black/55">
-                {TERMIN.namn} pågår {TERMIN.period}. Perioden sätter du själv inom terminen – de flesta tar hela
-                terminen, men du kan börja och sluta vilken vecka du vill, så länge tillfällena ligger i en följd.
+                Ett abonnemang gäller en hel termin – {TERMIN.namn.toLowerCase()} pågår {TERMIN.period}. Har terminen
+                redan börjat? Hör av dig så kan du ansöka om att hoppa på från en senare vecka – priset räknas på de
+                tillfällen som är kvar.
               </p>
             </Reveal>
             <Reveal delay={0.08}>
               <ul className="divide-y divide-black/10 border border-black/10 bg-white">
                 {[
                   "Samma bana och samma tid varje vecka – 90 minuter per tillfälle",
-                  "Välj period fritt inom terminen, hela eller en del av den",
+                  "Gäller en hel termin – har den redan börjat kan du ansöka om att hoppa på senare",
                   "Pris per tillfälle efter tidsklass – totalpriset är antal tillfällen × pris",
                   "Kan du inte en vecka? Släpp tiden och få 90 % tillgodo om någon annan bokar den",
                   "En medlemsförmån – kräver medlemskap hos The Beach",
@@ -202,8 +203,8 @@ export default function AbonnemangPage() {
                 15 tisdagar kl 20.30 = 15 × 600 kr = 9 000 kr
               </p>
               <p className="mt-3 text-sm leading-relaxed text-bone/55">
-                Tisdag 20.30 är klass B. Vill du ha samma tid hela terminen blir det fler tillfällen – börjar du
-                senare blir det färre tillfällen och ett lägre totalpris.
+                Tisdag 20.30 är klass B. Hoppar du på efter terminsstart räknas priset på de tillfällen som är kvar
+                fram till terminens slut.
               </p>
             </Reveal>
             <Reveal delay={0.1} className="border border-white/10 bg-white/[0.03] p-7 lg:p-10">
@@ -249,8 +250,9 @@ export default function AbonnemangPage() {
             <Reveal delay={0.12} className="border border-black/10 bg-white p-7 lg:p-10">
               <h3 className="mb-3 font-display text-2xl text-black">Om vi behöver banan</h3>
               <p className="text-sm leading-relaxed text-black/60">
-                I undantagsfall kan vi behöva flytta eller ställa in en abonnemangstid när banan behövs för ett
-                event. Då får du besked så tidigt vi kan, och tillfället dras av från ditt abonnemang.
+                I undantagsfall kan vi behöva avboka en abonnemangstid när banan behövs för ett event eller av
+                annan anledning. Då meddelar vi dig så tidigt vi kan, och du får hela värdet för det tillfället som
+                tillgodo att använda på en annan bokning.
               </p>
             </Reveal>
           </div>
