@@ -6,7 +6,7 @@
  * faller tillbaka till senaste lyckade hämtning om API:t tillfälligt är nere.
  */
 
-import type { Ev } from "./kalender";
+import { APP_EVENT_EXTRAS, type Ev } from "./kalender";
 
 const FEED_URL = "https://api.beachtv.se/api/public/events";
 const REVALIDATE_SECONDS = 6 * 60 * 60;
@@ -164,9 +164,11 @@ function slugFor(sourceId: string): string {
 function presentation(source: AppFeedEvent): AppCalendarEvent {
   const start = stockholmParts(source.start_at);
   const end = stockholmParts(source.end_at);
+  // Slutar aktiviteten efter midnatt (t.ex. fest 18–01) visas bara klockslagen.
+  const endsNextDay = Date.parse(source.end_at) - Date.parse(source.start_at) < 24 * 60 * 60 * 1000;
   const time = source.all_day
     ? "Heldag"
-    : start.date === end.date
+    : start.date === end.date || endsNextDay
       ? `${start.time}–${end.time}`
       : `${start.time}–${end.date} ${end.time}`;
   const location = [source.venue, source.court]
@@ -177,6 +179,7 @@ function presentation(source: AppFeedEvent): AppCalendarEvent {
     .join(" · ");
   const isSeriespel = source.type === "seriespel";
   const isJuniorEvent = source.type === "event" && source.event_type === "junior";
+  const extras = APP_EVENT_EXTRAS[source.source_id] ?? {};
 
   return {
     date: start.date,
@@ -202,6 +205,7 @@ function presentation(source: AppFeedEvent): AppCalendarEvent {
         href: source.registration_url || source.app_deep_link,
       },
       skarm: true,
+      ...extras,
     },
   };
 }

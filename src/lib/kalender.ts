@@ -30,6 +30,19 @@ export type Ev = {
 export type Month = { month: string; events: Ev[] };
 
 /**
+ * Extra innehåll för aktiviteter som kommer från appens publika feed
+ * (nyckel = aktivitetens source_id i appen, se app-events.ts).
+ * Appen bär inte bild, så omslagsbild, längre text m.m. läggs här.
+ */
+export const APP_EVENT_EXTRAS: Record<string, Partial<Omit<Ev, "day" | "wd" | "slug">>> = {
+  // Halloween på The Beach — 31 oktober 2026 (Davids event i appen)
+  "297e4f9f-de16-4d96-a047-0267527da225": {
+    bild: { src: "/media/uploads/2026/10/halloween-omslag.webp", alt: "Halloween på The Beach – 31 oktober. Kostym uppmuntras. Sign up i The Beach-appen.", width: 1672, height: 941 },
+    appCta: true,
+  },
+};
+
+/**
  * Fredagsmys — barn & familj, fredagar 17:30–19:00 under höstterminen 2026.
  * Bokas via Svenska Lag (inte i appen). En post per fredag; alla delar slug
  * "fredagsmys" så händelsesidan alltid pekar på nästa tillfälle.
