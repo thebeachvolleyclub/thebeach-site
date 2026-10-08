@@ -1,5 +1,29 @@
 # Current Work State
 
+## HQ #310 licence personnummer — 2026-10-08
+
+- Website candidate `codex/hq310-licence-personnummer-site-20261008`, isolated at
+  `/home/henric/worktrees/hq310-licence-personnummer-site-20261008`, begins from
+  deployed/pushed `19334b2`. Primary checkout and production source are untouched.
+- Current-year licence action now opens an accessible, purpose-explained full
+  personnummer form. Shared client/BFF normalization requires 12 ASCII digits,
+  a real nonfuture date and final-ten Luhn; no profile-DOB match or inferred
+  personnummer. Existing year, membership and active-licence gates are preserved.
+- Number stays in component/request memory only and clears on close/submit/
+  unmount/account/logout. Only the opaque existing retry key can persist.
+  Single-flight, abort/current-account and guarded refresh protect retries and
+  stale-account outcomes. BFF sends only normalized number+key under server-only
+  HttpOnly authority and strips private fields/input-echoing error data.
+- 14 focused tests pass; private built-site browser passes 320/390/1280px form,
+  normalized same-key retry, no storage, clearing, annual gating and delayed
+  old-parent result isolation. Production webpack build passes. Full suite is
+  204 pass/one unchanged calendar-import baseline failure; portal lint's prior
+  3 errors/5 warnings are not repaired. Empty-field screenshots only.
+- Paired backend/migration is separately owned; root must release it before
+  exact website promotion and guarded publish/live verification. No production
+  account write, deployment, main push, schema/config or family-notice edit here.
+  Details: `docs/licence-personnummer-20261008.md`.
+
 ## Website family profile parity — 2026-10-08
 
 - Henric directly requested a sub-agent to ensure the actual website supports
