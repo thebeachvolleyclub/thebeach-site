@@ -11,13 +11,15 @@ import {
 
 const route = readFileSync("src/app/api/account/competition-licence/route.ts", "utf8");
 const portal = readFileSync("src/components/account/AccountPortal.tsx", "utf8");
+const licencePost = readFileSync("src/lib/licencePersonnummer.core.ts", "utf8");
+const action = readFileSync("src/components/account/CompetitionLicenceAction.tsx", "utf8");
 
-test("licence route keeps the bearer server-side and accepts only retry identity", () => {
+test("licence route keeps the bearer server-side and forwards retry identity plus private personnummer", () => {
   assert.match(route, /accountToken\(\)/);
-  assert.match(route, /sameOrigin\(request\)/);
+  assert.match(route, /createLicenceRequestPost\({ accountToken, sameOrigin, appApi }\)/);
   assert.match(route, /\/competition-licence\/request/);
-  assert.match(route, /\/competition-licence\/requests/);
-  assert.match(route, /idempotency_key: body\.idempotencyKey/);
+  assert.match(licencePost, /\/competition-licence\/requests/);
+  assert.match(licencePost, /idempotency_key: body\.idempotencyKey, personnummer/);
   assert.match(route, /private, no-store/);
   assert.doesNotMatch(route, /X-User-Id|beach_id|membershipId|membershipYear|created_at/);
 });
@@ -27,11 +29,11 @@ test("account shows the action only after server-verified eligibility and keeps 
   assert.match(portal, /competitionLicenceContentForYear\(licenceState, section\.year, feed\.currentYear\)/);
   assert.match(portal, /licenceContent === "request"/);
   assert.match(portal, /licenceContent === "status"/);
-  assert.match(portal, /Begär tävlingslicens/);
+  assert.match(action, /Begär tävlingslicens/);
   assert.match(portal, /crypto\.randomUUID\(\)/);
   assert.match(portal, /licenceIdempotencyKey\.current/);
   assert.match(portal, /localStorage\.getItem\(storageKey\)/);
-  assert.match(portal, /await refreshMembershipLifecycle\(\)/);
+  assert.match(portal, /await refreshMembershipLifecycle\(isCurrent\)/);
 });
 
 test("terminal licence requests stop same-year retries and lead to human help", () => {
@@ -111,8 +113,8 @@ test("licence request or verified card is rendered directly beneath the matching
   assert.ok(membershipPosition >= 0);
   assert.ok(licencePosition > membershipPosition);
   assert.ok(purchaseOptionPosition > licencePosition);
-  assert.match(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+bg-black[^>]+text-white/s);
-  assert.doesNotMatch(portal, /aria-label={`Begär tävlingslicens \${year}`}[^>]+w-full/s);
+  assert.match(action, /bg-black[^\n]+text-white/);
+  assert.match(action, /aria-label={`Begär tävlingslicens \${year}`}/);
   assert.match(portal, /function CompetitionLicenceCard/);
   assert.match(portal, /aria-label={`Du har tävlingslicens för \${year}`}/);
 });

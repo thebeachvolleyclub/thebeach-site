@@ -5,6 +5,8 @@ import Image from "next/image";
 import SubscriptionCreditPanel from "@/components/account/SubscriptionCreditPanel";
 import BookingOwnerControl from "@/components/account/BookingOwnerControl";
 import AccountFamily from "@/components/account/AccountFamily";
+import CompetitionLicenceAction from "@/components/account/CompetitionLicenceAction";
+import { normalizeLicencePersonnummer } from "@/lib/licencePersonnummer.core";
 import { bindAccountDrafts, leaveAccountDrafts, reloadAccountDocument } from "@/lib/accountFamily.core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -336,6 +338,11 @@ export default function AccountPortal() {
   const [licenceState, setLicenceState] = useState<LicenceState | null>(null);
   const [licenceBusy, setLicenceBusy] = useState(false);
   const licenceIdempotencyKey = useRef<string | null>(null);
+  const licenceAccount = useRef<string | null>(null);
+  const licenceSubmission = useRef<AbortController | null>(null);
+  const [licenceFormEpoch, setLicenceFormEpoch] = useState(0);
+  useEffect(() => () => { licenceSubmission.current?.abort(); }, [profile?.id, familyTransition]);
+  useEffect(() => () => { licenceSubmission.current?.abort(); licenceAccount.current = null; }, []);
   const [courseEnrolments, setCourseEnrolments] = useState<CourseEnrolment[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewAvailability, setOverviewAvailability] = useState<OverviewAvailability>({ bookings: false, invoices: false, subscriptions: false, training: false, activity: false, membership: false, courses: false, licence: false });
@@ -352,6 +359,8 @@ export default function AccountPortal() {
   }, []);
 
   const applyProfile = useCallback((next: Profile) => {
+    if (licenceAccount.current !== next.id) { licenceSubmission.current?.abort(); setLicenceBusy(false); }
+    licenceAccount.current = next.id;
     for (const kind of ["sessionStorage", "localStorage"] as const) {
       try { bindAccountDrafts(window[kind], next.id); } catch { /* Storage is optional. */ }
     }
@@ -457,11 +466,12 @@ export default function AccountPortal() {
     return () => { active = false; };
   }, [profileId]);
 
-  const refreshMembershipLifecycle = useCallback(async () => {
+  const refreshMembershipLifecycle = useCallback(async (isCurrent?: () => boolean) => {
     const [membershipResult, licenceResult] = await Promise.allSettled([
       api<unknown>("/api/account/membership"),
       api<LicenceState>("/api/account/competition-licence"),
     ]);
+    if (isCurrent && !isCurrent()) return;
     if (membershipResult.status === "fulfilled") {
       setMembershipFeed(membershipFeedFromWire(membershipResult.value));
     }
@@ -785,44 +795,60 @@ export default function AccountPortal() {
     }
   };
 
-  const requestCompetitionLicence = async () => {
+  const requestCompetitionLicence = async (enteredPersonnummer: string): Promise<boolean> => {
     const membershipYear = licenceState?.eligibility.membershipYear
       ?? licenceState?.eligibility.membership?.membershipYear
       ?? membershipFeed.currentYear;
     if (
       licenceBusy
+      || licenceSubmission.current
+      || !profile?.id || licenceAccount.current !== profile.id
       || competitionLicenceContentForYear(
         licenceState,
         membershipFeed.currentYear,
         membershipFeed.currentYear,
       ) !== "request"
       || membershipYear !== membershipFeed.currentYear
-    ) return;
+    ) return false;
+    const personnummer = normalizeLicencePersonnummer(enteredPersonnummer);
+    if (!personnummer) return false;
+    const accountId = profile.id;
+    const controller = new AbortController();
+    licenceSubmission.current = controller;
+    const isCurrent = () => licenceAccount.current === accountId && !controller.signal.aborted;
     const storageKey = `tb-competition-licence:${membershipYear}`;
-    const key = licenceIdempotencyKey.current
-      ?? localStorage.getItem(storageKey)
-      ?? crypto.randomUUID();
+    let retainedKey: string | null = null;
+    try { retainedKey = sessionStorage.getItem(storageKey) ?? localStorage.getItem(storageKey); } catch { /* Storage is optional; only the retry key can be stored. */ }
+    const key = licenceIdempotencyKey.current ?? retainedKey ?? crypto.randomUUID();
     licenceIdempotencyKey.current = key;
-    localStorage.setItem(storageKey, key);
+    try { sessionStorage.setItem(storageKey, key); } catch { /* Never persist personnummer. */ }
     setLicenceBusy(true);
     setError("");
     try {
       const result = await api<{ request: LicenceRequest }>("/api/account/competition-licence", {
         method: "POST",
-        body: JSON.stringify({ idempotencyKey: key }),
+        signal: controller.signal,
+        body: JSON.stringify({ idempotencyKey: key, personnummer }),
       });
+      if (!isCurrent()) return false;
       setLicenceState((current) => ({
         request: result.request,
         eligibility: current?.eligibility ?? { eligible: true },
       }));
-      await refreshMembershipLifecycle();
+      await refreshMembershipLifecycle(isCurrent);
+      if (!isCurrent()) return false;
       licenceIdempotencyKey.current = null;
-      localStorage.removeItem(storageKey);
+      try { sessionStorage.removeItem(storageKey); localStorage.removeItem(storageKey); } catch { /* Storage is optional. */ }
       setMessage("Din begäran om tävlingslicens är skickad till Rasmus.");
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Kunde inte skicka licensbegäran");
+      return true;
+    } catch {
+      if (isCurrent()) setError("Kunde inte bekräfta licensbegäran. Försök igen med samma uppgifter.");
+      return false;
     } finally {
-      setLicenceBusy(false);
+      if (licenceSubmission.current === controller) {
+        licenceSubmission.current = null;
+        if (licenceAccount.current === accountId) setLicenceBusy(false);
+      }
     }
   };
 
@@ -1178,8 +1204,11 @@ export default function AccountPortal() {
   };
 
   const logout = async () => {
+    licenceSubmission.current?.abort();
+    licenceAccount.current = null;
+    setLicenceBusy(false); setLicenceFormEpoch((value) => value + 1);
     try { await api("/api/account/auth/logout", { method: "POST" }); }
-    catch { setError("Kunde inte logga ut. Försök igen."); return; }
+    catch { licenceAccount.current = profile?.id ?? null; setError("Kunde inte logga ut. Försök igen."); return; }
     for (const kind of ["sessionStorage", "localStorage"] as const) {
       try { leaveAccountDrafts(window[kind]); } catch { /* Storage is optional. */ }
     }
@@ -1286,6 +1315,7 @@ export default function AccountPortal() {
       licenceState={licenceState}
       licenceAvailable={overviewAvailability.licence}
       licenceBusy={licenceBusy}
+      licenceFormKey={`${profile.id}:${licenceFormEpoch}`}
       onOpenProfile={() => setTab("profile")}
       onPayerAliasChange={setMembershipPayerAlias}
       onPurchase={purchaseMembership}
@@ -1910,6 +1940,7 @@ export function MembershipCentre({
   licenceState,
   licenceAvailable,
   licenceBusy,
+  licenceFormKey,
   onOpenProfile,
   onPayerAliasChange,
   onPurchase,
@@ -1924,10 +1955,11 @@ export function MembershipCentre({
   licenceState: LicenceState | null;
   licenceAvailable: boolean;
   licenceBusy: boolean;
+  licenceFormKey: string;
   onOpenProfile: () => void;
   onPayerAliasChange: (value: string) => void;
   onPurchase: (option: MembershipPurchaseOption, freshAttempt?: boolean) => void | Promise<void>;
-  onRequestCompetitionLicence: () => void;
+  onRequestCompetitionLicence: (personnummer: string) => Promise<boolean>;
 }) {
   if (loading) return <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina medlemskap</h3><OverviewLoading /></section>;
   if (!available) return <section className="bg-white p-6 sm:p-8"><h3 className="font-display text-3xl">Mina medlemskap</h3><OverviewUnavailable label="medlemskap" /></section>;
@@ -1966,7 +1998,7 @@ export function MembershipCentre({
           <div className="space-y-2">
             {section.membership ? <MembershipRecordCard item={section.membership} /> : null}
             {purchase ? <MembershipPurchaseState purchase={purchase} busy={purchaseBusy} onRetry={() => { if (retryOption) void onPurchase(retryOption, true); }} /> : null}
-            {licenceContent === "request" ? <CompetitionLicenceAction year={section.year} busy={licenceBusy} onRequest={onRequestCompetitionLicence} /> : null}
+            {licenceContent === "request" ? <CompetitionLicenceAction key={licenceFormKey} year={section.year} busy={licenceBusy} onRequest={onRequestCompetitionLicence} /> : null}
             {licenceContent === "status" && licenceState?.request ? <CompetitionLicenceStatus request={licenceState.request} /> : null}
             {licenceContent === "licensed" ? <CompetitionLicenceCard year={section.year} licences={activeLicences} /> : null}
             {section.purchaseOption ? <MembershipPurchaseOptionCard
@@ -2002,20 +2034,6 @@ function licenceStatusText(status: LicenceRequest["status"]) {
   if (status === "completed") return "Licensen är registrerad";
   if (status === "rejected") return "Begäran kunde inte godkännas";
   return "Begäran är avbruten";
-}
-
-function CompetitionLicenceAction({
-  year,
-  busy,
-  onRequest,
-}: {
-  year: number;
-  busy: boolean;
-  onRequest: () => void;
-}) {
-  return <button type="button" disabled={busy} onClick={onRequest} aria-label={`Begär tävlingslicens ${year}`} className="inline-flex min-h-11 cursor-pointer items-center justify-center bg-black px-5 text-xs font-bold uppercase tracking-[0.09em] text-white disabled:cursor-wait disabled:opacity-45">
-    {busy ? "Skickar…" : "Begär tävlingslicens"}
-  </button>;
 }
 
 function CompetitionLicenceStatus({ request }: { request: LicenceRequest }) {
