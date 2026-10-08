@@ -2,6 +2,24 @@
 
 ## Website family profile parity — 2026-10-08
 
+- **Released and production verified, website HQ #308:** root promoted exact
+  reviewed tree onto current main as `19334b2a08599f96f991eba96bdcc358434dba25`,
+  built/tested/pushed, then published through normal DEPLOY.md deploy.sh. Live
+  image `57c3def1...`, six public smoke pages 200, port loopback-only/caps intact,
+  rollback `4a3d5fa` retained; staging workshop and primary checkout untouched.
+  Real public-site synthetic browser passes exact login, implicit child switching
+  and return, one private child creation and new-child switching, 375/1280px,
+  isolated read feeds and unrelated-user 403. Focused logout/navigation check
+  passes full anonymous/UI/cookie boundary with zero page errors. First generic
+  logout timing failure and a separate local Chrome teardown timeout are
+  documented, not hidden or claimed as full-green runs. Exact-marker fixture
+  inspection verifies private/no-role minors, correct guardian boundaries,
+  stable before-avatar claims and worker v2 NO_MATCH. Own fixtures 5334–5337
+  retired/private; all transient credentials/auth records removed, receipts
+  retained. No real-person financial/provider/email writes or backend/schema/
+  configuration/OTA changes. Full proof below in the family documentation.
+  Final notes stay on the isolated evidence branch, not the deployed checkout.
+  Earlier candidate-phase notes follow for chronology.
 - Henric directly requested a sub-agent to ensure the actual website supports
   managing own/child profiles, quick switching and new child creation. App/API
   HQ #307 is completed and is not reopened by this website follow-up.
