@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   accountDeviceId,
   clearIdentityChoice,
+  clearFamilySwitchRecovery,
   IDENTITY_CHOICE_COOKIE,
   sameOrigin,
   setAccountSession,
@@ -46,5 +47,6 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ authenticated: true });
   setAccountSession(response, payload.auth_token);
   clearIdentityChoice(response);
+  clearFamilySwitchRecovery(response);
   return response;
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   accountDeviceId,
+  clearFamilySwitchRecovery,
   sameOrigin,
   setAccountSession,
   setIdentityChoice,
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       // the selected Master BeachID, which the App API checks against the
       // challenge's server-side allow-list before minting a user session.
       setIdentityChoice(response, payload.identity_challenge);
+      clearFamilySwitchRecovery(response);
       return response;
     }
     const userId = payload.user?.id;
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
     if (!payload.auth_token) return NextResponse.json({ detail: "Inloggningssvaret saknade session" }, { status: 502 });
     const response = NextResponse.json({ authenticated: true });
     setAccountSession(response, payload.auth_token);
+    clearFamilySwitchRecovery(response);
     return response;
   } catch (error) {
     return NextResponse.json(
