@@ -4,7 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import SubscriptionCreditPanel from "@/components/account/SubscriptionCreditPanel";
 import BookingOwnerControl from "@/components/account/BookingOwnerControl";
+import AccountFamily from "@/components/account/AccountFamily";
+import { bindAccountDrafts, leaveAccountDrafts, reloadAccountDocument } from "@/lib/accountFamily.core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   AlternativePaymentOption,
   SwishButtonLabel,
@@ -171,7 +174,7 @@ type CourseEnrolment = {
   createdAt: string;
 };
 type CourseFeed = { enrolments: CourseEnrolment[] };
-type AccountTab = "overview" | "membership" | "subscriptions" | "training" | "courses" | "bookings" | "invoices" | "profile";
+type AccountTab = "overview" | "membership" | "subscriptions" | "training" | "courses" | "bookings" | "invoices" | "profile" | "family";
 
 /**
  * Djuplänkar öppnar rätt flik direkt: /konto#fakturor från kursanmälan,
@@ -193,6 +196,8 @@ const HASH_TABS: Record<string, AccountTab> = {
   "#subscriptions": "subscriptions",
   "#profil": "profile",
   "#profile": "profile",
+  "#familj": "family",
+  "#family": "family",
 };
 
 function tabFromHash(): AccountTab {
@@ -294,6 +299,7 @@ export default function AccountPortal() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [familyTransition, setFamilyTransition] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
@@ -346,6 +352,9 @@ export default function AccountPortal() {
   }, []);
 
   const applyProfile = useCallback((next: Profile) => {
+    for (const kind of ["sessionStorage", "localStorage"] as const) {
+      try { bindAccountDrafts(window[kind], next.id); } catch { /* Storage is optional. */ }
+    }
     const structured = splitProfileName(next);
     setProfile(next);
     setFirstName(structured.firstName);
@@ -1169,7 +1178,11 @@ export default function AccountPortal() {
   };
 
   const logout = async () => {
-    await api("/api/account/auth/logout", { method: "POST" }).catch(() => null);
+    try { await api("/api/account/auth/logout", { method: "POST" }); }
+    catch { setError("Kunde inte logga ut. Försök igen."); return; }
+    for (const kind of ["sessionStorage", "localStorage"] as const) {
+      try { leaveAccountDrafts(window[kind]); } catch { /* Storage is optional. */ }
+    }
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
     setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName("");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
@@ -1181,10 +1194,12 @@ export default function AccountPortal() {
     setLicenceState(null);
     licenceIdempotencyKey.current = null;
     setCourseEnrolments([]);
+    setSubscriptions([]); setSignupMine(null); setSignupLoaded(false); setFamily([]);
     setEmailsLoading(true);
     setNewEmail(""); setPendingEmail(""); setEmailCode(""); setEmailCodeSent(false);
     setOverviewLoading(true);
     setOverviewAvailability({ bookings: false, invoices: false, subscriptions: false, training: false, activity: false, membership: false, courses: false, licence: false });
+    reloadAccountDocument();
   };
 
   const now = new Date().toISOString().slice(0, 10);
@@ -1219,7 +1234,7 @@ export default function AccountPortal() {
     </div>;
   }
 
-  return <div className="text-black">
+  return <div className="text-black" inert={familyTransition}>
     <div className="relative min-h-52 overflow-hidden bg-black">
       {profile.banner_url ? <img src={profile.banner_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-65" /> : null}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
@@ -1228,7 +1243,7 @@ export default function AccountPortal() {
         <div className="min-w-0 text-white"><p className="text-xs font-bold uppercase tracking-[0.16em] text-lime">Mitt konto</p><h2 className="mt-2 font-display text-3xl">{profile.name || "Slutför din profil"}</h2><div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65"><span className="break-all">{profile.email}</span><span className="rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">BeachID {profile.canonical_player_id ?? "—"}</span>{membershipFeed.activeCount > 0 ? <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-black">Medlem</span> : null}</div></div>
       </div>
     </div>
-    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["subscriptions", "Banabonnemang"], ["training", "Träningsgrupper"], ["courses", "Kurser"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
+    <div className="flex flex-wrap border-x border-b border-black/10 bg-white p-2">{!identityRequired ? [["overview", "Översikt"], ["membership", "Medlemskap"], ["subscriptions", "Banabonnemang"], ["training", "Träningsgrupper"], ["courses", "Kurser"], ["bookings", "Bokningar"], ["invoices", "Fakturor"], ["profile", "Profil"], ["family", "Familj"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setTab(value as AccountTab); setError(""); setMessage(""); }} className={`inline-flex cursor-pointer items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] sm:px-5 ${tab === value ? "bg-black text-lime" : "text-black/55 hover:text-black"}`}>
       {label}
       {value === "training" && signupMine?.submission ? (
         <span className="grid h-4 w-4 place-items-center rounded-full bg-lime text-[10px] font-bold text-black" aria-label="Anmäld" title="Anmäld">✓</span>
@@ -1240,6 +1255,8 @@ export default function AccountPortal() {
     {!profile.name ? <div className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-orange/30 bg-orange/10 p-5 text-sm"><span><strong>Slutför kontot.</strong> Ditt namn krävs innan du kan boka eller anmäla dig.</span><button type="button" onClick={() => setTab("profile")} className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-orange underline underline-offset-4">Öppna profil</button></div> : null}
     {message ? <p className="border-x border-b border-teal/20 bg-mint p-4 text-sm font-semibold text-teal">{message}</p> : null}
     {error ? <p role="alert" className="border-x border-b border-orange/30 bg-orange/10 p-4 text-sm font-semibold text-orange">{error}</p> : null}
+    {familyTransition ? createPortal(<div role="status" aria-live="polite" className="fixed inset-0 z-[100] grid place-items-center bg-cream p-6 text-center text-black"><p className="font-display text-3xl">Uppdaterar din profil…</p></div>, document.body) : null}
+    {tab === "family" && !identityRequired ? <AccountFamily key={profile.id} onTransition={setFamilyTransition} /> : null}
 
     {tab === "overview" ? <AccountOverview
       profile={profile}
@@ -2413,4 +2430,3 @@ function formatAccountDate(value: string) {
 function BookingList({ title, items, empty, onCancel, cancellingBookingId }: { title: string; items: Booking[]; empty: string; onCancel?: (booking: Booking) => void; cancellingBookingId?: string | null }) {
   return <div className="mt-8"><h4 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-black/45">{title}</h4>{items.length === 0 ? <p className="border border-black/10 bg-cream p-5 text-sm text-black/50">{empty}</p> : <div className="space-y-2">{items.map((booking) => <article key={booking.id} className="flex flex-wrap items-center gap-4 border border-black/10 p-4"><div className="min-w-44 flex-1"><strong className="block">{booking.courtName}</strong><span className="text-sm text-black/50">{booking.date} · {booking.startTime}–{booking.endTime}</span><span className="mt-1 block text-xs font-bold uppercase text-teal">{statusText(booking.status)}</span></div><div className="ml-auto text-right"><strong>{bookingPriceText(booking)}</strong>{booking.streamRequested ? <span className="block text-xs text-black/45">Kamera beställd</span> : null}</div>{onCancel ? <BookingOwnerControl booking={booking} onAction={onCancel} busy={cancellingBookingId === booking.id} className="w-full sm:w-auto" /> : null}</article>)}</div>}</div>;
 }
-

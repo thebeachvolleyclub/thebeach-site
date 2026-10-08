@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { accountToken, clearAccountSession, clearIdentityChoice, sameOrigin } from "@/lib/accountSession";
+import { accountToken, clearAccountSession, clearFamilySwitchRecovery, clearIdentityChoice, sameOrigin } from "@/lib/accountSession";
 import { appApi } from "@/lib/appApi";
 
 export const dynamic = "force-dynamic";
@@ -13,5 +13,6 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ success: true });
   clearAccountSession(response);
   clearIdentityChoice(response);
+  clearFamilySwitchRecovery(response);
   return response;
 }

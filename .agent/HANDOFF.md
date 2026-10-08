@@ -1,5 +1,32 @@
 # Current Work State
 
+## Website family profile parity — 2026-10-08
+
+- Henric directly requested a sub-agent to ensure the actual website supports
+  managing own/child profiles, quick switching and new child creation. App/API
+  HQ #307 is completed and is not reopened by this website follow-up.
+- Candidate branch `codex/web-family-parity-20261008` starts from fresh canonical
+  `origin/main` `4a3d5fa`, isolated at
+  `/home/henric/worktrees/web-family-parity-20261008`. Primary checkout is untouched.
+- Added `/konto#familj` and authenticated, same-origin BFF routes over the
+  already deployed family/login APIs. Proof selects the exact current BeachID;
+  shared email never implies guardian/admin roles. Tokens/challenges/replay
+  receipts stay HttpOnly. Child create retains its retry key and private default.
+- Full-document account boundaries discard old views, restore only owner-bound
+  retry drafts, refresh other tabs and prevent stale browser-back cached accounts.
+- 14 focused tests and focused lint pass; production webpack build passes.
+  Full suite is 196 pass/one pre-existing appEvents import failure, reproduced
+  on untouched main. Native tsc/account lint baseline issues are not repaired.
+  Real built-site/BFF browser journeys pass at 375px and 1280px: implicit switch
+  and return, current-BeachID inbox proof, isolated feeds/drafts/other tabs,
+  private child create/lost-response replay/profile save, HttpOnly switch replay,
+  unrelated/cross-origin denial, logout and normal desktop login selection.
+  Screenshots reviewed; no horizontal overflow. All fixtures are loopback-only,
+  in-memory; no production/provider write or real financial claim was used.
+- Root controls production promotion and verification after exact candidate
+  commit/push. No website/backend/schema/OTA production mutation performed here.
+  Details/run commands: `docs/family-profile-parity-20261008.md`.
+
 ## My Practices training-group disclosure — 2026-10-01
 
 - Objective: when an account has multiple active training groups, keep each

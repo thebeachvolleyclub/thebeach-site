@@ -2,10 +2,12 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
+import { validFamilyPlayerId, validFamilyRequestKey, type FamilySwitchRecovery } from "@/lib/accountFamily.core";
 
 export const ACCOUNT_COOKIE = "tb_account_session";
 export const DEVICE_COOKIE = "tb_account_device";
 export const IDENTITY_CHOICE_COOKIE = "tb_account_identity_choice";
+const FAMILY_SWITCH_COOKIE = "tb_account_family_switch";
 const YEAR = 60 * 60 * 24 * 365;
 
 const baseCookie = {
@@ -49,6 +51,25 @@ export function clearIdentityChoice(response: NextResponse) {
     path: "/api/account/auth/select-family",
     maxAge: 0,
   });
+}
+
+export async function familySwitchRecovery(): Promise<FamilySwitchRecovery | null> {
+  try {
+    const value = JSON.parse((await cookies()).get(FAMILY_SWITCH_COOKIE)?.value ?? "null") as FamilySwitchRecovery | null;
+    if (value && /^[a-f0-9]{64}$/i.test(value.sourceToken) && /^[a-f0-9]{64}$/i.test(value.resultToken)
+      && validFamilyRequestKey(value.requestKey) && validFamilyPlayerId(value.playerId)) return value;
+  } catch { /* A malformed or expired cookie is not authority. */ }
+  return null;
+}
+
+export function setFamilySwitchRecovery(response: NextResponse, recovery: FamilySwitchRecovery) {
+  response.cookies.set(FAMILY_SWITCH_COOKIE, JSON.stringify(recovery), {
+    ...baseCookie, path: "/api/account/family/switch", maxAge: 10 * 60,
+  });
+}
+
+export function clearFamilySwitchRecovery(response: NextResponse) {
+  response.cookies.set(FAMILY_SWITCH_COOKIE, "", { ...baseCookie, path: "/api/account/family/switch", maxAge: 0 });
 }
 
 export function sameOrigin(request: Request): boolean {

@@ -6,7 +6,7 @@ import AccountPortal from "@/components/account/AccountPortal";
 
 export const metadata: Metadata = {
   title: "Mitt konto — The Beach",
-  description: "Se dina kurser, bokningar, träningsgrupper, fakturor och profil hos The Beach.",
+  description: "Hantera din egen och barnens profiler, medlemskap, kurser, bokningar och fakturor hos The Beach.",
   robots: { index: false, follow: false },
 };
 
@@ -14,7 +14,7 @@ export default function KontoPage() {
   return <>
     <Navbar />
     <main className="flex-1">
-      <PageHero minH="min-h-[42svh]" eyebrow="Mitt Beach" title={<>Allt på{" "}<br /><span className="italic-accent">samma plats.</span></>} intro="Dina banbokningar, träningsgrupper och betalningar — med samma konto som i appen." />
+      <PageHero minH="min-h-[42svh]" eyebrow="Mitt Beach" title={<>Allt på{" "}<br /><span className="italic-accent">samma plats.</span></>} intro="Dina och familjens medlemskap, bokningar och träning — med samma profiler som i appen." />
       <section className="bg-cream px-5 py-14 text-black sm:px-8 lg:px-14 lg:py-20">
         <div className="mx-auto max-w-5xl"><AccountPortal /></div>
       </section>
