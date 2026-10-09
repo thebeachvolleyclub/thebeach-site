@@ -292,6 +292,24 @@ test("Swish input and resumable attempt helpers fail closed", () => {
     membershipPurchaseCanRetry(terminal && { ...terminal, status: "PAID" }),
     false,
   );
+  const review = membershipPurchaseFromWire({
+    ...terminal,
+    attemptStatus: "ERROR",
+    requiresStaffReview: true,
+    paymentReceived: true,
+  });
+  assert.equal(review?.requiresStaffReview, true);
+  assert.equal(review?.paymentReceived, true);
+  assert.equal(membershipPurchaseCanRetry(review), false);
+  const pending = membershipFeedFromWire({
+    memberships: [],
+    purchaseOptions: [],
+    membershipCheckStatus: "PENDING",
+    purchaseEligibility: { available: false, reason: null },
+  });
+  assert.equal(pending.membershipCheckStatus, "PENDING");
+  assert.match(portal, /Swish-betalningen är mottagen – vi granskar köpet/);
+  assert.match(portal, /Betala inte igen/);
 });
 
 test("account keeps membership as a permanent destination with history and accessible purchase", () => {

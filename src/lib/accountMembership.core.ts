@@ -60,6 +60,8 @@ export type MembershipPurchase = {
   paymentRequestToken: string | null;
   deepLinkUrl: string | null;
   paymentVerificationPending: boolean;
+  requiresStaffReview: boolean;
+  paymentReceived: boolean;
   createdAt: string;
   paidAt: string | null;
 };
@@ -77,6 +79,7 @@ export type MembershipFeed = {
   purchase: MembershipPurchase | null;
   currentYear: number;
   purchaseEligibility: MembershipPurchaseEligibility | null;
+  membershipCheckStatus: "READY" | "PENDING" | "NEEDS_REVIEW";
 };
 
 export type MembershipYearSection = {
@@ -98,6 +101,7 @@ export const EMPTY_MEMBERSHIP_FEED: MembershipFeed = {
   purchase: null,
   currentYear: stockholmYear(),
   purchaseEligibility: null,
+  membershipCheckStatus: "READY",
 };
 
 function object(value: unknown): Record<string, unknown> {
@@ -209,6 +213,8 @@ export function membershipPurchaseFromWire(value: unknown): MembershipPurchase |
     paymentRequestToken: nullableText(row.paymentRequestToken),
     deepLinkUrl: nullableText(row.deepLinkUrl),
     paymentVerificationPending: row.paymentVerificationPending === true,
+    requiresStaffReview: row.requiresStaffReview === true,
+    paymentReceived: row.paymentReceived === true,
     createdAt: text(row.createdAt),
     paidAt: nullableText(row.paidAt),
   };
@@ -231,6 +237,10 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
   const eligibilityReason = rawEligibility.reason === "birthdate_required"
     ? "birthdate_required"
     : null;
+  const membershipCheckStatus = ["PENDING", "NEEDS_REVIEW"]
+    .includes(String(payload.membershipCheckStatus))
+    ? payload.membershipCheckStatus as "PENDING" | "NEEDS_REVIEW"
+    : "READY";
   return {
     memberships,
     activeCount: typeof payload.activeCount === "number"
@@ -246,6 +256,7 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
         available: rawEligibility.available === true,
         reason: eligibilityReason,
       },
+    membershipCheckStatus,
   };
 }
 
@@ -385,6 +396,7 @@ export function membershipPurchaseCanRetry(
   return Boolean(
     purchase
     && purchase.status === "AWAITING_PAYMENT"
+    && !purchase.requiresStaffReview
     && ["DECLINED", "ERROR", "CANCELLED"].includes(purchase.attemptStatus ?? ""),
   );
 }

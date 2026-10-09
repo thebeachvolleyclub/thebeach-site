@@ -664,6 +664,14 @@ export default function AccountPortal() {
   }, [profileId, refreshMembershipLifecycle]);
 
   useEffect(() => {
+    if (!profileId || membershipFeed.membershipCheckStatus !== "PENDING") return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refreshMembershipLifecycle();
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [profileId, membershipFeed.membershipCheckStatus, refreshMembershipLifecycle]);
+
+  useEffect(() => {
     if (!profileId || tab !== "subscriptions"
       || !subscriptions.some(subscriptionPaymentNeedsPolling)) return;
     const timer = window.setInterval(() => {
@@ -1858,6 +1866,7 @@ function membershipStatusLabel(item: MembershipRecord) {
 }
 
 function purchaseStatusLabel(purchase: MembershipPurchase) {
+  if (purchase.requiresStaffReview) return "Swish-betalningen är mottagen – vi granskar köpet";
   if (purchase.status === "PAID" || purchase.attemptStatus === "PAID") return "Betalningen är klar";
   if (purchase.status === "CANCELLED" || purchase.attemptStatus === "CANCELLED") return "Köpet är avbrutet";
   if (purchase.attemptStatus === "DECLINED") return "Swish-betalningen nekades";
@@ -1911,15 +1920,16 @@ function MembershipPurchaseState({ purchase, busy, onRetry }: {
     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-orange">Medlemsköp · {purchase.year}</p>
     <h4 className="mt-3 font-display text-3xl">{purchaseStatusLabel(purchase)}</h4>
     <p className="mt-2 text-sm text-black/55">{moneyFromOre(purchase.amountOre)} · Swish · startat {formatAccountDate(purchase.createdAt)}</p>
+    {purchase.requiresStaffReview ? <p className="mt-4 text-sm leading-relaxed text-black/70">Swish har bekräftat betalningen, men medlemskapet behöver kontrolleras manuellt. Betala inte igen. Vi hjälper dig att reda ut köpet.</p> : null}
     <dl className="mt-5 grid gap-3 border-t border-black/10 pt-4 text-xs text-black/55 sm:grid-cols-2 lg:grid-cols-4">
       <div><dt className="font-bold uppercase tracking-[0.08em]">Produkt-ID</dt><dd className="mt-1 break-all">{purchase.productId}</dd></div>
-      <div><dt className="font-bold uppercase tracking-[0.08em]">Köpstatus</dt><dd className="mt-1">{purchase.status}</dd></div>
-      <div><dt className="font-bold uppercase tracking-[0.08em]">Swish-status</dt><dd className="mt-1">{purchase.attemptStatus || "Väntar"}</dd></div>
-      <div><dt className="font-bold uppercase tracking-[0.08em]">Betald</dt><dd className="mt-1">{purchase.paidAt ? formatAccountDate(purchase.paidAt) : "Inte bekräftad"}</dd></div>
+      <div><dt className="font-bold uppercase tracking-[0.08em]">Köpstatus</dt><dd className="mt-1">{purchase.requiresStaffReview ? "Manuell granskning" : purchase.status === "PAID" ? "Klart" : purchase.status === "CANCELLED" ? "Avbrutet" : "Väntar på betalning"}</dd></div>
+      <div><dt className="font-bold uppercase tracking-[0.08em]">Swish-status</dt><dd className="mt-1">{purchase.paymentReceived ? "Betalning mottagen" : purchase.attemptStatus === "ERROR" ? "Kunde inte startas" : purchase.attemptStatus === "DECLINED" ? "Nekad" : purchase.attemptStatus === "CANCELLED" ? "Avbruten" : purchase.attemptStatus === "CREATED" ? "Startad" : "Väntar"}</dd></div>
+      <div><dt className="font-bold uppercase tracking-[0.08em]">Betalning</dt><dd className="mt-1">{purchase.paymentReceived ? "Bekräftad av Swish" : purchase.paidAt ? formatAccountDate(purchase.paidAt) : "Inte bekräftad"}</dd></div>
       {purchase.instructionUuid ? <div><dt className="font-bold uppercase tracking-[0.08em]">Swish-referens</dt><dd className="mt-1 break-all">{purchase.instructionUuid}</dd></div> : null}
     </dl>
-    {purchase.paymentVerificationPending ? <p className="mt-3 text-sm text-black/65">Du behöver inte starta ett nytt köp. Sidan uppdateras när betalningen har verifierats.</p> : null}
-    {swishLink && purchase.status === "AWAITING_PAYMENT" ? <a href={swishLink} className="mt-5 inline-flex min-h-11 items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white">Öppna Swish</a> : null}
+    {purchase.paymentVerificationPending && !purchase.requiresStaffReview ? <p className="mt-3 text-sm text-black/65">Du behöver inte starta ett nytt köp. Sidan uppdateras när betalningen har verifierats.</p> : null}
+    {swishLink && purchase.status === "AWAITING_PAYMENT" && !purchase.requiresStaffReview ? <a href={swishLink} className="mt-5 inline-flex min-h-11 items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white">Öppna Swish</a> : null}
     {canRetry ? <button type="button" disabled={busy} onClick={onRetry} className="mt-5 inline-flex min-h-11 cursor-pointer items-center bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-white disabled:cursor-wait disabled:opacity-45">{busy ? "Startar Swish…" : "Försök med Swish igen"}</button> : null}
   </article>;
 }
@@ -1977,6 +1987,11 @@ export function MembershipCentre({
     </div>
 
     <div className="mt-8 space-y-9">
+      {feed.membershipCheckStatus !== "READY" && !needsBirthdate ? <div role="status" className="border-l-4 border-l-orange bg-white p-5 text-sm text-black/70">
+        {feed.membershipCheckStatus === "PENDING"
+          ? "Vi kontrollerar om du redan har ett medlemskap innan du kan betala. Uppdatera sidan om en liten stund."
+          : "Vi behöver kontrollera ett tidigare medlemskap innan du kan betala. Kontakta oss så hjälper vi dig."}
+      </div> : null}
       {overview.yearSections.map((section) => {
         const purchase = feed.purchases.find((candidate) => candidate.year === section.year)
           ?? (feed.purchase?.year === section.year ? feed.purchase : null);
