@@ -16,6 +16,7 @@ export type MembershipRecord = {
   active: boolean;
   readOnly: boolean;
   source: MembershipSource;
+  membershipEvidenceSource?: "PROFIXIO" | null;
   purchasedAt: string | null;
   amountOre: number | null;
   paymentMethod: string | null;
@@ -80,6 +81,7 @@ export type MembershipFeed = {
   currentYear: number;
   purchaseEligibility: MembershipPurchaseEligibility | null;
   membershipCheckStatus: "READY" | "PENDING" | "NEEDS_REVIEW";
+  membershipReview?: { status: "READY" | "PENDING" | "NEEDS_REVIEW"; blockedYears: number[] } | null;
 };
 
 export type MembershipYearSection = {
@@ -154,6 +156,7 @@ function membership(value: unknown, index: number): MembershipRecord {
     active: row.active === true,
     readOnly: row.readOnly === true || source === "MATCHI",
     source,
+    membershipEvidenceSource: row.membershipEvidenceSource === "PROFIXIO" ? "PROFIXIO" : null,
     purchasedAt: nullableText(row.purchasedAt),
     amountOre: number(row.amountOre),
     paymentMethod: nullableText(row.paymentMethod),
@@ -241,6 +244,7 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
     .includes(String(payload.membershipCheckStatus))
     ? payload.membershipCheckStatus as "PENDING" | "NEEDS_REVIEW"
     : "READY";
+  const rawReview = payload.membershipReview == null ? null : object(payload.membershipReview);
   return {
     memberships,
     activeCount: typeof payload.activeCount === "number"
@@ -257,7 +261,24 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
         reason: eligibilityReason,
       },
     membershipCheckStatus,
+    membershipReview: rawReview === null ? null : {
+      status: membershipCheckStatus,
+      blockedYears: Array.isArray(rawReview.blockedYears)
+        ? rawReview.blockedYears.filter((year): year is number => typeof year === "number" && Number.isInteger(year)) : [],
+    },
   };
+}
+
+export function membershipReviewCopy(feed: MembershipFeed): string | null {
+  if (feed.membershipCheckStatus === "READY") return null;
+  if (feed.membershipCheckStatus === "PENDING") {
+    return "Vi kontrollerar om ett tidigare medlemskap hör till ditt konto. Bekräftade medlemskap visas nedan. Uppdatera sidan om en liten stund.";
+  }
+  const years = feed.membershipReview?.blockedYears;
+  if (years && years.length === 0) {
+    return "Ett tidigare konto behöver granskas av oss. Dina bekräftade medlemskap visas nedan och du kan köpa ett nytt medlemskap för år som inte redan är betalda.";
+  }
+  return `Vi granskar ett möjligt tidigare medlemskap${years?.length ? ` för ${years.join(", ")}` : ""} så att du inte betalar två gånger. Bekräftade medlemskap visas nedan. Kontakta The Beach om du behöver hjälp med granskningen.`;
 }
 
 export function membershipHistory(feed: MembershipFeed): MembershipRecord[] {
