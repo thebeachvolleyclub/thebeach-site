@@ -271,14 +271,11 @@ export function membershipFeedFromWire(value: unknown): MembershipFeed {
 
 export function membershipReviewCopy(feed: MembershipFeed): string | null {
   if (feed.membershipCheckStatus === "READY") return null;
-  if (feed.membershipCheckStatus === "PENDING") {
-    return "Vi kontrollerar om ett tidigare medlemskap hör till ditt konto. Bekräftade medlemskap visas nedan. Uppdatera sidan om en liten stund.";
-  }
-  const years = feed.membershipReview?.blockedYears;
-  if (years && years.length === 0) {
-    return "Ett tidigare konto behöver granskas av oss. Dina bekräftade medlemskap visas nedan och du kan köpa ett nytt medlemskap för år som inte redan är betalda.";
-  }
-  return `Vi granskar ett möjligt tidigare medlemskap${years?.length ? ` för ${years.join(", ")}` : ""} så att du inte betalar två gånger. Bekräftade medlemskap visas nedan. Kontakta The Beach om du behöver hjälp med granskningen.`;
+  // Legacy profile diagnostics do not override a confirmed annual benefit.
+  if (feed.memberships.some((record) => record.year === feed.currentYear && (record.paid || record.active))
+    || feed.purchases.some((purchase) => purchase.year === feed.currentYear && purchase.status === "PAID")
+    || (feed.purchase?.year === feed.currentYear && feed.purchase.status === "PAID")) return null;
+  return "Saknar du ett medlemskap som du redan har betalat? Här visas de medlemskap som är kopplade till ditt konto. Du kan använda de köp som är tillgängliga nedan.";
 }
 
 export function membershipHistory(feed: MembershipFeed): MembershipRecord[] {
@@ -327,7 +324,9 @@ function visiblePurchaseOptions(
   birthdate: Date | null | undefined,
 ): MembershipPurchaseOption[] {
   if (feed.purchaseEligibility) {
-    return feed.purchaseEligibility.available ? feed.purchaseOptions : [];
+    // An old false/null legacy-match hold must not hide otherwise available
+    // annual products. Explicit birthdate and per-option purchase guards remain.
+    return feed.purchaseEligibility.reason === "birthdate_required" ? [] : feed.purchaseOptions;
   }
   return feed.purchaseOptions.filter((candidate) => (
     membershipCategoryForYear(birthdate, candidate.year) === candidate.category

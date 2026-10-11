@@ -1978,6 +1978,7 @@ export function MembershipCentre({
   const accountBirthdate = profileBirthdate(birthdate);
   const overview = buildMembershipOverview(feed, accountBirthdate);
   const needsBirthdate = membershipPurchaseNeedsBirthdate(feed, accountBirthdate);
+  const legacyMembershipHint = membershipReviewCopy(feed);
   const payerValid = validSwishPayerAlias(payerAlias);
 
   return <section className="bg-cream p-5 sm:p-8 lg:p-10">
@@ -1988,8 +1989,8 @@ export function MembershipCentre({
     </div>
 
     <div className="mt-8 space-y-9">
-      {feed.membershipCheckStatus !== "READY" && !needsBirthdate ? <div role="status" className="border-l-4 border-l-orange bg-white p-5 text-sm text-black/70">
-        {membershipReviewCopy(feed)}
+      {legacyMembershipHint && !needsBirthdate ? <div role="note" className="border-l-4 border-l-teal bg-white p-5 text-sm text-black/70">
+        {legacyMembershipHint}
       </div> : null}
       {overview.yearSections.map((section) => {
         const purchase = feed.purchases.find((candidate) => candidate.year === section.year)

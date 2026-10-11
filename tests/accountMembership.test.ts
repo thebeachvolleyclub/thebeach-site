@@ -36,16 +36,68 @@ test("Profixio membership evidence is not presented as a payment and survives id
   assert.equal(feed.memberships[0].membershipEvidenceSource, "PROFIXIO");
   assert.equal(feed.memberships[0].amountOre, null);
   assert.equal(buildMembershipOverview(feed).yearSections[0].membership?.paid, true);
-  assert.match(membershipReviewCopy(feed)!, /du kan köpa ett nytt medlemskap/);
+  assert.equal(membershipReviewCopy(feed), null, "Confirmed membership must not show a contradictory review banner");
   assert.match(portal, /Bekräftat genom Profixio/);
 });
 
-test("identity review message names the possible paid year without blocking unrelated years", () => {
+test("legacy diagnostic offers optional history guidance without orphaned review promises", () => {
   const feed = membershipFeedFromWire({ memberships: [], purchaseOptions: [], membershipCheckStatus: "NEEDS_REVIEW",
     membershipReview: { blockedYears: [2026, "bad"] } });
   assert.deepEqual(feed.membershipReview?.blockedYears, [2026]);
-  assert.match(membershipReviewCopy(feed)!, /för 2026/);
-  assert.match(membershipReviewCopy(feed)!, /inte betalar två gånger/);
+  assert.match(membershipReviewCopy(feed)!, /Saknar du ett medlemskap som du redan har betalat/);
+  assert.match(membershipReviewCopy(feed)!, /köp som är tillgängliga/);
+  assert.doesNotMatch(membershipReviewCopy(feed)!, /kontroller|gransk|Kontakta|innan du kan betala/);
+  assert.match(portal, /legacyMembershipHint && !needsBirthdate/);
+});
+
+test("raw legacy status does not suppress available annual membership products", () => {
+  const options = [2026, 2027].map((year) => ({ productId: `senior-${year}`, typeName: `Senior ${year}`,
+    category: "senior", year, priceOre: 35000, vatBasisPoints: 600, validFrom: `${year}-01-01`,
+    validTo: `${year}-12-31`, available: true, unavailableReason: null }));
+  for (const status of ["PENDING", "NEEDS_REVIEW", "READY"]) {
+    for (const blockedYears of [[], [2026], [2026, 2027]]) {
+      for (const available of [true, false]) {
+        const feed = membershipFeedFromWire({ memberships: [], activeCount: 0, purchaseOptions: options,
+          currentYear: 2026, membershipCheckStatus: status, membershipReview: { blockedYears },
+          purchaseEligibility: { available, reason: null } });
+        assert.deepEqual(buildMembershipOverview(feed).yearSections.map((section) => section.purchaseOption?.year), [2026, 2027]);
+        if (status !== "READY") assert.doesNotMatch(membershipReviewCopy(feed)!, /kontroller|gransk|Kontakta/);
+      }
+    }
+  }
+});
+
+test("removing a legacy hold preserves birthdate prerequisites and individually unavailable products", () => {
+  const option = { productId: "senior-2026", typeName: "Senior 2026", category: "senior", year: 2026,
+    priceOre: 35000, vatBasisPoints: 600, validFrom: "2026-01-01", validTo: "2026-12-31",
+    available: false, unavailableReason: "payment_pending" };
+  const base = { memberships: [], activeCount: 0, purchaseOptions: [option], currentYear: 2026,
+    membershipCheckStatus: "PENDING" };
+  const birthdateRequired = membershipFeedFromWire({ ...base,
+    purchaseEligibility: { available: false, reason: "birthdate_required" } });
+  assert.equal(membershipPurchaseNeedsBirthdate(birthdateRequired, null), true);
+  assert.equal(buildMembershipOverview(birthdateRequired).yearSections[0].purchaseOption, null);
+  const pendingPayment = membershipFeedFromWire({ ...base,
+    purchaseEligibility: { available: false, reason: null } });
+  assert.equal(buildMembershipOverview(pendingPayment).yearSections[0].purchaseOption?.available, false);
+  assert.equal(buildMembershipOverview(pendingPayment).yearSections[0].purchaseOption?.unavailableReason, "payment_pending");
+});
+
+test("confirmed current-year membership hides the legacy hint but keeps future-year purchase available", () => {
+  for (const status of ["PENDING", "NEEDS_REVIEW"]) {
+    const feed = membershipFeedFromWire({ memberships: [{ id: "paid2026", productId: "junior-2026",
+      typeName: "Junior 2026", category: "junior", year: 2026, paid: true, active: true, source: "MATCHI" }],
+      activeCount: 1, currentYear: 2026, membershipCheckStatus: status,
+      membershipReview: { blockedYears: [2026, 2027] }, purchaseEligibility: { available: true, reason: null },
+      purchaseOptions: [2026, 2027].map((year) => ({ productId: `junior-${year}`, typeName: `Junior ${year}`,
+        category: "junior", year, priceOre: 19000, vatBasisPoints: 600, validFrom: `${year}-01-01`,
+        validTo: `${year}-12-31`, available: true, unavailableReason: null })) });
+    assert.equal(membershipReviewCopy(feed), null);
+    const sections = buildMembershipOverview(feed).yearSections;
+    assert.equal(sections[0].membership?.id, "paid2026");
+    assert.equal(sections[0].purchaseOption, null);
+    assert.equal(sections[1].purchaseOption?.available, true);
+  }
 });
 
 test("membership route uses the HttpOnly account session and private caching", () => {
