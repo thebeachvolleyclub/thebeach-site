@@ -21,6 +21,7 @@ import {
 } from "@/lib/accountReturn.core";
 import {
   buildMembershipOverview,
+  membershipReviewCopy,
   EMPTY_MEMBERSHIP_FEED,
   membershipFeedFromWire,
   membershipHistory,
@@ -1896,16 +1897,16 @@ function MembershipRecordCard({ item }: { item: MembershipRecord }) {
       </div>
       <div className={`shrink-0 text-left text-sm sm:text-right ${item.active ? "text-cream/70" : "text-black/55"}`}>
         {amount ? <strong className={`block text-lg ${item.active ? "text-cream" : "text-black"}`}>{amount}</strong> : null}
-        {item.paid ? <span>Betald</span> : <span>Ingen registrerad betalning</span>}
+        {item.membershipEvidenceSource === "PROFIXIO" ? <span>Bekräftat genom Profixio</span> : item.paid ? <span>Betald</span> : <span>Ingen registrerad betalning</span>}
       </div>
     </div>
-    <dl className={`mt-5 grid gap-3 border-t pt-4 text-xs sm:grid-cols-2 lg:grid-cols-5 ${item.active ? "border-white/15 text-cream/65" : "border-black/10 text-black/55"}`}>
+    {item.membershipEvidenceSource === "PROFIXIO" ? <p className="mt-4 text-sm">Din aktiva Profixio-licens bekräftar medlemskapet för detta år. Du behöver inte betala medlemsavgiften igen.</p> : <dl className={`mt-5 grid gap-3 border-t pt-4 text-xs sm:grid-cols-2 lg:grid-cols-5 ${item.active ? "border-white/15 text-cream/65" : "border-black/10 text-black/55"}`}>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Produkt-ID</dt><dd className="mt-1 break-all">{item.productId || "Uppgift saknas"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Status</dt><dd className="mt-1">{item.status || "Saknas"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Köpt</dt><dd className="mt-1">{item.purchasedAt ? formatAccountDate(item.purchasedAt) : "Datum saknas"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Betalsätt</dt><dd className="mt-1">{item.paymentMethod || "Uppgift saknas"}</dd></div>
       <div><dt className="font-bold uppercase tracking-[0.08em]">Betalningsreferens</dt><dd className="mt-1 break-all">{item.paymentReference || "Uppgift saknas"}</dd></div>
-    </dl>
+    </dl>}
   </article>;
 }
 
@@ -1988,9 +1989,7 @@ export function MembershipCentre({
 
     <div className="mt-8 space-y-9">
       {feed.membershipCheckStatus !== "READY" && !needsBirthdate ? <div role="status" className="border-l-4 border-l-orange bg-white p-5 text-sm text-black/70">
-        {feed.membershipCheckStatus === "PENDING"
-          ? "Vi kontrollerar om du redan har ett medlemskap innan du kan betala. Uppdatera sidan om en liten stund."
-          : "Vi behöver kontrollera ett tidigare medlemskap innan du kan betala. Kontakta oss så hjälper vi dig."}
+        {membershipReviewCopy(feed)}
       </div> : null}
       {overview.yearSections.map((section) => {
         const purchase = feed.purchases.find((candidate) => candidate.year === section.year)

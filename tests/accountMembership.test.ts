@@ -12,6 +12,7 @@ import {
   membershipPurchaseCanRetry,
   membershipPurchaseFromWire,
   membershipPurchaseStorageKey,
+  membershipReviewCopy,
   moneyFromOre,
   safeSwishDeepLink,
   validSwishPayerAlias,
@@ -25,6 +26,27 @@ const portal = readFileSync(
   new URL("../src/components/account/AccountPortal.tsx", import.meta.url),
   "utf8",
 );
+
+test("Profixio membership evidence is not presented as a payment and survives identity review", () => {
+  const feed = membershipFeedFromWire({ memberships: [{ id: "profixio:42:2026", productId: "evidence:profixio:2026",
+    typeName: "Medlemskap 2026", year: 2026, source: "NATIVE", membershipEvidenceSource: "PROFIXIO",
+    paid: true, active: true, readOnly: true, amountOre: null, paymentReference: null }],
+    activeCount: 1, currentYear: 2026, purchaseOptions: [], membershipCheckStatus: "NEEDS_REVIEW",
+    membershipReview: { blockedYears: [] }, purchaseEligibility: { available: true, reason: null } });
+  assert.equal(feed.memberships[0].membershipEvidenceSource, "PROFIXIO");
+  assert.equal(feed.memberships[0].amountOre, null);
+  assert.equal(buildMembershipOverview(feed).yearSections[0].membership?.paid, true);
+  assert.match(membershipReviewCopy(feed)!, /du kan köpa ett nytt medlemskap/);
+  assert.match(portal, /Bekräftat genom Profixio/);
+});
+
+test("identity review message names the possible paid year without blocking unrelated years", () => {
+  const feed = membershipFeedFromWire({ memberships: [], purchaseOptions: [], membershipCheckStatus: "NEEDS_REVIEW",
+    membershipReview: { blockedYears: [2026, "bad"] } });
+  assert.deepEqual(feed.membershipReview?.blockedYears, [2026]);
+  assert.match(membershipReviewCopy(feed)!, /för 2026/);
+  assert.match(membershipReviewCopy(feed)!, /inte betalar två gånger/);
+});
 
 test("membership route uses the HttpOnly account session and private caching", () => {
   assert.match(route, /accountToken\(\)/);
