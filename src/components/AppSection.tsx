@@ -17,8 +17,9 @@ const COPY: Record<Locale, {
     eyebrow: "The Beach-appen",
     head: ["The Beach", "i fickan"],
     intro:
-      "Spela mer, missa inget. Nyheter, resultat, matchmaking, turneringar och gänget — allt samlat, så du bara behöver dyka upp i sanden.",
+      "Boka bana direkt i appen, hitta spel, följ resultat och håll koll på gänget — allt samlat, så du bara behöver dyka upp i sanden.",
     features: [
+      "Boka bana",
       "Nyheter & event",
       "Resultat",
       "Matchmaking",
@@ -28,7 +29,7 @@ const COPY: Record<Locale, {
       "Vänner & chatt",
       "Swish-betalning",
     ],
-    soon: "Boka bana — Nyhet!",
+    soon: "Nytt: boka bana direkt i appen",
     rows: [
       { label: "Senaste nytt från The Beach", hi: true },
       { label: "Veckans resultat" },
@@ -40,14 +41,15 @@ const COPY: Record<Locale, {
     ],
     appStore: "App Store",
     googlePlay: "Google Play",
-    imgAlt: "The Beach-appen — nyheter, resultat och evenemang",
+    imgAlt: "The Beach-appen — boka bana, nyheter och kalender",
   },
   en: {
     eyebrow: "The Beach app",
     head: ["The Beach", "in your pocket"],
     intro:
-      "Play more, miss nothing. News, results, matchmaking, tournaments and your crew — all in one place, so you just show up in the sand.",
+      "Book a court straight from the app, find a game, follow results and keep up with your crew — all in one place, so you just show up in the sand.",
     features: [
+      "Book a court",
       "News & events",
       "Results",
       "Matchmaking",
@@ -57,7 +59,7 @@ const COPY: Record<Locale, {
       "Friends & chat",
       "Swish payments",
     ],
-    soon: "Court booking — new!",
+    soon: "New: book a court right in the app",
     rows: [
       { label: "Latest from The Beach", hi: true },
       { label: "Results of the week" },
@@ -69,7 +71,7 @@ const COPY: Record<Locale, {
     ],
     appStore: "App Store",
     googlePlay: "Google Play",
-    imgAlt: "The Beach app — news, results and events",
+    imgAlt: "The Beach app — court booking, news and calendar",
   },
 };
 
@@ -96,7 +98,7 @@ export default function AppSection({ locale = "sv" }: { locale?: Locale }) {
             </span>
           ))}
         </div>
-        <p className="mb-8 inline-flex items-center gap-2 border border-black/15 px-3.5 py-2 text-[12px] font-bold uppercase tracking-[0.1em] text-black/45">
+        <p className="mb-8 inline-flex items-center gap-2 border border-black/30 bg-white/60 px-3.5 py-2 text-[12px] font-bold uppercase tracking-[0.1em] text-black">
           <span className="h-1.5 w-1.5 rounded-full bg-orange" aria-hidden="true" />
           {t.soon}
         </p>
@@ -124,10 +126,10 @@ export default function AppSection({ locale = "sv" }: { locale?: Locale }) {
 
       <Reveal delay={0.1} className="flex justify-center">
         <img
-          src="/media/app-trio.webp"
+          src="/media/app-trio-boka.webp"
           alt={t.imgAlt}
-          width={820}
-          height={660}
+          width={1640}
+          height={1320}
           loading="lazy"
           className="h-auto w-full max-w-[560px]"
         />

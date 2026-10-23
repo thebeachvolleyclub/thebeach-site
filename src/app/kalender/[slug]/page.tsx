@@ -180,7 +180,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                         </a>
                       </div>
                     </div>
-                    <img src="/media/app-trio.webp" alt="The Beach-appen — nyheter, resultat och evenemang" width={820} height={660} loading="lazy" className="mx-auto h-auto w-full max-w-[360px]" />
+                    <img src="/media/app-trio-boka.webp" alt="The Beach-appen — boka bana, nyheter och kalender" width={1640} height={1320} loading="lazy" className="mx-auto h-auto w-full max-w-[360px]" />
                   </div>
                 </div>
               </Reveal>
