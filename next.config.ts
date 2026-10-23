@@ -44,6 +44,9 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       { source: "/hem", destination: "/", permanent: true },
+      // Kort länk till app-sektionen (nyhetsbrev, tryck): thebeach.one/app → startsidans #app
+      { source: "/app", destination: "/#app", permanent: false },
+      { source: "/en/app", destination: "/en#app", permanent: false },
       // Kursöversikten är kursstegen på /trana — /kurser finns bara som
       // förälder till de enskilda kurssidorna, så den pekar dit.
       { source: "/kurser", destination: "/trana#kurser", permanent: false },

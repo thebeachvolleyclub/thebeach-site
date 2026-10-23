@@ -78,7 +78,7 @@ const COPY: Record<Locale, {
 export default function AppSection({ locale = "sv" }: { locale?: Locale }) {
   const t = COPY[locale];
   return (
-    <section className="grid grid-cols-1 items-center gap-10 bg-mint px-5 py-16 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-14 lg:py-28">
+    <section id="app" className="scroll-mt-20 grid grid-cols-1 items-center gap-10 bg-mint px-5 py-16 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-14 lg:py-28">
       <Reveal>
         <span className="mb-4 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/35">
           {t.eyebrow}
