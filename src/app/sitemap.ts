@@ -3,8 +3,9 @@ import { mergedAllEvents } from "@/lib/profixio";
 import { allArticles } from "@/lib/nyheter";
 import { allCourseSlugs } from "@/lib/coursePageData";
 
-// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
-export const revalidate = 21600;
+// Nya appaktiviteter behöver indexeras utan sex timmars extra väntan.
+// Profixio har separat 6 h TTL.
+export const revalidate = 60;
 
 
 const base = "https://thebeach.one";

@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { screenEvents } from "@/lib/kalender";
 import { mergedBySlug } from "@/lib/profixio";
 
-// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
-export const revalidate = 21600;
+// Nya/inställda app-aktiviteter måste slå igenom även på skärmens detaljsida.
+// Profixio har separat 6 h TTL.
+export const revalidate = 60;
 
 
 export const metadata: Metadata = { robots: { index: false } };

@@ -4,8 +4,8 @@ import { altLang } from "@/lib/i18n";
 import { homeDict } from "@/lib/i18n/home";
 import { og } from "@/lib/seo";
 
-// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
-export const revalidate = 21600;
+// App-aktiviteter kan ställas in med kort varsel. Profixio har separat 6 h TTL.
+export const revalidate = 60;
 
 // Svenska startsidans title/description/OG är sajtens standard och ligger i
 // src/app/layout.tsx (liksom WebSite/SportsActivityLocation-JsonLd).

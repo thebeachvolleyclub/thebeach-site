@@ -11,10 +11,12 @@
  * - Fallback-kedja om Profixio inte svarar eller bytt sidstruktur:
  *   senaste lyckade hämtning (minne) → committad seed (profixio-seed.json)
  *   → enbart manuella poster. Fel loggas med prefix [profixio-sync].
- * - Cache: 6 h i minnet + ISR-revalidate på sidorna som konsumerar datat.
+ * - Profixio: 6 h i processminnet. App-event har egen 60 s-cache och
+ *   kalenderns publika sidor renderas dynamiskt för att visa ändringar.
  */
 
 import { MONTHS as MANUAL_MONTHS, type Ev, type Month } from "./kalender";
+import { unstable_rethrow } from "next/navigation";
 import { getAppCalendarEvents, removeSupersededFredagsmys } from "./app-events";
 import { resolveBeachTvTournaments } from "./beachtv-tournaments";
 import {
@@ -86,6 +88,7 @@ export async function getProfixioTheBeach(): Promise<ProfixioEvent[]> {
     cache = { at: Date.now(), events };
     return events;
   } catch (err) {
+    unstable_rethrow(err);
     console.error("[profixio-sync] hämtning misslyckades, använder fallback:", err);
     if (cache) return cache.events; // senaste lyckade
     return seed as ProfixioEvent[]; // committad snapshot
@@ -190,6 +193,7 @@ export async function getMergedMonths(): Promise<Month[]> {
   try {
     profixio = await getProfixioTheBeach();
   } catch (err) {
+    unstable_rethrow(err);
     console.error("[profixio-sync] oväntat fel, visar enbart manuella poster:", err);
   }
 
@@ -274,6 +278,7 @@ export async function getMergedMonths(): Promise<Month[]> {
       month.events.push({ ...event, day, wd: WEEKDAYS[weekday] });
     }
   } catch (err) {
+    unstable_rethrow(err);
     console.error("[app-events] oväntat fel, visar kalendern utan appaktiviteter:", err);
   }
 

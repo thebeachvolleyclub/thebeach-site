@@ -7,9 +7,12 @@
  */
 
 import { APP_EVENT_EXTRAS, type Ev } from "./kalender";
+import { unstable_rethrow } from "next/navigation";
 
 const FEED_URL = "https://api.beachtv.se/api/public/events";
-const REVALIDATE_SECONDS = 6 * 60 * 60;
+// A cancelled app activity must not remain advertised for six hours. The
+// page-level ISR interval is also one minute; Profixio keeps its own 6 h TTL.
+export const APP_EVENT_REVALIDATE_SECONDS = 60;
 const REQUEST_TIMEOUT_MS = 5_000;
 const STOCKHOLM = "Europe/Stockholm";
 
@@ -46,6 +49,7 @@ export type AppCalendarEvent = {
 };
 
 let lastSuccess: { at: number; events: AppFeedEvent[] } | null = null;
+let pendingRefresh: Promise<AppFeedEvent[]> | null = null;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -99,24 +103,42 @@ function parseFeed(value: unknown): FeedEnvelope {
 }
 
 async function fetchAppEvents(): Promise<AppFeedEvent[]> {
-  if (lastSuccess && Date.now() - lastSuccess.at < REVALIDATE_SECONDS * 1_000) {
+  if (lastSuccess && Date.now() - lastSuccess.at < APP_EVENT_REVALIDATE_SECONDS * 1_000) {
     return lastSuccess.events;
   }
+  if (pendingRefresh) return pendingRefresh;
 
+  // The calendar routes already render on request because Profixio uses
+  // no-store. Keep this feed uncached by Next too: its stale-on-error Data
+  // Cache could otherwise advertise a cancelled event indefinitely.
+  pendingRefresh = (async () => {
+    try {
+      const response = await fetch(FEED_URL, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+      if (!response.ok) throw new Error(`API:t svarade ${response.status}`);
+
+      const feed = parseFeed(await response.json());
+      const events = feed.events.filter((event) => event.public);
+      lastSuccess = { at: Date.now(), events };
+      return events;
+    } catch (error) {
+      // Let Next opt this route out of static prerendering; a framework
+      // sentinel is not an upstream outage and must not trigger stale data.
+      unstable_rethrow(error);
+      console.error("[app-events] hämtning misslyckades, använder fallback:", error);
+      // A stale fallback can falsely present a cancelled pass as still active.
+      // Use it only briefly for a transient API error, then fail closed.
+      return lastSuccess && Date.now() - lastSuccess.at < APP_EVENT_REVALIDATE_SECONDS * 2_000
+        ? lastSuccess.events
+        : [];
+    }
+  })();
   try {
-    const response = await fetch(FEED_URL, {
-      next: { revalidate: REVALIDATE_SECONDS },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`API:t svarade ${response.status}`);
-
-    const feed = parseFeed(await response.json());
-    const events = feed.events.filter((event) => event.public);
-    lastSuccess = { at: Date.now(), events };
-    return events;
-  } catch (error) {
-    console.error("[app-events] hämtning misslyckades, använder fallback:", error);
-    return lastSuccess?.events ?? [];
+    return await pendingRefresh;
+  } finally {
+    pendingRefresh = null;
   }
 }
 

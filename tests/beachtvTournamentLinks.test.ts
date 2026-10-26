@@ -54,6 +54,39 @@ test("omits the CTA for blank and unresolved ibIds", async () => {
   assert.equal(calls, 1);
 });
 
+test("a newly imported invitation becomes linkable after a short negative cache", async () => {
+  const originalNow = Date.now;
+  let now = originalNow();
+  Date.now = () => now;
+  let calls = 0;
+  const fetchPolicies: Array<RequestCache | undefined> = [];
+  const fetcher = async (_url: string, init?: RequestInit) => {
+    calls += 1;
+    fetchPolicies.push(init?.cache);
+    return calls === 1
+      ? jsonResponse(404, { detail: "tournament not yet imported" })
+      : jsonResponse(200, { id: "new-youth-event", profixio_invitation_id: "11280" });
+  };
+
+  try {
+    assert.equal(await resolveBeachTvTournament("11280", fetcher), null);
+    now += 30_000;
+    assert.equal(await resolveBeachTvTournament("11280", fetcher), null);
+    assert.equal(calls, 1);
+    now += 31_000;
+    assert.equal(
+      await resolveBeachTvTournament("11280", fetcher),
+      "https://tv.thebeach.one/turnering/by-ibid/11280",
+    );
+    now += 61_000;
+    assert.equal(await resolveBeachTvTournament("11280", fetcher), "https://tv.thebeach.one/turnering/by-ibid/11280");
+    assert.equal(calls, 2); // positive links retain the six-hour process TTL
+    assert.deepEqual(fetchPolicies, ["no-store", "no-store"]);
+  } finally {
+    Date.now = originalNow;
+  }
+});
+
 test("a timeout or 5xx is logged and never fails the calendar", async () => {
   const logged: string[] = [];
   const logger = (message: string) => logged.push(message);

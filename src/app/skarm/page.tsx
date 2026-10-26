@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { mergedScreenEvents } from "@/lib/profixio";
 import SkarmRotator from "@/components/SkarmRotator";
 
-// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
-export const revalidate = 21600;
+// Skärmslingan får inte fortsätta visa inställda app-aktiviteter i sex timmar.
+// Profixio har separat 6 h TTL.
+export const revalidate = 60;
 
 
 export const metadata: Metadata = {

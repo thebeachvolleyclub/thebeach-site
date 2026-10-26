@@ -82,6 +82,22 @@ docker ps --format '{{.Names}}  {{.Ports}}  {{.Status}}'  # loopback publish onl
 
 Spot-check pages: `/`, `/events`, `/kalender`, `/om-oss`, `/trana` → 200.
 
+### Calendar freshness check
+
+`/`, `/en`, `/kalender`, `/en/calendar`, `/kalender/[slug]` and the screen views
+render on request. The public App event feed is read uncached by Next and held
+in process memory for at most 60 seconds. If that feed fails, a previous good
+response is used for less than two minutes; after that, App events are omitted
+instead of advertising possibly cancelled sessions. Profixio's separate
+in-process source cache remains six hours. BeachTV tournament links retain
+successful lookups for six hours, but a missing invitation is retried after a
+minute. There is no synchronous cross-service invalidation callback.
+
+After a calendar release, compare the live public App feed to both the home and
+calendar pages, verify a new `/kalender/app-<source_id>` detail URL, and confirm
+a cancelled App event is absent. Also check that a newly published Profixio
+invitation appears in the calendar and gains its BeachTV link after import.
+
 ### Subscription credit checkout
 
 Publish the coordinated Booking/App API release before the site change. The

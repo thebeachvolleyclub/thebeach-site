@@ -10,8 +10,9 @@ import RichText from "@/components/RichText";
 import JsonLd from "@/components/JsonLd";
 import { og } from "@/lib/seo";
 
-// Profixio-synk: hämta om tävlingskalendern var 6:e timme (ISR).
-export const revalidate = 21600;
+// Nya/inställda app-aktiviteter måste slå igenom även på detaljsidor och 404.
+// Profixio har separat 6 h TTL.
+export const revalidate = 60;
 
 
 export function generateStaticParams() {

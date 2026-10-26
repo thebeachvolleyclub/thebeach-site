@@ -1,5 +1,8 @@
+import { unstable_rethrow } from "next/navigation";
+
 const BEACH_TV_ORIGIN = "https://tv.thebeach.one";
 const LOOKUP_REVALIDATE_SECONDS = 6 * 60 * 60;
+const LOOKUP_MISSING_REVALIDATE_SECONDS = 60;
 const LOOKUP_TIMEOUT_MS = 4_000;
 export const BEACH_TV_LOOKUP_CONCURRENCY = 4;
 export const BEACH_TV_LOOKUP_CACHE_MAX_ENTRIES = 256;
@@ -9,11 +12,7 @@ type BeachTvTournament = {
   profixio_invitation_id: string;
 };
 
-type FetchInit = RequestInit & {
-  next?: { revalidate: number };
-};
-
-type Fetcher = (input: string, init?: FetchInit) => Promise<Response>;
+type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 type ErrorLogger = (message: string, error: unknown) => void;
 
 type CachedLookup = {
@@ -75,7 +74,9 @@ function cacheLookup(
   // order even if a value is refreshed after its six-hour lifetime.
   state.cache.delete(invitationId);
   state.cache.set(invitationId, {
-    expiresAt: now + LOOKUP_REVALIDATE_SECONDS * 1_000,
+    // A new Profixio invitation may be imported into BeachTV shortly after
+    // its first lookup. Keep 404s brief; already resolved links stay stable.
+    expiresAt: now + (href === null ? LOOKUP_MISSING_REVALIDATE_SECONDS : LOOKUP_REVALIDATE_SECONDS) * 1_000,
     href,
   });
   pruneLookupCache(state, now);
@@ -132,7 +133,10 @@ export async function resolveBeachTvTournament(
       const response = await fetcher(
         `${BEACH_TV_ORIGIN}/public/v1/tournaments/by-invitation/${encodeURIComponent(invitationId)}`,
         {
-          next: { revalidate: LOOKUP_REVALIDATE_SECONDS },
+          // The process cache holds successful links for six hours and 404s
+          // for one minute. Do not let Next's stale-on-error Data Cache add
+          // another, potentially unbounded 404 layer.
+          cache: "no-store",
           signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
         },
       );
@@ -148,6 +152,7 @@ export async function resolveBeachTvTournament(
         href: `${BEACH_TV_ORIGIN}/turnering/by-ibid/${encodeURIComponent(invitationId)}`,
       };
     } catch (error) {
+      unstable_rethrow(error);
       logError(`[beachtv-calendar] uppslag misslyckades för Profixio ibId ${invitationId}:`, error);
       return { cacheable: false, href: null };
     }
