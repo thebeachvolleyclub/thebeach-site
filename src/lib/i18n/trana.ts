@@ -4,7 +4,7 @@ import type { Dict } from "@/lib/i18n";
  * Ordbok för träningssidan (/trana resp. /en/training).
  * Svenska texterna är källan och bevaras exakt; engelskan speglar strukturen.
  *
- * OBS: ordinarie priser (795 kr och 3 695 kr / 15 pass)
+ * OBS: ordinarie priser (795 kr / 5 pass och 1 295 kr / 5 pass)
  * är låsta — härifrån styrs ENDAST text.
  * Under 21-copyn i PathFinder är Davids egen och ändras inte på svenska;
  * engelskan är en trogen översättning.
@@ -261,7 +261,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         adultRegularClosed: {
           title: "Missade du träningsgrupperna?",
-          body: "Anmälan till höstens träningsgrupper är stängd. Fortsättningskursen har fortfarande några platser kvar — 15 pass med coach, tisdagar 19:00 eller torsdagar 20:30.",
+          body: "Anmälan till höstens träningsgrupper är stängd. Fortsättningskursen har fortfarande några platser kvar — 5 pass med coach, tisdagar 19:00 eller torsdagar 20:30.",
           ctas: [
             { label: "Se fortsättningskursen", href: "#kurser" },
             { label: "Träningsgrupperna", href: "#traningsgrupper" },
@@ -280,12 +280,12 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Nybörjare",
           title: "Grundkurs",
           price: "795 kr",
-          priceNote: "Ditt personliga pris visas när du loggat in.",
+          priceNote: "395 kr för dig född 2001 eller senare · ditt personliga pris visas när du loggat in.",
           details: [
-            "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
+            "5 pass × 1,5 h (torsdagar 20:30–22:00)",
             "Teknik, fotarbete, taktik och spel",
             "Inomhus",
-            "Start: tisdagar fr.o.m. 1 sep eller torsdagar fr.o.m. 3 sep 2026",
+            "Start: torsdagar fr.o.m. 12 nov 2026",
           ],
           quote: "Ingen tidigare erfarenhet krävs. Ta bara med motivation och en bra attityd.",
           ctas: [{ label: "Mejla oss för anmälan", href: "mailto:boka@thebeach.one" }],
@@ -294,13 +294,13 @@ export const tranaDict: Dict<TranaDict> = {
           no: "02",
           tag: "Mellannivå",
           title: "Fortsättningskurs",
-          price: "3 695 kr",
-          priceNote: "15 pass · ditt personliga pris visas när du loggat in.",
+          price: "1 295 kr",
+          priceNote: "5 pass · ditt personliga pris visas när du loggat in.",
           details: [
-            "15 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
+            "5 pass × 1,5 h (19:00–20:30 eller 20:30–22:00)",
             "Rörelse & positionering, bollkontroll, försvar & attack",
             "Spelförståelse & matchspel i högre tempo",
-            "Start: tisdagar 1 sep eller torsdagar 3 sep 2026",
+            "Start: tisdagar 10 nov eller torsdagar 12 nov 2026",
           ],
           quote:
             "Spelat förr men det var länge sen? Det här är rätt ingång för din comeback — du behöver inte börja om från noll.",
@@ -350,7 +350,7 @@ export const tranaDict: Dict<TranaDict> = {
       },
       overflow: {
         title: "Missade du träningsgrupperna?",
-        body: "Fortsättningskursen har fortfarande några platser kvar — 15 pass med coach, hela hösten. Tisdagar 19:00 eller torsdagar 20:30.",
+        body: "Fortsättningskursen har fortfarande några platser kvar — 5 pass med coach. Tisdagar 19:00 eller torsdagar 20:30.",
         cta: "Se fortsättningskursen",
       },
       questionsTitle: "Frågor",
@@ -542,7 +542,7 @@ export const tranaDict: Dict<TranaDict> = {
         },
         adultRegularClosed: {
           title: "Missed the training groups?",
-          body: "Registration for this autumn's training groups is closed. The continuation course still has a few places left — 15 coached sessions, Tuesdays 19:00 or Thursdays 20:30.",
+          body: "Registration for this autumn's training groups is closed. The continuation course still has a few places left — 5 coached sessions, Tuesdays 19:00 or Thursdays 20:30.",
           ctas: [
             { label: "See the continuation course", href: "#kurser" },
             { label: "The training groups", href: "#traningsgrupper" },
@@ -561,12 +561,12 @@ export const tranaDict: Dict<TranaDict> = {
           tag: "Beginner",
           title: "Beginner course",
           price: "795 kr",
-          priceNote: "Your personal price is shown after you sign in.",
+          priceNote: "395 kr if born 2001 or later · your personal price is shown after you sign in.",
           details: [
-            "5 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
+            "5 sessions × 1.5 h (Thursdays 20:30–22:00)",
             "Technique, footwork, tactics and game play",
             "Indoors",
-            "Starts: Tuesdays from 1 Sep or Thursdays from 3 Sep 2026",
+            "Starts: Thursdays from 12 Nov 2026",
           ],
           quote: "No previous experience required. Just bring motivation and a good attitude.",
           ctas: [{ label: "Email us to sign up", href: "mailto:boka@thebeach.one" }],
@@ -575,13 +575,13 @@ export const tranaDict: Dict<TranaDict> = {
           no: "02",
           tag: "Intermediate",
           title: "Continuation course",
-          price: "3 695 kr",
-          priceNote: "15 sessions · your personal price is shown after you sign in.",
+          price: "1 295 kr",
+          priceNote: "5 sessions · your personal price is shown after you sign in.",
           details: [
-            "15 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
+            "5 sessions × 1.5 h (19:00–20:30 or 20:30–22:00)",
             "Movement & positioning, ball control, defence & attack",
             "Game sense & match play at a higher tempo",
-            "Starts: Tuesdays 1 Sep or Thursdays 3 Sep 2026",
+            "Starts: Tuesdays 10 Nov or Thursdays 12 Nov 2026",
           ],
           quote:
             "Played before, but it was a long time ago? This is the right way back in for your comeback — you don't need to start over from zero.",
@@ -631,7 +631,7 @@ export const tranaDict: Dict<TranaDict> = {
       },
       overflow: {
         title: "Missed the training groups?",
-        body: "The continuation course still has a few places left — 15 coached sessions, all autumn. Tuesdays 19:00 or Thursdays 20:30.",
+        body: "The continuation course still has a few places left — 5 coached sessions. Tuesdays 19:00 or Thursdays 20:30.",
         cta: "See the continuation course",
       },
       questionsTitle: "Questions",

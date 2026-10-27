@@ -251,7 +251,7 @@ export const homeDict: Dict<HomeDict> = {
       photoCaption: "Alla grupper leds av utbildade coacher",
       cards: [
         { level: "Nybörjare", title: "Grundkurs", when: "5 pass · 795 kr · start varje säsong", desc: "Spela, träna och lär känna sporten från grunden.", badge: "Höstens kurser igång", spots: "open", href: "/trana#kurser" },
-        { level: "Mellannivå", title: "Fortsättningskurs", when: "15 pass · hela säsongen · 3 695 kr", desc: "Du kan grunderna — nu tar vi ditt spel till nästa nivå.", badge: "Höstens kurser igång", spots: "open", href: "/trana#kurser" },
+        { level: "Mellannivå", title: "Fortsättningskurs", when: "5 pass · 1 295 kr", desc: "Du kan grunderna — nu tar vi ditt spel till nästa nivå.", badge: "Höstens kurser igång", spots: "open", href: "/trana#kurser" },
         { level: "Avancerat", title: "Träningsgrupper", when: "Höst- & sommarsäsong · 15 resp. 7 pass", desc: "Jämna grupper på din nivå — träning med coacher på nationell nivå.", badge: "Anmälan stängd", spots: "few", href: "/trana#traningsgrupper" },
         { level: "Barn & Ungdom", title: "Juniorträning", when: "Hela terminen · Weekends", desc: "För barn och unga som vill lära sig beachvolley på riktigt.", badge: "Anmälan öppen", spots: "open", href: "/trana#ungdom" },
       ],
@@ -415,7 +415,7 @@ export const homeDict: Dict<HomeDict> = {
       photoCaption: "All groups are led by trained coaches",
       cards: [
         { level: "Beginner", title: "Beginner course", when: "5 sessions · 795 kr · starts every season", desc: "Play, train and get to know the sport from the ground up.", badge: "Autumn courses running", spots: "open", href: "/trana#kurser" },
-        { level: "Intermediate", title: "Continuation course", when: "15 sessions · all season · 3 695 kr", desc: "You know the basics — now we take your game to the next level.", badge: "Autumn courses running", spots: "open", href: "/trana#kurser" },
+        { level: "Intermediate", title: "Continuation course", when: "5 sessions · 1 295 kr", desc: "You know the basics — now we take your game to the next level.", badge: "Autumn courses running", spots: "open", href: "/trana#kurser" },
         { level: "Advanced", title: "Training groups", when: "Autumn & summer seasons · 15 / 7 sessions", desc: "Balanced groups at your level — training with coaches at national level.", badge: "Registration closed", spots: "few", href: "/trana#traningsgrupper" },
         { level: "Kids & youth", title: "Junior training", when: "All term · Weekends", desc: "For kids and teens who want to learn beach volleyball for real.", badge: "Registration open", spots: "open", href: "/trana#ungdom" },
       ],

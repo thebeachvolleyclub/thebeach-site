@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fillYears } from "@/lib/ages";
+import { coursePath } from "@/lib/courseSlug";
 import Reveal from "@/components/Reveal";
 import type { Locale } from "@/lib/i18n";
 import { tranaDict } from "@/lib/i18n/trana";
@@ -199,7 +200,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
       </Reveal>
 
       {/* Stängd eller väntelista ska inte vara en död ände: fortsättningskursen
-          har fortfarande några platser kvar (15 pass, hela hösten). */}
+          har fortfarande några platser kvar (5 pass). */}
       {availability.state !== "open" && availability.state !== "before_open" && (
         <Reveal delay={0.2} className="mt-8">
           <div className="flex flex-col gap-4 border border-lime/50 bg-black p-6 sm:flex-row sm:items-center sm:justify-between lg:p-8">
@@ -210,7 +211,7 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
               <p className="max-w-xl text-sm leading-relaxed text-bone/70">{t.overflow.body}</p>
             </div>
             <a
-              href="#kurser"
+              href={coursePath("fortsattningskurs-torsdag-2030", locale)}
               className="inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-2 bg-lime px-7 py-3.5 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
               {t.overflow.cta} <span aria-hidden="true">→</span>
