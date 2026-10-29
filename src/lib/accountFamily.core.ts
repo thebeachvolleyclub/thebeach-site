@@ -109,6 +109,9 @@ export function createFamilyChildPost(deps: Dependencies) {
     if (token instanceof Response) return token;
     const body = await readPayload(request);
     if (!validFamilyRequestKey(body.idempotencyKey)) return familyFailure({ detail: "Ogiltig begärandenyckel" }, 422);
+    if (body.gender !== "M" && body.gender !== "W" && body.gender !== "X") {
+      return familyFailure({ detail: "Välj kön för barnets profil." }, 422);
+    }
     const child: Payload = {};
     for (const key of ["first_name", "last_name", "birthdate", "gender", "parental_responsibility_confirmed", "expected_contact_email"]) {
       if (body[key] !== undefined) child[key] = body[key];

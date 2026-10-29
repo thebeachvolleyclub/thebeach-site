@@ -2,6 +2,7 @@ import { accountToken, sameOrigin, unauthorized } from "@/lib/accountSession";
 import { appApi, proxyAppJson } from "@/lib/appApi";
 import { isBirthdateValid, normalizeBirthdate } from "@/lib/birthdate";
 import { normalizePersonName, splitValidFullName, validNameComponent } from "@/lib/personIdentity";
+import { isProfileGender } from "@/lib/profileGender.core";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +17,14 @@ export async function PUT(request: Request) {
   const token = await accountToken();
   if (!token) return unauthorized();
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+  if (body.gender !== undefined && !isProfileGender(body.gender)) {
+    return Response.json({ detail: "Välj kön: man, kvinna eller icke-binär" }, { status: 422 });
+  }
   const profile: Record<string, unknown> = {};
   // check_duplicates/confirm_new_identity: the profile-setup duplicate guard
   // (name/birthdate match against the master registry → duplicate_match on
   // the response instead of silently creating a second identity).
-  for (const key of ["name", "first_name", "last_name", "description", "emoji_icon", "is_public", "birthdate", "check_duplicates", "confirm_new_identity"] as const) {
+  for (const key of ["name", "first_name", "last_name", "gender", "description", "emoji_icon", "is_public", "birthdate", "check_duplicates", "confirm_new_identity"] as const) {
     if (body[key] !== undefined) profile[key] = body[key];
   }
   const hasStructuredName = profile.first_name !== undefined || profile.last_name !== undefined;

@@ -53,6 +53,7 @@ import {
 } from "@/lib/accountTrainingRecordings.core";
 import { normalizeBirthdate, isBirthdateValid, birthdateHint } from "@/lib/birthdate";
 import { normalizePersonName, validNameComponent } from "@/lib/personIdentity";
+import { isProfileGender, profileGenderFromWire, requiresProfileGender, type ProfileGender } from "@/lib/profileGender.core";
 import { invoiceAmountDue, invoiceEmailRequestConfirmation, invoiceMoney } from "@/lib/accountInvoice.core";
 import {
   SUBSCRIPTION_RELEASE_CONFIRM_TEXT,
@@ -77,6 +78,8 @@ type Profile = {
   first_name?: string | null;
   last_name?: string | null;
   birthdate: string | null;
+  gender?: ProfileGender | null;
+  gender_required?: boolean;
   swish_phone: string | null;
   emoji_icon: string;
   description: string | null;
@@ -105,6 +108,8 @@ type IdentityState = {
   first_name: string | null;
   last_name: string | null;
   birthdate: string | null;
+  gender?: ProfileGender | null;
+  gender_required?: boolean;
   candidates: IdentityCandidate[];
   message: string | null;
 };
@@ -306,6 +311,7 @@ export default function AccountPortal() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState<ProfileGender | "">("");
   const [swish, setSwish] = useState("");
   const [description, setDescription] = useState("");
   // Duplicate-account alert (profile-setup guard) + merge confirmation.
@@ -360,7 +366,7 @@ export default function AccountPortal() {
   }, []);
 
   const applyProfile = useCallback((next: Profile) => {
-    if (licenceAccount.current !== next.id) { licenceSubmission.current?.abort(); setLicenceBusy(false); }
+    if (licenceAccount.current !== next.id) { licenceSubmission.current?.abort(); setLicenceBusy(false); setIdentityState(null); }
     licenceAccount.current = next.id;
     for (const kind of ["sessionStorage", "localStorage"] as const) {
       try { bindAccountDrafts(window[kind], next.id); } catch { /* Storage is optional. */ }
@@ -370,6 +376,7 @@ export default function AccountPortal() {
     setFirstName(structured.firstName);
     setLastName(structured.lastName);
     setBirthdate(next.birthdate ?? "");
+    setGender(profileGenderFromWire(next.gender));
     setSwish(next.swish_phone ?? "");
     setMembershipPayerAlias(next.swish_phone ?? "");
     setDescription(next.description ?? "");
@@ -381,6 +388,11 @@ export default function AccountPortal() {
     profile?.identity_onboarding_v2_enabled
     && profile.identity_status !== "active",
   );
+  const genderRequired = requiresProfileGender(profile)
+    || (identityRequired && requiresProfileGender(identityState));
+  const genderSetupRequired = requiresProfileGender(profile) && !isProfileGender(profile?.gender);
+  const genderDraftRequired = identityRequired && genderRequired && !isProfileGender(identityState?.gender)
+    && (identityState?.identity_status === "duplicate_review" || identityState?.identity_status === "merge_pending");
 
   // Profile-first hand-back (?next=/anmalan): pages that require a signed-in
   // profile send visitors here to log in / register, then get them back.
@@ -395,18 +407,18 @@ export default function AccountPortal() {
   useEffect(() => {
     // Hold the hand-back while the duplicate alert is open — the user must
     // pick a path (old login / merge / new player) before continuing.
-    if (canReturnFromAccount(nextPath, profile) && !dupAlert && !identityRequired) {
+    if (canReturnFromAccount(nextPath, profile) && !dupAlert && !identityRequired && !genderSetupRequired) {
       window.location.assign(nextPath as string);
     }
-  }, [nextPath, profile?.name, profile?.swish_phone, dupAlert, identityRequired]);
+  }, [nextPath, profile?.name, profile?.swish_phone, dupAlert, identityRequired, genderSetupRequired]);
 
   // A fresh account has no name yet — profile completion IS the next step,
   // so land new registrants straight on the profile tab.
   useEffect(() => {
-    if (profile && (identityRequired || !profile.name?.trim() || (accountReturnNeedsSwish(nextPath) && !profile.swish_phone?.trim()))) {
+    if (profile && (identityRequired || genderSetupRequired || !profile.name?.trim() || (accountReturnNeedsSwish(nextPath) && !profile.swish_phone?.trim()))) {
       setTab("profile");
     }
-  }, [nextPath, profile?.name, profile?.swish_phone, identityRequired]);
+  }, [nextPath, profile?.name, profile?.swish_phone, identityRequired, genderSetupRequired]);
 
   useEffect(() => {
     if (!identityRequired) return;
@@ -418,6 +430,7 @@ export default function AccountPortal() {
         if (state.first_name) setFirstName(state.first_name);
         if (state.last_name) setLastName(state.last_name);
         if (state.birthdate) setBirthdate(state.birthdate.slice(0, 10));
+        setGender(profileGenderFromWire(state.gender));
       })
       .catch((cause) => {
         if (active) setError(cause instanceof Error ? cause.message : "Kunde inte läsa identitetskontrollen");
@@ -905,6 +918,10 @@ export default function AccountPortal() {
       setError(birthdateHint(birthdate));
       return;
     }
+    if (genderRequired && !isProfileGender(gender)) {
+      setError("Välj kön för att slutföra din profil.");
+      return;
+    }
     if (normalizedBirthdate !== birthdate) setBirthdate(normalizedBirthdate);
     setBusy(true); setError(""); setMessage("");
     try {
@@ -915,10 +932,14 @@ export default function AccountPortal() {
             first_name: trimmedFirstName,
             last_name: trimmedLastName,
             birthdate: normalizedBirthdate,
+            ...(isProfileGender(gender) ? { gender } : {}),
           }),
         });
         setIdentityState(state);
-        if (state.identity_status !== "active") return;
+        if (state.identity_status !== "active") {
+          if (genderDraftRequired) setMessage("Uppgiften om kön är sparad. Identitetskontrollen fortsätter som tidigare.");
+          return;
+        }
         const activated = await api<Profile>("/api/account/profile");
         const ratingMatch = await api<RatingMatchResult>("/api/account/profile/match-rating", {
           method: "POST",
@@ -937,6 +958,7 @@ export default function AccountPortal() {
           last_name: trimmedLastName,
           swish_phone: swish, description, emoji_icon: emoji, is_public: isPublic,
           birthdate: normalizedBirthdate || undefined,
+          ...(isProfileGender(gender) ? { gender } : {}),
           // Duplicate guard: a name/birthdate match in the player registry
           // pauses BeachID creation and raises the alert card instead.
           check_duplicates: true,
@@ -966,6 +988,7 @@ export default function AccountPortal() {
   const decideIdentityCandidate = async (decision: "yes" | "no") => {
     const candidate = identityState?.candidates[0];
     if (!candidate) return;
+    if (genderDraftRequired) { setError("Spara kön nedan innan du fortsätter identitetskontrollen."); return; }
     setBusy(true); setError(""); setMessage("");
     try {
       const state = await api<IdentityState>(`/api/account/identity/${candidate.player_id}`, {
@@ -1222,7 +1245,7 @@ export default function AccountPortal() {
       try { leaveAccountDrafts(window[kind]); } catch { /* Storage is optional. */ }
     }
     setProfile(null); setCodeSent(false); setCode(""); setMessage(""); setTab("overview");
-    setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName("");
+    setIdentityState(null); setDupAlert(null); setFirstName(""); setLastName(""); setGender("");
     setBookings([]); setInvoices([]); setTrainingGroups([]); setActiveInvoiceCount(0);
     setInvoicePaymentHandoff(null); setInvoiceReceiptOpen({}); setInvoicePersonnummer({});
     setTrainingRecordings(EMPTY_TRAINING_RECORDING_FEED); setTrainingRecordingsAvailable(true);
@@ -1361,6 +1384,12 @@ export default function AccountPortal() {
     /> : null}
 
     {tab === "profile" ? <>
+    {genderDraftRequired ? <section className="border-x border-b border-orange/40 bg-orange/10 p-6">
+      <h3 className="font-display text-2xl">Komplettera din profil</h3>
+      <p className="mt-2 text-sm text-black/75">Din pågående identitetskontroll ligger kvar. Välj kön för att kunna fortsätta; namn, födelsedatum och tidigare svar ändras inte.</p>
+      <label className="mt-4 block max-w-md"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Kön *</span><select aria-label="Kön för identitetskontroll" required value={gender} onChange={(e) => setGender(profileGenderFromWire(e.target.value))} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black"><option value="">Välj</option><option value="dam">Kvinna</option><option value="herr">Man</option><option value="ickebinar">Icke-binär</option></select></label>
+      <button type="button" onClick={() => saveProfile()} disabled={busy || !isProfileGender(gender)} className="mt-4 min-h-12 cursor-pointer bg-black px-5 text-xs font-bold uppercase text-lime disabled:opacity-35">Spara kön och fortsätt</button>
+    </section> : null}
     {identityRequired && identityState?.identity_status === "duplicate_review" && identityState.candidates[0] ? <div className="border-x border-b border-orange/40 bg-orange/10 p-6">
       <p className="font-display text-2xl uppercase text-black">Är detta du?</p>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-black/75">
@@ -1369,8 +1398,8 @@ export default function AccountPortal() {
         {identityState.candidates[0].masked_email ? <>, kopplat till <strong>{identityState.candidates[0].masked_email}</strong></> : null}.
       </p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <button type="button" onClick={() => decideIdentityCandidate("yes")} disabled={busy} className="min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Ja, det är jag</button>
-        <button type="button" onClick={() => decideIdentityCandidate("no")} disabled={busy} className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:opacity-35">Nej, det är inte jag</button>
+        <button type="button" onClick={() => decideIdentityCandidate("yes")} disabled={busy || genderDraftRequired} className="min-h-11 cursor-pointer bg-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Ja, det är jag</button>
+        <button type="button" onClick={() => decideIdentityCandidate("no")} disabled={busy || genderDraftRequired} className="min-h-11 cursor-pointer border border-black px-5 text-xs font-bold uppercase tracking-[0.08em] text-black disabled:opacity-35">Nej, det är inte jag</button>
       </div>
     </div> : null}
     {identityRequired && identityState?.identity_status === "merge_pending" ? <div className="border-x border-b border-teal/30 bg-mint p-6">
@@ -1408,6 +1437,7 @@ export default function AccountPortal() {
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Förnamn *</span><input value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Skriv eventuella ytterligare förnamn här.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Efternamn *</span><input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" maxLength={60} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Födelsedatum *</span><input type="date" min="1900-01-01" required value={birthdate} onChange={(e) => setBirthdate(e.target.value)} autoComplete="bday" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Krävs för rätt ungdomspris och för att undvika dubbletter.</span></label>
+        <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Kön{genderRequired ? " *" : ""}</span><select aria-label="Kön" required={genderRequired} value={gender} onChange={(e) => setGender(profileGenderFromWire(e.target.value))} className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black"><option value="">Välj</option><option value="dam">Kvinna</option><option value="herr">Man</option><option value="ickebinar">Icke-binär</option></select><span className="mt-1 block text-xs text-black/45">Används bland annat för indelning i träningsgrupper.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Swish-nummer</span><input value={swish} onChange={(e) => setSwish(e.target.value)} type="tel" autoComplete="tel" className="min-h-12 w-full border border-black/20 bg-cream px-4 outline-none focus:border-black" /><span className="mt-1 block text-xs text-black/45">Används för betalningsbegäran när du bokar.</span></label>
         <label className="block"><span className="mb-1 block text-xs font-bold uppercase text-black/50">Presentation</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={255} rows={4} className="w-full border border-black/20 bg-cream p-4 outline-none focus:border-black" /></label>
         <label className="flex items-center gap-3 border border-black/10 p-4 text-sm"><input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-5 w-5 accent-black" /><span><strong className="block">Offentlig spelarprofil</strong><span className="text-black/45">Gör att andra spelare kan hitta dig.</span></span></label>
@@ -1416,15 +1446,16 @@ export default function AccountPortal() {
           const firstNameOk = validNameComponent(firstName);
           const lastNameOk = validNameComponent(lastName);
           const bdOk = isBirthdateValid(cleanedBirthdate);
+          const genderOk = !genderRequired || isProfileGender(gender);
           // Never leave the user with a dead grey button and no reason.
           const identityLocked = identityRequired && identityState?.identity_status !== "pending_identity";
           const blocker = !firstNameOk
             ? "Ange ett giltigt förnamn med minst två bokstäver."
             : !lastNameOk
               ? "Ange ett giltigt efternamn med minst två bokstäver."
-              : !bdOk ? birthdateHint(birthdate) : identityLocked ? "Besvara identitetskontrollen ovan." : "";
+              : !bdOk ? birthdateHint(birthdate) : !genderOk ? "Välj kön för att slutföra din profil." : identityLocked ? "Besvara identitetskontrollen ovan." : "";
           return <>
-            <button type="button" onClick={() => saveProfile()} disabled={busy || !firstNameOk || !lastNameOk || !bdOk || identityLocked} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
+            <button type="button" onClick={() => saveProfile()} disabled={busy || !firstNameOk || !lastNameOk || !bdOk || !genderOk || identityLocked} className="min-h-12 w-full cursor-pointer bg-black px-6 text-xs font-bold uppercase tracking-[0.08em] text-lime disabled:opacity-35">Spara profil</button>
             {blocker ? <p className="mt-2 text-xs font-semibold text-orange">{blocker}</p> : null}
           </>;
         })()}
