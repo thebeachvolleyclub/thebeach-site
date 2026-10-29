@@ -24,13 +24,6 @@ export default function EventCTA({ locale }: { locale: Locale }) {
           <p className="mb-9 max-w-md text-sm leading-relaxed text-black/60">
             {t.cta.lead}
           </p>
-          <p className="-mt-5 mb-9 text-sm font-semibold text-black">
-            {t.cta.plannerLead}{" "}
-            {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
-            <a href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="underline underline-offset-4 hover:opacity-70">
-              {t.cta.plannerLink}
-            </a>
-          </p>
         </Reveal>
 
         <Reveal delay={0.1}>

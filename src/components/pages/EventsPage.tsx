@@ -6,6 +6,7 @@ import EventHero from "@/components/events/EventHero";
 import EventPaths from "@/components/events/EventPaths";
 import EventPhotoMarquee from "@/components/events/EventPhotoMarquee";
 import PricingTiers from "@/components/events/PricingTiers";
+import WhyWeExist from "@/components/events/WhyWeExist";
 import DayBand from "@/components/events/DayBand";
 import ConferenceBand from "@/components/events/ConferenceBand";
 import KidsSection from "@/components/events/KidsSection";
@@ -45,6 +46,8 @@ export default function EventsPage({ locale }: { locale: Locale }) {
         <EventPhotoMarquee locale={locale} />
         <EventPaths locale={locale} />
         <PricingTiers locale={locale} />
+        {/* Idrotten först — "Därför finns vi" direkt under paketen */}
+        <WhyWeExist locale={locale} />
         <DayBand locale={locale} />
         <ConferenceBand locale={locale} />
         <KidsSection locale={locale} />

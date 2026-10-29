@@ -106,34 +106,29 @@ export default function EventHero({ locale }: { locale: Locale }) {
             </p>
           </div>
 
-          {/* CTAs */}
+          {/* CTAs — EN primär: Önska datum → förfrågningsformuläret. Sekundärt: koncepten + lokalen. */}
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <a
-              href="#foretag"
+              href={`#${t.cta.sectionId}`}
               className="inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors duration-300 hover:bg-lime-bright"
             >
-              {t.hero.ctaConcepts} <span aria-hidden="true">→</span>
+              {t.hero.ctaRequest} <span aria-hidden="true">→</span>
             </a>
-            {/* Lokalen: /lokalen (sv) resp. /en/venue (en). */}
-            <Link
-              href={locale === "en" ? "/en/venue" : "/lokalen"}
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
-            >
-              {t.hero.linkVenue}
-            </Link>
-            {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
-            <Link
-              href={locale === "en" ? "/en/events/plan" : "/events/planera"}
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
-            >
-              {t.hero.linkPlanner}
-            </Link>
-            <Link
-              href={`#${t.cta.sectionId}`}
-              className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/55 underline-offset-4 transition-colors hover:text-bone hover:underline"
-            >
-              {t.hero.linkRequest}
-            </Link>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
+              <a
+                href="#foretag"
+                className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
+              >
+                {t.hero.ctaConcepts}
+              </a>
+              {/* Lokalen: /lokalen (sv) resp. /en/venue (en). */}
+              <Link
+                href={locale === "en" ? "/en/venue" : "/lokalen"}
+                className="cursor-pointer text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-bone/75 underline-offset-4 transition-colors hover:text-bone hover:underline"
+              >
+                {t.hero.linkVenue}
+              </Link>
+            </div>
           </div>
         </motion.div>
       </motion.div>

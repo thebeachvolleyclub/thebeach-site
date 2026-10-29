@@ -6,6 +6,7 @@ import Reveal from "@/components/Reveal";
 import { Sun } from "@/components/icons";
 import type { Locale } from "@/lib/i18n";
 import { eventsDict, type EventsDict } from "@/lib/i18n/events";
+import { preselectEventPackage, type EventPackageSlug } from "@/lib/eventRequestPreselect";
 
 // Moon SVG (not in icons.tsx yet — inline here)
 function Moon({ className }: { className?: string }) {
@@ -40,6 +41,13 @@ const TIER_IMG: Record<string, { img: string; imgPos?: string }> = {
 
 // Algarve är "mest bokad" — markeras med lime-badge.
 const POPULAR = "Algarve";
+
+// Kort-CTA → förfrågningsformuläret med paketet förbockat (slug = ?paket=).
+const TIER_SLUG: Record<string, EventPackageSlug> = {
+  "Las Palmas": "laspalmas",
+  Algarve: "algarve",
+  Miami: "miami",
+};
 
 function featureText(
   f: Tier["features"][number],
@@ -163,9 +171,8 @@ export default function PricingTiers({ locale }: { locale: Locale }) {
                   {tier.name}
                 </h3>
 
-                {/* Price row */}
+                {/* Price row — fasta priser, inget "från" */}
                 <div className="mb-4 flex items-baseline gap-1.5 text-[13px] text-bone/40">
-                  {t.pricing.from}{" "}
                   {strikePrice && (
                     <s className="text-bone/30">{strikePrice}</s>
                   )}
@@ -218,30 +225,19 @@ export default function PricingTiers({ locale }: { locale: Locale }) {
                   </details>
                 )}
 
-                {/* CTA — min 44px tap height per WCAG 2.5.8 */}
-                {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
+                {/* CTA — min 44px tap height per WCAG 2.5.8.
+                    Önska datum → #forfragan med paketet förbockat (hash-länken sköter scrollen). */}
                 <a
-                  href={`${locale === "en" ? "/en/events/plan" : "/events/planera"}?koncept=${tier.name === "Las Palmas" ? "lp" : tier.name === "Algarve" ? "alg" : "mia"}`}
+                  href={`#${t.cta.sectionId}`}
+                  onClick={() => preselectEventPackage(TIER_SLUG[tier.name] ?? "algarve")}
                   className="inline-flex cursor-pointer items-center gap-2 py-3 text-xs font-bold uppercase tracking-[0.1em] text-lime transition-colors hover:text-lime-bright"
                 >
-                  {t.pricing.plannerCta}
+                  {t.pricing.requestCta}
                 </a>
               </div>
             </Reveal>
           );
         })}
-      </div>
-      <div className="mx-auto mt-10 max-w-[1500px] border border-lime/25 bg-lime/[0.06] p-6 text-center lg:p-8">
-        <p className="font-display text-xl uppercase text-bone lg:text-2xl">
-          {t.pricing.builderTitle} <span className="text-lime">{t.pricing.builderTitleAccent}</span>
-        </p>
-        <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-bone/50">
-          {t.pricing.builderLead}
-        </p>
-        {/* Planeraren: /events/planera (sv) resp. /en/events/plan (en). */}
-        <a href={locale === "en" ? "/en/events/plan" : "/events/planera"} className="mt-5 inline-flex cursor-pointer items-center gap-2 bg-lime px-9 py-4 text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-lime-bright">
-          {t.pricing.builderCta} <span aria-hidden="true">→</span>
-        </a>
       </div>
     </section>
   );

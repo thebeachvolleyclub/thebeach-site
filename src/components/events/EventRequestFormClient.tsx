@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { eventsDict } from "@/lib/i18n/events";
 import { postForm } from "@/lib/postForm";
+import { subscribeEventPackage } from "@/lib/eventRequestPreselect";
 
 // Inputs retreated for lime background: dark-on-light tokens
 const inputCls =
@@ -43,6 +44,17 @@ export default function EventRequestFormClient({ locale }: { locale: Locale }) {
     const paket = idx !== undefined ? t.form.paket[idx] : undefined;
     if (paket) setChecked([paket]);
   }, [t.form.paket]);
+
+  // Klick på "Önska datum →" på ett paketkort (samma sida) → bocka i det paketet.
+  useEffect(
+    () =>
+      subscribeEventPackage((slug) => {
+        const idx = PAKET_INDEX[slug];
+        const paket = idx !== undefined ? t.form.paket[idx] : undefined;
+        if (paket) setChecked([paket]);
+      }),
+    [t.form.paket],
+  );
 
   const toggle = (p: string) =>
     setChecked((prev) =>

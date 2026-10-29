@@ -21,8 +21,8 @@ export interface CorporateUiDict {
   faq: string;
   ready: string;
   readyBody: string;
-  sendRequest: string;
-  plan: string;
+  /** Primär CTA: vi ber besökaren önska ett datum — aldrig "se lediga datum". */
+  requestDate: string;
   seeVenue: string;
 }
 
@@ -44,9 +44,8 @@ export const corporateUi: Dict<CorporateUiDict> = {
     why: "Därför The Beach",
     faq: "Vanliga frågor",
     ready: "Redo att boka?",
-    readyBody: "Skicka en förfrågan så återkommer vi inom 24 timmar med ett upplägg.",
-    sendRequest: "Skicka förfrågan",
-    plan: "Planera ert event",
+    readyBody: "Önska ett datum så håller vi kvällen och återkommer inom 24 timmar med ett upplägg.",
+    requestDate: "Önska datum",
     seeVenue: "Se lokalen",
   },
   en: {
@@ -54,9 +53,8 @@ export const corporateUi: Dict<CorporateUiDict> = {
     why: "Why The Beach",
     faq: "Frequently asked questions",
     ready: "Ready to book?",
-    readyBody: "Send a request and we'll get back to you within 24 hours with a proposal.",
-    sendRequest: "Send a request",
-    plan: "Plan your event",
+    readyBody: "Request a date and we'll hold the evening and get back to you within 24 hours with a proposal.",
+    requestDate: "Request a date",
     seeVenue: "See the venue",
   },
 };
@@ -96,11 +94,12 @@ export const konferensDict: Dict<CorporateContent> = {
     ],
     why: WHY_SV,
     faqs: [
-      { q: "Vad kostar en konferens?", a: "Konferenstillägget är 395 kr/person och läggs ovanpå ett eventpaket — Las Palmas 745 kr, Algarve 945 kr eller Miami 1195 kr per person. Företagspriser anges exklusive moms." },
+      { q: "Vad kostar en konferens?", a: "Konferenstillägget är 395 kr/person och läggs ovanpå ett eventpaket — Las Palmas 745 kr, Algarve 945 kr eller Miami 1195 kr per person." },
       { q: "Hur många rymmer ni?", a: "Från 10 upp till 900 gäster. Vi anpassar upplägg och yta efter gruppen." },
       { q: "Kan vi ha möte och aktivitet samma dag?", a: "Ja — det är hela poängen. Konferens i loungen och beachvolley i sanden, samma dag, samma ställe." },
       { q: "Finns teknik för presentationer?", a: "Ja, projektor och projektorduk ingår i konferenstillägget. Behöver ni något särskilt, säg till i förfrågan." },
       { q: "Hur bokar vi?", a: "Skicka en förfrågan via formuläret så återkommer vi inom 24 timmar med ett upplägg. Eller mejla boka@thebeach.one." },
+      { q: "Vart går pengarna?", a: "Till sanden. The Beach drivs som idrottsanläggning och eventintäkterna är det som gör att vi kan hålla ungdomsträningen igång året runt till låga priser. Ni får ett riktigt bra event — och ett argument till när ni ska motivera det internt." },
     ],
   },
   en: {
@@ -125,11 +124,12 @@ export const konferensDict: Dict<CorporateContent> = {
     ],
     why: WHY_EN,
     faqs: [
-      { q: "What does a conference cost?", a: "The conference add-on is 395 kr/person and is added on top of an event package — Las Palmas 745 kr, Algarve 945 kr or Miami 1195 kr per person. Corporate prices are excluding VAT." },
+      { q: "What does a conference cost?", a: "The conference add-on is 395 kr/person and is added on top of an event package — Las Palmas 745 kr, Algarve 945 kr or Miami 1195 kr per person." },
       { q: "How many can you host?", a: "From 10 up to 900 guests. We adapt the set-up and space to your group." },
       { q: "Can we have a meeting and an activity on the same day?", a: "Yes — that's the whole point. Conference in the lounge and beach volleyball in the sand, same day, same place." },
       { q: "Is there presentation equipment?", a: "Yes, a projector and projection screen are included in the conference add-on. If you need anything specific, mention it in your request." },
       { q: "How do we book?", a: "Send a request via the form and we'll get back to you within 24 hours with a proposal. Or email boka@thebeach.one." },
+      { q: "Where does the money go?", a: "Into the sand. The Beach is run as a sports facility, and event revenue is what lets us keep youth training going all year round at low prices. You get a genuinely great event — and one more argument when you need to justify it internally." },
     ],
   },
 };
@@ -157,11 +157,12 @@ export const kickoffDict: Dict<CorporateContent> = {
     ],
     why: WHY_SV,
     faqs: [
-      { q: "Vad kostar en kickoff?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokat är Algarve, 945 kr/person. Miami 1195 kr/person för helkväll. Exklusive moms för företag." },
+      { q: "Vad kostar en kickoff?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokat är Algarve, 945 kr/person. Miami 1195 kr/person för helkväll." },
       { q: "Behövs förkunskaper i beachvolley?", a: "Nej. En instruktör leder allt och det funkar för nybörjare — poängen är att alla ska med och ha kul." },
       { q: "Kväll eller dagtid?", a: "Båda funkar. Dagtid passar planeringsdagar och kickoffer, kväll blir mer fest och after beach." },
       { q: "Hur många kan vara med?", a: "Från 10 upp till 900 gäster." },
       { q: "Hur bokar vi?", a: "Skicka en förfrågan via formuläret så återkommer vi inom 24 timmar. Eller mejla boka@thebeach.one." },
+      { q: "Vart går pengarna?", a: "Till sanden. The Beach drivs som idrottsanläggning och eventintäkterna är det som gör att vi kan hålla ungdomsträningen igång året runt till låga priser. Ni får ett riktigt bra event — och ett argument till när ni ska motivera det internt." },
     ],
   },
   en: {
@@ -186,11 +187,12 @@ export const kickoffDict: Dict<CorporateContent> = {
     ],
     why: WHY_EN,
     faqs: [
-      { q: "What does a kickoff cost?", a: "Ready-made packages from 745 kr/person (Las Palmas). The most booked is Algarve, 945 kr/person. Miami 1195 kr/person for a full evening. Excluding VAT for companies." },
+      { q: "What does a kickoff cost?", a: "Ready-made packages from 745 kr/person (Las Palmas). The most booked is Algarve, 945 kr/person. Miami 1195 kr/person for a full evening." },
       { q: "Do we need beach volleyball experience?", a: "No. An instructor leads everything and it works for beginners — the point is that everyone joins in and has fun." },
       { q: "Evening or daytime?", a: "Both work. Daytime suits planning days and kickoffs; evenings turn into more of a party and after beach." },
       { q: "How many can take part?", a: "From 10 up to 900 guests." },
       { q: "How do we book?", a: "Send a request via the form and we'll get back to you within 24 hours. Or email boka@thebeach.one." },
+      { q: "Where does the money go?", a: "Into the sand. The Beach is run as a sports facility, and event revenue is what lets us keep youth training going all year round at low prices. You get a genuinely great event — and one more argument when you need to justify it internally." },
     ],
   },
 };
@@ -223,6 +225,7 @@ export const teambuildingDict: Dict<CorporateContent> = {
       { q: "Hur stora grupper tar ni?", a: "Från 10 upp till 900 gäster." },
       { q: "Kan vi kombinera med mat eller konferens?", a: "Ja — lägg till mat och dryck, eller ett konferenstillägg (395 kr/person) om ni vill köra möte samma dag." },
       { q: "Vad kostar det?", a: "Färdiga paket från 745 kr/person (Las Palmas). Skicka en förfrågan så sätter vi ihop ett upplägg." },
+      { q: "Vart går pengarna?", a: "Till sanden. The Beach drivs som idrottsanläggning och eventintäkterna är det som gör att vi kan hålla ungdomsträningen igång året runt till låga priser. Ni får ett riktigt bra event — och ett argument till när ni ska motivera det internt." },
     ],
   },
   en: {
@@ -252,6 +255,7 @@ export const teambuildingDict: Dict<CorporateContent> = {
       { q: "How big groups do you take?", a: "From 10 up to 900 guests." },
       { q: "Can we combine it with food or a conference?", a: "Yes — add food and drinks, or a conference add-on (395 kr/person) if you want a meeting the same day." },
       { q: "What does it cost?", a: "Ready-made packages from 745 kr/person (Las Palmas). Send a request and we'll put together a proposal." },
+      { q: "Where does the money go?", a: "Into the sand. The Beach is run as a sports facility, and event revenue is what lets us keep youth training going all year round at low prices. You get a genuinely great event — and one more argument when you need to justify it internally." },
     ],
   },
 };
@@ -279,11 +283,12 @@ export const foretagseventDict: Dict<CorporateContent> = {
     ],
     why: WHY_SV,
     faqs: [
-      { q: "Vad kostar ett företagsevent?", a: "Färdiga paket från 745 kr/person (Las Palmas), mest bokat är Algarve 945 kr, och Miami 1195 kr för helkväll. Konferenstillägg +395 kr/person. Större och skräddarsydda event offereras. Exklusive moms." },
+      { q: "Vad kostar ett företagsevent?", a: "Färdiga paket från 745 kr/person (Las Palmas), mest bokat är Algarve 945 kr, och Miami 1195 kr för helkväll. Konferenstillägg +395 kr/person. Större och skräddarsydda event offereras." },
       { q: "Hur stora event klarar ni?", a: "Från 10 upp till 900 gäster. Vi har lång erfarenhet av stora produktioner med komplex logistik — inklusive säkerhetsklassade evenemang." },
       { q: "Kan ni skräddarsy?", a: "Ja. Utöver de färdiga paketen bygger vi helt skräddarsydda upplägg för företag och eventbyråer — säg vad ni vill åstadkomma." },
       { q: "Ingår mat och dryck?", a: "Ja, i paketen. Vi skräddarsyr gärna menyer för större sällskap." },
       { q: "Hur bokar vi?", a: "Skicka en förfrågan via formuläret så återkommer vi inom 24 timmar med ett förslag. Eller mejla boka@thebeach.one." },
+      { q: "Vart går pengarna?", a: "Till sanden. The Beach drivs som idrottsanläggning och eventintäkterna är det som gör att vi kan hålla ungdomsträningen igång året runt till låga priser. Ni får ett riktigt bra event — och ett argument till när ni ska motivera det internt." },
     ],
   },
   en: {
@@ -308,11 +313,12 @@ export const foretagseventDict: Dict<CorporateContent> = {
     ],
     why: WHY_EN,
     faqs: [
-      { q: "What does a corporate event cost?", a: "Ready-made packages from 745 kr/person (Las Palmas), the most booked is Algarve at 945 kr, and Miami at 1195 kr for a full evening. Conference add-on +395 kr/person. Larger and tailor-made events are quoted individually. Excluding VAT." },
+      { q: "What does a corporate event cost?", a: "Ready-made packages from 745 kr/person (Las Palmas), the most booked is Algarve at 945 kr, and Miami at 1195 kr for a full evening. Conference add-on +395 kr/person. Larger and tailor-made events are quoted individually." },
       { q: "How big events can you handle?", a: "From 10 up to 900 guests. We have long experience of large productions with complex logistics — including security-classified events." },
       { q: "Can you tailor an event?", a: "Yes. Beyond the ready-made packages we build fully tailored set-ups for companies and event agencies — tell us what you want to achieve." },
       { q: "Are food and drinks included?", a: "Yes, in the packages. We're happy to tailor menus for larger groups." },
       { q: "How do we book?", a: "Send a request via the form and we'll get back to you within 24 hours with a proposal. Or email boka@thebeach.one." },
+      { q: "Where does the money go?", a: "Into the sand. The Beach is run as a sports facility, and event revenue is what lets us keep youth training going all year round at low prices. You get a genuinely great event — and one more argument when you need to justify it internally." },
     ],
   },
 };
@@ -322,7 +328,7 @@ export const firmafestDict: Dict<CorporateContent> = {
     meta: {
       title: "Firmafest i Stockholm — The Beach | Festen på stranden, året runt",
       description:
-        "Firmafest med sand mellan tårna — beachvolley, mat, bar och fest i 25 grader, 15 min från Stockholm C. 10–900 gäster, scen och eget kök. Boka i Huddinge.",
+        "Firmafest med sand mellan tårna — beachvolley, mat, bar och fest i 25 grader, 15 min från Stockholm C. från 10 upp till 900 gäster, scen och full bar. Boka i Huddinge.",
     },
     eyebrow: "Firmafest",
     titleTop: "Firmafesten de pratar om",
@@ -332,7 +338,7 @@ export const firmafestDict: Dict<CorporateContent> = {
       "En firmafest ska kännas — inte bara bockas av. Hos oss börjar kvällen med en beachvolleyturnering där alla kan vara med (shorts i december, ja verkligen), och fortsätter med mat och dryck i loungen, scen för tal eller DJ, och fest så länge ni vill. Samma arena där OS- och VM-guldmedaljörerna tränar, 15 minuter från Stockholm C.",
     included: [
       "1,5 h beachvolleyturnering med instruktör — inga förkunskaper behövs",
-      "Mat och dryck — tapas, buffé eller BBQ, eget kök och full bar",
+      "Mat och dryck — tapas, buffé eller BBQ och full bar",
       "Lounge, scen och ljudanläggning för tal, prisutdelning eller DJ",
       "Pris till kvällens King & Queen of The Beach",
       "Plats för 10–900 gäster — hela arenan kan bli er",
@@ -341,14 +347,15 @@ export const firmafestDict: Dict<CorporateContent> = {
     why: [
       { h: "Allt under samma tak", p: "Aktivitet, middag, bar och fest utan transporter mellan momenten. Ni kommer hit — resten är löst." },
       { h: "Sommar mitt i vintern", p: "3 000 m² sand och 25°C inne, året runt. En firmafest i januari känns som Copacabana." },
-      { h: "Vi kan stora fester", p: "10 till 900 gäster, scen, eget kök och lång erfarenhet av stora produktioner — utan att tumma på känslan." },
+      { h: "Vi kan stora fester", p: "10 till 900 gäster, scen, full bar och lång erfarenhet av stora produktioner — utan att tumma på känslan." },
     ],
     faqs: [
       { q: "Var kan man ha firmafest i Stockholm?", a: "The Beach i Huddinge — en 3 000 m² inomhusstrand 15 minuter från Stockholm C. Beachvolley, middag, bar och fest under samma tak, för 10 till 900 gäster, året runt." },
-      { q: "Vad kostar en firmafest?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokat är Algarve, 945 kr/person. Miami 1195 kr/person för helkväll med mer mat och dryck. Priser exklusive moms för företag." },
+      { q: "Vad kostar en firmafest?", a: "Färdiga paket från 745 kr/person (Las Palmas). Mest bokat är Algarve, 945 kr/person. Miami 1195 kr/person för helkväll med mer mat och dryck." },
       { q: "Måste alla spela beachvolley?", a: "Nej. En instruktör leder turneringen och den funkar för alla nivåer — men den som hellre hejar från loungen gör det, med något gott i handen." },
       { q: "Kan vi ha fest för fler än 100 personer?", a: "Ja — arenan tar upp till 900 gäster, med scen och full servering. Vi har producerat allt från 10-personersfester till fullskaliga arrangemang." },
       { q: "Hur bokar vi?", a: "Skicka en förfrågan via formuläret så återkommer vi inom 24 timmar. Eller mejla boka@thebeach.one." },
+      { q: "Vart går pengarna?", a: "Till sanden. The Beach drivs som idrottsanläggning och eventintäkterna är det som gör att vi kan hålla ungdomsträningen igång året runt till låga priser. Ni får ett riktigt bra event — och ett argument till när ni ska motivera det internt." },
     ],
   },
   en: {
@@ -378,10 +385,11 @@ export const firmafestDict: Dict<CorporateContent> = {
     ],
     faqs: [
       { q: "Where can you have a company party in Stockholm?", a: "The Beach in Huddinge — a 3,000 m² indoor beach 15 minutes from Stockholm Central. Beach volleyball, dinner, bar and party under one roof, for 10 to 900 guests, all year round." },
-      { q: "What does a company party cost?", a: "Ready-made packages from 745 kr/person (Las Palmas). The most booked is Algarve, 945 kr/person. Miami 1195 kr/person for a full evening with more food and drinks. Prices excluding VAT for companies." },
+      { q: "What does a company party cost?", a: "Ready-made packages from 745 kr/person (Las Palmas). The most booked is Algarve, 945 kr/person. Miami 1195 kr/person for a full evening with more food and drinks." },
       { q: "Does everyone have to play beach volleyball?", a: "No. An instructor leads the tournament and it works for all levels — but anyone who'd rather cheer from the lounge can do just that, with something nice in hand." },
       { q: "Can we have a party for more than 100 people?", a: "Yes — the arena takes up to 900 guests, with a stage and full service. We've produced everything from 10-person parties to full-scale events." },
       { q: "How do we book?", a: "Send a request via the form and we'll get back to you within 24 hours. Or email boka@thebeach.one." },
+      { q: "Where does the money go?", a: "Into the sand. The Beach is run as a sports facility, and event revenue is what lets us keep youth training going all year round at low prices. You get a genuinely great event — and one more argument when you need to justify it internally." },
     ],
   },
 };

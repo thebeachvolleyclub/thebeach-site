@@ -21,10 +21,11 @@ export interface EventsDict {
     titleAccent: string;
     intro: string;
     dayDeal: string;
+    /** Primär knapp → förfrågningsformuläret (#forfragan / #request). Regel: vi ber
+     *  besökaren önska ett datum — aldrig "se lediga datum". */
+    ctaRequest: string;
     ctaConcepts: string;
     linkVenue: string;
-    linkPlanner: string;
-    linkRequest: string;
   };
   paths: {
     eyebrow: string;
@@ -40,9 +41,9 @@ export interface EventsDict {
     eve: string;
     day: string;
     dayBadge: string;
-    from: string;
     perPerson: string;
-    plannerCta: string;
+    /** Kort-CTA → formuläret med paketet förbockat. */
+    requestCta: string;
     menuLabel: string;
     menuNote: string;
     tiers: {
@@ -55,11 +56,9 @@ export interface EventsDict {
       /** Menyn för konceptet — visas i en utfällbar "Meny"-panel på kortet. */
       menu?: string[];
     }[];
-    builderTitle: string;
-    builderTitleAccent: string;
-    builderLead: string;
-    builderCta: string;
   };
+  /** "Därför finns vi" — idrotten först, under paketen. */
+  why: { eyebrow: string; title: string; text: string };
   dayband: {
     eyebrow: string;
     titleTop: string;
@@ -86,9 +85,9 @@ export interface EventsDict {
     titleAccent: string;
     lead: string;
     cards: { title: string; desc: string }[];
+    /** Kort 1 (privat): "Önska datum →", kort 2 (skräddarsytt): "Be om offert →" — båda → #forfragan. */
+    ctaRequest: string;
     cta: string;
-    /** CTA till privatplaneraren (/events/privat) — sv-sida även från engelska. */
-    plannerCta: string;
   };
   cta: {
     /** Ankar-id för förfrågningssektionen — "forfragan" (sv) / "request" (en).
@@ -98,8 +97,6 @@ export interface EventsDict {
     titleTop: string;
     titleAccent: string;
     lead: string;
-    plannerLead: string;
-    plannerLink: string;
   };
   form: {
     /** Form-id till postForm/GTM: "event-sida" (sv) behålls, "event-en" (en). */
@@ -125,7 +122,7 @@ export const eventsDict: Dict<EventsDict> = {
     meta: {
       title: "Boka event — The Beach | Beachvolley & strandevent i Stockholm",
       description:
-        "Boka ett event som sticker ut. Färdiga koncept för företag, barnkalas, privata fester och skräddarsydda event. Kväll eller dagtid — 10–900 gäster. Novavägen 35, Huddinge.",
+        "Boka ett event som sticker ut. Färdiga koncept för företag, barnkalas, privata fester och skräddarsydda event. Kväll eller dagtid, från 10 upp till 900 gäster. Novavägen 35, Huddinge.",
       ogTitle: "Boka event — The Beach",
       ogDescription:
         "Sand mellan tårna mitt i Stockholm. Färdiga eventkoncept med aktivitet, mat och dryck. Las Palmas, Algarve, Miami och skräddarsytt.",
@@ -133,7 +130,7 @@ export const eventsDict: Dict<EventsDict> = {
     jsonld: {
       name: "Företagsevent & event på The Beach",
       description:
-        "Färdiga eventkoncept med beachvolley, mat och dryck — kickoff, konferens, teambuilding, AW och firmafest för 10–900 gäster.",
+        "Färdiga eventkoncept med beachvolley, mat och dryck — kickoff, konferens, teambuilding, AW och firmafest, från 10 upp till 900 gäster.",
       offers: {
         lasPalmas: "Enkelt & socialt — 1,5 h beachvolley med instruktör, tapas och dryck.",
         algarve: "Mest bokad — aktivitet och middagsbuffé.",
@@ -146,12 +143,11 @@ export const eventsDict: Dict<EventsDict> = {
       titleMid: "som",
       titleAccent: "sticker ut",
       intro:
-        "Sand mellan tårna mitt i Stockholm — året runt. Färdiga koncept där aktivitet, mat och dryck sitter från första bollen.",
+        "The Beach är i grunden en idrottsanläggning med en stor träningsverksamhet för alla åldrar från 3 år upp till 70-årsåldern i alla nivåer från nybörjare till landslagsverksamhet. Varje event som bokas här är med och gör den möjlig.",
       dayDeal: "Kör ni en vardag dagtid? Då bjuder vi på 10% rabatt.",
+      ctaRequest: "Önska datum",
       ctaConcepts: "Se koncepten",
-      linkVenue: "Se lokalen — bilder & planlösning",
-      linkPlanner: "Planera ert event — se prisbilden direkt",
-      linkRequest: "Skicka förfrågan",
+      linkVenue: "Se lokalen",
     },
     paths: {
       eyebrow: "Hitta rätt event",
@@ -192,9 +188,8 @@ export const eventsDict: Dict<EventsDict> = {
       eve: "Kväll",
       day: "Dagtid",
       dayBadge: "−10%",
-      from: "från",
       perPerson: "/person",
-      plannerCta: "Planera ert event →",
+      requestCta: "Önska datum →",
       menuLabel: "Meny",
       menuNote: "Vi anpassar menyn efter allergier och specialkost. Vegetariskt alternativ finns alltid.",
       tiers: [
@@ -264,11 +259,11 @@ export const eventsDict: Dict<EventsDict> = {
           ],
         },
       ],
-      builderTitle: "Bygg ert event själva —",
-      builderTitleAccent: "se prisbilden direkt",
-      builderLead:
-        "Välj koncept, dryck, mat och underhållning steg för steg. Ni får ett estimat och en exempeltidsplan på en gång — och skickar planen som en förfrågan.",
-      builderCta: "Planera ert event",
+    },
+    why: {
+      eyebrow: "Därför finns vi",
+      title: "Ert event håller sanden varm för nästa generation",
+      text: "På dagarna och kvällarna tränar här 800 spelare i veckan — många av dem barn och ungdomar i föreningen The Beach Volley Club. Att hålla den verksamheten igång, till priser familjer klarar, går bara tack vare ideella krafter och de företag och sällskap som väljer att fira här. När ni bokar ett event är ni en del av det.",
     },
     dayband: {
       eyebrow: "Vardag dagtid",
@@ -343,17 +338,15 @@ export const eventsDict: Dict<EventsDict> = {
           desc: "Större företagsevent, eventbyråer och specialupplägg — upp till 900 gäster, scen, full bar och kökskapacitet. Egen kontaktperson från idé till genomförande, även säkerhetsklassat.",
         },
       ],
+      ctaRequest: "Önska datum →",
       cta: "Be om offert →",
-      plannerCta: "Planera er fest →",
     },
     cta: {
       sectionId: "forfragan",
-      eyebrow: "Osäker på vad som passar?",
-      titleTop: "Skicka en",
-      titleAccent: "förfrågan",
-      lead: "Berätta vilka ni är, ungefär hur många och om ni vill köra kväll eller dagtid — så hittar vi rätt upplägg och håller datumet åt er. Vi hör av oss inom 24 timmar.",
-      plannerLead: "Vill ni hellre bygga eventet själva?",
-      plannerLink: "Planera ert event steg för steg →",
+      eyebrow: "Förfrågan",
+      titleTop: "Önska",
+      titleAccent: "datum",
+      lead: "Skriv datum och antal – vi håller kvällen och återkommer inom 24 timmar.",
     },
     form: {
       formId: "event-sida",
@@ -383,7 +376,7 @@ export const eventsDict: Dict<EventsDict> = {
     meta: {
       title: "Corporate events & parties — The Beach Stockholm",
       description:
-        "Book a beach event in Stockholm: activity, food and drinks in one package. Three concepts from SEK 745/person, groups of 10–900. Conference add-on available.",
+        "Book a beach event in Stockholm: activity, food and drinks in one package. Three concepts, from 10 up to 900 guests. Conference add-on available.",
       ogTitle: "Book an event — The Beach",
       ogDescription:
         "Sand between your toes in the middle of Stockholm. Ready-made event concepts with activity, food and drinks. Las Palmas, Algarve, Miami and fully custom.",
@@ -391,7 +384,7 @@ export const eventsDict: Dict<EventsDict> = {
     jsonld: {
       name: "Corporate & group events at The Beach",
       description:
-        "Ready-made event concepts with beach volleyball, food and drinks — kickoffs, conferences, team building, after work and company parties for 10–900 guests.",
+        "Ready-made event concepts with beach volleyball, food and drinks — kickoffs, conferences, team building, after work and company parties, from 10 up to 900 guests.",
       offers: {
         lasPalmas: "Simple & social — 1.5 h beach volleyball with instructor, tapas and a drink.",
         algarve: "Most booked — activity and dinner buffet.",
@@ -404,12 +397,11 @@ export const eventsDict: Dict<EventsDict> = {
       titleMid: "that",
       titleAccent: "stands out",
       intro:
-        "Sand between your toes in the middle of Stockholm — all year round. Ready-made concepts where activity, food and drinks are all in place from the first serve. English-speaking hosts available.",
+        "At its core, The Beach is a sports facility with a large training programme for all ages, from 3-year-olds to players in their seventies, and every level from beginner to the national team. Every event booked here helps make that possible.",
       dayDeal: "Booking a weekday during the day? We'll treat you to 10% off.",
+      ctaRequest: "Request a date",
       ctaConcepts: "See the concepts",
-      linkVenue: "See the venue — photos & floor plan",
-      linkPlanner: "Plan your event — see pricing instantly",
-      linkRequest: "Send a request",
+      linkVenue: "See the venue",
     },
     paths: {
       eyebrow: "Find the right event",
@@ -450,9 +442,8 @@ export const eventsDict: Dict<EventsDict> = {
       eve: "Evening",
       day: "Daytime",
       dayBadge: "−10%",
-      from: "from",
       perPerson: "/person",
-      plannerCta: "Plan your event →",
+      requestCta: "Request a date →",
       menuLabel: "Menu",
       menuNote: "We adapt the menu for allergies and dietary requirements. A vegetarian option is always available.",
       tiers: [
@@ -522,11 +513,11 @@ export const eventsDict: Dict<EventsDict> = {
           ],
         },
       ],
-      builderTitle: "Build your event yourselves —",
-      builderTitleAccent: "see pricing instantly",
-      builderLead:
-        "Choose concept, drinks, food and entertainment step by step. You get an estimate and a sample schedule right away — and send the plan as a request.",
-      builderCta: "Plan your event",
+    },
+    why: {
+      eyebrow: "Why we exist",
+      title: "Your event keeps the sand warm for the next generation",
+      text: "Day and evening, 800 players train here every week — many of them children and teenagers in our club, The Beach Volley Club. Keeping that going, at prices families can afford, is only possible thanks to volunteers and the companies and groups that choose to celebrate here. When you book an event, you are part of it.",
     },
     dayband: {
       eyebrow: "Weekday daytime",
@@ -601,17 +592,15 @@ export const eventsDict: Dict<EventsDict> = {
           desc: "Larger corporate events, event agencies and special set-ups — up to 900 guests, stage, full bar and kitchen capacity. Your own contact person from idea to delivery, security-classified events included.",
         },
       ],
+      ctaRequest: "Request a date →",
       cta: "Request a quote →",
-      plannerCta: "Plan your party →",
     },
     cta: {
       sectionId: "request",
-      eyebrow: "Not sure what fits?",
-      titleTop: "Send a",
-      titleAccent: "request",
-      lead: "Tell us who you are, roughly how many you'll be and whether you'd like evening or daytime — we'll find the right set-up and hold the date for you. We reply within 24 hours.",
-      plannerLead: "Would you rather build the event yourselves?",
-      plannerLink: "Plan your event step by step →",
+      eyebrow: "Request",
+      titleTop: "Request",
+      titleAccent: "a date",
+      lead: "Tell us the date and how many you are – we'll hold the evening and get back to you within 24 hours.",
     },
     form: {
       formId: "event-en",
