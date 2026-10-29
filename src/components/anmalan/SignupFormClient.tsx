@@ -236,6 +236,9 @@ const STR = {
     waitlistThanksTitle: "Du står på väntelistan! 🏐",
     waitlistThanksBody: "Vi hör av oss om du erbjuds en plats. Om du får en plats är din anmälan bindande.",
     thanksEditNote: "Vill du kunna ändra eller dra tillbaka din anmälan senare? Logga in på Mitt konto med samma e-postadress.",
+    thanksPs: "PS. Undrar någon på jobbet var ni ska ha kickoffen? Samma sand, fredagar och lördagar — och intäkterna går tillbaka till träningen.",
+    thanksPsLink: "thebeach.one/events",
+    thanksPsHref: "/events",
     updatedTitle: "Dina ändringar är sparade!",
     updatedBody: "Vi använder din senaste version när vi bygger grupperna.",
     waitlistUpdatedTitle: "Din väntelistanmälan är uppdaterad!",
@@ -366,6 +369,9 @@ const STR = {
     waitlistThanksTitle: "You're on the waiting list! 🏐",
     waitlistThanksBody: "We'll contact you if we can offer you a place. If you receive a place, your registration is binding.",
     thanksEditNote: "Want to change or withdraw your registration later? Sign in to My account with the same email address.",
+    thanksPs: "PS. Is anyone at work wondering where to hold the kickoff? Same sand, Fridays and Saturdays — and the revenue goes back into training.",
+    thanksPsLink: "thebeach.one/events",
+    thanksPsHref: "/en/events",
     updatedTitle: "Your changes are saved!",
     updatedBody: "We use your latest version when we build the groups.",
     waitlistUpdatedTitle: "Your waiting-list registration is updated!",
@@ -899,6 +905,13 @@ export default function SignupFormClient() {
               {t.backToForm}
             </button>
           )}
+          {/* Idrotten först — sista raden i bekräftelsen (själva bekräftelsemejlet skickas av app-API:t). */}
+          <p className="mt-5 border-t border-black/10 pt-4 text-left text-[13px] leading-relaxed text-black/50">
+            {t.thanksPs}{" "}
+            <Link href={t.thanksPsHref} className="font-semibold text-teal underline underline-offset-4">
+              {t.thanksPsLink}
+            </Link>
+          </p>
         </div>
       </div>
     );

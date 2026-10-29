@@ -80,7 +80,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
     },
     ungdom: {
       eyebrow: "Ungdom", title1: "Från första nudden", title2: "till U19",
-      body: "Barn- och ungdomsträningen leds av utbildade coacher under Måns Björn. Anmälan och info via Svenskalag.",
+      body: "Barn- och ungdomsträningen leds av utbildade coacher under Måns Björn. Träningen är prissatt för att så många som möjligt ska kunna vara med — det går tack vare ideella ledare, medlemsavgifterna och eventverksamheten som delar anläggning med oss. Anmälan och info via Svenskalag.",
       contactPre: "Frågor om barn och ungdom? Mejla Måns på ",
       contactEmail: "mans@thebeach.one",
       cta: "Ungdomsträning",
@@ -142,7 +142,7 @@ export const foreningenDict: Dict<ForeningenDict> = {
     },
     ungdom: {
       eyebrow: "Youth", title1: "From first touch", title2: "to U19",
-      body: "Kids' and youth training is led by qualified coaches under Måns Björn. Sign-up and info via Svenskalag.",
+      body: "Kids' and youth training is led by qualified coaches under Måns Björn. Training is priced so that as many as possible can take part — made possible by volunteer leaders, membership fees and the event business that shares the venue with us. Sign-up and info via Svenskalag.",
       contactPre: "Questions about kids' and youth training? Email Måns at ",
       contactEmail: "mans@thebeach.one",
       cta: "Youth training",

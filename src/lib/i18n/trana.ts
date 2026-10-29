@@ -80,7 +80,7 @@ export interface TranaDict {
     thTime: string;
     thPrice: string;
     schedule: { day: string; time: string; price: string }[];
-    youth: { title: string; body: string };
+    youth: { title: string; body: string; /** Idrotten först — varför priserna kan hållas låga. */ body2: string };
     signup: {
       title: string;
       statusOpen: string;
@@ -333,6 +333,7 @@ export const tranaDict: Dict<TranaDict> = {
       youth: {
         title: "Ungdomsrabatt",
         body: "30 % rabatt för dig under 20 år och 20 % under 26 (födda {y20} respektive {y26} eller senare). Rabatten kräver medlemskap i The Beach Volley Club Huddinge. Du behöver ingen aktiv tävlingslicens — men har du en ska den vara hos oss.",
+        body2: "Vi kan hålla priserna låga tack vare ideella krafter i föreningen och de företagsevent som arrangeras i hallen. Så när ditt barn tränar här på tisdagen är det någons kickoff från fredagen som varit med och betalat sanden.",
       },
       signup: {
         title: "Anmälan",
@@ -411,7 +412,7 @@ export const tranaDict: Dict<TranaDict> = {
       company: {
         tag: "Företag",
         title: "Kickoff & event",
-        body: "Vill ni ha ett fullt eventkoncept med middag, dryck och skräddarsytt upplägg? Vi har färdiga paket för alla gruppers storlek och budget.",
+        body: "Vill ni ha ett fullt eventkoncept med middag, dryck och upplägg som passar er? Tre färdiga paket, från 10 upp till 900 gäster.",
         cta: "Se företagsevent",
         ctaHref: "/events",
       },
@@ -614,6 +615,7 @@ export const tranaDict: Dict<TranaDict> = {
       youth: {
         title: "Youth discount",
         body: "30% off if you are under 20 and 20% if you are under 26 (born {y20} and {y26} or later respectively). The discount requires membership of The Beach Volley Club Huddinge. You do not need an active competition licence — but if you have one, it must be with us.",
+        body2: "We can keep prices low thanks to volunteers in the club and the corporate events hosted in the hall. So when your child trains here on a Tuesday, someone's kickoff from Friday has helped pay for the sand.",
       },
       signup: {
         title: "Sign-up",
@@ -692,7 +694,7 @@ export const tranaDict: Dict<TranaDict> = {
       company: {
         tag: "Companies",
         title: "Kickoff & events",
-        body: "Want a full event concept with dinner, drinks and a tailored set-up? We have ready-made packages for every group size and budget.",
+        body: "Want a full event concept with dinner, drinks and a set-up that suits you? Three ready-made packages, from 10 up to 900 guests.",
         cta: "See corporate events",
         ctaHref: "/en/events",
       },

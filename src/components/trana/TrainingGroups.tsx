@@ -152,6 +152,9 @@ export default function TrainingGroups({ locale }: { locale: Locale }) {
             <p className="text-sm leading-relaxed text-bone/60">
               {fillYears(t.youth.body)}
             </p>
+            <p className="mt-3 text-sm leading-relaxed text-bone/60">
+              {t.youth.body2}
+            </p>
           </div>
           <div className="flex-1">
             <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-lime">

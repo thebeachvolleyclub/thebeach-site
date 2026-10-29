@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
+import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import SolarStats from "@/components/SolarStats";
 import type { Locale } from "@/lib/i18n";
@@ -43,6 +44,29 @@ export default function OmOssPage({ locale }: { locale: Locale }) {
                 <p className="pt-1 text-[15px] leading-relaxed text-black/60">{m.text}</p>
               </Reveal>
             ))}
+          </div>
+        </section>
+
+        {/* Så hänger det ihop — idrotten och eventen (före Teamet) */}
+        <section className="bg-panel px-5 py-16 sm:px-8 lg:px-14 lg:py-28">
+          <div className="mx-auto max-w-[1500px] lg:grid lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+            <Reveal>
+              <p className="eyebrow mb-4">{t.motorer.eyebrow}</p>
+              <h2 className="font-display text-[clamp(2.25rem,10vw,3.75rem)] leading-[0.9] text-bone lg:text-[clamp(3rem,5.5vw,5rem)]">
+                {t.motorer.title}
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08} className="mt-8 border-t border-white/10 pt-8 lg:mt-0 lg:border-l lg:border-t-0 lg:pl-16 lg:pt-2">
+              <p className="max-w-2xl text-[15px] leading-relaxed text-bone/60 lg:text-[17px]">
+                {t.motorer.text}
+              </p>
+              <Link
+                href={t.motorer.ctaHref}
+                className="mt-6 inline-flex cursor-pointer text-xs font-bold uppercase tracking-[0.1em] text-lime underline-offset-4 transition-colors hover:text-lime-bright hover:underline"
+              >
+                {t.motorer.cta}
+              </Link>
+            </Reveal>
           </div>
         </section>
 

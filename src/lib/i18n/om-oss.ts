@@ -4,6 +4,8 @@ export interface OmOssDict {
   meta: { title: string; description: string; ogTitle: string; ogDescription: string };
   hero: { eyebrow: string; titleTop: string; titleAccent: string; intro: string; cta: string; ctaHref: string };
   resan: { eyebrow: string; title: string; milstolpar: { ar: string; text: string }[] };
+  /** "Så hänger det ihop" — idrotten och eventen, mellan Resan och Teamet. */
+  motorer: { eyebrow: string; title: string; text: string; cta: string; ctaHref: string };
   team: {
     eyebrow: string;
     title1: string;
@@ -29,7 +31,7 @@ export const omOssDict: Dict<OmOssDict> = {
       titleTop: "Byggt av spelare,",
       titleAccent: "för spelare",
       intro:
-        "Vi startade The Beach 2006 för att kunna spela beachvolley året runt. Målet har aldrig ändrats: skapa världens bästa förutsättningar för alla som vill spela — nybörjare som proffs.",
+        "Vi startade The Beach 2006 för att kunna spela beachvolley året runt. Målet har aldrig ändrats: världens bästa förutsättningar för alla som vill spela — från första bollkontakt till OS-guld. Idrotten är kärnan. Eventen och företagen som väljer oss är det som gör den möjlig.",
       cta: "Kontakta oss",
       ctaHref: "#kontakt",
     },
@@ -44,6 +46,13 @@ export const omOssDict: Dict<OmOssDict> = {
         { ar: "2025", text: "Helsvensk VM-final i Adelaide. Båda lagen tränar här vintertid." },
         { ar: "2026", text: "Utsedda till Årets Företagare i Huddinge. Resan fortsätter." },
       ],
+    },
+    motorer: {
+      eyebrow: "Så hänger det ihop",
+      title: "En anläggning, två motorer",
+      text: "800 spelare i veckan, en förening med en stor barn- och ungdomsverksamhet, landslaget som tränar här på vintrarna. Det är The Beach på vardagarna. På fredagar och lördagar blir samma sand en eventarena för upp till 900 gäster. Det ena finansierar det andra: utan eventen inga låga ungdomspriser, utan idrotten ingen plats värd att fira på. Många av eventen bokas av företag där någon som spelar här — eller vars barn gör det — tipsat sin arbetsplats. Det är vi stolta över.",
+      cta: "Boka event →",
+      ctaHref: "/events",
     },
     team: {
       eyebrow: "Teamet",
@@ -123,7 +132,7 @@ export const omOssDict: Dict<OmOssDict> = {
       titleTop: "Built by players,",
       titleAccent: "for players",
       intro:
-        "We started The Beach in 2006 to play beach volleyball all year round. The goal never changed: create the best possible conditions for anyone who wants to play — beginner or pro.",
+        "We started The Beach in 2006 to play beach volleyball all year round. The goal has never changed: the best conditions in the world for anyone who wants to play — from the first touch of the ball to Olympic gold. Sport is the core. The events and the companies that choose us are what make it possible.",
       cta: "Contact us",
       ctaHref: "#kontakt",
     },
@@ -138,6 +147,13 @@ export const omOssDict: Dict<OmOssDict> = {
         { ar: "2025", text: "An all-Swedish World Championship final in Adelaide. Both teams train here in winter." },
         { ar: "2026", text: "Named Entrepreneur of the Year in Huddinge. The journey continues." },
       ],
+    },
+    motorer: {
+      eyebrow: "How it fits together",
+      title: "One venue, two engines",
+      text: "800 players a week, a club with a large kids' and youth programme, the national team training here in winter. That is The Beach on weekdays. On Fridays and Saturdays the same sand becomes an event arena for up to 900 guests. One funds the other: without the events, no low youth prices; without the sport, no place worth celebrating in. Many of the events are booked by companies where someone who plays here — or whose child does — put the idea to their workplace. That makes us proud.",
+      cta: "Book an event →",
+      ctaHref: "/en/events",
     },
     team: {
       eyebrow: "The team",
