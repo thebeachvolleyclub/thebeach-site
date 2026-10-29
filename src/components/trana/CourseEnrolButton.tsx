@@ -20,6 +20,7 @@ import { courseSellerLine, COURSE_SELLER, holdClock } from "@/lib/courseSeller";
 import { courseStripeCheckoutUrl } from "@/lib/coursePaymentRoute.core";
 import { isBirthdateValid, normalizeBirthdate } from "@/lib/birthdate";
 import { normalizePersonName, splitValidFullName, validNameComponent } from "@/lib/personIdentity";
+import { isProfileGender, profileGenderFromWire, requiresProfileGender, type ProfileGender } from "@/lib/profileGender.core";
 import { pushEvent } from "@/lib/gtm";
 import {
   clearCourseAttempt,
@@ -946,6 +947,8 @@ type InlineProfile = {
   first_name?: string | null;
   last_name?: string | null;
   birthdate?: string | null;
+  gender?: ProfileGender | null;
+  gender_required?: boolean;
   identity_status?: "pending_identity" | "duplicate_review" | "merge_pending" | "active";
   identity_onboarding_v2_enabled?: boolean;
   duplicate_match?: DuplicateMatch | null;
@@ -956,6 +959,8 @@ type InlineIdentityState = {
   first_name: string | null;
   last_name: string | null;
   birthdate: string | null;
+  gender?: ProfileGender | null;
+  gender_required?: boolean;
   candidates: InlineIdentityCandidate[];
   message: string | null;
 };
@@ -1003,6 +1008,9 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState<ProfileGender | "">("");
+  const [storedGender, setStoredGender] = useState<ProfileGender | "">("");
+  const [genderRequired, setGenderRequired] = useState(false);
   const [duplicate, setDuplicate] = useState<DuplicateMatch | null>(null);
   const [identityV2, setIdentityV2] = useState(false);
   const [error, setError] = useState("");
@@ -1012,6 +1020,8 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   const running = useRef(false);
 
   const busy = pending !== null;
+  const genderDraftRequired = identityV2 && genderRequired && !isProfileGender(storedGender)
+    && (step === "duplicate" || step === "merged");
   const address = email.trim().toLowerCase();
   const cleanBirthdate = normalizeBirthdate(birthdate) || birthdate.trim();
   const profileBlocker = identityV2 && !validNameComponent(firstName)
@@ -1020,9 +1030,11 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
       ? locale === "sv" ? "Ange ett giltigt efternamn med minst två bokstäver." : "Enter a valid last name with at least two letters."
     : !identityV2 && !splitValidFullName(name)
       ? t.inlineNameInvalid
-    : isBirthdateValid(cleanBirthdate)
-      ? ""
-      : t.inlineBirthdateInvalid;
+    : !isBirthdateValid(cleanBirthdate)
+      ? t.inlineBirthdateInvalid
+    : genderRequired && !isProfileGender(gender)
+      ? locale === "sv" ? "Välj kön för att slutföra din profil." : "Choose your gender to complete your profile."
+      : "";
 
   /** API-fel visas som de kommer (`detail`), aldrig som ett generiskt fel. */
   async function call<T>(url: string, init?: RequestInit): Promise<T> {
@@ -1058,6 +1070,8 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   }
 
   async function sendCode(resend: boolean) {
+    // A different verified account must never inherit the preceding draft.
+    setGender(""); setStoredGender(""); setGenderRequired(false);
     await call("/api/account/auth/request-code", {
       method: "POST",
       body: JSON.stringify({ email: address }),
@@ -1078,6 +1092,9 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
       return;
     }
     const profile = await call<InlineProfile>("/api/account/profile");
+    setGender(profileGenderFromWire(profile.gender));
+    setStoredGender(profileGenderFromWire(profile.gender));
+    setGenderRequired(requiresProfileGender(profile));
     const usesIdentityV2 = Boolean(profile.identity_onboarding_v2_enabled);
     setIdentityV2(usesIdentityV2);
     if (usesIdentityV2) {
@@ -1092,6 +1109,9 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
       setFirstName(state.first_name ?? "");
       setLastName(state.last_name ?? "");
       setBirthdate(state.birthdate?.slice(0, 10) ?? "");
+      setGender(profileGenderFromWire(state.gender));
+      setStoredGender(profileGenderFromWire(state.gender));
+      setGenderRequired(requiresProfileGender(profile) || requiresProfileGender(state));
       if (state.identity_status === "duplicate_review" && state.candidates[0]) {
         setDuplicate(state.candidates[0]);
         setStep("duplicate");
@@ -1105,7 +1125,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     }
     const savedName = (profile.name ?? "").trim();
     const savedBirthdate = (profile.birthdate ?? "").slice(0, 10);
-    if (savedName.length >= 2 && isBirthdateValid(savedBirthdate)) {
+    if (savedName.length >= 2 && isBirthdateValid(savedBirthdate) && (!requiresProfileGender(profile) || isProfileGender(profile.gender))) {
       finish();
       return;
     }
@@ -1124,6 +1144,7 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     // Utan födelsedatum kan plattformen inte räkna fram rätt kurspris och
     // nekar anmälan med 422 — därför stoppar vi redan här.
     if (!isBirthdateValid(cleanBirthdate)) throw new Error(t.inlineBirthdateInvalid);
+    if (genderRequired && !isProfileGender(gender)) throw new Error(locale === "sv" ? "Välj kön för att slutföra din profil." : "Choose your gender to complete your profile.");
     setBirthdate(cleanBirthdate);
     if (identityV2) {
       const state = await call<InlineIdentityState>("/api/account/identity", {
@@ -1132,8 +1153,13 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
           first_name: normalizePersonName(firstName),
           last_name: normalizePersonName(lastName),
           birthdate: cleanBirthdate,
+          ...(isProfileGender(gender) ? { gender } : {}),
         }),
       });
+      setStoredGender(profileGenderFromWire(state.gender));
+      if (requiresProfileGender(state) && !isProfileGender(state.gender) && state.identity_status === "active") {
+        setStep("profile"); return false;
+      }
       if (state.identity_status === "duplicate_review" && state.candidates[0]) {
         setDuplicate(state.candidates[0]);
         setStep("duplicate");
@@ -1152,10 +1178,13 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
       body: JSON.stringify({
         name: trimmedName,
         birthdate: cleanBirthdate,
+        ...(isProfileGender(gender) ? { gender } : {}),
         check_duplicates: true,
         confirm_new_identity: confirmNewIdentity || undefined,
       }),
     });
+    setStoredGender(profileGenderFromWire(saved.gender));
+    if (requiresProfileGender(saved) && !isProfileGender(saved.gender)) { setStep("profile"); return false; }
     if (saved.duplicate_match) {
       setDuplicate(saved.duplicate_match);
       setStep("duplicate");
@@ -1175,11 +1204,14 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
   });
   const onSamePerson = () => run("samePerson", async () => {
     if (!duplicate) return;
+    if (genderDraftRequired) throw new Error(locale === "sv" ? "Spara kön innan du fortsätter." : "Save your gender before continuing.");
     if (identityV2) {
       const state = await call<InlineIdentityState>(`/api/account/identity/${duplicate.player_id}`, {
         method: "POST",
         body: JSON.stringify({ decision: "yes" }),
       });
+      setStoredGender(profileGenderFromWire(state.gender));
+      setGenderRequired(requiresProfileGender(state));
       setNotice(state.message ?? t.inlineMergeQueued);
       setStep("merged");
       return;
@@ -1194,17 +1226,23 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
     if (await saveProfile(true)) setStep("merged");
   });
   const onNewPerson = () => run("newPerson", async () => {
+    if (genderDraftRequired) throw new Error(locale === "sv" ? "Spara kön innan du fortsätter." : "Save your gender before continuing.");
     if (identityV2 && duplicate) {
       const state = await call<InlineIdentityState>(`/api/account/identity/${duplicate.player_id}`, {
         method: "POST",
         body: JSON.stringify({ decision: "no" }),
       });
+      setStoredGender(profileGenderFromWire(state.gender));
+      setGenderRequired(requiresProfileGender(state));
       if (state.identity_status === "duplicate_review" && state.candidates[0]) {
         setDuplicate(state.candidates[0]);
         setStep("duplicate");
         return;
       }
-      if (state.identity_status === "active") finish();
+      if (state.identity_status === "active") {
+        if (requiresProfileGender(state) && !isProfileGender(state.gender)) setStep("profile");
+        else finish();
+      }
       return;
     }
     if (await saveProfile(true)) finish();
@@ -1343,6 +1381,15 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
             />
             <span className={inlineHelp}>{t.inlineBirthdateHelp}</span>
           </div>
+          <div className="mb-4 block">
+            <label className={inlineLabel} htmlFor={`${uid}-gender`}>{locale === "sv" ? "Kön" : "Gender"}{genderRequired ? " *" : ""}</label>
+            <select id={`${uid}-gender`} name="gender" required={genderRequired} value={gender} onChange={(e) => setGender(profileGenderFromWire(e.target.value))} className={inlineField}>
+              <option value="">{locale === "sv" ? "Välj" : "Choose"}</option>
+              <option value="dam">{locale === "sv" ? "Kvinna" : "Woman"}</option>
+              <option value="herr">{locale === "sv" ? "Man" : "Man"}</option>
+              <option value="ickebinar">{locale === "sv" ? "Icke-binär" : "Nonbinary"}</option>
+            </select>
+          </div>
           <button
             type="button"
             onClick={onSaveProfile}
@@ -1358,6 +1405,18 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
         </>
       )}
 
+      {genderDraftRequired && (
+        <div className="mb-4 border border-orange/40 bg-orange/10 p-4">
+          <p className={inlineHeading}>{locale === "sv" ? "Komplettera din profil" : "Complete your profile"}</p>
+          <p className="mb-3 text-sm text-black/60">{locale === "sv" ? "Välj kön. Din pågående identitetskontroll och tidigare svar ligger kvar." : "Choose your gender. Your identity review and previous answers are preserved."}</p>
+          <label className={inlineLabel} htmlFor={`${uid}-draft-gender`}>{locale === "sv" ? "Kön *" : "Gender *"}</label>
+          <select id={`${uid}-draft-gender`} aria-label="Kön för identitetskontroll" required value={gender} onChange={(e) => setGender(profileGenderFromWire(e.target.value))} className={inlineField}>
+            <option value="">{locale === "sv" ? "Välj" : "Choose"}</option><option value="dam">{locale === "sv" ? "Kvinna" : "Woman"}</option><option value="herr">Man</option><option value="ickebinar">{locale === "sv" ? "Icke-binär" : "Nonbinary"}</option>
+          </select>
+          <button type="button" onClick={onSaveProfile} disabled={busy || !isProfileGender(gender)} className={`${inlinePrimary} mt-3`}>{locale === "sv" ? "Spara kön och fortsätt" : "Save gender and continue"}</button>
+        </div>
+      )}
+
       {step === "duplicate" && duplicate && (
         <div className="border border-orange/40 bg-orange/10 p-4">
           <p className="font-display text-xl uppercase leading-none text-black">
@@ -1368,10 +1427,10 @@ function InlineSignup({ locale, accountHref }: { locale: Locale; accountHref: st
           </p>
           <p className="mt-2 text-[13px] leading-snug text-black/75">{t.inlineDuplicateChoice}</p>
           <div className="mt-4 space-y-2">
-            <button type="button" onClick={onSamePerson} disabled={busy} className={inlinePrimary}>
+            <button type="button" onClick={onSamePerson} disabled={busy || genderDraftRequired} className={inlinePrimary}>
               {pending === "samePerson" ? t.inlineDuplicateSameBusy : t.inlineDuplicateSame}
             </button>
-            <button type="button" onClick={onNewPerson} disabled={busy} className={inlineSecondary}>
+            <button type="button" onClick={onNewPerson} disabled={busy || genderDraftRequired} className={inlineSecondary}>
               {pending === "newPerson" ? t.inlineDuplicateNewBusy : t.inlineDuplicateNew}
             </button>
           </div>

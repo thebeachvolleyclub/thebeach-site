@@ -205,7 +205,8 @@ try {
     await page.waitForSelector('input[aria-label="Barnets förnamn"]');
     await page.type('input[aria-label="Barnets förnamn"]', 'New'); await page.type('input[aria-label="Barnets efternamn"]', 'Child');
     await page.$eval('input[aria-label="Barnets födelsedatum"]', (node) => { const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(node, '2016-01-01'); node.dispatchEvent(new Event('input', { bubbles: true })); node.dispatchEvent(new Event('change', { bubbles: true })); });
-    await page.select('select[aria-label="Kön"]', 'W'); await page.click('form input[type="checkbox"]');
+    const childGender = width === 1280 ? 'X' : 'W';
+    await page.select('select[aria-label="Kön"]', childGender); await page.click('form input[type="checkbox"]');
     const before = mutations.filter((entry) => entry.path.endsWith('/family/children')).length;
     await click(page, 'Skapa barnprofil');
     await page.waitForFunction(() => [...document.querySelectorAll('[role="alert"]')].length > 0);
@@ -214,6 +215,7 @@ try {
     await profile(page, parent.name);
     const attempts = mutations.filter((entry) => entry.path.endsWith('/family/children')).slice(before);
     assert.equal(attempts.length, 2); assert.equal(attempts[0].key, attempts[1].key); assert.deepEqual(attempts[0].body, attempts[1].body);
+    assert.equal(attempts[0].body.gender, childGender);
     await choose(page, created.name);
     await click(page, 'Profil'); await page.waitForFunction(() => [...document.querySelectorAll('input')].some((node) => node.value === 'New'));
     await click(page, 'Spara profil'); await page.waitForFunction(() => document.body.textContent.includes('Profilen är sparad'));
@@ -247,6 +249,7 @@ try {
     assert.ok(!(await text(page)).includes(existing.name));
     if (width === 1280) {
       await page.type('input[autocomplete="email"]', parent.email); await click(page, 'Skicka kod');
+      await page.waitForSelector('input[autocomplete="one-time-code"]');
       await page.type('input[autocomplete="one-time-code"]', '123456'); await click(page, 'Logga in');
       await page.waitForFunction(() => document.body.textContent.includes('Vem loggar in?'));
       await page.evaluate((name) => [...document.querySelectorAll('button')].find((node) => node.textContent.includes(name) && !node.disabled).click(), parent.name);

@@ -32,7 +32,7 @@ test("web profile matching completes before the signup hand-back", () => {
   const saveEnd = portal.indexOf("const requestMerge", saveStart);
   const saveFlow = portal.slice(saveStart, saveEnd);
   assert.ok(saveFlow.indexOf("/api/account/profile/match-rating") < saveFlow.indexOf("applyProfile(ratingMatch.profile ?? next)"));
-  assert.match(portal, /if \(canReturnFromAccount\(nextPath, profile\) && !dupAlert && !identityRequired\)/);
+  assert.match(portal, /if \(canReturnFromAccount\(nextPath, profile\) && !dupAlert && !identityRequired && !genderSetupRequired\)/);
 });
 
 test("durable identity onboarding is server-capability gated and blocks person-scoped account data", () => {

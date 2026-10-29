@@ -108,9 +108,22 @@ test("child creation whitelists existing API fields and retains the exact replay
 test("changed contact, duplicate child, guardian denial and field validation preserve upstream status", async () => {
   for (const status of [403, 409, 422]) {
     const { deps } = harness({ replies: [Response.json({ detail: { code: "FAMILY_CONTACT_CHANGED", message: "Confirm contact again" } }, { status })] });
-    const response = await createFamilyChildPost(deps)(request({ idempotencyKey: key }));
+    const response = await createFamilyChildPost(deps)(request({ idempotencyKey: key, gender: "W" }));
     assert.equal(response.status, status);
     assert.equal((await response.json()).code, "FAMILY_CONTACT_CHANGED");
+  }
+});
+
+test("child profiles require an explicit canonical gender and preserve all three choices", async () => {
+  for (const gender of [undefined, null, "", "herr", "dam", "ickebinar", "unknown", true, 1]) {
+    const { deps, calls } = harness();
+    assert.equal((await createFamilyChildPost(deps)(request({ idempotencyKey: key, gender }))).status, 422);
+    assert.equal(calls.length, 0);
+  }
+  for (const gender of ["M", "W", "X"]) {
+    const { deps, calls } = harness({ replies: [Response.json({ child: { player_id: 12 } }, { status: 201 })] });
+    assert.equal((await createFamilyChildPost(deps)(request({ idempotencyKey: key, gender }))).status, 201);
+    assert.equal((calls[0].body as { gender: string }).gender, gender);
   }
 });
 

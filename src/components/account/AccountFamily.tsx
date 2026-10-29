@@ -34,7 +34,7 @@ export default function AccountFamily({ onTransition }: { onTransition: (active:
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
   const [birthdate, setBirthdate] = useState("");
-  const [gender, setGender] = useState<"M" | "W" | "">("");
+  const [gender, setGender] = useState<"M" | "W" | "X" | "">("");
   const [confirmed, setConfirmed] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState("");
@@ -148,7 +148,7 @@ export default function AccountFamily({ onTransition }: { onTransition: (active:
             <label className="min-w-0 text-sm font-semibold">Barnets förnamn<input required aria-label="Barnets förnamn" value={first} maxLength={59} onChange={(event) => changeDraft(() => setFirst(event.target.value))} autoComplete="off" className={`${input} mt-2`} /></label>
             <label className="min-w-0 text-sm font-semibold">Barnets efternamn<input required aria-label="Barnets efternamn" value={last} maxLength={60} onChange={(event) => changeDraft(() => setLast(event.target.value))} autoComplete="off" className={`${input} mt-2`} /></label>
             <label className="min-w-0 text-sm font-semibold">Barnets födelsedatum<input required aria-label="Barnets födelsedatum" type="date" value={birthdate} max={new Date().toISOString().slice(0, 10)} onChange={(event) => changeDraft(() => setBirthdate(event.target.value))} className={`${input} mt-2`} /></label>
-            <label className="min-w-0 text-sm font-semibold">Kön<select required aria-label="Kön" value={gender} onChange={(event) => changeDraft(() => setGender(event.target.value as "M" | "W" | ""))} className={`${input} mt-2`}><option value="">Välj</option><option value="W">Flicka</option><option value="M">Pojke</option></select></label>
+            <label className="min-w-0 text-sm font-semibold">Kön *<select required aria-label="Kön" value={gender} onChange={(event) => changeDraft(() => setGender(event.target.value as "M" | "W" | "X" | ""))} className={`${input} mt-2`}><option value="">Välj</option><option value="W">Flicka</option><option value="M">Pojke</option><option value="X">Icke-binär</option></select></label>
             <label className="flex items-start gap-3 text-sm leading-relaxed sm:col-span-2"><input required type="checkbox" checked={confirmed} onChange={(event) => changeDraft(() => setConfirmed(event.target.checked))} className="mt-1 h-5 w-5 shrink-0 accent-black" /><span>Jag har föräldraansvar för barnet och vill använda e-postadressen ovan som föräldrakontakt.</span></label>
           </fieldset>
           <div className="mt-5 flex flex-wrap gap-3"><button type="submit" disabled={busy || !confirmed} className={button}>{busy ? "Skapar…" : "Skapa barnprofil"}</button><button type="button" disabled={busy} onClick={() => setCreating(false)} className="min-h-12 cursor-pointer border border-black px-5 text-sm font-semibold">Tillbaka</button></div>
