@@ -10,6 +10,7 @@ import type { Locale } from "@/lib/i18n";
 import { bokaDict, type BokaWidgetDict } from "@/lib/i18n/boka";
 import { availableSubscriptionCredit, creditMoney, creditPriceQuoteFromWire, subscriptionCreditsFromWire, type CreditPriceQuote, type SubscriptionCreditFeed } from "@/lib/subscriptionCredit.core";
 import { bookingCreditAttemptFromStorage, bookingCreditAttemptKey, type BookingCreditAttempt } from "@/lib/bookingCreditAttempt.core";
+import { bookingFailureProvesNoAllocation, bookingPaymentNotice, checkoutBookingId, safeBookingPaymentUrl, startBookingRecovery, type BookingPaymentState } from "@/lib/bookingPaymentRecovery.core";
 
 type Slot = {
   productId?: string | null;
@@ -45,6 +46,7 @@ type Booking = {
   endTime: string;
   status: "PENDING_PAYMENT" | "CONFIRMED" | "REFUND_PENDING" | "CANCELLED" | "EXPIRED";
   priceSek: number;
+  paymentStatus?: string;
 };
 type Profile = { id: string; name: string | null; email: string; swish_phone: string | null; emoji_icon: string; avatar_thumb_url: string | null };
 
@@ -76,6 +78,13 @@ async function api<T>(url: string, init?: RequestInit, fallback = "Något gick f
   try { payload = await response.json() as Record<string, unknown>; } catch { /* handled below */ }
   if (!response.ok) throw new BookingApiError(payload, fallback, response.status);
   return payload as T;
+}
+
+async function paymentApi<T>(url: string, init?: RequestInit, fallback?: string): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), init?.method === "POST" ? 45_000 : 15_000);
+  try { return await api<T>(url, { ...init, signal: controller.signal }, fallback); }
+  finally { clearTimeout(timer); }
 }
 
 function sek(value: unknown): number | null {
@@ -179,13 +188,17 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   const [quotes, setQuotes] = useState<{ key: string; SWISH?: CreditPriceQuote; STRIPE?: CreditPriceQuote }>({ key: "" });
   const [quoteError, setQuoteError] = useState("");
   const [uncertainAttempt, setUncertainAttempt] = useState<BookingCreditAttempt | null>(null);
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentReviewRequired, setPaymentReviewRequired] = useState(false);
+  const [swishApprovalRequired, setSwishApprovalRequired] = useState(false);
+  const [refreshRevision, setRefreshRevision] = useState(0);
   const [attemptOwnerReady, setAttemptOwnerReady] = useState<string | null>(null);
   const pendingAttempt = useRef<BookingCreditAttempt | null>(null);
-  const checkoutInFlight = useRef(false);
+  const checkoutInFlight = useRef<symbol | null>(null);
   const creditRequestGeneration = useRef(0);
   const currentProfileId = useRef(profile?.id);
   useLayoutEffect(() => { currentProfileId.current = profile?.id; }, [profile?.id]);
-  const pollStarted = useRef(0);
+  const statusInFlight = useRef<symbol | null>(null);
   const paymentPanel = useRef<HTMLDivElement>(null);
   const bookingPath = locale === "en" ? "/en/book" : "/boka";
   const accountHref = `/konto?next=${encodeURIComponent(bookingPath)}`;
@@ -225,14 +238,19 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     const ownerId = profile?.id;
     creditRequestGeneration.current += 1;
     pendingAttempt.current = null;
+    checkoutInFlight.current = null;
+    statusInFlight.current = null;
     const timer = window.setTimeout(() => {
       setCreditFeed(null); setCreditOwnerId(null); setUseStoredValue(false); setQuotes({ key: "" });
+      setSubmitting(false); setBookingId(null); setConfirmed(null); setError("");
+      setPaymentMessage(""); setPaymentReviewRequired(false); setSwishApprovalRequired(false);
       let restored: BookingCreditAttempt | null = null;
       if (ownerId) {
         try { restored = bookingCreditAttemptFromStorage(window.sessionStorage.getItem(bookingCreditAttemptKey(ownerId)), ownerId); } catch { /* storage may be disabled */ }
       }
       pendingAttempt.current = restored;
       setUncertainAttempt(restored);
+      if (restored?.bookingId) setBookingId(restored.bookingId);
       setAttemptOwnerReady(ownerId ?? null);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -339,21 +357,47 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   }, [date, enabled, loadSlots, venueId]);
 
   useEffect(() => {
-    if (!bookingId) return;
-    pollStarted.current = Date.now();
+    const ownerId = profile?.id;
+    if (!bookingId || !ownerId || attemptOwnerReady !== ownerId) return;
+    let stopped = false;
     const poll = async () => {
+      if (stopped || statusInFlight.current || currentProfileId.current !== ownerId) return false;
+      const request = Symbol("booking-status");
+      statusInFlight.current = request;
       try {
-        const result = await api<{ booking: Booking; paymentError?: string }>(`/api/booking/${bookingId}`, undefined, t.genericError);
-        if (result.booking.status === "CONFIRMED") { setConfirmed(result.booking); setSubmitting(false); await Promise.all([loadMine(), loadCredit()]); return true; }
-        if (["EXPIRED", "CANCELLED"].includes(result.booking.status)) { setError(result.paymentError || t.paymentFailed); setSubmitting(false); setPaymentAmounts(null); await loadCredit(); return true; }
-      } catch { /* retry transient callback races */ }
+        const result = await paymentApi<BookingPaymentState & { booking: Booking }>(`/api/booking/${bookingId}`, undefined, t.genericError);
+        if (stopped || currentProfileId.current !== ownerId) return true;
+        const notice = bookingPaymentNotice(result, locale);
+        setPaymentMessage(notice.message); setError(""); setSubmitting(false);
+        setPaymentReviewRequired(notice.keepAttempt && (result.paymentReviewRequired === true || ["EXPIRED", "CANCELLED"].includes(result.booking.status)));
+        setSwishApprovalRequired(result.booking.status === "PENDING_PAYMENT" && result.paymentReviewRequired !== true && ["CREATED", "PENDING"].includes(result.paymentStatus || "") && pendingAttempt.current?.body.paymentProvider === "SWISH");
+        if (notice.keepAttempt) return false;
+        const saved = pendingAttempt.current;
+        if (saved?.ownerId === ownerId) {
+          pendingAttempt.current = null; setUncertainAttempt(null);
+          try { window.sessionStorage.removeItem(bookingCreditAttemptKey(ownerId)); } catch { /* optional */ }
+        }
+        if (notice.complete) { setConfirmed(result.booking); await Promise.all([loadMine(), loadCredit()]); return true; }
+        setBookingId(null); setError(notice.message); setPaymentAmounts(null); await loadCredit(); return true;
+      } catch (cause) {
+        if (stopped || currentProfileId.current !== ownerId) return true;
+        const authRequired = cause instanceof BookingApiError && [401, 403].includes(cause.status);
+        setError(authRequired
+          ? (locale === "sv" ? "Logga in igen för att kontrollera bokningsförsöket. Försöket är sparat; starta inte en ny betalning." : "Sign in again to check the saved booking attempt. Do not start another payment.")
+          : (locale === "sv" ? "Vi kan inte hämta betalningsbesked just nu. Vi försöker automatiskt igen." : "We cannot retrieve the payment result right now. We will retry automatically."));
+        return authRequired;
+      }
+      finally { if (statusInFlight.current === request) statusInFlight.current = null; }
       return false;
     };
-    let stopped = false;
-    const timer = setInterval(async () => { if (stopped || await poll() || Date.now() - pollStarted.current > 10 * 60_000) clearInterval(timer); }, 3000);
-    poll();
-    return () => { stopped = true; clearInterval(timer); };
-  }, [bookingId, loadMine, loadCredit, t]);
+    const run = async () => { if (stopped || await poll()) clearInterval(timer); };
+    const timer = setInterval(() => { void run(); }, 3000);
+    void run();
+    const refresh = () => { void run(); };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    return () => { stopped = true; clearInterval(timer); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); };
+  }, [bookingId, profile?.id, attemptOwnerReady, refreshRevision, loadMine, loadCredit, locale, t]);
 
   const grouped = useMemo(() => slots.reduce<Record<string, Slot[]>>((result, slot) => {
     const key = `${slot.startTime}–${slot.endTime}`; (result[key] ||= []).push(slot); return result;
@@ -365,9 +409,10 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
   const todayValue = localDate(dates[0]);
   const tomorrowValue = localDate(dates[1]);
 
-  const submitAttempt = async (attempt: BookingCreditAttempt) => {
-    if (attempt.ownerId !== profile?.id || checkoutInFlight.current) return;
-    checkoutInFlight.current = true;
+  const submitAttempt = useCallback(async (attempt: BookingCreditAttempt, openProvider = true): Promise<boolean> => {
+    if (attempt.ownerId !== profile?.id || checkoutInFlight.current) return false;
+    const request = Symbol("checkout");
+    checkoutInFlight.current = request;
     pendingAttempt.current = attempt;
     try { window.sessionStorage.setItem(bookingCreditAttemptKey(attempt.ownerId), JSON.stringify(attempt)); } catch { /* memory still protects this page */ }
     setSubmitting(true); setError(""); setPaymentAmounts(null);
@@ -377,25 +422,30 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
       try { window.sessionStorage.removeItem(bookingCreditAttemptKey(attempt.ownerId)); } catch { /* optional */ }
     };
     try {
-      const result = await api<{ bookingId: string; status?: string; checkoutUrl?: string; storedValueAppliedOre?: number; remainingAmountOre?: number }>("/api/booking/checkout", { method: "POST", body: JSON.stringify(attempt.body) }, t.genericError);
-      if (currentProfileId.current !== attempt.ownerId) return;
-      if (attempt.body.paymentProvider === "STRIPE" && result.status !== "CONFIRMED" && !result.checkoutUrl) throw new Error(locale === "sv" ? "Betalsidan saknas" : "The payment page is missing");
-      clearAttempt();
+      const result = await paymentApi<{ bookingId: string; status?: string; checkoutUrl?: string; customerMessage?: string; paymentVerificationPending?: boolean; storedValueAppliedOre?: number; remainingAmountOre?: number }>("/api/booking/checkout", { method: "POST", body: JSON.stringify(attempt.body) }, t.genericError);
+      if (currentProfileId.current !== attempt.ownerId) return true;
+      const resolved = { ...attempt, bookingId: checkoutBookingId(result.bookingId), checkoutUrl: safeBookingPaymentUrl(result.checkoutUrl) ? result.checkoutUrl : undefined };
+      pendingAttempt.current = resolved; setUncertainAttempt(resolved);
+      try { window.sessionStorage.setItem(bookingCreditAttemptKey(attempt.ownerId), JSON.stringify(resolved)); } catch { /* memory still protects this page */ }
       setBookingId(result.bookingId);
+      setSwishApprovalRequired(attempt.body.paymentProvider === "SWISH" && result.status === "PENDING_PAYMENT" && !result.paymentVerificationPending);
+      setPaymentMessage(locale === "sv" ? (result.customerMessage || "Bokningen uppdateras automatiskt när betalningsbeskedet kommer.") : "Your booking updates automatically when the payment result arrives.");
+      setSubmitting(false);
       if (typeof result.storedValueAppliedOre === "number" && typeof result.remainingAmountOre === "number") {
         setPaymentAmounts({ creditOre: result.storedValueAppliedOre, remainingOre: result.remainingAmountOre });
       }
-      if (attempt.body.paymentProvider === "STRIPE" && result.status !== "CONFIRMED") window.location.assign(result.checkoutUrl!);
+      if (openProvider && attempt.body.paymentProvider === "STRIPE" && result.status !== "CONFIRMED" && safeBookingPaymentUrl(result.checkoutUrl)) window.location.assign(result.checkoutUrl);
+      return true;
     } catch (cause) {
-      if (currentProfileId.current !== attempt.ownerId) return;
+      if (currentProfileId.current !== attempt.ownerId) return true;
       setSubmitting(false);
       // A lost response may follow a committed reservation. Only replay the
       // exact original submission until the backend gives a definitive answer.
       const authRequired = cause instanceof BookingApiError && [401, 403].includes(cause.status);
-      if (!(cause instanceof BookingApiError) || cause.status >= 500 || cause.status === 408 || authRequired) {
+      if (!(cause instanceof BookingApiError) || !bookingFailureProvesNoAllocation(cause.status, errorCode(cause))) {
         setUncertainAttempt(attempt);
         if (authRequired) setError(locale === "sv" ? "Logga in igen för att kontrollera bokningsförsöket. Om åtkomsten fortfarande saknas, kontakta The Beach." : "Sign in again to check this booking attempt. If access is still unavailable, contact The Beach.");
-        return;
+        return authRequired;
       }
       clearAttempt();
       void loadCredit();
@@ -407,10 +457,24 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
       } else {
         setError(cause.message);
       }
+      return true;
     } finally {
-      checkoutInFlight.current = false;
+      if (checkoutInFlight.current === request) checkoutInFlight.current = null;
     }
-  };
+  }, [profile?.id, locale, loadCredit, loadSlots, t]);
+
+  useEffect(() => {
+    const attempt = uncertainAttempt;
+    if (!attempt || attempt.bookingId || attempt.ownerId !== profile?.id || attemptOwnerReady !== attempt.ownerId) return;
+    const stop = startBookingRecovery({
+      current: () => currentProfileId.current === attempt.ownerId,
+      recover: () => submitAttempt(attempt, false),
+      exhausted: () => setError(locale === "sv" ? "Vi kan inte hämta besked just nu. Försöket är sparat; starta inte en ny betalning. Uppdatera status när anslutningen fungerar igen." : "We cannot retrieve the result right now. Your attempt is saved; do not start another payment. Refresh the status when connected again."),
+    });
+    const resume = () => setRefreshRevision((value) => value + 1);
+    window.addEventListener("focus", resume); window.addEventListener("online", resume);
+    return () => { stop(); window.removeEventListener("focus", resume); window.removeEventListener("online", resume); };
+  }, [uncertainAttempt, profile?.id, attemptOwnerReady, refreshRevision, submitAttempt, locale]);
 
   const checkout = async (paymentProvider: "SWISH" | "STRIPE") => {
     if (!selected || !venueId || !profile || attemptOwnerReady !== profile.id) return;
@@ -440,13 +504,27 @@ export default function BookingWidget({ locale = "sv" }: { locale?: Locale }) {
     catch (cause) { setError(cause instanceof Error ? cause.message : t.cancelError); }
   };
 
-  if (uncertainAttempt?.ownerId === profile?.id && uncertainAttempt) return <section className="border border-orange/30 bg-white p-6 sm:p-10" role="status">
-    <h3 className="font-display text-3xl">{locale === "sv" ? "Kontrollera din bokning" : "Check your booking"}</h3>
-    <p className="mt-4 text-sm">{locale === "sv" ? "Vi fick inget säkert svar. Kontrollera samma bokningsförsök innan du väljer en annan tid eller betalning." : "We did not receive a confirmed response. Check the same booking attempt before choosing a different time or payment."}</p>
+  const reopenPayment = async () => {
+    const attempt = uncertainAttempt;
+    if (!attempt?.bookingId || attempt.ownerId !== currentProfileId.current || !safeBookingPaymentUrl(attempt.checkoutUrl)) return;
+    try {
+      const result = await paymentApi<BookingPaymentState>(`/api/booking/${attempt.bookingId}`, undefined, t.genericError);
+      if (attempt.ownerId !== currentProfileId.current) return;
+      const notice = bookingPaymentNotice(result, locale);
+      if (result.booking.status !== "PENDING_PAYMENT" || result.paymentReviewRequired || !notice.keepAttempt) { setRefreshRevision((value) => value + 1); return; }
+      window.location.assign(attempt.checkoutUrl);
+    } catch { setError(locale === "sv" ? "Betalningsstatus kunde inte hämtas. Ingen ny betalning startades." : "Payment status could not be retrieved. No new payment was started."); }
+  };
+
+  if (uncertainAttempt?.ownerId === profile?.id && uncertainAttempt) return <section className="border border-orange/30 bg-white p-6 text-black sm:p-10" role="status">
+    <h3 className="font-display text-3xl">{locale === "sv" ? "Pågående bokning" : "Booking in progress"}</h3>
+    <p className="mt-4 text-sm">{paymentMessage || (locale === "sv" ? "Vi kontrollerar samma bokningsförsök automatiskt. Starta inte en ny betalning." : "We are checking the same booking attempt automatically. Do not start another payment.")}</p>
+    {swishApprovalRequired && !paymentReviewRequired ? <p className="mt-4 font-semibold">{locale === "sv" ? "Öppna Swish-appen på din telefon och godkänn den befintliga betalningsbegäran. Bokningen bekräftas automatiskt när betalningen är klar." : "Open Swish on your phone and approve the existing payment request. Your booking is confirmed automatically when payment completes."}</p> : null}
     <p className="mt-3 font-semibold">{uncertainAttempt.courtName} · {uncertainAttempt.body.date} · {uncertainAttempt.body.startTime}</p>
-    <p className="mt-2 text-sm">{t.pay.creditApplied}: {money(uncertainAttempt.body.expectedStoredValueAppliedOre)} · {t.pay.creditRemaining}: {money(uncertainAttempt.body.expectedRemainingAmountOre)}</p>
-    {error ? <div role="alert" className="mt-4 text-sm text-orange"><p>{error}</p><Link href={accountHref} className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{t.pay.loginCta}</Link></div> : null}
-    <button type="button" disabled={submitting} onClick={() => void submitAttempt(uncertainAttempt)} className="mt-5 min-h-12 cursor-pointer bg-black px-6 text-xs font-bold uppercase text-lime disabled:opacity-40">{submitting ? t.pay.submitting : locale === "sv" ? "Kontrollera bokningsförsöket" : "Check booking attempt"}</button>
+    <p className="mt-2 text-sm">{t.pay.creditApplied}: {money(uncertainAttempt.body.expectedStoredValueAppliedOre)} · {locale === "sv" ? "Betalningsbelopp" : "Payment amount"}: {money(uncertainAttempt.body.expectedRemainingAmountOre)}</p>
+    {error ? <div role="alert" className="mt-4 text-sm text-orange"><p>{error}</p>{error.includes("Logga in igen") || error.includes("Sign in again") ? <Link href={accountHref} className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{t.pay.loginCta}</Link> : null}</div> : null}
+    {safeBookingPaymentUrl(uncertainAttempt.checkoutUrl) && !paymentReviewRequired ? <button type="button" onClick={() => void reopenPayment()} className="mt-5 mr-5 min-h-12 cursor-pointer font-semibold underline">{locale === "sv" ? "Öppna betalningen" : "Open payment"}</button> : null}
+    <button type="button" disabled={submitting} onClick={() => setRefreshRevision((value) => value + 1)} className="mt-5 min-h-12 cursor-pointer px-2 font-semibold underline disabled:opacity-40">{submitting ? t.pay.submitting : locale === "sv" ? "Uppdatera status" : "Refresh status"}</button>
   </section>;
 
   if (enabled === null) return <div className="flex min-h-72 items-center justify-center text-sm text-black/50">{t.loadingWidget}</div>;

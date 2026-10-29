@@ -2,6 +2,8 @@
 export type BookingCreditAttempt = {
   ownerId: string;
   courtName: string;
+  bookingId?: string;
+  checkoutUrl?: string;
   body: {
     venueId: string;
     courtId: string;
@@ -28,7 +30,9 @@ export function bookingCreditAttemptFromStorage(raw: string | null, ownerId: str
       || !["SWISH", "STRIPE"].includes(body.paymentProvider)
       || typeof body.useStoredValue !== "boolean" || typeof body.streamRequested !== "boolean"
       || !Number.isSafeInteger(body.expectedStoredValueAppliedOre) || body.expectedStoredValueAppliedOre < 0
-      || !Number.isSafeInteger(body.expectedRemainingAmountOre) || body.expectedRemainingAmountOre < 0) return null;
+      || !Number.isSafeInteger(body.expectedRemainingAmountOre) || body.expectedRemainingAmountOre < 0
+      || (item.bookingId !== undefined && (typeof item.bookingId !== "string" || !item.bookingId || item.bookingId.length > 100))
+      || (item.checkoutUrl !== undefined && typeof item.checkoutUrl !== "string")) return null;
     return item as BookingCreditAttempt;
   } catch { return null; }
 }
