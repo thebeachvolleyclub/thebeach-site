@@ -1,5 +1,27 @@
 # Current Work State
 
+## HQ #339 production verification — 2026-10-29
+
+- Accepted candidate `7bd707a` was selectively promoted onto already published
+  `6a441db` as `2c2497a1f2156803b4f7fabff810fe9cb9ab078a`, preserving David's
+  intervening changes. The existing `deploy.sh prod <exact-sha>` published it;
+  production image is `sha256:e6561e7dae33b8613ef57ce78ce463d75e54e7c07755d004b84f1d74e3db8041`.
+- Exact promoted build and 13 focused tests pass. All 21 intercepted browser
+  journeys passed against both the promoted loopback build and the actual
+  public `https://thebeach.one` deployment. Fourteen public JS/CSS assets match
+  the live container byte-for-byte, including the new recovery marker.
+  `/boka`, `/en/book` and booking config return 200; anonymous mine returns 401.
+- The public test initially exposed a harness-only latency race: reading the
+  intercepted checkout before it was sent. The harness now explicitly awaits
+  that request; the complete rerun passes. This follow-up changes testing and
+  documentation only, not the published product source above.
+- API/OTA delivery and retained rollback evidence are recorded in App
+  `docs/releases/2026-10-29-swish-callback-first-recovery.md`. No customer charge,
+  refund or notification was sent for testing. Physical native pickup and a
+  real uncertain bank result remain unobserved; Henric owns that follow-up.
+- Root's temporary preview on port 3991 is stopped. No Site publication window
+  remains active. The original checkout and David's workshop were preserved.
+
 ## HQ #339 callback-first court payment recovery — website candidate 2026-10-29
 
 - Isolated feature branch `codex/hq339-site-swish-recovery-20261029` starts from

@@ -121,7 +121,9 @@ try {
   }
   }
   for (const authRetry of process.env.SITE_CREDIT_AUTH_ONLY ? [401, 403] : [false, 401, 403]) {
-    const { page, calls } = await fixture({ lostResponse: true, authRetry }); await choose(page); await useCredit(page); await click(page, '78 kr');
+    const { page, calls } = await fixture({ lostResponse: true, authRetry }); await choose(page); await useCredit(page);
+    const checkoutSent = page.waitForRequest((request) => new URL(request.url()).pathname === '/api/booking/checkout' && request.method() === 'POST');
+    await click(page, '78 kr'); await checkoutSent;
     const original = calls.find((call) => call.path.endsWith('/checkout')).payload;
     if (authRetry) {
       await page.waitForFunction(() => document.body.textContent.includes('Logga in igen för att kontrollera'));
