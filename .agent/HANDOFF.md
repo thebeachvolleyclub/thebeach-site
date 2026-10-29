@@ -1,5 +1,32 @@
 # Current Work State
 
+## HQ #339 callback-first court payment recovery — website candidate 2026-10-29
+
+- Isolated feature branch `codex/hq339-site-swish-recovery-20261029` starts from
+  production Site `89bb6df`. The original checkout is preserved. Root owns paired
+  API release, deliberate production promotion and guarded Site Deploy publish;
+  this candidate does not deploy or push `main`.
+- Lost checkout responses automatically replay only the exact owner-bound
+  original submission, with five bounded retries and no provider launch. Generic
+  409/429, malformed success and network errors retain that attempt; only proven
+  preallocation conflicts clear it. Known booking IDs persist and resume status
+  reads only, including after reload. Status refresh remains optional.
+- Financial review and paid-but-expired/cancelled bookings never become a new
+  unpaid checkout. Either authoritative paid field is honored; completed refunds
+  win over old paid/review flags. Normal Swish requests explicitly tell users to
+  approve the existing request; verification/review does not ask them to pay again.
+  The recovery panel explicitly sets dark text on its white background.
+- Focused recovery/credit tests: 13 pass. Full Node suite: 207 pass, three baseline
+  failures independently reproduced on unchanged `89bb6df` (two `next/navigation`
+  Node imports and existing course youth-price copy). Focused lint has zero errors
+  and one unchanged image warning. No dependencies or build configuration changed.
+- The final Next production build passes (94 pages). All 21 intercepted browser
+  journeys pass against that fresh build, including actual Swish callback
+  completion, known-ID status-only recovery, bounded malformed/409/429 retries,
+  refund/review truth, dark-text contrast and neutral paid-late amount wording.
+  All account/payment data is synthetic; no customer/provider writes occur.
+  See `DEPLOY.md` and `scripts/verify-subscription-credit-browser.mjs`.
+
 ## HQ #310 licence personnummer — 2026-10-08
 
 - Website candidate `codex/hq310-licence-personnummer-site-20261008`, isolated at

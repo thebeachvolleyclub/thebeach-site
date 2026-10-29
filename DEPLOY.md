@@ -117,6 +117,33 @@ The synthetic browser check in `scripts/verify-subscription-credit-browser.mjs`
 intercepts every API call and does not write to production. Its header documents
 the local preview and browser executable settings.
 
+### Court payment recovery (HQ #339)
+
+Publish the paired Booking and embedded App API changes, including Booking
+migration `049_swish_payment_recovery.sql`, before this website consumer. The
+website does not schedule Swish requests itself: callbacks and the single
+Booking recovery dispatcher own provider reconciliation.
+
+The browser keeps the original owner-scoped submission until its outcome is
+known. A lost response automatically retries that exact submission with bounded
+backoff; a known booking ID resumes status reads only, including after reload.
+Automatic recovery never opens Stripe or creates a new client reference. The
+customer may optionally refresh status or explicitly reopen a validated Stripe
+link after a fresh pending-state check.
+
+A normal accepted Swish request tells the customer to open Swish and approve
+the existing request. Verification-only and reconciliation-required outcomes do
+not tell the customer to pay again. Unknown financial outcomes and received
+payments on expired/cancelled reservations remain locked for reception review;
+a completed refund takes precedence over the original historical payment.
+The same UI is available in Swedish and English.
+
+The intercepted browser script covers ordinary credit/Swish/Stripe, automatic
+lost-response recovery, login/reload recovery, known-ID status-only recovery,
+normal Swish approval guidance, unknown-outcome holds, received-payment conflicts
+and completed refunds. It uses only synthetic API responses on a loopback
+preview; no real customer booking, payment, refund or notification is sent.
+
 ## Notes
 
 - The site has server-side API routes under `src/app/api/*` (account/session,

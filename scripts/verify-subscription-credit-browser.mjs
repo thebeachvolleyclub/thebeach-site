@@ -9,15 +9,17 @@ const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Stockho
 const future = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 const errors = [];
 async function click(page, text) {
-  await page.waitForFunction((needle) => [...document.querySelectorAll('button,summary')].some((node) => node.textContent.trim().includes(needle) && !node.disabled), {}, text);
+  await page.waitForFunction((needle) => [...document.querySelectorAll('button,summary')].some((node) => node.textContent.trim().includes(needle) && !node.disabled), {}, text).catch(async (error) => { console.error(`Missing ${text}:`, await page.evaluate(() => document.body.innerText)); await page.screenshot({ path: '/tmp/hq339-site-browser-failure.png', fullPage: true }); throw error; });
   await page.evaluate((needle) => [...document.querySelectorAll('button,summary')].find((node) => node.textContent.trim().includes(needle) && !node.disabled).click(), text);
 }
-async function fixture({ balance = 70200, phone = '+46701234567', failCredit = false, conflict = false, lostResponse = false, authRetry = false } = {}) {
+async function fixture({ balance = 70200, phone = '+46701234567', failCredit = false, conflict = false, lostResponse = false, authRetry = false, recoveryState = null, uncertainResponse = null } = {}) {
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 844 });
+  await page.evaluateOnNewDocument(() => localStorage.setItem('cookie_consent', 'denied'));
   const calls = [], quotes = [];
   let released = false, paid = false, conflicted = false, lost = false, authExpired = false;
-  const booking = { id: 'booking-1', courtName: 'Bana 1', date: today, startTime: '18:00', endTime: '19:00', priceSek: 780, status: 'CONFIRMED' };
+  const booking = { id: 'booking-1', courtName: 'Bana 1', date: today, startTime: '18:00', endTime: '19:00', priceSek: 780, status: ['pending', 'pending-new', 'awaiting-verification'].includes(recoveryState) ? 'PENDING_PAYMENT' : recoveryState === 'refunded' ? 'CANCELLED' : recoveryState ? 'EXPIRED' : 'CONFIRMED', paymentStatus: recoveryState === 'refunded' ? 'REFUNDED' : recoveryState === 'paid-expired' ? 'PAID' : 'UNPAID' };
+  if (recoveryState && recoveryState !== 'pending-new') await page.evaluateOnNewDocument((date) => sessionStorage.setItem('tb-booking-attempt:synthetic-owner', JSON.stringify({ ownerId: 'synthetic-owner', courtName: 'Bana 1', bookingId: 'booking-1', body: { venueId: 'venue-1', courtId: 'court-1', date, startTime: '18:00', quoteId: 'saved-original-quote', streamRequested: false, paymentProvider: 'SWISH', useStoredValue: false, expectedStoredValueAppliedOre: 0, expectedRemainingAmountOre: 78000, clientReference: 'saved-exact-attempt' } })), today);
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('dialog', (dialog) => dialog.accept());
   await page.setRequestInterception(true);
@@ -44,6 +46,7 @@ async function fixture({ balance = 70200, phone = '+46701234567', failCredit = f
       quotes.push({ payload, quote }); return json(quote);
     }
     if (path === '/api/booking/checkout') {
+      if (uncertainResponse) return json(uncertainResponse.body, uncertainResponse.status);
       if (lostResponse && !lost) { lost = true; paid = true; return request.abort('failed'); }
       if (authRetry && !authExpired) { authExpired = true; return json({ detail: 'Logga in igen' }, Number(authRetry) || 401); }
       if (conflict && !conflicted) { conflicted = true; balance = 60000; return json({ detail: { message: 'Tillgodohavandet har ändrats. Kontrollera beloppen igen.', code: 'SUBSCRIPTION_CREDIT_CHANGED' } }, 409); }
@@ -56,11 +59,14 @@ async function fixture({ balance = 70200, phone = '+46701234567', failCredit = f
       }
       return json({ bookingId: 'booking-1', status: quote.remainingAmountOre ? 'PENDING_PAYMENT' : 'CONFIRMED', storedValueAppliedOre: quote.storedValueAppliedOre, remainingAmountOre: quote.remainingAmountOre, checkoutUrl: payload.paymentProvider === 'STRIPE' && quote.remainingAmountOre ? 'https://checkout.stripe.com/synthetic' : undefined });
     }
-    if (path === '/api/booking/booking-1') return json({ booking });
+    if (path === '/api/booking/booking-1') {
+      if (process.env.SITE_CREDIT_DEBUG) console.log('STATUS', recoveryState, booking.status, booking.paymentStatus);
+      return json({ booking, paymentStatus: ['paid-expired', 'refunded'].includes(recoveryState) ? 'PAID' : ['pending', 'pending-new'].includes(recoveryState) ? 'CREATED' : 'VERIFYING', paymentReviewRequired: recoveryState === 'review-expired', paymentVerificationPending: !!recoveryState });
+    }
     if (request.method() !== 'GET') throw new Error(`Unexpected mutation ${path}`);
     return json({ invoices: [], groups: [], addresses: [], events: [], memberships: [], enrolments: [], recordings: [] });
   });
-  return { page, calls, quotes, released: () => released };
+  return { page, calls, quotes, released: () => released, complete: () => { booking.status = 'CONFIRMED'; booking.paymentStatus = 'PAID'; } };
 }
 async function choose(page) {
   await page.goto(`${origin}/boka`, { waitUntil: 'networkidle0' });
@@ -70,7 +76,8 @@ async function choose(page) {
 }
 async function useCredit(page) {
   await page.waitForSelector('input[type=checkbox]');
-  await page.click('input[type=checkbox]');
+  await page.$eval('input[type=checkbox]', (input) => { if (!input.checked) input.click(); });
+  await page.waitForFunction(() => document.querySelector('input[type=checkbox]')?.checked === true);
 }
 try {
   if (!process.env.SITE_CREDIT_AUTH_ONLY) {
@@ -115,22 +122,63 @@ try {
   }
   for (const authRetry of process.env.SITE_CREDIT_AUTH_ONLY ? [401, 403] : [false, 401, 403]) {
     const { page, calls } = await fixture({ lostResponse: true, authRetry }); await choose(page); await useCredit(page); await click(page, '78 kr');
-    await page.waitForFunction(() => document.body.textContent.includes('Kontrollera din bokning'));
     const original = calls.find((call) => call.path.endsWith('/checkout')).payload;
-    // Recovery survives reload and blocks changed slot/payment choices.
-    await page.reload({ waitUntil: 'networkidle0' });
-    await click(page, 'Kontrollera bokningsförsöket');
     if (authRetry) {
       await page.waitForFunction(() => document.body.textContent.includes('Logga in igen för att kontrollera'));
       assert.equal(await page.evaluate(() => !!sessionStorage.getItem('tb-booking-attempt:synthetic-owner')), true);
-      // A new authenticated session for the same owner must resume the old attempt.
+      // A new authenticated session automatically resumes the same attempt.
       await page.reload({ waitUntil: 'networkidle0' });
-      await click(page, 'Kontrollera bokningsförsöket');
     }
     await page.waitForFunction(() => document.body.textContent.includes('Vi ses i sanden!'));
     const attempts = calls.filter((call) => call.path.endsWith('/checkout'));
     assert.equal(attempts.length, authRetry ? 3 : 2); for (const attempt of attempts) assert.deepEqual(attempt.payload, original);
-    await page.close(); console.log(authRetry ? `PASS ${authRetry} auth preserves original attempt for sign-in recovery` : 'PASS lost response and reload retry exact original attempt');
+    await page.close(); console.log(authRetry ? `PASS ${authRetry} auth preserves original attempt for sign-in recovery` : 'PASS lost response automatically retries exact original attempt');
+  }
+  {
+    const { page, calls, complete } = await fixture({ recoveryState: 'pending-new' });
+    await choose(page); await click(page, '780 kr');
+    await page.waitForFunction(() => document.body.innerText.includes('Öppna Swish-appen på din telefon'));
+    assert.equal(calls.filter((call) => call.path.endsWith('/checkout')).length, 1);
+    complete(); await page.waitForFunction(() => document.body.textContent.includes('Vi ses i sanden!')).catch(async (error) => { console.error(await page.evaluate(() => document.body.innerText)); throw error; });
+    await page.close(); console.log('PASS normal Swish asks to approve existing request and confirms automatically');
+  }
+  for (const recoveryState of ['pending', 'awaiting-verification', 'review-expired', 'paid-expired', 'refunded']) {
+    const { page, calls } = await fixture({ recoveryState });
+    await page.goto(`${origin}/boka`, { waitUntil: 'networkidle0' });
+    const expected = recoveryState === 'review-expired' ? 'måste kontrolleras av receptionen' : recoveryState === 'paid-expired' ? 'kommit in men bokningen är inte bekräftad' : recoveryState === 'refunded' ? 'har återbetalats' : 'uppdateras automatiskt';
+    await page.waitForFunction((text) => document.body.innerText.includes(text), {}, expected);
+    if (recoveryState !== 'refunded') assert.equal(await page.$eval('section[role=status]', (panel) => getComputedStyle(panel).color), 'rgb(20, 22, 15)', 'recovery text must contrast its white background');
+    if (recoveryState === 'paid-expired') assert.equal(await page.evaluate(() => document.querySelector('section[role=status]').textContent.includes('Kvar att betala')), false, 'received payment must not be described as outstanding');
+    assert.equal(await page.evaluate(() => document.body.innerText.includes('Öppna Swish-appen på din telefon')), recoveryState === 'pending');
+    assert.equal(calls.filter((call) => call.path.endsWith('/checkout')).length, 0, 'Known booking must read status, never replay checkout');
+    assert.equal(await page.evaluate(() => !!sessionStorage.getItem('tb-booking-attempt:synthetic-owner')), recoveryState !== 'refunded');
+    if (recoveryState !== 'refunded') {
+      await click(page, 'Uppdatera status');
+      assert.equal(calls.filter((call) => call.path.endsWith('/checkout')).length, 0);
+    }
+    await page.screenshot({ path: `/tmp/hq339-site-${recoveryState}.png`, fullPage: true });
+    await page.close(); console.log(`PASS known ${recoveryState} status recovery without another checkout`);
+  }
+  for (const uncertainResponse of [{ status: 429, body: { detail: 'Slow down' } }, { status: 409, body: { detail: 'Payment outcome not yet known' } }, { status: 200, body: {} }, { status: 200, body: { bookingId: '' } }]) {
+    const { page, calls } = await fixture({ uncertainResponse });
+    await choose(page); await click(page, '780 kr');
+    await page.waitForFunction(() => document.body.innerText.includes('Vi kan inte hämta besked just nu'), { timeout: 30000 });
+    const attempts = calls.filter((call) => call.path.endsWith('/checkout'));
+    assert.equal(attempts.length, 6, 'one authorized submit plus five bounded exact retries');
+    for (const attempt of attempts) assert.deepEqual(attempt.payload, attempts[0].payload);
+    assert.equal(new Set(attempts.map((attempt) => attempt.payload.clientReference)).size, 1, 'no second allocation key');
+    assert.equal(await page.evaluate(() => !!sessionStorage.getItem('tb-booking-attempt:synthetic-owner')), true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    assert.equal(calls.filter((call) => call.path.endsWith('/checkout')).length, 6, 'malformed success cannot reset the retry budget');
+    await page.close(); console.log(`PASS uncertain ${uncertainResponse.status}/${JSON.stringify(uncertainResponse.body)} keeps same attempt with bounded retries`);
+  }
+  {
+    const { page, calls } = await fixture({ recoveryState: 'review-expired' });
+    await page.goto(`${origin}/en/book`, { waitUntil: 'networkidle0' });
+    await page.waitForFunction(() => document.body.innerText.includes('Reception must check the payment. Do not start another payment.'));
+    await click(page, 'Refresh status');
+    assert.equal(calls.filter((call) => call.path.endsWith('/checkout')).length, 0);
+    await page.close(); console.log('PASS English financial-review copy and optional refresh');
   }
   assert.deepEqual(errors, []);
 } finally { await browser.close(); }
