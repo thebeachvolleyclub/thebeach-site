@@ -103,7 +103,7 @@ export async function receiptByEmail(s: Submission): Promise<void> {
 ${table}
 </table>
 ${tidsplan}
-<p style="color:#444;line-height:1.6;margin-top:22px">Questions or changes? Reply to this email or write to david@thebeach.one.</p>
+<p style="color:#444;line-height:1.6;margin-top:22px">Questions or changes? Reply to this email or write to boka@thebeach.one.</p>
 <p style="color:#8a8a7a;font-size:12px">The Beach · Novavägen 35, Huddinge · thebeach.one — where it's always summer</p>
 </div>`
     : `<div style="font-family:sans-serif;font-size:14px;max-width:560px;margin:0 auto;color:#14160f">
@@ -113,7 +113,7 @@ ${tidsplan}
 ${table}
 </table>
 ${tidsplan}
-<p style="color:#444;line-height:1.6;margin-top:22px">Frågor eller ändringar? Svara på det här mejlet eller skriv till david@thebeach.one.</p>
+<p style="color:#444;line-height:1.6;margin-top:22px">Frågor eller ändringar? Svara på det här mejlet eller skriv till boka@thebeach.one.</p>
 <p style="color:#8a8a7a;font-size:12px">The Beach · Novavägen 35, Huddinge · thebeach.one — där det alltid är sommar</p>
 </div>`;
   await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -122,7 +122,7 @@ ${tidsplan}
     body: JSON.stringify({
       sender: { name: "The Beach", email: "boka@thebeach.one" },
       to: [{ email: s.epost, name: s.namn }],
-      replyTo: { email: "david@thebeach.one" },
+      replyTo: { email: "boka@thebeach.one" },
       subject: en
         ? "Your event plan has been received — The Beach"
         : "Er eventplan är mottagen — The Beach",

@@ -9,8 +9,8 @@ export interface JulbordDict {
   hero: { eyebrow: string; titleTop: string; titleAccent: string; intro: string; cta: string };
   /** Förfrågningslänken — /events?paket=julbord#forfragan (sv) resp. /en/events?paket=julbord#request (en). */
   requestHref: string;
-  /** Planeringsverktyget — /events/planera resp. /en/events/planera. */
-  plannerHref: string;
+  /** Lokalen — /lokalen resp. /en/venue (sekundär knapp i outron). */
+  venueHref: string;
   story: string;
   paket: {
     eyebrow: string;
@@ -23,7 +23,7 @@ export interface JulbordDict {
     fotnot: string;
   };
   exklusivt: { rubrik: string; text: string; villkor: string };
-  outro: { text: string; cta: string; ctaPlanera: string };
+  outro: { text: string; cta: string; ctaVenue: string };
 }
 
 export const julbordDict: Dict<JulbordDict> = {
@@ -45,7 +45,7 @@ export const julbordDict: Dict<JulbordDict> = {
       cta: "Be om förslag",
     },
     requestHref: "/events?paket=julbord#forfragan",
-    plannerHref: "/events/planera",
+    venueHref: "/lokalen",
     story:
       "Ni kommer när mörkret redan har lagt sig utanför. Innanför dörrarna är det sommar. Skorna av, fötterna i sanden, och en instruktör som sätter upp en beachvolleyturnering där alla är med — från den som aldrig rört en boll till den som spelar varje vecka. Efter 1,5 timme i sanden väntar julbordet i loungen, med utsikt över banorna.",
     paket: {
@@ -79,7 +79,7 @@ export const julbordDict: Dict<JulbordDict> = {
     outro: {
       text: "10–900 personer · Novavägen 35, Huddinge · Offert inom 24 timmar. Berätta hur många ni är och när ni vill fira, så återkommer vi med upplägg och pris.",
       cta: "Begär offert →",
-      ctaPlanera: "Planera ert event",
+      ctaVenue: "Se lokalen",
     },
   },
   en: {
@@ -100,7 +100,7 @@ export const julbordDict: Dict<JulbordDict> = {
       cta: "Ask for a proposal",
     },
     requestHref: "/en/events?paket=julbord#request",
-    plannerHref: "/en/events/plan",
+    venueHref: "/en/venue",
     story:
       "You arrive when it's already dark outside. Inside, it's summer. Shoes off, feet in the sand, and an instructor who sets up a beach volleyball tournament where everyone plays — from the person who has never touched a ball to the one who plays every week. After 1.5 hours in the sand, the Christmas buffet is waiting in the lounge, overlooking the courts.",
     paket: {
@@ -134,7 +134,7 @@ export const julbordDict: Dict<JulbordDict> = {
     outro: {
       text: "10–900 people · Novavägen 35, Huddinge · Quote within 24 hours. Tell us how many you are and when you want to celebrate, and we'll come back with a proposal and price.",
       cta: "Request a quote →",
-      ctaPlanera: "Plan your event",
+      ctaVenue: "See the venue",
     },
   },
 };

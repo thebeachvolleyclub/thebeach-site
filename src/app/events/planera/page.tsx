@@ -5,7 +5,10 @@ import { plannerDict } from "@/lib/i18n/planner";
 import type { TierKey } from "@/lib/planner";
 import { og } from "@/lib/seo";
 
+/* Planeraren är dold sedan okt 2026: nås bara via direktlänk som David skickar
+   till utvalda kunder. Ingen indexering, inga interna länkar, inte i sitemap. */
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   alternates: altLang("/events/planera", "/en/events/plan", "sv"),
   title: plannerDict.sv.meta.title,
   description: plannerDict.sv.meta.description,

@@ -5,7 +5,9 @@ import { plannerDict } from "@/lib/i18n/planner";
 import type { TierKey } from "@/lib/planner";
 import { og } from "@/lib/seo";
 
+/* Hidden since Oct 2026: reachable only by direct link, not indexed, not linked, not in sitemap. */
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   alternates: altLang("/events/planera", "/en/events/plan", "en"),
   title: plannerDict.en.meta.title,
   description: plannerDict.en.meta.description,

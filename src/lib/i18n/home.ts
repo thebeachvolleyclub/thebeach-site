@@ -52,8 +52,8 @@ export interface HomeDict {
     title1: string;
     title2: string;
     lead: string;
+    /** Primär länk → förfrågningsformuläret på /events (#forfragan / #request). */
     linkPlanner: string;
-    /** Planeraren: /events/planera (sv) resp. /en/events/plan (en). */
     linkPlannerHref: string;
     linkCustom: string;
     linkCustomHref: string;
@@ -167,8 +167,8 @@ export const homeDict: Dict<HomeDict> = {
       title1: "Boka ett event",
       title2: "som sticker ut",
       lead: "Färdiga paket från after work till fullskala corporate event. Aktivitet, mat och dryck — allt ingår.",
-      linkPlanner: "Planera ert event →",
-      linkPlannerHref: "/events/planera",
+      linkPlanner: "Önska datum →",
+      linkPlannerHref: "/events#forfragan",
       linkCustom: "Skräddarsytt event →",
       linkCustomHref: "/events",
       packages: [
@@ -319,8 +319,8 @@ export const homeDict: Dict<HomeDict> = {
       title1: "Book an event",
       title2: "that stands out",
       lead: "Ready-made packages from after work to full-scale corporate events. Activity, food and drinks — everything included.",
-      linkPlanner: "Plan your event →",
-      linkPlannerHref: "/en/events/plan",
+      linkPlanner: "Request a date →",
+      linkPlannerHref: "/en/events#request",
       linkCustom: "Custom event →",
       linkCustomHref: "/en/events",
       packages: [

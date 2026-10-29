@@ -89,10 +89,10 @@ export default function JulbordPage({ locale }: { locale: Locale }) {
                 {t.outro.cta}
               </Link>
               <Link
-                href={t.plannerHref}
+                href={t.venueHref}
                 className="cursor-pointer border border-black px-9 py-4 text-center text-xs font-bold uppercase tracking-[0.08em] text-black transition-colors hover:bg-black hover:text-lime"
               >
-                {t.outro.ctaPlanera}
+                {t.outro.ctaVenue}
               </Link>
             </div>
           </Reveal>

@@ -494,12 +494,12 @@ export const plannerDict: Dict<PlannerDict> = {
         msgPh: "Allergier, tema, önskemål — allt är välkommet",
         sending: "Skickar…",
         send: "Skicka eventplanen →",
-        error: "Något gick fel — försök igen eller mejla david@thebeach.one",
+        error: "Något gick fel — försök igen eller mejla boka@thebeach.one",
       },
       sent: {
         title: "Tack — er eventplan är hos oss!",
         body:
-          "Vi återkommer inom 24 timmar med datum och en offert. Vill ni något under tiden? Mejla david@thebeach.one.",
+          "Vi återkommer inom 24 timmar med datum och en offert. Vill ni något under tiden? Mejla boka@thebeach.one.",
       },
       aside: {
         title: "Ert event",
@@ -815,12 +815,12 @@ export const plannerDict: Dict<PlannerDict> = {
         msgPh: "Allergies, themes, wishes — everything is welcome",
         sending: "Sending…",
         send: "Send your event plan →",
-        error: "Something went wrong — try again or email david@thebeach.one",
+        error: "Something went wrong — try again or email boka@thebeach.one",
       },
       sent: {
         title: "Thank you — your event plan is with us!",
         body:
-          "We'll get back to you within 24 hours with dates and a quote. Need anything in the meantime? Email david@thebeach.one.",
+          "We'll get back to you within 24 hours with dates and a quote. Need anything in the meantime? Email boka@thebeach.one.",
       },
       aside: {
         title: "Your event",

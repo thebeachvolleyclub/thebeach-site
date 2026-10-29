@@ -15,10 +15,9 @@ const staticPaths = [
   "/avanmalan",
   "/hallbarhet", "/beachtravels", "/presentkort", "/abonnemang",
   "/jobb",
-  "/events/planera", "/events/privat",
   "/konferens", "/kickoff", "/teambuilding", "/foretagsevent",
   "/firmafest", "/svensexa", "/mohippa",
-  "/en", "/en/events", "/en/events/plan", "/en/membership", "/en/book", "/en/training", "/en/calendar", "/en/school", "/en/about", "/en/faq",
+  "/en", "/en/events", "/en/membership", "/en/book", "/en/training", "/en/calendar", "/en/school", "/en/about", "/en/faq",
   "/en/venue", "/en/christmas-party", "/en/kids-party", "/en/tenerife", "/en/sustainability",
   "/en/conference", "/en/kickoff", "/en/team-building", "/en/corporate-events", "/en/company-party",
 ];

@@ -22,7 +22,7 @@ const COLS: { title: string; links: FLink[] }[] = [
     links: [
       { label: "Lokalen", href: "/lokalen" },
       { label: "Boka event", href: "/events" },
-      { label: "Planera ert event", href: "/events/planera" },
+      { label: "Önska datum", href: "/events#forfragan" },
       { label: "Företagsevent", href: "/foretagsevent" },
       { label: "Konferens", href: "/konferens" },
       { label: "Kickoff", href: "/kickoff" },
@@ -65,7 +65,7 @@ const COLS_EN: { title: string; links: FLink[] }[] = [
     links: [
       { label: "The venue", href: "/en/venue" },
       { label: "Book an event", href: "/en/events" },
-      { label: "Plan your event", href: "/en/events/plan" },
+      { label: "Request a date", href: "/en/events#request" },
       { label: "Corporate events", href: "/en/corporate-events" },
       { label: "Conference", href: "/en/conference" },
       { label: "Kickoff", href: "/en/kickoff" },

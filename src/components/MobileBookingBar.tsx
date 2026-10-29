@@ -9,7 +9,7 @@ import { stickyMode } from "@/lib/stickyMode";
 /**
  * Sticky bottom booking bar — mobile only. Kontextmedveten via stickyMode():
  *  - browse-sidor: Event + Boka bana (som förut)
- *  - eventsidor: en enda CTA → eventplaneraren (ingen nedförsäljning till bana)
+ *  - eventsidor: en enda CTA → "Önska datum" = förfrågningsformuläret på /events (ingen nedförsäljning till bana)
  *  - aktiva funnels (boka, planeraren, formulär, konto, skärm): ingen bar alls
  */
 export default function MobileBookingBar() {
@@ -40,10 +40,10 @@ export default function MobileBookingBar() {
           <div className="flex items-center gap-2 rounded-full border border-bone/10 bg-black/85 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
             {mode === "event" ? (
               <a
-                href={en ? "/en/events/plan" : "/events/planera"}
+                href={en ? "/en/events#request" : "/events#forfragan"}
                 className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-brass px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-black transition-colors hover:bg-brass-bright"
               >
-                {en ? "Plan your event" : "Planera ert event"}
+                {en ? "Request a date" : "Önska datum"}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
             ) : (

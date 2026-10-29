@@ -210,7 +210,7 @@ export default function PrivatPlanner() {
             Tack — er festplan är hos oss!
           </h2>
           <p className="mx-auto max-w-md text-sm leading-relaxed text-white/50">
-            Vi återkommer inom 24 timmar med datum och en offert. Vill ni något under tiden? Mejla david@thebeach.one.
+            Vi återkommer inom 24 timmar med datum och en offert. Vill ni något under tiden? Mejla boka@thebeach.one.
           </p>
         </div>
       </section>
@@ -548,7 +548,7 @@ export default function PrivatPlanner() {
                   </button>
                 </div>
                 {err && (
-                  <p className="text-xs text-orange">Något gick fel — försök igen eller mejla david@thebeach.one</p>
+                  <p className="text-xs text-orange">Något gick fel — försök igen eller mejla boka@thebeach.one</p>
                 )}
               </form>
             )}

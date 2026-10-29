@@ -5,7 +5,7 @@
  * från den (en eventkund ska inte nedförsäljas till en banbokning).
  *
  *  - "hidden"  → aktiv funnel/verktygssida: visa ingenting
- *  - "event"   → eventintent-sida: en enda CTA → eventplaneraren
+ *  - "event"   → eventintent-sida: en enda CTA → "Önska datum" (förfrågningsformuläret på /events)
  *  - "default" → browse-sida: vanliga Event + Boka bana
  */
 export type StickyMode = "default" | "event" | "hidden";
@@ -18,7 +18,9 @@ const HIDDEN_EXACT = new Set([
   "/konto",
 ]);
 
-const HIDDEN_PREFIX = ["/events/planera", "/events/plan", "/skarm"];
+// Planeraren (/events/planera, /events/privat, /en/events/plan) är dold men nås via
+// direktlänk — där ska ingen sticky konkurrera med verktyget.
+const HIDDEN_PREFIX = ["/events/planera", "/events/privat", "/events/plan", "/skarm"];
 
 const EVENT_PAGES = new Set([
   "/events",
